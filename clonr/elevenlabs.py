@@ -2,10 +2,9 @@
 import os
 
 import requests
-from playsound import playsound
-
 from autogpt.config import Config
 from autogpt.speech.base import VoiceBase
+from playsound import playsound
 
 PLACEHOLDERS = {"your-voice-id"}
 
