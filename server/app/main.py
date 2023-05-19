@@ -1,12 +1,15 @@
-from typing import List, Annotated
+import os
+import time
 from contextlib import asynccontextmanager
+from typing import Annotated, List
+
 import uvicorn
-from fastapi import FastAPI
+from app.db import clear_db, get_async_session, init_db, wait_for_db
+from app.settings import settings
+from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
-from app.db import wait_for_db, init_db, clear_db, get_async_session
-from app.settings import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

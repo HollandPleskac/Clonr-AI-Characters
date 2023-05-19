@@ -1,7 +1,8 @@
 import datetime
 import uuid
-from sqlalchemy.orm import mapped_column, Mapped, DeclarativeBase
-from sqlalchemy import DateTime, func, text, ForeignKey
+
+from sqlalchemy import DateTime, ForeignKey, func, text
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 class Base(DeclarativeBase):
@@ -25,6 +26,8 @@ class CommonMixin:
 """ 
 Scaffolding. delete all of the code below this later.
 """
+
+
 class ElevenClone(CommonMixin, Base):
     __tablename__ = "eleven_clones"
 
@@ -42,11 +45,10 @@ class ElevenClone(CommonMixin, Base):
 
 class User(CommonMixin, Base):
     __tablename__ = "users"
-    
+
     email: Mapped[str] = mapped_column(unique=True, nullable=False)
     active: Mapped[bool] = mapped_column(default=True)
     is_superuser: Mapped[bool] = mapped_column(default=False)
-
 
     def __repr__(self):
         return f"User(email={self.email}, registered={self.registered}"

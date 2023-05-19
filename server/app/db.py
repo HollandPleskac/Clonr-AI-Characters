@@ -1,13 +1,14 @@
-from typing import AsyncGenerator
 import logging
+from typing import AsyncGenerator
+
+from app.models import Base
+from app.settings import settings
 from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from tenacity import after_log, before_log, retry, stop_after_attempt, wait_fixed
-from app.settings import settings
-from app.models import Base
-
+from tenacity import (after_log, before_log, retry, stop_after_attempt,
+                      wait_fixed)
 
 DATABASE_URL = f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}/{settings.POSTGRES_DB}"
 
