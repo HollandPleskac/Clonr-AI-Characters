@@ -7,11 +7,18 @@ import uuid
 from pydantic import BaseModel
 
 
-class User(BaseModel):
+class UserBase(BaseModel):
+    email: str
+
+
+class UserCreate(UserBase):
+    pass
+
+
+class User(UserBase):
     id: uuid.UUID
     created_at: datetime.datetime
     updated_at: datetime.datetime
-    email: str
     active: bool
     is_superuser: bool
 
@@ -19,19 +26,22 @@ class User(BaseModel):
         orm_mode = True
 
 
-class UserCreate(BaseModel):
-    email: str
-
-
-class ElevenClone(BaseModel):
-    id: uuid.UUID
-    created_at: datetime.datetime
-    updated_at: datetime.datetime
+class CloneBase(BaseModel):
     clone_id: str
-    active: bool
     min_training_audio: float
     audio_bucket: str
     user_id: uuid.UUID
+
+
+class CloneCreate(CloneBase):
+    pass
+
+
+class Clone(CloneBase):
+    id: uuid.UUID
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+    active: bool
 
     class Config:
         orm_mode = True

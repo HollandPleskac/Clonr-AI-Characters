@@ -4,9 +4,10 @@ from contextlib import asynccontextmanager
 from typing import Annotated, List
 
 import uvicorn
+from app import api
 from app.db import clear_db, get_async_session, init_db, wait_for_db
 from app.settings import settings
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
@@ -23,7 +24,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-
+app.include_router(api.users_router)
+app.include_router(api.clones_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
