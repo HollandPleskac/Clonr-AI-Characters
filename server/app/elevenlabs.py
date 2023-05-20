@@ -9,7 +9,7 @@ ELEVEN_LABS_API_KEY = os.environ.get("ELEVEN_LABS_API_KEY")
 set_api_key(ELEVEN_LABS_API_KEY)
 
 
-def clone_from_audio(user_id, user_name):
+def clone_from_audio(user_id, user_name, description):
     # bucket_name is user_id
     bucket = client.get_bucket(user_id)
     blobs = bucket.list_blobs()
@@ -27,7 +27,7 @@ def clone_from_audio(user_id, user_name):
 
         voice = clone(
             name=user_name,
-            description="An old American male voice with a slight hoarseness in his throat. Perfect for news",  # Optional
+            description=description,
             files=[file_path],
         )
 
@@ -41,3 +41,13 @@ def clone_from_audio(user_id, user_name):
     os.rmdir(temp_dir)
 
     return {"cloned_voices": cloned_voices}
+
+
+def generate_audio(text, voice, stream=False):
+    audio = generate(text=text, voice=voice, stream=stream)
+
+    if stream:
+        stream(audio)
+    else:
+        play(audio)
+    return {"audio": audio}
