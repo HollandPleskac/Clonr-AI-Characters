@@ -1,6 +1,3 @@
-""" 
-Scaffolding. delete all of this code later.
-"""
 import datetime
 import uuid
 
@@ -27,7 +24,7 @@ class User(UserBase):
 
 
 class CloneBase(BaseModel):
-    clone_id: str
+    id: uuid.UUID
     min_training_audio: float
     audio_bucket: str
     user_id: uuid.UUID
@@ -47,7 +44,7 @@ class Clone(CloneBase):
 
 
 class ConversationBase(BaseModel):
-    conversation_id: str
+    id: uuid.UUID
     user_id: uuid.UUID
     clone_id: str
     start_time: datetime.datetime
@@ -67,7 +64,7 @@ class Conversation(ConversationBase):
 
 
 class MessageBase(BaseModel):
-    message_id: str
+    id: uuid.UUID
     content: str
     clone_id: str
     user_id: uuid.UUID
@@ -86,7 +83,7 @@ class Message(MessageBase):
 
 
 class DocumentCollectionBase(BaseModel):
-    document_collection_id: str
+    id: uuid.UUID
     name: str
     user_id: uuid.UUID
     clone_id: str
@@ -106,6 +103,7 @@ class DocumentCollection(DocumentCollectionBase):
 
 
 class DocumentBase(BaseModel):
+    id: uuid.UUID
     document_id: str  # same as vector DB id
     url: str
     document_metadata: str

@@ -23,11 +23,6 @@ class CommonMixin:
     )
 
 
-""" 
-Scaffolding. delete all of the code below this later.
-"""
-
-
 class Clone(CommonMixin, Base):
     __tablename__ = "clones"
 
@@ -58,14 +53,15 @@ class User(CommonMixin, Base):
         return f"User(email={self.email}, active={self.active}"
 
 
-class Conversation(Base):
+class Conversation(CommonMixin, Base):
     __tablename__ = "conversations"
 
-    conversation_id: Mapped[str] = mapped_column(unique=True, nullable=False)
     user_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
-    clone_id: Mapped[str] = mapped_column(ForeignKey("clones.clone_id"), nullable=False)
+    clone_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("clones.id", ondelete="cascade"), nullable=False
+    )
     start_time: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -80,12 +76,11 @@ class Conversation(Base):
     messages = relationship("Message", back_populates="conversations")
 
 
-class Message(Base):
+class Message(CommonMixin, Base):
     __tablename__ = "messages"
 
-    message_id: Mapped[str] = mapped_column(unique=True, nullable=False)
-    conversation_id: Mapped[str] = mapped_column(
-        ForeignKey("conversations.conversation_id", ondelete="cascade"),
+    conversation_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("conversations.id", ondelete="cascade"),
         nullable=False,
     )
     user_id: Mapped[uuid.UUID] = mapped_column(
@@ -100,16 +95,15 @@ class Message(Base):
     conversation = relationship("Conversation", back_populates="messages")
 
 
-class DocumentCollection(Base):
+class DocumentCollection(CommonMixin, Base):
     __tablename__ = "document_collections"
 
-    document_collection_id: Mapped[str] = mapped_column(unique=True, nullable=False)
     name: Mapped[str] = mapped_column(nullable=False)
     user_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
-    clone_id: Mapped[str] = mapped_column(
-        ForeignKey("clones.clone_id", ondelete="cascade"), nullable=False
+    clone_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )
     vector_db: Mapped[str] = mapped_column(nullable=False)
 
@@ -118,11 +112,9 @@ class DocumentCollection(Base):
     documents = relationship("Document", back_populates="document_collections")
 
 
-class Document(Base):
+class Document(CommonMixin, Base):
     __tablename__ = "document"
 
-    document_id: Mapped[str] = mapped_column(unique=True, nullable=False)
     url: Mapped[str] = mapped_column(nullable=False)
     document_metadata: Mapped[str] = mapped_column(nullable=False)
-
     document_collection = relationship("DocumentCollection", back_populates="documents")
