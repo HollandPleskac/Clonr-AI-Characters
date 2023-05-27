@@ -1,8 +1,8 @@
 from typing import Annotated, List
 
-from app.db import get_async_session
 from app import models, schemas
-from fastapi import HTTPException, Depends
+from app.db import get_async_session
+from fastapi import Depends, HTTPException
 from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 

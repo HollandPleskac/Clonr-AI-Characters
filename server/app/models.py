@@ -56,3 +56,73 @@ class User(CommonMixin, Base):
 
     def __repr__(self):
         return f"User(email={self.email}, active={self.active}"
+
+
+class Conversation(Base):
+    __tablename__ = "conversations"
+
+    conversation_id: Mapped[str] = mapped_column(unique=True, nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
+    clone_id: Mapped[str] = mapped_column(ForeignKey("clones.clone_id"), nullable=False)
+    start_time: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    end_time: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.current_timestamp(),
+    )
+
+    user = relationship("User", back_populates="conversations")
+    clone = relationship("Clone", back_populates="conversations")
+    messages = relationship("Message", back_populates="conversations")
+
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    message_id: Mapped[str] = mapped_column(unique=True, nullable=False)
+    conversation_id: Mapped[str] = mapped_column(
+        ForeignKey("conversations.conversation_id", ondelete="cascade"),
+        nullable=False,
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
+    content: Mapped[str] = mapped_column(nullable=False)
+    timestamp: Mapped[datetime.datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    user = relationship("User", back_populates="messages")
+    conversation = relationship("Conversation", back_populates="messages")
+
+
+class DocumentCollection(Base):
+    __tablename__ = "document_collections"
+
+    document_collection_id: Mapped[str] = mapped_column(unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
+    clone_id: Mapped[str] = mapped_column(
+        ForeignKey("clones.clone_id", ondelete="cascade"), nullable=False
+    )
+    vector_db: Mapped[str] = mapped_column(nullable=False)
+
+    user = relationship("User", back_populates="document_collections")
+    clone = relationship("Clone", back_populates="document_collections")
+    documents = relationship("Document", back_populates="document_collections")
+
+
+class Document(Base):
+    __tablename__ = "document"
+
+    document_id: Mapped[str] = mapped_column(unique=True, nullable=False)
+    url: Mapped[str] = mapped_column(nullable=False)
+    document_metadata: Mapped[str] = mapped_column(nullable=False)
+
+    document_collection = relationship("DocumentCollection", back_populates="documents")
