@@ -1,17 +1,18 @@
 import logging
 from typing import AsyncGenerator
 
+from fastapi import Depends
+from fastapi_users.db import SQLAlchemyUserDatabase
 from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from tenacity import (after_log, before_log, retry, stop_after_attempt,
-                      wait_fixed)
+from tenacity import after_log, before_log, retry, stop_after_attempt, wait_exponential
 
-from .models import Base
+from .models import Base, OAuthAccount, User
 from .settings import settings
 
-DATABASE_URL = f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}/{settings.POSTGRES_DB}"
+DATABASE_URL = f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
 
 engine = create_async_engine(DATABASE_URL)
 
@@ -19,8 +20,8 @@ async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit
 
 
 @retry(
-    stop=stop_after_attempt(10),
-    wait=wait_fixed(1),
+    stop=stop_after_attempt(20),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
     before=before_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
 )
@@ -47,3 +48,7 @@ async def clear_db():
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     async with async_session_maker() as session:
         yield session
+
+
+async def get_user_db(session: AsyncSession = Depends(get_async_session)):
+    yield SQLAlchemyUserDatabase(session, User, OAuthAccount)

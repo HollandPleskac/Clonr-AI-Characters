@@ -7,7 +7,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./docker/postgres:/var/lib/postgresql/data
+      - ./volume/postgres:/var/lib/postgresql/data
     ports:
       - 5432:5432
     healthcheck:
@@ -18,14 +18,16 @@ services:
       start_period: 5s
 
   backend:
-    build: "./server"
+    build: "./backend"
     env_file:
       - .env
     environment:
       - port=8000
     volumes:
-      - ./server/app:/app
+      - ./backend/app:/app
     depends_on:
       - postgres
     ports:
       - 8000:8000
+
+      

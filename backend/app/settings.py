@@ -9,6 +9,10 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
     POSTGRES_HOST: str
+    POSTGRES_PORT: str
+    AUTH_SECRET: str
+    GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_SECRET: str
     PORT: int = 8000
 
 
