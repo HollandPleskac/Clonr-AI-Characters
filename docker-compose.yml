@@ -25,6 +25,8 @@ services:
       - port=8000
     volumes:
       - ./backend/app:/app
+      - ./backend/migrations:/migrations
+      - ./backend/_data:/_data
     depends_on:
       - postgres
     ports:

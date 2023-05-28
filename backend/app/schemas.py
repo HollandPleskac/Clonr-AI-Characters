@@ -24,6 +24,36 @@ class CommonMixin:
     updated_at: datetime.datetime
 
 
+class APIKeyBase(BaseModel):
+    key: str
+    is_active: bool
+    user_id: uuid.UUID
+    clone_id: uuid.UUID
+
+
+class APIKeyCreate(APIKeyBase):
+    pass
+
+
+class APIKey(CommonMixin, APIKeyBase):
+    class Config:
+        orm_mode = True
+
+
+class CloneBase(BaseModel):
+    is_active: bool
+    user_id: uuid.UUID
+
+
+class CloneCreate(APIKeyBase):
+    pass
+
+
+class Clone(CommonMixin, APIKeyBase):
+    class Config:
+        orm_mode = True
+
+
 # class CloneBase(BaseModel):
 #     train_audio_minutes: float
 #     audio_bucket: str

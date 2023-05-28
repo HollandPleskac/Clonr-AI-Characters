@@ -17,6 +17,8 @@ RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
 
 RUN --mount=type=cache,target=/root/.cache/pip python3.10 -m pip install --no-cache-dir --upgrade -r requirements.txt
 
+COPY ./alembic.ini /alembic.ini
+COPY ./migrations /migrations
 COPY ./app /app
 
 ENTRYPOINT [ "python", "-m", "app.main"]
