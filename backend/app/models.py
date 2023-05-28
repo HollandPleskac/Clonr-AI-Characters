@@ -15,15 +15,17 @@ class Base(DeclarativeBase):
 
 class OAuthAccount(SQLAlchemyBaseOAuthAccountTableUUID, Base):
     user_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("user.id", ondelete="cascade"), nullable=False
+        ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
 
 
 class User(Base, SQLAlchemyBaseUserTableUUID):
-    __tablename__ = "user"
+    __tablename__ = "users"
     oauth_accounts: Mapped[list[OAuthAccount]] = relationship(
         "OAuthAccount", lazy="joined"
     )
+    clones: Mapped[list["Clone"]] = relationship("Clone", lazy="joined")
+    api_keys: Mapped[list["APIKey"]] = relationship("APIKey", lazy="joined")
 
 
 class CommonMixin:
@@ -40,20 +42,40 @@ class CommonMixin:
     )
 
 
-# class Clone(CommonMixin, Base):
-#     __tablename__ = "clones"
+class Clone(CommonMixin, Base):
+    __tablename__ = "clones"
 
-#     active: Mapped[bool] = mapped_column(default=False)
-#     train_audio_minutes: Mapped[float]
-#     audio_bucket: Mapped[str] = mapped_column(nullable=False)
-#     user_id: Mapped[uuid.UUID] = mapped_column(
-#         ForeignKey("users.id", ondelete="cascade"), nullable=False
-#     )
+    is_active: Mapped[bool] = mapped_column(default=True)
+    train_audio_minutes: Mapped[float]
+    audio_bucket: Mapped[str] = mapped_column(nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
 
-#     user: Mapped["User"] = relationship("User", back_populates="clones")
+    user: Mapped["User"] = relationship("User", back_populates="clones")
+    api_keys: Mapped[list["APIKey"]] = relationship("APIKey", lazy="joined")
 
-#     def __repr__(self):
-#         return f"Clone(clone_id={self.clone_id}, active={self.active}"
+    def __repr__(self):
+        return f"Clone(clone_id={self.clone_id}, active={self.active}"
+
+
+class APIKey(CommonMixin, Base):
+    __tablename__ = "api_keys"
+
+    key: Mapped[str] = mapped_column(nullable=False)
+    is_active: Mapped[bool] = mapped_column(default=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
+    clone_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("clones.id", ondelete="cascade"), nullable=False
+    )
+
+    user: Mapped["User"] = relationship("User", back_populates="api_keys")
+    clone: Mapped["Clone"] = relationship("Clone", back_populates="api_keys")
+
+    def __repr__(self):
+        return f"APIKey(api_key={self.clone_id}, active={self.active}"
 
 
 # class User(CommonMixin, Base):

@@ -21,7 +21,7 @@ async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit
 
 @retry(
     stop=stop_after_attempt(20),
-    wait=wait_exponential(multiplier=1, min=1, max=10),
+    wait=wait_exponential(multiplier=1, min=1, max=5),
     before=before_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
 )
