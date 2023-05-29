@@ -5,7 +5,7 @@ from fastapi_users.db import (
     SQLAlchemyBaseOAuthAccountTableUUID,
     SQLAlchemyBaseUserTableUUID,
 )
-from sqlalchemy import DateTime, ForeignKey, func, text
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, func, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -26,6 +26,9 @@ class User(Base, SQLAlchemyBaseUserTableUUID):
     )
     clones: Mapped[list["Clone"]] = relationship("Clone", lazy="joined")
     api_keys: Mapped[list["APIKey"]] = relationship("APIKey", lazy="joined")
+    conversations: Mapped[list["Conversation"]] = relationship(
+        "Conversation", lazy="joined"
+    )
 
 
 class CommonMixin:
@@ -46,17 +49,23 @@ class Clone(CommonMixin, Base):
     __tablename__ = "clones"
 
     is_active: Mapped[bool] = mapped_column(default=True)
-    train_audio_minutes: Mapped[float]
-    audio_bucket: Mapped[str] = mapped_column(nullable=False)
+    is_public: Mapped[bool] = mapped_column(default=False)
+
+    # train_audio_minutes: Mapped[float]
+    # audio_uri: Mapped[str] = mapped_column(nullable=False)
+
     user_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
 
+    conversations: Mapped[list["Conversation"]] = relationship(
+        "Conversation", lazy="joined"
+    )
     user: Mapped["User"] = relationship("User", back_populates="clones")
     api_keys: Mapped[list["APIKey"]] = relationship("APIKey", lazy="joined")
 
     def __repr__(self):
-        return f"Clone(clone_id={self.clone_id}, active={self.active}"
+        return f"Clone(clone_id={self.id}, active={self.is_active}, public={self.is_public}"
 
 
 class APIKey(CommonMixin, Base):
@@ -75,58 +84,47 @@ class APIKey(CommonMixin, Base):
     clone: Mapped["Clone"] = relationship("Clone", back_populates="api_keys")
 
     def __repr__(self):
-        return f"APIKey(api_key={self.clone_id}, active={self.active}"
+        return f"APIKey(api_key={self.key}, active={self.is_active}, user_id={self.user_id}, clone_id={self.clone_id})"
 
 
-# class User(CommonMixin, Base):
-#     __tablename__ = "users"
+class Conversation(CommonMixin, Base):
+    __tablename__ = "conversations"
 
-#     email: Mapped[str] = mapped_column(unique=True, nullable=False)
-#     active: Mapped[bool] = mapped_column(default=True)
-#     is_superuser: Mapped[bool] = mapped_column(default=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
+    clone_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("clones.id", ondelete="cascade"), nullable=False
+    )
 
-#     clones: Mapped[list["Clone"]] = relationship("Clone", back_populates="user")
-#     conversations: Mapped[list["Conversation"]] = relationship(
-#         "Conversation", back_populates="user"
-#     )
+    messages: Mapped[list["Message"]] = relationship("Message", lazy="joined")
+    user: Mapped["User"] = relationship("User", back_populates="conversations")
+    clone: Mapped["Clone"] = relationship("Clone", back_populates="conversations")
 
-#     def __repr__(self):
-#         return f"User(email={self.email}, active={self.active}"
-
-
-# class Conversation(CommonMixin, Base):
-#     __tablename__ = "conversations"
-
-#     user_id: Mapped[uuid.UUID] = mapped_column(
-#         ForeignKey("users.id", ondelete="cascade"), nullable=False
-#     )
-#     clone_id: Mapped[uuid.UUID] = mapped_column(
-#         ForeignKey("clones.id", ondelete="cascade"), nullable=False
-#     )
-
-#     user: Mapped["User"] = relationship("User", back_populates="conversations")
-#     clone: Mapped["Clone"] = relationship("Clone", back_populates="conversations")
-#     messages: Mapped[list["Message"]] = relationship(
-#         "Message", back_populates="conversations"
-#     )
+    def __repr__(self):
+        return f"Conversation(user_id={self.user_id}, clone_id={self.clone_id})"
 
 
-# class Message(CommonMixin, Base):
-#     __tablename__ = "messages"
+class Message(CommonMixin, Base):
+    __tablename__ = "messages"
+    __table_args__ = (CheckConstraint("NOT(user_id IS NULL AND clone_id IS NULL)"),)
 
-#     content: Mapped[str] = mapped_column(nullable=False)
-#     conversation_id: Mapped[uuid.UUID] = mapped_column(
-#         ForeignKey("conversations.id", ondelete="cascade"),
-#         nullable=False,
-#     )
-#     user_id: Mapped[uuid.UUID] = mapped_column(
-#         ForeignKey("users.id", ondelete="cascade"), nullable=False
-#     )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="cascade"), nullable=True
+    )
+    clone_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("clones.id", ondelete="cascade"), nullable=True
+    )
+    message: Mapped[str]
+    conversation_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("conversations.id", ondelete="cascade"), nullable=False
+    )
+    conversation: Mapped["Conversation"] = relationship(
+        "Conversation", back_populates="messages"
+    )
 
-#     user: Mapped["User"] = relationship("User", back_populates="messages")
-#     conversation: Mapped["Conversation"] = relationship(
-#         "Conversation", back_populates="messages"
-#     )
+    def __repr__(self):
+        return f"Message(message={self.message}, conversation_id={self.conversation_id}, user_id={self.user_id}, clone_id={self.clone_id})"
 
 
 # class DocumentCollection(CommonMixin, Base):

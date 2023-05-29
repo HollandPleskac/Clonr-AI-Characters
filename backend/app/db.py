@@ -1,8 +1,9 @@
 import logging
-from typing import AsyncGenerator
+from typing import Annotated, AsyncGenerator
 
 from fastapi import Depends
 from fastapi_users.db import SQLAlchemyUserDatabase
+from fastapi_users.password import PasswordHelper
 from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -52,3 +53,20 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
 
 async def get_user_db(session: AsyncSession = Depends(get_async_session)):
     yield SQLAlchemyUserDatabase(session, User, OAuthAccount)
+
+
+async def create_superuser() -> User:
+    async with async_session_maker() as db:
+        password = settings.SUPERUSER_PASSWORD
+        hashed_password = PasswordHelper().hash(password=password)
+        user = User(
+            email=settings.SUPERUSER_EMAIL,
+            is_superuser=True,
+            hashed_password=hashed_password,
+        )
+        db.add(user)
+        try:
+            await db.commit()
+        except:
+            await db.rollback()
+    return user

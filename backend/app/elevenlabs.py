@@ -2,8 +2,7 @@ import os
 
 from elevenlabs import clone, generate, play, set_api_key
 
-from .gcp import (client, create_bucket, get_blob, get_bucket, list_blobs,
-                  upload_blob)
+from .gcp import client, create_bucket, get_blob, get_bucket, list_blobs, upload_blob
 
 ELEVEN_LABS_API_KEY = os.environ.get("ELEVEN_LABS_API_KEY")
 set_api_key(ELEVEN_LABS_API_KEY)

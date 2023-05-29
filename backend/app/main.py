@@ -1,11 +1,12 @@
 import asyncio
+import json
 import os
 from contextlib import asynccontextmanager
 from typing import Annotated, List
 
 import uvicorn
 from app import api, schemas, utils
-from app.db import clear_db, get_async_session, init_db, wait_for_db
+from app.db import clear_db, create_superuser, get_async_session, init_db, wait_for_db
 from app.settings import settings
 from app.users import (
     auth_backend,
@@ -14,6 +15,7 @@ from app.users import (
     google_oauth_client,
 )
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
@@ -36,12 +38,18 @@ async def run_async_downgrade():
 async def lifespan(app: FastAPI):
     logger.info("Waiting for db...")
     await wait_for_db()
-    logger.info("Running migration upgrades")
-    await run_async_upgrade()
 
-    # # If not using Alembic run this
-    # logger.info("Creating database")
-    # await init_db()
+    if settings.USE_ALEMBIC:
+        logger.info("Running migration upgrades")
+        await run_async_upgrade()
+    else:
+        # If not using Alembic run this
+        logger.info("Creating database")
+        await init_db()
+
+    logger.info(f"Creating superuser: {settings.SUPERUSER_EMAIL}")
+    user = await create_superuser()
+    logger.info(json.dumps(jsonable_encoder(user), indent=2))
 
     logger.info("Creating local storage directories")
     os.makedirs(str(utils.get_local_data_dir().resolve()), exist_ok=True)
@@ -49,18 +57,18 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    logger.info("Running migration downgrades")
-    await run_async_downgrade()
-
-    # # If not Using Alembic run this
-    # logger.info("Erasing database")
-    # await clear_db()
+    if settings.USE_ALEMBIC:
+        logger.info("Running migration downgrades")
+        await run_async_downgrade()
+    else:
+        logger.info("Erasing database")
+        await clear_db()
 
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(api.voice_router)
+app.include_router(api.clones_router)
 # app.include_router(api.users_router)
-# app.include_router(api.clones_router)
 # app.include_router(api.conversations_router)
 # app.include_router(api.messages_router)
 # app.include_router(api.documents_router)

@@ -14,6 +14,11 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
     PORT: int = 8000
+    REDIS_PASSWORD: str
+    REDIS_PORT: str
+    USE_ALEMBIC: bool = False
+    SUPERUSER_EMAIL: str
+    SUPERUSER_PASSWORD: str
 
 
 settings = Settings()

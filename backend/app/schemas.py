@@ -18,7 +18,7 @@ class UserUpdate(BaseUserUpdate):
     pass
 
 
-class CommonMixin:
+class CommonMixin(BaseModel):
     id: uuid.UUID
     created_at: datetime.datetime
     updated_at: datetime.datetime
@@ -41,15 +41,20 @@ class APIKey(CommonMixin, APIKeyBase):
 
 
 class CloneBase(BaseModel):
-    is_active: bool
-    user_id: uuid.UUID
+    is_active: bool = True
+    is_public: bool = False
+    user_id: Optional[uuid.UUID] = None
 
 
-class CloneCreate(APIKeyBase):
+class CloneCreate(CloneBase):
     pass
 
 
-class Clone(CommonMixin, APIKeyBase):
+class CloneUpdate(CloneBase):
+    pass
+
+
+class Clone(CommonMixin, CloneBase):
     class Config:
         orm_mode = True
 

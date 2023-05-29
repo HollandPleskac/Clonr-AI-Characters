@@ -17,6 +17,17 @@ services:
       retries: 5
       start_period: 5s
 
+  redis:
+    image: redis:7.0.11-alpine
+    restart: always
+    env_file:
+      - .env  
+    ports:
+      - '${REDIS_PORT}:${REDIS_PORT}'
+    command: redis-server --save 60 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
+    volumes: 
+      - ./volume/redis:/data
+
   backend:
     build: "./backend"
     env_file:
