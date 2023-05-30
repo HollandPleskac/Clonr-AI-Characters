@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     PORT: int = 8000
     REDIS_PASSWORD: str
     REDIS_PORT: str
+    REDIS_HOST: str
     USE_ALEMBIC: bool = False
     SUPERUSER_EMAIL: str
     SUPERUSER_PASSWORD: str

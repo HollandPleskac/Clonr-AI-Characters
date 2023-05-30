@@ -1,8 +1,8 @@
 from typing import Annotated
 
 from app import models, schemas
+from app.auth.users import current_active_user
 from app.db import get_async_session
-from app.users import current_active_user
 from fastapi import Depends, HTTPException, status
 from fastapi.routing import APIRouter
 from sqlalchemy import delete, select, update

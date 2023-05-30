@@ -21,12 +21,18 @@ services:
     image: redis:7.0.11-alpine
     restart: always
     env_file:
-      - .env  
+      - .env
     ports:
       - '${REDIS_PORT}:${REDIS_PORT}'
     command: redis-server --save 60 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
-    volumes: 
+    volumes:
       - ./volume/redis:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 5s
 
   backend:
     build: "./backend"
@@ -40,7 +46,6 @@ services:
       - ./backend/_data:/_data
     depends_on:
       - postgres
+      - redis
     ports:
       - 8000:8000
-
-      

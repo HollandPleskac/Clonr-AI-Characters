@@ -6,14 +6,21 @@ from typing import Annotated, List
 
 import uvicorn
 from app import api, schemas, utils
-from app.db import clear_db, create_superuser, get_async_session, init_db, wait_for_db
-from app.settings import settings
-from app.users import (
+from app.auth.users import (
     auth_backend,
     current_active_user,
     fastapi_users,
     google_oauth_client,
 )
+from app.db import (
+    clear_db,
+    clear_redis,
+    create_superuser,
+    init_db,
+    wait_for_db,
+    wait_for_redis,
+)
+from app.settings import settings
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
@@ -39,6 +46,9 @@ async def lifespan(app: FastAPI):
     logger.info("Waiting for db...")
     await wait_for_db()
 
+    logger.info("Waiting for redis...")
+    await wait_for_redis()
+
     if settings.USE_ALEMBIC:
         logger.info("Running migration upgrades")
         await run_async_upgrade()
@@ -58,18 +68,20 @@ async def lifespan(app: FastAPI):
     yield
 
     if settings.USE_ALEMBIC:
-        logger.info("Running migration downgrades")
+        logger.warning("Running migration downgrades")
         await run_async_downgrade()
     else:
-        logger.info("Erasing database")
+        logger.warning("Erasing database")
         await clear_db()
+    logger.warning("Clearing Redis cache")
+    await clear_redis()
 
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(api.voice_router)
 app.include_router(api.clones_router)
-# app.include_router(api.users_router)
-# app.include_router(api.conversations_router)
+app.include_router(api.apikeys_router)
+app.include_router(api.conversations_router)
 # app.include_router(api.messages_router)
 # app.include_router(api.documents_router)
 

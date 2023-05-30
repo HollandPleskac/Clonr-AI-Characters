@@ -1,6 +1,9 @@
 import logging
 from typing import Annotated, AsyncGenerator
 
+import redis.asyncio as redis
+from app.models import Base, OAuthAccount, User
+from app.settings import settings
 from fastapi import Depends
 from fastapi_users.db import SQLAlchemyUserDatabase
 from fastapi_users.password import PasswordHelper
@@ -9,9 +12,6 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from tenacity import after_log, before_log, retry, stop_after_attempt, wait_exponential
-
-from .models import Base, OAuthAccount, User
-from .settings import settings
 
 DATABASE_URL = f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
 

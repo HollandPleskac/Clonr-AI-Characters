@@ -1,6 +1,8 @@
 import datetime
 import uuid
 
+import randomname
+from app.utils import generate_api_key
 from fastapi_users.db import (
     SQLAlchemyBaseOAuthAccountTableUUID,
     SQLAlchemyBaseUserTableUUID,
@@ -48,6 +50,9 @@ class CommonMixin:
 class Clone(CommonMixin, Base):
     __tablename__ = "clones"
 
+    greeting_message: Mapped[str] = mapped_column(
+        default="Hi! I'm a Clonr bot. Please replace my greeting!"
+    )
     is_active: Mapped[bool] = mapped_column(default=True)
     is_public: Mapped[bool] = mapped_column(default=False)
 
@@ -71,8 +76,10 @@ class Clone(CommonMixin, Base):
 class APIKey(CommonMixin, Base):
     __tablename__ = "api_keys"
 
-    key: Mapped[str] = mapped_column(nullable=False)
-    is_active: Mapped[bool] = mapped_column(default=True)
+    key: Mapped[str] = mapped_column(
+        default=generate_api_key, primary_key=True, unique=True
+    )
+    name: Mapped[str] = mapped_column(default=randomname.get_name)
     user_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id", ondelete="cascade"), nullable=False
     )

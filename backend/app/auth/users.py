@@ -1,7 +1,8 @@
 import uuid
 from typing import Optional
 
-from app.db import User, get_user_db
+from app.db import get_user_db
+from app.models import User
 from app.settings import settings
 
 # import redis.asyncio
@@ -66,3 +67,10 @@ auth_backend = AuthenticationBackend(
 fastapi_users = FastAPIUsers[User, uuid.UUID](get_user_manager, [auth_backend])
 
 current_active_user = fastapi_users.current_user(active=True)
+
+
+def optional_current_active_user():
+    try:
+        return fastapi_users.current_user(active=True)
+    except:
+        return None

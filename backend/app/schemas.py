@@ -24,23 +24,8 @@ class CommonMixin(BaseModel):
     updated_at: datetime.datetime
 
 
-class APIKeyBase(BaseModel):
-    key: str
-    is_active: bool
-    user_id: uuid.UUID
-    clone_id: uuid.UUID
-
-
-class APIKeyCreate(APIKeyBase):
-    pass
-
-
-class APIKey(CommonMixin, APIKeyBase):
-    class Config:
-        orm_mode = True
-
-
 class CloneBase(BaseModel):
+    greeting_message: Optional[str] = None
     is_active: bool = True
     is_public: bool = False
     user_id: Optional[uuid.UUID] = None
@@ -59,83 +44,47 @@ class Clone(CommonMixin, CloneBase):
         orm_mode = True
 
 
-# class CloneBase(BaseModel):
-#     train_audio_minutes: float
-#     audio_bucket: str
-#     user_id: uuid.UUID
+class APIKeyCreate(BaseModel):
+    clone_id: uuid.UUID
+    name: Optional[str] = None
+    user_id: Optional[uuid.UUID] = None
 
 
-# class CloneCreate(CloneBase):
-#     pass
+class APIKey(CommonMixin, BaseModel):
+    name: str
+    user_id: uuid.UUID
+    clone_id: uuid.UUID
+
+    class Config:
+        orm_mode = True
 
 
-# class Clone(CommonMixin, CloneBase):
-#     active: bool
-
-#     class Config:
-#         orm_mode = True
+class APIKeyDB(APIKey):
+    key: str
 
 
-# class ConversationBase(BaseModel):
-#     user_id: uuid.UUID
-#     clone_id: uuid.UUID
+class MessageCreate(BaseModel):
+    message: str
 
 
-# class ConversationCreate(ConversationBase):
-#     pass
+class MessageCreateDB(MessageCreate):
+    conversation_id: Optional[uuid.UUID]
+    user_id: Optional[uuid.UUID] = None
+    clone_id: Optional[uuid.UUID] = None
 
 
-# class MessageBase(BaseModel):
-#     content: str
-#     clone_id: uuid.UUID
-#     user_id: uuid.UUID
-#     conversation_id: uuid.UUID
+class Message(CommonMixin, MessageCreateDB):
+    class Config:
+        orm_mode = True
 
 
-# class MessageCreate(MessageBase):
-#     pass
+class ConversationCreate(BaseModel):
+    user_id: uuid.UUID
+    clone_id: uuid.UUID
 
 
-# class Message(CommonMixin, MessageBase):
-#     class Config:
-#         orm_mode = True
+class Conversation(CommonMixin, ConversationCreate):
+    messages: Optional[list[Message]] = None
 
-
-# class Conversation(CommonMixin, ConversationBase):
-#     messages: Optional[list[Message]] = None
-
-#     class Config:
-#         orm_mode = True
-
-
-# class DocumentCollectionBase(BaseModel):
-#     name: str
-#     user_id: uuid.UUID
-#     clone_id: str
-#     vector_db: str  # vector DB (pgvector, faiss, etc)
-
-
-# class DocumentCollectionCreate(DocumentCollectionBase):
-#     pass
-
-
-# class DocumentBase(BaseModel):
-#     document_id: str  # same as vector DB id
-#     url: str
-#     document_metadata: str
-
-
-# class DocumentCreate(DocumentBase):
-#     pass
-
-
-# class Document(CommonMixin, DocumentBase):
-#     class Config:
-#         orm_mode = True
-
-
-# class DocumentCollection(CommonMixin, DocumentCollectionBase):
-#     documents: Optional[list[Document]] = None
-
-#     class Config:
-#         orm_mode = True
+    class Config:
+        orm_mode = True
