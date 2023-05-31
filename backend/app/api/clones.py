@@ -15,33 +15,29 @@ router = APIRouter(
 )
 
 
-@router.get("/{id}", response_model=schemas.Clone)
-async def get(
-    id: str,
-    db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[models.User, Depends(current_active_user)],
-):
-    promise = await db.scalars(select(models.Clone).where(models.Clone.id == id))
-    obj = promise.first()
-    if obj is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not found")
-    if not obj.is_public and not obj.user_id == user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not found")
-    return obj
-
-
 @router.post("/", response_model=schemas.Clone)
 async def create(
     obj: schemas.CloneCreate,
     db: Annotated[AsyncSession, Depends(get_async_session)],
     user: Annotated[models.User, Depends(current_active_user)],
 ):
-    data = obj.dict()
-    data["user_id"] = user.id
-    clone = models.Clone(**data)
+    clone = models.Clone(**obj.dict(), user_id=user.id)
     db.add(clone)
     await db.commit()
     await db.refresh(clone)
+    return clone
+
+
+@router.get("/{id}", response_model=schemas.Clone)
+async def get(
+    id: str,
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+    user: Annotated[models.User, Depends(current_active_user)],
+):
+    if (clone := await db.get(models.Clone, id)) is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not found")
+    if not clone.is_public and not clone.user_id == user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not found")
     return clone
 
 
@@ -74,10 +70,8 @@ async def delete(
 ):
     if not user.is_superuser and not id == user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-    promise = await db.scalars(select(models.Clone).where(models.Clone.id == id))
-    obj = promise.first()
-    if obj is None:
+    if (clone := await db.get(models.Clone, id)) is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not found")
-    await db.delete(obj)
+    await db.delete(clone)
     await db.commit()
-    return obj
+    return clone

@@ -2,16 +2,10 @@ import asyncio
 import json
 import os
 from contextlib import asynccontextmanager
-from typing import Annotated, List
 
 import uvicorn
 from app import api, schemas, utils
-from app.auth.users import (
-    auth_backend,
-    current_active_user,
-    fastapi_users,
-    google_oauth_client,
-)
+from app.auth.users import auth_backend, fastapi_users, google_oauth_client
 from app.db import (
     clear_db,
     clear_redis,
@@ -21,7 +15,6 @@ from app.db import (
     wait_for_redis,
 )
 from app.settings import settings
-from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
@@ -124,11 +117,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.get("/")
-def index():
-    return "<h1>Hello, world!</h1>"
 
 
 if __name__ == "__main__":

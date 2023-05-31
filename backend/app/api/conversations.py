@@ -3,7 +3,7 @@ from typing import Annotated
 from app import models, schemas
 from app.auth.api_keys import get_api_key
 from app.auth.users import current_active_user
-from app.db import ConversationCache, get_async_convo_cache, get_async_session
+from app.db import RedisCache, get_async_redis_cache, get_async_session
 from fastapi import Depends, HTTPException, status
 from fastapi.routing import APIRouter
 from sqlalchemy import delete, select, update
@@ -16,41 +16,103 @@ router = APIRouter(
 )
 
 
-@router.get("/{id}", response_model=schemas.Conversation)
-async def get_conversation(
-    id: str,
+@router.post("/", response_model=schemas.Conversation)
+async def create_conversation(
+    obj: schemas.ConversationCreate,
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+    cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
+    api_key: Annotated[schemas.APIKey, Depends(get_api_key)],
+):
+    clone = await db.get(models.Clone, api_key.clone_id)
+    if not clone:
+        raise HTTPException(
+            status_code=400, detail="Clone corresponding to this key does not exist"
+        )
+    conversation = models.Conversation(**obj.dict())
+    msg = models.Message(
+        content=clone.greeting_message,
+        sender_name=clone.name,
+        from_clone=True,
+        conversation=conversation,
+    )
+    db.add_all([msg, conversation])
+    await db.commit()
+    await db.refresh(conversation)
+    await cache.message_add(msg)
+    return conversation
+
+
+@router.post("/{conversation_id}/messages", response_model=schemas.Message)
+async def create_message(
+    conversation_id: str,
+    message: schemas.MessageCreate,
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+    api_key: Annotated[schemas.APIKey, Depends(get_api_key)],
+    cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
+):
+    if not (convo := await db.get(models.Conversation, conversation_id)):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Conversation not found"
+        )
+    if api_key.clone_id != convo.clone_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+    msg = models.Message(
+        **message.dict(), from_clone=False, conversation_id=conversation_id
+    )
+    db.add(msg)
+    await db.commit()
+    await db.flush(msg)
+    await cache.message_add(msg)
+    return msg
+
+
+@router.get("/", response_model=list[schemas.Conversation])
+async def get_conversations(
     db: Annotated[AsyncSession, Depends(get_async_session)],
     api_key: Annotated[schemas.APIKey, Depends(get_api_key)],
 ):
     promise = await db.scalars(
-        select(models.Conversation).where(models.Conversation.id == id)
+        select(models.Conversation).where(
+            models.Conversation.clone_id == api_key.clone_id
+        )
     )
-    obj = promise.first()
-    if obj is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not found")
-    if not api_key.user_id == obj.user_id or not api_key.clone_id == obj.clone_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not found")
-    return obj
+    return promise.all()
 
 
-@router.get("/{id}/messages", response_model=list[schemas.Message])
-async def get_latest_messages(
-    id: str,
+# TODO: revisit this endpoint. Users should be able to access conversations
+# using both API Key and user credentials. At the moment, we're only offering
+# one or the other. OR maybe not idk. maybe we make this a security thing where
+# API Keys completely control their conversations and all that
+@router.get("/{conversation_id}", response_model=schemas.Conversation)
+async def get_conversation(
+    conversation_id: str,
     db: Annotated[AsyncSession, Depends(get_async_session)],
     api_key: Annotated[schemas.APIKey, Depends(get_api_key)],
-    cache: Annotated[ConversationCache, Depends(get_async_convo_cache)],
+):
+    if not (convo := await db.get(models.Conversation, conversation_id)):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not found")
+    if api_key.clone_id == convo.clone_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not found")
+    return convo
+
+
+@router.get("/{conversation_id}/messages", response_model=list[schemas.Message])
+async def get_latest_messages(
+    conversation_id: str,
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+    api_key: Annotated[schemas.APIKey, Depends(get_api_key)],
+    cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
     offset: int = 0,
     limit: int = 25,
 ):
-    promise = await db.scalars(
-        select(models.Conversation).where(models.Conversation.id == id)
-    )
-    obj = promise.first()
-    if obj is None:
+    if not (convo := await db.get(models.Conversation, conversation_id)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not found")
-    if not api_key.user_id == obj.user_id or not api_key.clone_id == obj.clone_id:
+    if api_key.clone_id != convo.clone_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not found")
-    messages = await cache.get(obj.id, offset=offset, limit=limit)
+    # TODO: This blocks access to our DB since we likely won't have cache misses
+    # Becomes problematic once our cache fills up! Also the FIFO eviction policy should
+    # be in place
+    messages = await cache.message_get_latest(convo.id, offset=offset, limit=limit)
     if messages:
         return messages
     promise = await db.scalars(
@@ -64,81 +126,40 @@ async def get_latest_messages(
     return messages
 
 
-@router.post("/{conversation_id}/messages", response_model=list[schemas.Message])
-async def create_message(
-    conversation_id: str,
-    message: schemas.MessageCreate,
-    db: Annotated[AsyncSession, Depends(get_async_session)],
-    api_key: Annotated[schemas.APIKey, Depends(get_api_key)],
-    cache: Annotated[ConversationCache, Depends(get_async_convo_cache)],
-):
-    promise = await db.scalars(
-        select(models.Conversation).where(models.Conversation.id == id)
-    )
-    obj = promise.first()
-    if obj is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not found")
-    if not api_key.user_id == obj.user_id or not api_key.clone_id == obj.clone_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not found")
-
-    # TODO: the message model is broken. It should have a separate sender_id token, since user_id does not actually
-    # correspond to a user chatting with the application. Maybe we can just do a boolean like is_bot
-    msg = models.Message(
-        message=message.message,
-        conversation_id=conversation_id,
-        user_id=api_key.user_id,
-        clone_id=api_key.clone_id,
-    )
-    db.add(msg)
-    await db.commit()
-    await db.flush(msg)
-    cache.add_message(msg)
-    return msg
-
-
-@router.post("/", response_model=schemas.Conversation)
-async def create_conversation(
-    db: Annotated[AsyncSession, Depends(get_async_session)],
-    cache: Annotated[ConversationCache, Depends(get_async_convo_cache)],
-    api_key: Annotated[schemas.APIKey, Depends(get_api_key)],
-):
-    conv = schemas.ConversationCreate(
-        user_id=api_key.user_id, clone_id=api_key.clone_id
-    )
-    conversation = models.Conversation(**conv.dict())
-    db.add(conversation)
-    await db.commit()
-    await db.refresh(conversation)
-    promise = await db.scalars(
-        select(models.Clone.greeting_message).where(models.Clone.id == api_key.clone_id)
-    )
-    greeting = promise.first()
-    message = models.Message(
-        message=greeting, clone_id=api_key.clone_id, conversation_id=conversation.id
-    )
-    db.add(message)
-    await db.commit()
-    await db.refresh(message)
-    await cache.add_message(message)
-    return conversation
-
-
 @router.delete("/{id}", response_model=schemas.Conversation)
 async def delete_conversation(
     id: str,
     db: Annotated[AsyncSession, Depends(get_async_session)],
-    cache: Annotated[ConversationCache, Depends(get_async_convo_cache)],
+    cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
     api_key: Annotated[schemas.APIKey, Depends(get_api_key)],
 ):
-    promise = await db.scalars(
-        select(models.Conversation).where(models.Conversation.id == id)
-    )
-    obj = promise.first()
-    if obj is None:
+    if not (convo := db.get(models.Conversation, id)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not found")
-    if not api_key.user_id == obj.user_id or not api_key.clone_id == obj.clone_id:
+    if api_key.clone_id != convo.clone_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not found")
-    await db.delete(obj)
+    await cache.conversation_delete(convo.id)
+    await db.delete(convo)
     await db.commit()
-    await cache.delete(id)
-    return obj
+    return convo
+
+
+@router.delete(
+    "/{conversation_id}/messages/{message_id}", response_model=schemas.Conversation
+)
+async def delete_message(
+    conversation_id: str,
+    message_id: str,
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+    cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
+    api_key: Annotated[schemas.APIKey, Depends(get_api_key)],
+):
+    if not (convo := await db.get(models.Conversation, conversation_id)):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not found")
+    if not (msg := await db.get(models.Message, message_id)):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not found")
+    if api_key.clone_id != convo.clone_id or msg.conversation_id != conversation_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not found")
+    await cache.message_delete(conversation_id=conversation_id, message_id=message_id)
+    await db.delete(convo)
+    await db.commit()
+    return convo

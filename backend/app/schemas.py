@@ -24,22 +24,20 @@ class CommonMixin(BaseModel):
     updated_at: datetime.datetime
 
 
-class CloneBase(BaseModel):
-    greeting_message: Optional[str] = None
+class CloneCreate(BaseModel):
+    name: str
+    greeting_message: str
     is_active: bool = True
     is_public: bool = False
-    user_id: Optional[uuid.UUID] = None
 
 
-class CloneCreate(CloneBase):
+class CloneUpdate(CloneCreate):
     pass
 
 
-class CloneUpdate(CloneBase):
-    pass
+class Clone(CommonMixin, CloneCreate):
+    user_id: uuid.UUID
 
-
-class Clone(CommonMixin, CloneBase):
     class Config:
         orm_mode = True
 
@@ -50,41 +48,39 @@ class APIKeyCreate(BaseModel):
     user_id: Optional[uuid.UUID] = None
 
 
-class APIKey(CommonMixin, BaseModel):
+class APIKey(CommonMixin, APIKeyCreate):
     name: str
-    user_id: uuid.UUID
-    clone_id: uuid.UUID
 
     class Config:
         orm_mode = True
 
 
-class APIKeyDB(APIKey):
+class APIKeyOnce(APIKey):
     key: str
 
 
 class MessageCreate(BaseModel):
-    message: str
+    content: str
+    sender_name: str
 
 
-class MessageCreateDB(MessageCreate):
-    conversation_id: Optional[uuid.UUID]
-    user_id: Optional[uuid.UUID] = None
-    clone_id: Optional[uuid.UUID] = None
+class Message(CommonMixin, MessageCreate):
+    from_clone: bool
+    conversation_id: uuid.UUID
 
-
-class Message(CommonMixin, MessageCreateDB):
     class Config:
         orm_mode = True
 
 
 class ConversationCreate(BaseModel):
-    user_id: uuid.UUID
     clone_id: uuid.UUID
+    name: Optional[str] = None
 
 
 class Conversation(CommonMixin, ConversationCreate):
-    messages: Optional[list[Message]] = None
+    ## This raises an error when fastapi tries to convert
+    ## sqlalchemy.exc.MissingGreenlet: greenlet_spawn has not been called
+    # messages: Optional[list[Message]] = None
 
     class Config:
         orm_mode = True
