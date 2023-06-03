@@ -112,6 +112,85 @@ class Message(CommonMixin, Base):
         return f"Message(content={self.content}, sender={self.sender}, from_clone={self.from_clone})"
 
 
+## Modules
+class Fact(CommonMixin, Base):
+    __tablename__ = "facts"
+
+    fact: Mapped[str]
+    clone_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("clones.id", ondelete="cascade"), nullable=False
+    )
+    clone: Mapped["Clone"] = relationship("Clone", back_populates="facts")
+
+    def __repr__(self):
+        return f"Fact(fact={self.fact})"
+
+
+class Description(CommonMixin, Base):
+    __tablename__ = "descriptions"
+
+    description: Mapped[str]
+    clone_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("clones.id", ondelete="cascade"), nullable=False
+    )
+    clone: Mapped["Clone"] = relationship("Clone", back_populates="descriptions")
+
+    def __repr__(self):
+        return f"Description(description={self.description})"
+
+
+class ExampleDialogue(CommonMixin, Base):
+    __tablename__ = "example_dialogues"
+
+    example_dialogue: Mapped[str]
+    clone_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("clones.id", ondelete="cascade"), nullable=False
+    )
+    clone: Mapped["Clone"] = relationship("Clone", back_populates="example_dialogues")
+
+    def __repr__(self):
+        return f"ExampleDialogue(example_dialogue={self.example_dialogue})"
+
+
+class Motivation(CommonMixin, Base):
+    __tablename__ = "motivations"
+
+    motivation: Mapped[str]
+    clone_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("clones.id", ondelete="cascade"), nullable=False
+    )
+    clone: Mapped["Clone"] = relationship("Clone", back_populates="motivations")
+
+    def __repr__(self):
+        return f"Motivation(motivation={self.motivation})"
+
+
+class Memory(CommonMixin, Base):
+    __tablename__ = "memories"
+
+    memory: Mapped[str]
+    clone_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("clones.id", ondelete="cascade"), nullable=False
+    )
+    clone: Mapped["Clone"] = relationship("Clone", back_populates="memories")
+
+    def __repr__(self):
+        return f"Memory(memory={self.memory})"
+
+
+class Reflection(CommonMixin, Base):
+    __tablename__ = "reflections"
+
+    reflection: Mapped[str]
+    clone_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("clones.id", ondelete="cascade"), nullable=False
+    )
+    clone: Mapped["Clone"] = relationship("Clone", back_populates="reflections")
+
+    def __repr__(self):
+        return f"Reflection(reflection={self.reflection})"
+
+
 # class DocumentCollection(CommonMixin, Base):
 #     __tablename__ = "document_collections"
 
