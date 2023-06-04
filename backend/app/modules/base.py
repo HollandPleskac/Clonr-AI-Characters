@@ -5,11 +5,14 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from app.models import Base
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from app.db import wait_for_db, get_async_session
+from clonr.embeddings import VectorEncoder, ReRanker
 
 
 class Module(ABC):
-    def __init__(self, db_uri):
+    def __init__(self):
         self.session = None
+        self.encoder = VectorEncoder.from_pretrained()
+        self.ranker = ReRanker.from_pretrained()
 
     async def connect(self):
         await wait_for_db()

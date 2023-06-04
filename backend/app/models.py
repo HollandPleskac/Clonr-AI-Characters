@@ -6,8 +6,9 @@ from fastapi_users.db import (
     SQLAlchemyBaseOAuthAccountTableUUID,
     SQLAlchemyBaseUserTableUUID,
 )
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, func, text
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, func, text, JSON
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from pgvector.sqlalchemy import Vector
 
 
 class Base(DeclarativeBase):
@@ -49,6 +50,8 @@ class Clone(CommonMixin, Base):
     __tablename__ = "clones"
 
     name: Mapped[str]
+    description: Mapped[str]
+    motivation: Mapped[str]
     greeting_message: Mapped[str]
     is_active: Mapped[bool] = mapped_column(default=True)
     is_public: Mapped[bool] = mapped_column(default=False)
@@ -116,7 +119,13 @@ class Message(CommonMixin, Base):
 class Fact(CommonMixin, Base):
     __tablename__ = "facts"
 
-    fact: Mapped[str]
+    content: Mapped[str]
+    content_embedding: Mapped[Vector]
+    num_tokens: Mapped[int]
+    summary: Mapped[str]
+    summary_embedding: Mapped[Vector]
+    is_shared: Mapped[bool] = mapped_column(default=True)
+
     clone_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )
@@ -125,67 +134,86 @@ class Fact(CommonMixin, Base):
     def __repr__(self):
         return f"Fact(fact={self.fact})"
 
-
-class Description(CommonMixin, Base):
-    __tablename__ = "descriptions"
-
-    description: Mapped[str]
-    clone_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("clones.id", ondelete="cascade"), nullable=False
-    )
-    clone: Mapped["Clone"] = relationship("Clone", back_populates="descriptions")
-
-    def __repr__(self):
-        return f"Description(description={self.description})"
+    def split(self):
+        pass
 
 
 class ExampleDialogue(CommonMixin, Base):
     __tablename__ = "example_dialogues"
 
-    example_dialogue: Mapped[str]
-    clone_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("clones.id", ondelete="cascade"), nullable=False
+    content: Mapped[str]
+    content_embedding: Mapped[Vector]
+    num_tokens: Mapped[int]
+    summary: Mapped[str]
+    summary_embedding: Mapped[Vector]
+    chunk_index: Mapped[int]
+    is_shared: Mapped[bool] = mapped_column(default=True)
+    conversation_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("conversations.id", ondelete="cascade"), nullable=False
     )
-    clone: Mapped["Clone"] = relationship("Clone", back_populates="example_dialogues")
+    clone: Mapped["Conversation"] = relationship(
+        "Conversation", back_populates="example_dialogues"
+    )
 
     def __repr__(self):
         return f"ExampleDialogue(example_dialogue={self.example_dialogue})"
 
-
-class Motivation(CommonMixin, Base):
-    __tablename__ = "motivations"
-
-    motivation: Mapped[str]
-    clone_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("clones.id", ondelete="cascade"), nullable=False
-    )
-    clone: Mapped["Clone"] = relationship("Clone", back_populates="motivations")
-
-    def __repr__(self):
-        return f"Motivation(motivation={self.motivation})"
+    def split(self):
+        pass
 
 
 class Memory(CommonMixin, Base):
     __tablename__ = "memories"
 
-    memory: Mapped[str]
-    clone_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("clones.id", ondelete="cascade"), nullable=False
+    content: Mapped[str]
+    content_embedding: Mapped[Vector]
+    messages: Mapped[list["Message"]] = relationship("Message", lazy="select")
+    timestamp: Mapped[datetime.datetime] = mapped_column(
+        default=datetime.utcnow, nullable=False
     )
-    clone: Mapped["Clone"] = relationship("Clone", back_populates="memories")
+    last_accessed_at: Mapped[datetime.datetime] = mapped_column(
+        default=datetime.utcnow, nullable=False
+    )
+    importance: Mapped[float] = mapped_column(default=0.0)
+    is_shared: Mapped[bool] = mapped_column(default=False)
+
+    conversation_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("conversations.id", ondelete="cascade"), nullable=False
+    )
+    conversation: Mapped["Conversation"] = relationship(
+        "Conversation", back_populates="memories"
+    )
 
     def __repr__(self):
         return f"Memory(memory={self.memory})"
+
+    def get_importance(self):
+        pass
+
+    def update_last_accessed_at(self):
+        pass
 
 
 class Reflection(CommonMixin, Base):
     __tablename__ = "reflections"
 
-    reflection: Mapped[str]
-    clone_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("clones.id", ondelete="cascade"), nullable=False
+    content: Mapped[str]
+    content_embedding: Mapped[Vector]
+    timestamp: Mapped[datetime.datetime] = mapped_column(
+        default=datetime.utcnow, nullable=False
     )
-    clone: Mapped["Clone"] = relationship("Clone", back_populates="reflections")
+    last_accessed_at: Mapped[datetime.datetime] = mapped_column(
+        default=datetime.utcnow, nullable=False
+    )
+    relevant_memories: Mapped[list["Memory"]] = relationship("Memory", lazy="select")
+    recursive_content: Mapped[JSON] = mapped_column(default={})
+    is_shared: Mapped[bool] = mapped_column(default=False)
+    conversation_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("conversations.id", ondelete="cascade"), nullable=False
+    )
+    conversation: Mapped["Conversation"] = relationship(
+        "Conversation", back_populates="reflections"
+    )
 
     def __repr__(self):
         return f"Reflection(reflection={self.reflection})"
