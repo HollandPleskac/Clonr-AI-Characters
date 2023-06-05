@@ -122,7 +122,7 @@ class CreateChatCompletionRequest(BaseModel):
     max_tokens: int = max_tokens_field
     temperature: float = temperature_field
     top_p: float = top_p_field
-    stop: Optional[List[str]] = stop_field
+    stop: list[str] | str | None = stop_field
     stream: bool = stream_field
     presence_penalty: Optional[float] = presence_penalty_field
     frequency_penalty: Optional[float] = frequency_penalty_field
