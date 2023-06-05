@@ -18,6 +18,7 @@ from app.settings import settings
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
+from fastapi import FastAPI
 
 
 async def run_async_upgrade():

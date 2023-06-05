@@ -6,12 +6,25 @@ from fastapi_users.db import (
     SQLAlchemyBaseOAuthAccountTableUUID,
     SQLAlchemyBaseUserTableUUID,
 )
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, func, text, JSON
+from sqlalchemy import (
+    types,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    func,
+    text,
+    JSON,
+    Float,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from pgvector.sqlalchemy import Vector
+from sqlalchemy.dialects.postgresql import ARRAY
+from typing import Optional, List, Dict, Any
 
 
 class Base(DeclarativeBase):
+    type_annotation_map = {List[float]: Vector, dict[str, Any]: JSON}
+
     pass
 
 
@@ -62,6 +75,7 @@ class Clone(CommonMixin, Base):
     conversations: Mapped[list["Conversation"]] = relationship(
         "Conversation", lazy="select"
     )
+    documents: Mapped[list["Document"]] = relationship("Document", lazy="select")
     api_keys: Mapped[list["APIKey"]] = relationship("APIKey", lazy="select")
 
     def __repr__(self):
@@ -93,6 +107,10 @@ class Conversation(CommonMixin, Base):
         ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )
     clone: Mapped["Clone"] = relationship("Clone", back_populates="conversations")
+    example_dialogues: Mapped[list["ExampleDialogue"]] = relationship(
+        "ExampleDialogue", lazy="select"
+    )
+    memories: Mapped[list["Memory"]] = relationship("Memory", lazy="select")
 
     def __repr__(self):
         return f"Conversation(name={self.name}, clone_id={self.clone_id})"
@@ -116,20 +134,21 @@ class Message(CommonMixin, Base):
 
 
 ## Modules
-class Fact(CommonMixin, Base):
-    __tablename__ = "facts"
+class Document(CommonMixin, Base):
+    __tablename__ = "documents"
 
     content: Mapped[str]
-    content_embedding: Mapped[Vector]
+    content_embedding: Mapped[List[float]]
     num_tokens: Mapped[int]
     summary: Mapped[str]
-    summary_embedding: Mapped[Vector]
+    summary_embedding: Mapped[List[float]]
+    chunk_index: Mapped[int]
     is_shared: Mapped[bool] = mapped_column(default=True)
 
     clone_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )
-    clone: Mapped["Clone"] = relationship("Clone", back_populates="facts")
+    clone: Mapped["Clone"] = relationship("Clone", back_populates="documents")
 
     def __repr__(self):
         return f"Fact(fact={self.fact})"
@@ -142,10 +161,10 @@ class ExampleDialogue(CommonMixin, Base):
     __tablename__ = "example_dialogues"
 
     content: Mapped[str]
-    content_embedding: Mapped[Vector]
+    content_embedding: Mapped[List[float]]
     num_tokens: Mapped[int]
     summary: Mapped[str]
-    summary_embedding: Mapped[Vector]
+    summary_embedding: Mapped[List[float]]
     chunk_index: Mapped[int]
     is_shared: Mapped[bool] = mapped_column(default=True)
     conversation_id: Mapped[uuid.UUID] = mapped_column(
@@ -166,14 +185,16 @@ class Memory(CommonMixin, Base):
     __tablename__ = "memories"
 
     content: Mapped[str]
-    content_embedding: Mapped[Vector]
-    messages: Mapped[list["Message"]] = relationship("Message", lazy="select")
+    content_embedding: Mapped[List[float]]
     timestamp: Mapped[datetime.datetime] = mapped_column(
-        default=datetime.utcnow, nullable=False
+        default=datetime.datetime.utcnow, nullable=False
     )
     last_accessed_at: Mapped[datetime.datetime] = mapped_column(
-        default=datetime.utcnow, nullable=False
+        default=datetime.datetime.utcnow, nullable=False
     )
+    ## TODO: revisit
+    # relevant_memories: Mapped[List["Memory"]] = relationship("Memory", lazy="select")
+    # recursive_content: Mapped[dict[str, Any]] = mapped_column(default={})
     importance: Mapped[float] = mapped_column(default=0.0)
     is_shared: Mapped[bool] = mapped_column(default=False)
 
@@ -192,31 +213,6 @@ class Memory(CommonMixin, Base):
 
     def update_last_accessed_at(self):
         pass
-
-
-class Reflection(CommonMixin, Base):
-    __tablename__ = "reflections"
-
-    content: Mapped[str]
-    content_embedding: Mapped[Vector]
-    timestamp: Mapped[datetime.datetime] = mapped_column(
-        default=datetime.utcnow, nullable=False
-    )
-    last_accessed_at: Mapped[datetime.datetime] = mapped_column(
-        default=datetime.utcnow, nullable=False
-    )
-    relevant_memories: Mapped[list["Memory"]] = relationship("Memory", lazy="select")
-    recursive_content: Mapped[JSON] = mapped_column(default={})
-    is_shared: Mapped[bool] = mapped_column(default=False)
-    conversation_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("conversations.id", ondelete="cascade"), nullable=False
-    )
-    conversation: Mapped["Conversation"] = relationship(
-        "Conversation", back_populates="reflections"
-    )
-
-    def __repr__(self):
-        return f"Reflection(reflection={self.reflection})"
 
 
 # class DocumentCollection(CommonMixin, Base):
