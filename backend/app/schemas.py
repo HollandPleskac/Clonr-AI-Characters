@@ -3,7 +3,7 @@ import uuid
 from typing import Optional, List, Dict
 
 from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from pgvector.sqlalchemy import Vector
 
 
@@ -89,20 +89,20 @@ class Conversation(CommonMixin, ConversationCreate):
         orm_mode = True
 
 
-class FactCreate(BaseModel):
+class DocumentCreate(BaseModel):
     content: str
-    content_embedding: Vector
+    content_embedding: List[float]
     num_tokens: int
     summary: str
-    summary_embedding: Vector
+    summary_embedding: List[float]
     is_shared: bool = True
 
 
-class FactUpdate(FactCreate):
+class DocumentUpdate(DocumentCreate):
     pass
 
 
-class Fact(CommonMixin, FactCreate):
+class Document(CommonMixin, DocumentCreate):
     clone_id: uuid.UUID
 
     class Config:
@@ -111,10 +111,10 @@ class Fact(CommonMixin, FactCreate):
 
 class ExampleDialogueCreate(BaseModel):
     content: str
-    content_embedding: Vector
+    content_embedding: List[float]
     num_tokens: int
     summary: str
-    summary_embedding: Vector
+    summary_embedding: List[float]
     chunk_index: int
     is_shared: bool = True
     conversation_id: uuid.UUID
@@ -131,7 +131,7 @@ class ExampleDialogue(ExampleDialogueCreate):
 
 class MemoryCreate(BaseModel):
     content: str
-    content_embedding: Vector
+    content_embedding: List[float]
     timestamp: datetime.datetime = datetime.datetime.utcnow()
     last_accessed_at: datetime.datetime = datetime.datetime.utcnow()
     importance: float = 0.0
@@ -141,39 +141,12 @@ class MemoryCreate(BaseModel):
 
 class MemoryUpdate(BaseModel):
     content: str
-    content_embedding: Vector
+    content_embedding: List[float]
     last_accessed_at: datetime.datetime
     importance: float
     is_shared: bool
 
 
 class Memory(CommonMixin, MemoryCreate):
-    messages: List[Message]
-
-    class Config:
-        orm_mode = True
-
-
-class ReflectionCreate(BaseModel):
-    content: str
-    content_embedding: Vector
-    timestamp: datetime.datetime = datetime.datetime.utcnow()
-    last_accessed_at: datetime.datetime = datetime.datetime.utcnow()
-    recursive_content: Dict = {}
-    is_shared: bool = False
-    conversation_id: uuid.UUID
-
-
-class ReflectionUpdate(BaseModel):
-    content: str
-    content_embedding: Vector
-    last_accessed_at: datetime.datetime
-    recursive_content: Dict
-    is_shared: bool
-
-
-class Reflection(CommonMixin, ReflectionCreate):
-    relevant_memories: List[Memory]
-
     class Config:
         orm_mode = True
