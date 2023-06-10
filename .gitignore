@@ -160,3 +160,5 @@ cython_debug/
 #.idea/
 volume/
 _data/*
+
+llm_server/models
