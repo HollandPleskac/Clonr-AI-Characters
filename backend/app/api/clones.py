@@ -5,7 +5,7 @@ from app.auth.users import current_active_user
 from app.db import get_async_session
 from fastapi import Depends, HTTPException, status
 from fastapi.routing import APIRouter
-from sqlalchemy import delete, select, update
+from sqlalchemy import update, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(
@@ -41,6 +41,23 @@ async def get(
     return clone
 
 
+@router.get("/", response_model=list[schemas.Clone])
+async def get_clones(
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+    user: Annotated[models.User, Depends(current_active_user)],
+    limit: int = 10,
+    offset: int = 0,
+):
+    clones = await db.scalars(
+        select(models.Clone)
+        .where(models.Clone.user_id == user.id)
+        .order_by(models.Clone.updated_at.desc())
+        .offset(offset)
+        .limit(limit)
+    )
+    return clones.all()
+
+
 @router.put("/{id}", response_model=schemas.Clone)
 async def update_(
     id: str,
@@ -50,6 +67,8 @@ async def update_(
 ):
     if not user.is_superuser and not id == user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+    if not await db.get(models.Clone, id):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not found")
     promise = await db.scalars(
         update(models.Clone)
         .where(models.Clone.id == id)
