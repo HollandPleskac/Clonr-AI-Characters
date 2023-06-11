@@ -33,7 +33,7 @@ class EmbeddingModel:
             )
         model = ORTModelForFeatureExtraction.from_pretrained(
             model_id=str(path.resolve()),
-            local_files_only=True, 
+            local_files_only=True,
         )
         tokenizer = AutoTokenizer.from_pretrained(str(path.resolve()))
         obj = cls(model=model, tokenizer=tokenizer, normalized=normalized)
@@ -48,7 +48,9 @@ class EmbeddingModel:
         return emb
 
     def _encode(self, texts: list[str]) -> list[list[float]]:
-        assert isinstance(texts, list), "Must pass list input. If just a string, make it a list of size 1."
+        assert isinstance(
+            texts, list
+        ), "Must pass list input. If just a string, make it a list of size 1."
         inp = self.tokenizer(
             texts,
             max_length=self.max_tokens,
@@ -60,14 +62,18 @@ class EmbeddingModel:
         return self._mean_pool(out.last_hidden_state, inp["attention_mask"]).tolist()
 
     def encode_query(self, text: list[str]) -> list[list[float]]:
-        text = [f"{EmbeddingType.query.value}: {x}" for x in text]
+        # TODO: there is no real guardrail here for using a model that does not use this preprocessing
+        # we can go back to separate classes, but there's only 2 models for now, and this seems ok.
+        if "e5" in getattr(self, "_pretrained_name", ""):
+            text = [f"{EmbeddingType.query.value}: {x}" for x in text]
         return self._encode(text)
 
     def encode_passage(self, text: list[str]) -> list[list[float]]:
-        text = [f"{EmbeddingType.passage.value}: {x}" for x in text]
+        if "e5" in getattr(self, "_pretrained_name", ""):
+            text = [f"{EmbeddingType.passage.value}: {x}" for x in text]
         return self._encode(text)
 
     def __repr__(self):
-        if hasattr(self, '_pretrained_name'):
+        if hasattr(self, "_pretrained_name"):
             return f"{self.__class__.__name__}(model={self._pretrained_name}, dimension={self.dimension})"
         return f"{self.__class__.__name__}(dimension={self.dimension})"
