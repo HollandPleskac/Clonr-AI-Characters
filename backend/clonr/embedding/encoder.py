@@ -1,6 +1,6 @@
 import numpy as np
 import transformers
-from cloner.embedding.types import EmbeddingType, ModelEnum
+from clonr.embedding.types import EmbeddingType, ModelEnum
 from optimum.onnxruntime import ORTModelForFeatureExtraction
 from transformers import AutoTokenizer
 
@@ -33,19 +33,22 @@ class EmbeddingModel:
             )
         model = ORTModelForFeatureExtraction.from_pretrained(
             model_id=str(path.resolve()),
-            local_files_only=True,
+            local_files_only=True, 
         )
         tokenizer = AutoTokenizer.from_pretrained(str(path.resolve()))
-        return cls(model=model, tokenizer=tokenizer, normalized=normalized)
+        obj = cls(model=model, tokenizer=tokenizer, normalized=normalized)
+        obj._pretrained_name = model_name.value
+        return obj
 
     def _mean_pool(self, h: np.ndarray, attn_mask: np.ndarray) -> np.ndarray:
         mask = attn_mask[..., None]
-        emb = (h * mask).sum(axis=1) / (mask.sum(axis=1) + 1e-9)
+        emb = np.where(mask, h, 0.0).sum(axis=1) / (mask.sum(axis=1) + 1e-9)
         if self.normalized:
             emb /= np.linalg.norm(emb, axis=1, keepdims=True)
         return emb
 
     def _encode(self, texts: list[str]) -> list[list[float]]:
+        assert isinstance(texts, list), "Must pass list input. If just a string, make it a list of size 1."
         inp = self.tokenizer(
             texts,
             max_length=self.max_tokens,
@@ -65,6 +68,6 @@ class EmbeddingModel:
         return self._encode(text)
 
     def __repr__(self):
-        return (
-            f"{self.__class__.__name__}(dimension={self.dimension}, size={self._size})"
-        )
+        if hasattr(self, '_pretrained_name'):
+            return f"{self.__class__.__name__}(model={self._pretrained_name}, dimension={self.dimension})"
+        return f"{self.__class__.__name__}(dimension={self.dimension})"

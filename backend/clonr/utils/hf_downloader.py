@@ -199,7 +199,7 @@ class HFDownloader:
         with open(output_dir / "hf-metadata.json", "w") as f:
             json.dump(metadata, f, indent=2)
 
-        print(f"Total data to download: {total_size}")
+        print(f"Total data to download: {total_size}. Output dir: {output_dir}")
         print("-" * 10)
         print("Preparing to download:")
         for resource in resources:
