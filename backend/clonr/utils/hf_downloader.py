@@ -14,6 +14,7 @@ from pydantic import BaseModel
 from tqdm.contrib.concurrent import thread_map
 
 from clonr.utils.formatting import bytes_to_human_readable
+from clonr.utils.paths import get_onnx_dir
 
 
 def sanitize_branch_name(branch: str | None = None) -> str:
@@ -154,7 +155,7 @@ class HFDownloader:
         repo_url = self._get_repo_url(model_name=model_name, branch=branch)
         resources = self._gather_repo_suburls(repo_url=repo_url)
         if not resources:
-            return "Failed to find resources"
+            raise ValueError("Failed to find resources")
 
         total_gb = bytes_to_human_readable(sum(r.size for r in resources))
 
@@ -168,11 +169,12 @@ class HFDownloader:
     def download(
         self,
         model_name: str,
-        output_dir: str | Path,
+        output_dir: str | Path | None = None,
         branch: str | None = None,
         resume_download: bool = True,
         n_threads: int | None = None,
     ):
+        output_dir = output_dir or get_onnx_dir() / model_name.split("/")[-1]
         output_dir = Path(output_dir)
         n_threads = n_threads or 8
         resources = self._gather_repo_resources(model_name=model_name, branch=branch)
