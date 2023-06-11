@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     USE_ALEMBIC: bool = False
     SUPERUSER_EMAIL: str
     SUPERUSER_PASSWORD: str
+    STRIPE_HOST: str
+    STRIPE_KEY: str
+    STRIPE_CANCEL_URL: str
+    STRIPE_SUCCESS_URL: str
+    STRIPE_WEBHOOK_SECRET: str
 
 
 settings = Settings()
