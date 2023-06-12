@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     STRIPE_CANCEL_URL: str
     STRIPE_SUCCESS_URL: str
     STRIPE_WEBHOOK_SECRET: str
+    STRIPE_CONNECT_CLIENT_ID: str
 
 
 settings = Settings()

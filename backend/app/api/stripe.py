@@ -58,6 +58,60 @@ async def create_product(request: Request):
         print("Content-Type not supported.")
 
 
+@router.post("/create-account-link")
+async def create_account_link(
+    request: Request, user: Annotated[models.User, Depends(current_active_user)]
+):
+    name = user.name
+    id = user.id
+    email = user.email
+
+    user_url = "http://localhost:3000/" + name if name else None
+
+    client_id = settings.STRIPE_CONNECT_CLIENT_ID
+    redirect_uri = "http://localhost:8000/stripe/link/callback"
+
+    stripe_oauth_url = (
+        "https://connect.stripe.com/express/oauth/authorize?response_type=code"
+    )
+
+    metadata_list = [
+        {"client_id": client_id},
+        {"scope": "read_write"},
+        # {"state": ""},
+        {"redirect_uri": redirect_uri},
+        {"stripe_user[email]": request.email},
+        {"stripe_user[url]": user_url},
+    ]
+
+    for metadata in metadata_list:
+        metadata_key = list(metadata.keys())[0]
+        metadata_val = list(metadata.values())[0]
+        stripe_oauth_url = stripe_oauth_url + "&" + metadata_key + "=" + metadata_val
+
+    return {"url": stripe_oauth_url}
+
+
+@router.post("/link/callback")
+async def create_account_callback(url_handle: str, code: str):
+    if url_handle is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid URL handle"
+        )
+
+    if code is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Missing authorization code"
+        )
+
+    response = stripe.OAuth.token(grant_type="authorization_code", code=code)
+
+    connected_account_id = response["stripe_user_id"]
+    access_token = response["access_token"]
+    # TODO: save connected_account_id and access_token to profile
+    return {"message": "Stripe account successfully connected"}
+
+
 @router.post("/create-customer")
 async def create_customer(email: str, name: str):
     ## TODO: auth?
@@ -123,6 +177,31 @@ async def create_subscription(request: Request):
         # TODO: add subscriptions to db
 
         return {"status_code": status.HTTP_200_OK, "detail": subscription}
+    except Exception as e:
+        return {"status_code": status.HTTP_403_FORBIDDEN, "detail": str(e)}
+
+
+@router.post("/create-payout")
+async def create_payout(
+    stripe_connect_account_id: str,
+    user: Annotated[models.User, Depends(current_active_user)],
+):
+    amount = 0.0  # TODO: get total payout balance
+    TAKE_RATE = 0.2
+    amount = amount * TAKE_RATE
+
+    try:
+        transfer = stripe.Transfer.create(
+            api_key=settings.STRIPE_KEY,
+            amount=amount,
+            currency="usd",
+            destination=stripe_connect_account_id,
+        )
+
+        print("success")
+        # TODO: add payouts to db
+
+        return {"status_code": status.HTTP_200_OK, "detail": transfer}
     except Exception as e:
         return {"status_code": status.HTTP_403_FORBIDDEN, "detail": str(e)}
 
