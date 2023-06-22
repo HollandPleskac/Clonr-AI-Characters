@@ -13,4 +13,6 @@ class General(commands.Cog, name="general"):
 
 
 async def setup(bot):
+    print("RUNNING BOT SETUP..")
     await bot.add_cog(General(bot))
+    print("DONE RUNNING BOT SETUP..")
