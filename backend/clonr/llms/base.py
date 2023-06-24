@@ -1,5 +1,6 @@
 from abc import ABC
 from enum import Enum
+
 from pydantic import BaseModel
 
 

@@ -1,5 +1,8 @@
+import os
 from dataclasses import dataclass
 
+import aiohttp
+import requests
 from loguru import logger
 
 from .openai import OpenAI, OpenAIMessage
@@ -62,6 +65,18 @@ class LlamaCpp(OpenAI):
         # We just directly pass the prompt, and assume that the headers and stuff were taken care of
         # during templating (the role things above should fill in)
         return [OpenAIMessage(role="user", content=prompt)]
+
+    async def anum_tokens(self, prompt: str):
+        route = os.path.join(self.api_base, "tokens")
+        async with aiohttp.ClientSession() as session:
+            async with session.post(route, data={"prompt": prompt}) as resp:
+                r = await resp.json()
+        return int(r["num_tokens"])
+
+    def num_tokens(self, prompt: str):
+        route = os.path.join(self.api_base, "tokens")
+        r = requests.post(route, json={"prompt": prompt})
+        return int(r.json()["num_tokens"])
 
 
 @dataclass

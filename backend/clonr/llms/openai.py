@@ -1,6 +1,7 @@
 import asyncio
 import re
 import textwrap
+import time
 import warnings
 from enum import Enum
 from typing import AsyncGenerator, Generator
@@ -11,8 +12,9 @@ import tiktoken
 from pydantic import BaseModel, Field
 from tenacity import retry, retry_if_exception_type, wait_random
 
-from .base import LLM, LLMResponse, FinishReason
 from app.settings import settings
+
+from .base import LLM, FinishReason, LLMResponse
 
 openai.api_key = settings.OPENAI_API_KEY
 
@@ -96,6 +98,32 @@ class OpenAIChatCompletionRequest(OpenAIGenerationParams):
     model: str
     messages: list[OpenAIMessage]
     stream: bool
+
+
+class NotebookStreamResponse(BaseModel):
+    completion: str
+    time: float
+    tokens_per_second: float
+    input_tokens: int
+    completion_tokens: int
+    total_tokens: int
+    responses: list[OpenAIStreamResponse]
+
+    def __repr__(self):
+        s = self.completion
+        if len(s) > 20:
+            s = s[:20] + f" + {len(s) - 120} chars ... "
+        return textwrap.dedent(
+            f"""
+        Response(
+            completion={s}, 
+            time={self.time:.02f}s, 
+            speed={self.tokens_per_second:.02f} tokens/second, 
+            completion_tokens={self.completion_tokens}, 
+            input_tokens={self.input_tokens}, 
+            total_tokens={self.total_tokens}
+        )"""
+        )
 
 
 class OpenAI(LLM):
@@ -328,11 +356,14 @@ class OpenAI(LLM):
         prompt_or_messages: str | list[OpenAIMessage],
         params: OpenAIGenerationParams | None = None,
         width: int = 70,
-    ) -> tuple[list[OpenAIStreamResponse], str]:
+    ) -> NotebookStreamResponse:
         from IPython import display
 
         r = []
         text = ""
+        start_time = time.time()
+        input_tokens = self.num_tokens(prompt_or_messages)
+        completion_tokens = 0
         async for x in self.astream(
             prompt_or_messages=prompt_or_messages, params=params
         ):
@@ -341,4 +372,17 @@ class OpenAI(LLM):
             display.clear_output(wait=False)
             print(_text, flush=True)
             r.append(x)
-        return r, text
+            completion_tokens += 1
+        total_time = time.time() - start_time
+        total_tokens = input_tokens + completion_tokens
+        tokens_per_second = total_tokens / (total_time + 1e-3)
+
+        return NotebookStreamResponse(
+            completion=text,
+            time=total_time,
+            tokens_per_second=tokens_per_second,
+            input_tokens=input_tokens,
+            completion_tokens=completion_tokens,
+            total_tokens=total_tokens,
+            responses=r,
+        )

@@ -1,8 +1,8 @@
 import textwrap
 import time
 
-from .base import LLMResponse, LLM, FinishReason
-from .openai import OpenAIStreamResponse, OpenAI
+from .base import LLM, FinishReason, LLMResponse
+from .openai import OpenAI, OpenAIStreamResponse
 
 
 class MockLLM(OpenAI):

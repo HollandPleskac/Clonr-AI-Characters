@@ -253,13 +253,6 @@ async def v2_chat(
     kwargs = body.dict(exclude=exclude)
     messages = kwargs.pop("messages")
 
-    detail = (
-        "This is a fake chat endpoint, it only generates completions. "
-        "You must only send a single message from user as your request. "
-        "Make sure any real chat information is contained inside the user "
-        "content of that message"
-    )
-
     # WARNING. We concatenate with a newline. This might be an unexpected prompt adjustment from the user side!
     prompt = "\n".join([x["content"] for x in messages])
     logger.info(f"Received prompt: {prompt}")
@@ -295,6 +288,19 @@ async def v2_chat(
         completion: llama_cpp.ChatCompletion = await run_in_guarded_threadpool(LLM, **kwargs)  # type: ignore
         completion = _convert_completion(completion)
         return completion
+
+
+class NumTokensRequest(BaseModel):
+    prompt: str
+
+
+class NumTokensResponse(BaseModel):
+    num_tokens: int
+
+
+@app.post("/v1/tokens", response_model=NumTokensResponse)
+async def num_tokens(inp: NumTokensRequest):
+    return {'num_tokens': len(LLM.tokenize(inp.prompt.encode()))}
 
 
 class GuidanceRequest(BaseModel):
