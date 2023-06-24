@@ -151,11 +151,22 @@ class HFDownloader:
                     msg = f"{bcolors.OKGREEN}Checksum passed{bcolors.ENDC}"
                 print(f"Checking SHA256 of {Path(resource.url).name}: {msg}")
 
-    def preview_download(self, model_name: str, branch: str | None = None) -> None:
-        repo_url = self._get_repo_url(model_name=model_name, branch=branch)
-        resources = self._gather_repo_suburls(repo_url=repo_url)
+    def preview_download(
+        self,
+        model_name: str,
+        branch: str | None = None,
+        regex_filter: str | None = None,
+    ) -> None:
+        resources = self._gather_repo_resources(model_name=model_name, branch=branch)
         if not resources:
             raise ValueError("Failed to find resources")
+
+        if regex_filter:
+            resources = [r for r in resources if re.search(regex_filter, r.path)]
+            if not resources:
+                raise ValueError(
+                    f"The requested repository {model_name} was found, but after filtering on {regex_filter} returned no results!"
+                )
 
         total_gb = bytes_to_human_readable(sum(r.size for r in resources))
 
@@ -173,6 +184,7 @@ class HFDownloader:
         branch: str | None = None,
         resume_download: bool = True,
         n_threads: int | None = None,
+        regex_filter: str | None = None,
     ):
         output_dir = output_dir or get_onnx_dir() / model_name.split("/")[-1]
         output_dir = Path(output_dir)
@@ -180,10 +192,17 @@ class HFDownloader:
         resources = self._gather_repo_resources(model_name=model_name, branch=branch)
 
         if not resources:
-            raise ValueError("The requested repository at {repo_url} is empty!")
+            raise ValueError(f"The requested repository {model_name} is empty!")
 
         if not output_dir.exists():
             output_dir.mkdir(parents=True, exist_ok=True)
+
+        if regex_filter:
+            resources = [r for r in resources if re.search(regex_filter, r.path)]
+            if not resources:
+                raise ValueError(
+                    f"The requested repository {model_name} was found, but after filtering on {regex_filter} returned no results!"
+                )
 
         total_size = bytes_to_human_readable(sum(r.size for r in resources))
 
@@ -215,4 +234,7 @@ class HFDownloader:
         start = time.time()
         thread_map(dl_func, resources, max_workers=n_threads, disable=True)
         print("-" * 10)
-        print(f"Summary: Time: {time.time() - start:.02f}s. Size: {total_size}")
+        time_str = time.strftime("%H:%M:%S", time.gmtime(time.time() - start))
+        print(
+            f"{bcolors.UNDERLINE}Summary{bcolors.ENDC}: Time: {bcolors.BOLD}{time_str}{bcolors.ENDC}. Size: {bcolors.BOLD}{total_size}{bcolors.ENDC}"
+        )

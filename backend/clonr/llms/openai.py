@@ -1,17 +1,18 @@
-import re
-import openai
-import aiohttp
 import asyncio
-import tiktoken
+import re
+import textwrap
 import warnings
-from typing import AsyncGenerator, Generator
 from enum import Enum
+from typing import AsyncGenerator, Generator
+
+import aiohttp
+import openai
+import tiktoken
 from pydantic import BaseModel, Field
 from tenacity import retry, retry_if_exception_type, wait_random
 
+from .base import LLM, LLMResponse, FinishReason
 from app.settings import settings
-from clonr.llms.base import FinishReason, LLMResponse
-
 
 openai.api_key = settings.OPENAI_API_KEY
 
@@ -53,7 +54,7 @@ class OpenAIChoice(BaseModel):
 
 
 class OpenAIResponse(BaseModel):
-    model: OpenAIModelEnum
+    model: str
     created: int
     usage: OpenAIUsage
     choices: list[OpenAIChoice]
@@ -66,13 +67,13 @@ class OpenAIStreamDelta(BaseModel):
 
 class OpenAIStreamChoice(BaseModel):
     delta: OpenAIStreamDelta
-    finish_reason: FinishReason
+    finish_reason: FinishReason | None
     index: int | None = None
 
 
 class OpenAIStreamResponse(BaseModel):
     created: int
-    model: OpenAIModelEnum
+    model: str
     choices: list[OpenAIStreamChoice]
 
 
@@ -92,16 +93,23 @@ class OpenAIGenerationParams(BaseModel):
 
 
 class OpenAIChatCompletionRequest(OpenAIGenerationParams):
-    model: OpenAIModelEnum
+    model: str
     messages: list[OpenAIMessage]
     stream: bool
 
 
-class OpenAI:
+class OpenAI(LLM):
     model_type: str = "openai"
 
-    def __init__(self, model: OpenAIModelEnum = OpenAIModelEnum.chatgpt_0613):
+    def __init__(
+        self,
+        model: OpenAIModelEnum = OpenAIModelEnum.chatgpt_0613,
+        api_key: str = settings.OPENAI_API_KEY,
+        api_base: str | None = None,
+    ):
         self.model = model
+        self.api_key = api_key
+        self.api_base = api_base
         try:
             # TODO: tiktoken is not yet updated to support the latest chatgpt
             if model.startswith("gpt-3.5"):
@@ -178,13 +186,13 @@ class OpenAI:
     def prompt_to_messages(self, prompt: str):
         messages = []
 
-        if not prompt.rstrip().endswith(self.assistant_end):
-            msg = (
-                "When calling OpenAI chat models you must generate only directly"
-                " inside the assistant role! The OpenAI API does not currently"
-                " support partial assistant prompting."
-            )
-            raise ValueError(msg)
+        # if not prompt.rstrip().endswith(self.assistant_start):
+        #     msg = (
+        #         "When calling OpenAI chat models you must generate only directly"
+        #         " inside the assistant role! The OpenAI API does not currently"
+        #         " support partial assistant prompting."
+        #     )
+        #     raise ValueError(msg)
 
         pattern = r"<\|im_start\|>(\w+)(.*?)(?=<\|im_end\|>|$)"
         matches = re.findall(pattern, prompt, re.DOTALL)
@@ -214,12 +222,19 @@ class OpenAI:
         else:
             messages = prompt_or_messages
         request = OpenAIChatCompletionRequest(
-            model=self.model, messages=messages, stream=False, **params.dict()
+            model=self.model,
+            messages=messages,
+            stream=False,
+            **params.dict(exclude_unset=True),
         )
         async with aiohttp.ClientSession() as sess:
             openai.aiosession.set(sess)
             try:
-                r = await openai.ChatCompletion.acreate(**request.dict())
+                r = await openai.ChatCompletion.acreate(
+                    **request.dict(exclude_unset=True),
+                    api_key=self.api_key,
+                    api_base=self.api_base,
+                )
             finally:
                 await openai.aiosession.get().close()  # type: ignore
         out = OpenAIResponse(**r)
@@ -260,14 +275,21 @@ class OpenAI:
         else:
             messages = prompt_or_messages
         request = OpenAIChatCompletionRequest(
-            model=self.model, messages=messages, stream=True, **params.dict()
+            model=self.model,
+            messages=messages,
+            stream=True,
+            **params.dict(exclude_unset=True),
         )
         async with aiohttp.ClientSession() as sess:
             openai.aiosession.set(sess)
             try:
-                chunks = await openai.ChatCompletion.acreate(**request.dict())
+                chunks = await openai.ChatCompletion.acreate(
+                    **request.dict(exclude_unset=True),
+                    api_key=self.api_key,
+                    api_base=self.api_base,
+                )
                 async for chunk in chunks:
-                    delta = OpenAIStreamDelta(**chunk)
+                    delta = OpenAIStreamResponse(**chunk)
                     yield delta
             finally:
                 await openai.aiosession.get().close()  # type: ignore
@@ -287,9 +309,36 @@ class OpenAI:
         else:
             messages = prompt_or_messages
         request = OpenAIChatCompletionRequest(
-            model=self.model, messages=messages, stream=True, **params.dict()
+            model=self.model,
+            messages=messages,
+            stream=True,
+            **params.dict(exclude_unset=True),
         )
-        chunks = openai.ChatCompletion.create(**request.dict())
+        chunks = openai.ChatCompletion.create(
+            **request.dict(exclude_unset=True),
+            api_key=self.api_key,
+            api_base=self.api_base,
+        )
         for chunk in chunks:
-            delta = OpenAIStreamDelta(**chunk)
+            delta = OpenAIStreamResponse(**chunk)
             yield delta
+
+    async def notebook_stream(
+        self,
+        prompt_or_messages: str | list[OpenAIMessage],
+        params: OpenAIGenerationParams | None = None,
+        width: int = 70,
+    ) -> tuple[list[OpenAIStreamResponse], str]:
+        from IPython import display
+
+        r = []
+        text = ""
+        async for x in self.astream(
+            prompt_or_messages=prompt_or_messages, params=params
+        ):
+            text += x.choices[0].delta.content
+            _text = "\n".join(textwrap.wrap(text, width=width))
+            display.clear_output(wait=False)
+            print(_text, flush=True)
+            r.append(x)
+        return r, text

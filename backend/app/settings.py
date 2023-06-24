@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     STRIPE_WEBHOOK_SECRET: str
     STRIPE_CONNECT_CLIENT_ID: str
     DISCORD_TOKEN: str
+    OPENAI_API_KEY: str
 
 
 settings = Settings()

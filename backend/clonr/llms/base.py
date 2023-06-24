@@ -1,9 +1,11 @@
+from abc import ABC
 from enum import Enum
 from pydantic import BaseModel
 
 
-class LLMTypes(str, Enum):
-    openai: str = "openai"
+# Lol I don't know what to pass here, just need a type to pass around elsewhere
+class LLM(ABC):
+    pass
 
 
 class FinishReason(str, Enum):
