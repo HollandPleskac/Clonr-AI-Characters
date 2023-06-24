@@ -1,9 +1,9 @@
 import numpy as np
 import transformers
-from clonr.embedding.types import EmbeddingType, ModelEnum
 from optimum.onnxruntime import ORTModelForFeatureExtraction
 from transformers import AutoTokenizer
 
+from clonr.embedding.types import EmbeddingType, ModelEnum
 from clonr.utils import get_artifacts_dir
 
 

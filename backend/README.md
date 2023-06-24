@@ -27,3 +27,31 @@ else:
 To run programmatically, comment the above out.
 
 Finally, if you already have postgres running from the pre-Alembic times, you might generate empty migrations. It's best to reset the DB and that should fix it.
+
+
+## Downloading models
+
+It is advised to use the HF Downloader. This will launch multiple download threads, give progress bars for each, allow resumption from interrupted downloads, and also verify checksums upon completion of the download. You can also use a regex to filter out which files from a repository that you want (good idea for RWKV stuff, that guy is bonkers crazy)
+
+An example flow looks like:
+1. Go to huggingface spaces and copy the name of the repository. The format should look something like TheBlock/llama-7b-instruct
+2. Run a script like the following
+```python
+from pathlib import Path
+from clonr.utils import HFDownloader
+
+
+if __name__ == "__main__":
+    dl = HFDownloader()
+    model_name = 'TheBloke/open-llama-7b-open-instruct-GGML'
+    
+    # pick your path
+    output_dir = Path.home() / "llm-models" / "open-llama-7b-instruct"
+
+    # This will download only the three types of quantized GGMLs listed below
+    regex_filter = r'.*(q2_K|q5_1|q5_K_M).*'
+    dl.download(
+        model_name, 
+        output_dir=str(output_dir.resolve()), regex_filter=regex_filter
+    )
+```

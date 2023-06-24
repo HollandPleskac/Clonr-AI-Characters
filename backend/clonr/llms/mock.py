@@ -73,7 +73,7 @@ class MockLLM(OpenAI):
                         "index": 0,
                         "delta": {
                             "role": "assistant",
-                            "content": f"ResponseToken{self._counter}{ch}",
+                            "content": f" ResponseToken{self._counter}{ch}",
                             "finish_reason": FinishReason.length if ch == "C" else None,
                         },
                     }
