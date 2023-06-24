@@ -3,13 +3,22 @@ from typing import Annotated, Optional, List, Dict, Any
 from app import models, schemas
 from app.auth.users import current_active_user
 from app.db import get_async_session
-from fastapi import Depends, HTTPException, status, Header, Request
+from fastapi import (
+    Depends,
+    HTTPException,
+    status,
+    Header,
+    Request,
+    Response,
+    JSONResponse,
+)
 from fastapi.routing import APIRouter
 from sqlalchemy import update, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.settings import settings
 from pydantic import BaseModel
 import stripe
+from stripe.error import StripeError
 
 router = APIRouter(
     prefix="/stripe",
@@ -204,6 +213,86 @@ async def create_payout(
         return {"status_code": status.HTTP_200_OK, "detail": transfer}
     except Exception as e:
         return {"status_code": status.HTTP_403_FORBIDDEN, "detail": str(e)}
+
+
+## Usage based
+
+
+@router.post("/create-usage-record")
+async def create_usage_record(request: Request):
+    content_type = request.headers.get("Content-Type")
+    if content_type is None:
+        raise HTTPException(status_code=400, detail="No Content-Type provided.")
+    elif content_type == "application/json":
+        try:
+            usage_record_info = await request.json()
+        except Exception as e:
+            raise HTTPException(status_code=400, detail="Invalid JSON data: " + str(e))
+    else:
+        raise HTTPException(status_code=400, detail="Content-Type not supported.")
+
+    try:
+        usage_record = stripe.SubscriptionItem.create_usage_record(
+            subscription_item=usage_record_info["subscription_item"],
+            quantity=usage_record_info["quantity"],
+            timestamp=usage_record_info.get("timestamp"),
+        )
+        # TODO: Process the usage record
+
+        return JSONResponse(
+            status_code=200, content={"status_code": 200, "detail": usage_record}
+        )
+    except StripeError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
+
+@router.get("/usage-total/{subscription_item_id}")
+async def get_usage_total(subscription_item_id: str):
+    try:
+        subscription_item = stripe.SubscriptionItem.retrieve(subscription_item_id)
+        return JSONResponse(
+            status_code=200,
+            content={"status_code": 200, "detail": subscription_item.quantity},
+        )
+    except StripeError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
+
+@router.post("/invoice-customer")
+async def invoice_customer(request: Request):
+    content_type = request.headers.get("Content-Type")
+    if content_type is None:
+        raise HTTPException(status_code=400, detail="No Content-Type provided.")
+    elif content_type == "application/json":
+        try:
+            invoice_info = await request.json()
+        except Exception as e:
+            raise HTTPException(status_code=400, detail="Invalid JSON data: " + str(e))
+    else:
+        raise HTTPException(status_code=400, detail="Content-Type not supported.")
+
+    try:
+        invoice = stripe.Invoice.create(
+            customer=invoice_info["customer"], auto_advance=True
+        )
+        # TODO: process invoice
+
+        return JSONResponse(
+            status_code=200, content={"status_code": 200, "detail": invoice}
+        )
+    except StripeError as e:
+        raise HTTPException(status_code=403, detail=str(e))
+
+
+@router.get("/get-invoice/{invoice_id}")
+async def get_invoice(invoice_id: str):
+    try:
+        invoice = stripe.Invoice.retrieve(invoice_id)
+        return JSONResponse(
+            status_code=200, content={"status_code": 200, "detail": invoice}
+        )
+    except StripeError as e:
+        raise HTTPException(status_code=403, detail=str(e))
 
 
 @router.post("/webhook")

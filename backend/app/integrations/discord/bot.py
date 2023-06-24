@@ -9,17 +9,18 @@ import discord
 from discord.ext import commands, tasks
 from discord.ext.commands import Bot, Context
 import exceptions
-from app.settings import settings
+from dotenv import load_dotenv
 
+load_dotenv()
 
 intents = discord.Intents.default()
+# intents.message_content = True
 
 bot = Bot(
+    command_prefix=commands.when_mentioned_or("!"),
     intents=intents,
     help_command=None,
 )
-
-# TODO: edit logging
 
 
 class LoggingFormatter(logging.Formatter):
@@ -72,7 +73,7 @@ logger.addHandler(file_handler)
 bot.logger = logger
 
 
-bot.config = {"token": settings.DISCORD_TOKEN}
+bot.config = {"token": os.environ["DISCORD_TOKEN"], "prefix": "!"}
 
 
 @bot.event
@@ -191,4 +192,4 @@ async def load_cogs() -> None:
 
 
 asyncio.run(load_cogs())
-bot.run(settings.DISCORD_TOKEN)
+bot.run(os.environ["DISCORD_TOKEN"])
