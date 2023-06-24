@@ -217,13 +217,13 @@ Given only the information above on recent memories, what are 3 most salient hig
     def render(
         cls,
         llm: LLM,
-        memories: str,
+        recent_memories: str,
         system_prompt: str | None = None,
     ):
         if system_prompt is None:
             system_prompt = llm.default_system_prompt
         return cls.template.render(
-            llm=llm, system_prompt=system_prompt, memories=memories
+            llm=llm, system_prompt=system_prompt, recent_memories=recent_memories
         )
 
 
