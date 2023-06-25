@@ -3,7 +3,7 @@ from clonr.templates.base import env, Template
 
 
 # Given an observation, rate the significance of it
-class MemoryScore(Template):
+class MemoryRating(Template):
     template = env.from_string(
         """\
 {{ llm.system_start -}}
