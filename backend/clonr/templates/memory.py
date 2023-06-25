@@ -6,7 +6,7 @@ from ._env import env
 
 
 # Given an observation, rate the significance of it
-class Memory:
+class MemoryRating:
     template = env.from_string(
         """\
 {#### SYSTEM PROMPT ####}\
