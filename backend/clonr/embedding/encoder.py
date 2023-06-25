@@ -1,6 +1,7 @@
 import numpy as np
 import transformers
-from optimum.onnxruntime import ORTModelForFeatureExtraction
+
+# from optimum.onnxruntime import ORTModelForFeatureExtraction
 from transformers import AutoTokenizer
 
 from clonr.embedding.types import EmbeddingType, ModelEnum
@@ -22,23 +23,31 @@ class EmbeddingModel:
 
     @classmethod
     def from_pretrained(cls, model_name: ModelEnum, normalized: bool = True):
-        if not (
-            path := (get_artifacts_dir() / "onnx" / model_name.value.split("/")[-1])
-        ).exists():
-            raise FileNotFoundError(
-                (
-                    f"Could not find local Onnx copy at {path.resolve()}."
-                    " First export using clonr.embedding.export_to_onnx.py"
-                )
-            )
-        model = ORTModelForFeatureExtraction.from_pretrained(
-            model_id=str(path.resolve()),
-            local_files_only=True,
-        )
-        tokenizer = AutoTokenizer.from_pretrained(str(path.resolve()))
+        model = transformers.AutoModel.from_pretrained(model_name.value)
+        tokenizer = AutoTokenizer.from_pretrained(model_name.value)
         obj = cls(model=model, tokenizer=tokenizer, normalized=normalized)
         obj._pretrained_name = model_name.value
         return obj
+
+    # @classmethod
+    # def from_pretrained(cls, model_name: ModelEnum, normalized: bool = True):
+    #     if not (
+    #         path := (get_artifacts_dir() / "onnx" / model_name.value.split("/")[-1])
+    #     ).exists():
+    #         raise FileNotFoundError(
+    #             (
+    #                 f"Could not find local Onnx copy at {path.resolve()}."
+    #                 " First export using clonr.embedding.export_to_onnx.py"
+    #             )
+    #         )
+    #     model = ORTModelForFeatureExtraction.from_pretrained(
+    #         model_id=str(path.resolve()),
+    #         local_files_only=True,
+    #     )
+    #     tokenizer = AutoTokenizer.from_pretrained(str(path.resolve()))
+    #     obj = cls(model=model, tokenizer=tokenizer, normalized=normalized)
+    #     obj._pretrained_name = model_name.value
+    #     return obj
 
     def _mean_pool(self, h: np.ndarray, attn_mask: np.ndarray) -> np.ndarray:
         mask = attn_mask[..., None]

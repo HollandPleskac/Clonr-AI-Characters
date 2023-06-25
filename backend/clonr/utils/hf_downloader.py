@@ -14,7 +14,8 @@ from pydantic import BaseModel
 from tqdm.contrib.concurrent import thread_map
 
 from clonr.utils.formatting import bytes_to_human_readable
-from clonr.utils.paths import get_onnx_dir
+
+# from backend.clonr.utils.paths import get_onnx_dir
 
 
 def sanitize_branch_name(branch: str | None = None) -> str:
@@ -186,7 +187,7 @@ class HFDownloader:
         n_threads: int | None = None,
         regex_filter: str | None = None,
     ):
-        output_dir = output_dir or get_onnx_dir() / model_name.split("/")[-1]
+        output_dir = output_dir / model_name.split("/")[-1]
         output_dir = Path(output_dir)
         n_threads = n_threads or 8
         resources = self._gather_repo_resources(model_name=model_name, branch=branch)
