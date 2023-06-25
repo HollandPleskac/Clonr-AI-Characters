@@ -1,35 +1,45 @@
-from pydantic import BaseModel
-
 from clonr.llms import LLM
-
-from ._env import env
+from clonr.templates.base import env, Template
 
 
 # Given an observation, rate the significance of it
-class Memory:
+class MemoryScore(Template):
     template = env.from_string(
         """\
-{#### SYSTEM PROMPT ####}\
 {{ llm.system_start -}}
 {{ system_prompt }}
 {{- llm.system_end }}
 
-{#### USER START ####}\
 {{ llm.user_start -}}\
-
-{#### EXPLAIN THE MEMORY TASK ####}\
-Given the following memory, rate the significance of the memory. \
+Given the following memory, rate the significance of that memory. \
 Use a scale of 1 to 10, where 1 is purely mundane (e.g., brushing teeth, making bed) \
 and 10 is extremely poignant (e.g., a break up, college acceptance). \
 Rate the likely poignancy of the following piece of memory. \
-Respond with a single integer.
-\
-{#### MEMORY ####}
-Memory: {{ memory }}
-\
+Respond with a single integer. Let's try two examples.
 {{- llm.user_end }}
 
-{{ llm.assistant_start -}}\
+{{ llm.user_start -}}
+--- Example 1 ---
+Memory: I brushed my teeth before bed.
+{{- llm.user_end }}
+{{ llm.assistant_start -}}
+Score: 1
+{{- llm.assistant_end }}
+
+{{ llm.user_start -}}
+--- Example 2 ---
+Memory: I got married.
+{{- llm.user_end }}
+{{ llm.assistant_start -}}
+Score: 10
+{{- llm.assistant_end }}
+
+{{ llm.user_start -}}
+--- Task ---
+Memory: {{ memory }}
+{{- llm.user_end }}
+{{ llm.assistant_start -}}
+Score: {{- llm.assistant_end }}\
 """
     )
 
@@ -123,12 +133,3 @@ What 5 high-level insights can you infer from the above statements of relevant m
         return cls.template.render(
             llm=llm, system_prompt=system_prompt, relevant_memories=relevant_memories
         )
-
-    # class Instruct:
-    """\
-Below is an instruction that describes a task. Write a response that appropriately completes the request.
-
-### Instruction:
-{instruction}
-
-### Response:"""
