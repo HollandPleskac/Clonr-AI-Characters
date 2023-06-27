@@ -7,7 +7,7 @@ from fastapi_users.db import (
     SQLAlchemyBaseUserTableUUID,
 )
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSONB, JSON
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from pgvector.sqlalchemy import Vector
 from typing import Optional, List, Dict, Any
@@ -95,7 +95,7 @@ class Conversation(CommonMixin, Base):
     name: Mapped[str] = mapped_column(default=randomname.get_name)
     messages: Mapped[list["Message"]] = relationship("Message", lazy="select")
     clone_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("clones.id", ondelete="cascade"), nullable=False
+        sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )
     clone: Mapped["Clone"] = relationship("Clone", back_populates="conversations")
     example_dialogues: Mapped[list["ExampleDialogue"]] = relationship(
@@ -146,16 +146,6 @@ class Document(CommonMixin, Base):
         pass
 
 
-class Document(CommonMixin, Base):
-    __tablename__ = "documents"
-
-    chunks: Mapped[list["Chunk"]] = relationship("Chunk", back_populates="document")
-    clone_id: Mapped[uuid.UUID] = mapped_column(
-        sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
-    )
-    clone: Mapped["Clone"] = relationship("Clone", back_populates="documents")
-
-
 class ExampleDialogue(CommonMixin, Base):
     __tablename__ = "example_dialogues"
 
@@ -180,12 +170,12 @@ class ExampleDialogue(CommonMixin, Base):
         pass
 
 
-memory_to_memory = sa.Table(
-    "memory_to_memory",
-    Base.metadata,
-    sa.Column("parent_id", uuid.UUID, sa.ForeignKey("memories.id"), primary_key=True),
-    sa.Column("child_id", uuid.UUID, sa.ForeignKey("memories.id"), primary_key=True),
-)
+# memory_to_memory = sa.Table(
+#     "memory_to_memory",
+#     Base.metadata,
+#     sa.Column("parent_id", uuid.UUID, sa.ForeignKey("memories.id"), primary_key=True),
+#     sa.Column("child_id", uuid.UUID, sa.ForeignKey("memories.id"), primary_key=True),
+# )
 
 
 class Memory(CommonMixin, Base):
@@ -204,13 +194,13 @@ class Memory(CommonMixin, Base):
     )
     is_shared: Mapped[bool] = mapped_column(default=False)
     is_reflection: Mapped[bool]
-    reflection_memories: Mapped[list["Memory"]] = relationship(
-        "Node",
-        secondary=memory_to_memory,
-        primaryjoin=id == memory_to_memory.c.left_node_id,
-        secondaryjoin=id == memory_to_memory.c.right_node_id,
-        backref="left_nodes",
-    )
+    # reflection_memories: Mapped[list["Memory"]] = relationship(
+    #     "Node",
+    #     secondary=memory_to_memory,
+    #     primaryjoin=id == memory_to_memory.c.left_node_id,
+    #     secondaryjoin=id == memory_to_memory.c.right_node_id,
+    #     backref="left_nodes",
+    # )
 
     conversation_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         sa.ForeignKey("conversations.id", ondelete="cascade")
