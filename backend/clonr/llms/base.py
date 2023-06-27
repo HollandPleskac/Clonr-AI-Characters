@@ -1,12 +1,37 @@
-from abc import ABC
+from abc import ABC, abstractproperty
 from enum import Enum
 
 from pydantic import BaseModel
 
 
-# Lol I don't know what to pass here, just need a type to pass around elsewhere
 class LLM(ABC):
-    pass
+    @abstractproperty
+    def user_start(self):
+        pass
+
+    @abstractproperty
+    def user_end(self):
+        pass
+
+    @abstractproperty
+    def assistant_start(self):
+        pass
+
+    @abstractproperty
+    def assistant_end(self):
+        pass
+
+    @abstractproperty
+    def system_start(self):
+        pass
+
+    @abstractproperty
+    def system_end(self):
+        pass
+
+    @abstractproperty
+    def default_system_prompt(self):
+        pass
 
 
 class FinishReason(str, Enum):

@@ -38,6 +38,9 @@ class RoleEnum(str, Enum):
     assistant: str = "assistant"
 
 
+RoleEnum.assistant
+
+
 class OpenAIUsage(BaseModel):
     prompt_tokens: int
     completion_tokens: int
@@ -214,14 +217,6 @@ class OpenAI(LLM):
     def prompt_to_messages(self, prompt: str):
         messages = []
 
-        # if not prompt.rstrip().endswith(self.assistant_start):
-        #     msg = (
-        #         "When calling OpenAI chat models you must generate only directly"
-        #         " inside the assistant role! The OpenAI API does not currently"
-        #         " support partial assistant prompting."
-        #     )
-        #     raise ValueError(msg)
-
         pattern = r"<\|im_start\|>(\w+)(.*?)(?=<\|im_end\|>|$)"
         matches = re.findall(pattern, prompt, re.DOTALL)
 
@@ -233,7 +228,17 @@ class OpenAI(LLM):
             content = content.strip()  # should we do this?
             messages.append({"role": role, "content": content})
 
-        return [OpenAIMessage(**m) for m in messages]
+        messages = [OpenAIMessage(**m) for m in messages]
+
+        # if messages and messages[-1].role != RoleEnum.assistant:
+        #    msg = (
+        #         "When calling OpenAI chat models you must generate only directly"
+        #         " inside the assistant role! The OpenAI API does not currently"
+        #         " support partial assistant prompting."
+        #     )
+        #     raise ValueError(msg)
+
+        return messages
 
     @retry(
         retry=retry_if_exception_type(openai.error.RateLimitError),

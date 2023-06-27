@@ -7,4 +7,6 @@ from .openai import (
     OpenAIModelEnum,
     OpenAIResponse,
     OpenAIStreamDelta,
+    OpenAIMessage,
+    RoleEnum,
 )
