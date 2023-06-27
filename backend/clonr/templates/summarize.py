@@ -1,101 +1,62 @@
+# import guidance
 from pydantic import BaseModel
 
 from clonr.llms import LLM
+from clonr.templates.base import env, Template
 
-from ._env import env
 
-
-class SummaryExample(BaseModel):
+class Summary(BaseModel):
     passage: str
     summary: str
 
+    def render_task(self, header: str = ""):
+        return f"{header}Passage: {self.passage}\nSummary:"
 
-class SummaryExampleWithContext(SummaryExample):
+    def render(self, header: str = ""):
+        return f"{self.render_task(header=header)} {self.summary}"
+
+    def render_task_as_chat(self, llm: LLM, header: str = ""):
+        return f"{llm.user_start}{header}Passage: {self.passage}{llm.user_end}\n\n{llm.assistant_start}Summary:"
+
+    def render_as_chat(self, llm: LLM, header: str = ""):
+        return f"{self.render_task_as_chat(llm=llm, header=header)} {self.summary}{llm.assistant_end}"
+
+
+class SummaryWithContext(Summary):
     context: str
 
+    def render_task(self, header: str = ""):
+        return f"{header}Context: {self.context}\nPassage: {self.passage}\nSummary:"
 
-class Summarize:
+    def render(self, header: str = ""):
+        return f"{self.render_task(header=header)} {self.summary}"
+
+    def render_task_as_chat(self, llm: LLM, header: str = ""):
+        return f"{llm.user_start}{header}Context: {self.context}\nPassage: {self.passage}{llm.user_end}\n\n{llm.assistant_start}Summary:"
+
+    def render_as_chat(self, llm: LLM, header: str = ""):
+        return f"{self.render_task_as_chat(llm=llm, header=header)} {self.summary}{llm.assistant_end}"
+
+
+class Summarize(Template):
     template = env.from_string(
         """\
-{#### SYSTEM PROMPT ####}\
 {{ llm.system_start -}}
 {{ system_prompt }}
 {{- llm.system_end }}
 
-{#### USER START ####}\
-{{ llm.user_start -}}\
-
-{#### EXPLAIN THE SUMMARIZATION TASK ####}\
-Given a passage of text, write a summary of the passage. \
-Include key points, important details, and salient information. \
-Do not write anything other than the summary.\
-\
-{#### EXAMPLES ####}\
-{% if (examples) -%}
-{{ llm.user_end }}
+{{llm.user_start}}{{explanation}}{{llm.user_end}}
 {% for example in examples %}
-{%- if (loop.first) -%}{{ llm.user_start }}{%- endif %}
---- Example {{ loop.index }} ---
-{{- llm.user_end }}
-{{ llm.user_start -}}
-Passage: {{ example.passage }}
-{{- llm.user_end }}
-
-{{ llm.assistant_start -}}
-Summary: {{ example.summary }}
-{{- llm.assistant_end }}
-{%- if (loop.last) %}
-
-{% endif -%}
-{{- llm.user_start }}
-{%- endfor -%}
-{%- endif -%}
-\
-{#### TASK #####}\
---- Task ---
-Passage: {{ passage }}
-{{- llm.user_end }}
-
-{#### ASSISTANT START ####}\
-{{ llm.assistant_start -}}\
-Summary:\
+{{example}}
+{% endfor %}
+{{task}}
 """
     )
 
-    guidance_template = """\
-{{#system~}}
-{{ system_prompt }}
-{{~/system}}
-
-{{~! EXPLAIN THE SUMMARIZATION TASK ~}}
-{{#user~}}
+    explanation = """\
 Given a passage of text, write a summary of the passage. \
 Include key points, important details, and salient information. \
-Do not write anything other than the summary.\
-{{~#if examples}}{{/user}}{{/if}}
-
-{{~! EXPLAIN THE SUMMARIZATION TASK ~}}
-{{~#each examples}}
-{{#user~}}
-Passage: {{this.passage}}
-{{~/user}}
-
-{{#assistant~}}
-Summary: {{this.summary}}
-{{~/assistant}}
-{{~/each}}
-{{~#if examples}}{{#user}}{{/if}}
-
-{{~! TASK ~}}
---- Task ---
-Passage: {{passage}}
-{{~/user}}
-
-{{~! GENERATE SUMMARY}}\
-{{#assistant~}}
-Summary: {{gen "summary" temperature=TEMPERATURE max_tokens=MAX_TOKENS}}
-{{~/assistant}}\
-"""
+Do not write anything other than the summary."""
 
     @classmethod
     def render(
@@ -103,117 +64,32 @@ Summary: {{gen "summary" temperature=TEMPERATURE max_tokens=MAX_TOKENS}}
         llm: LLM,
         passage: str,
         system_prompt: str | None = None,
-        examples: list[SummaryExample] | None = None,
+        examples: list[Summary] | None = None,
     ) -> str:
-        if system_prompt is None:
-            system_prompt = llm.default_system_prompt
         if examples is None:
             examples = []
+        system_prompt = system_prompt or llm.default_system_prompt
+        examples_ = [
+            e.render_as_chat(llm=llm, header=f"--- Example {i+1} ---\n")
+            for i, e in enumerate(examples)
+        ]
+        task = Summary(passage=passage, summary="").render_task_as_chat(
+            llm=llm, header="--- Task ---\n"
+        )
         return cls.template.render(
-            llm=llm,
-            passage=passage,
             system_prompt=system_prompt,
-            examples=examples,
+            explanation=cls.explanation,
+            task=task,
+            examples=examples_,
+            llm=llm,
         )
 
-    @classmethod
-    def guidance_render(
-        cls,
-        temperature: float = 0.7,
-        max_tokens: int = 256,
-    ) -> str:
-        return cls.guidance_template.replace(
-            "TEMPERATURE", str(round(temperature, 2))
-        ).replace("MAX_TOKENS", str(int(max_tokens)))
 
-
-class SummarizeWithContext:
-    template = env.from_string(
-        """\
-{#### SYSTEM PROMPT ####}\
-{{ llm.system_start -}}
-{{ system_prompt }}
-{{- llm.system_end }}
-
-{#### USER START ####}\
-{{ llm.user_start -}}\
-
-{#### EXPLAIN THE SUMMARIZATION TASK ####}\
-Given a passage of text and a paragraph of context for that passage, \
+class SummarizeWithContext(Summarize):
+    explanation = """Given a passage of text and a paragraph of context for that passage, \
 write a summary of the passage. Include key points, important details, and \
 make use of the context where necessary. \
-Do not write anything other than the summary.\
-\
-{#### EXAMPLES ####}\
-{% if (examples) -%}
-{{ llm.user_end }}
-{% for example in examples %}
-{%- if (loop.first) -%}{{ llm.user_start }}{%- endif %}
---- Example {{ loop.index }} ---
-{{- llm.user_end }}
-{{ llm.user_start -}}
-Context: {{ example.context }}
-Passage: {{ example.passage }}
-{{- llm.user_end }}
-
-{{ llm.assistant_start -}}
-Summary: {{ example.summary }}
-{{- llm.assistant_end }}
-{%- if (loop.last) %}
-
-{% endif -%}
-{{- llm.user_start }}
-{%- endfor -%}
-{%- endif -%}
-\
-{#### TASK #####}\
---- Task ---
-Context: {{ context }}
-Passage: {{ passage }}
-{{- llm.user_end }}
-
-{#### ASSISTANT START ####}\
-{{ llm.assistant_start -}}\
-Summary:\
-"""
-    )
-
-    guidance_template = """\
-{{#system~}}
-{{ system_prompt }}
-{{~/system}}
-
-{{~! EXPLAIN THE SUMMARIZATION TASK ~}}
-{{#user~}}
-Given a passage of text, write a summary of the passage. \
-Include key points, important details, and salient information. \
-Do not write anything other than the summary.\
-{{~#if examples}}{{/user}}{{/if}}
-
-{{~! EXPLAIN THE SUMMARIZATION TASK ~}}
-{{~#each examples}}
-{{#user~}}
-Context: {{this.context}}
-Passage: {{this.passage}}
-{{~/user}}
-
-{{#assistant~}}
-Summary: {{this.summary}}
-{{~/assistant}}
-{{~/each}}
-{{~#if examples}}{{#user}}{{/if}}
-
-{{~! TASK ~}}
---- Task ---
-Context: {{context}}
-Passage: {{passage}}
-{{~/user}}
-
-{{~! GENERATE SUMMARY}}\
-{{#assistant~}}
-Summary: {{gen "summary" temperature=TEMPERATURE max_tokens=MAX_TOKENS}}
-{{~/assistant}}\
-"""
+Do not write anything other than the summary."""
 
     @classmethod
     def render(
@@ -222,26 +98,83 @@ Summary: {{gen "summary" temperature=TEMPERATURE max_tokens=MAX_TOKENS}}
         context: str,
         passage: str,
         system_prompt: str | None = None,
-        examples: list[SummaryExampleWithContext] | None = None,
+        examples: list[SummaryWithContext] | None = None,
     ) -> str:
-        if system_prompt is None:
-            system_prompt = llm.default_system_prompt
         if examples is None:
             examples = []
+        system_prompt = system_prompt or llm.default_system_prompt
+        examples_ = [
+            e.render_as_chat(llm=llm, header=f"--- Example {i+1} ---\n")
+            for i, e in enumerate(examples)
+        ]
+        task = Summary(
+            passage=passage, context=context, summary=""
+        ).render_task_as_chat(llm=llm, header="--- Task ---\n")
         return cls.template.render(
-            llm=llm,
-            context=context,
-            passage=passage,
             system_prompt=system_prompt,
-            examples=examples,
+            explanation=cls.explanation,
+            task=task,
+            examples=examples_,
+            llm=llm,
         )
 
-    @classmethod
-    def guidance_render(
-        cls,
-        temperature: float = 0.7,
-        max_tokens: int = 256,
-    ) -> str:
-        return cls.guidance_template.replace(
-            "TEMPERATURE", str(round(temperature, 2))
-        ).replace("MAX_TOKENS", str(int(max_tokens)))
+
+# import guidance
+# from functools import partial
+
+# class SummarizeGuidance(Template):
+#     template = """\
+# {{#system~}}
+# {{system_prompt}}
+# {{~/system}}
+
+# {{~! EXPLAIN THE SUMMARIZATION TASK ~}}
+# {{#user~}}
+# Given a passage of text, write a summary of the passage. \
+# Include key points, important details, and salient information. \
+# Do not write anything other than the summary.\
+# {{~#if examples}}{{/user}}{{/if}}
+
+# {{~! EXPLAIN THE SUMMARIZATION TASK ~}}
+# {{~#each examples}}
+# {{#user~}}
+# Passage: {{this.passage}}
+# {{~/user}}
+
+# {{#assistant~}}
+# Summary: {{this.summary}}
+# {{~/assistant}}
+# {{~/each}}
+# {{~#if examples}}{{#user}}{{/if}}
+
+# {{~! TASK ~}}
+# --- Task ---
+# Passage: {{passage}}
+# {{~/user}}
+
+# {{~! GENERATE SUMMARY}}\
+# {{#assistant~}}
+# Summary: {{gen "summary" temperature=0.8 max_tokens=256 top_p=0.95}}
+# {{~/assistant}}\
+# """
+
+#     @classmethod
+#     def program(
+#         cls,
+#         llm: LLM,
+#         passage: str,
+#         system_prompt: str | None = None,
+#         examples: list[Summary] | None = None,
+#     ) -> guidance.Program:
+#         if examples is None:
+#             examples = []
+#         system_prompt = SystemPrompt.render(llm=llm, prompt=system_prompt)
+#         prog = guidance(cls.guidance_program)
+#         return partial(
+#             prog,
+#             system_prompt=system_prompt,
+#             examples=examples,
+#             passage=passage,
+#             llm=llm,
+#             explanation=cls.explanation,
+#         )
