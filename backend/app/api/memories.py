@@ -21,10 +21,12 @@ async def create_memory(
     user: models.User = Depends(current_active_user),
 ):
     new_memory = models.Memory(**memory.dict())
-    user.memories.append(new_memory)
     db.add(new_memory)
     await db.commit()
     await db.refresh(new_memory)
+    print(type(new_memory.memory_embedding))
+    # <class 'numpy.ndarray'> -> list of floats
+    new_memory.memory_embedding = list(new_memory.memory_embedding)
     return new_memory
 
 
@@ -77,7 +79,7 @@ async def delete_memory(
     return memory
 
 
-@router.get("/conversation/{conversation_id}", response_model=List[schemas.Fact])
+@router.get("/conversation/{conversation_id}", response_model=List[schemas.Memory])
 async def get_memories_for_conversation(
     conversation_id: str,
     db: AsyncSession = Depends(get_async_session),

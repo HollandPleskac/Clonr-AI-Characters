@@ -12,6 +12,9 @@ from clonr.llms import MockLLM
 from clonr.embedding.encoder import EmbeddingModel
 import transformers
 import asyncio
+import numpy as np
+import datetime
+import json
 
 load_dotenv()
 
@@ -91,11 +94,11 @@ def write_messages(session, convo_id):
     return
 
 
-def create_memory(memory):
+def create_memory(memory_json):
     print("Creating a Memory")
     r = session.post(
         os.path.join(home, "memories"),
-        json={"memory": memory},
+        json=memory_json,
     )
     memory = r.json()
     print("memory:", memory, "\n-----\n")
@@ -150,12 +153,24 @@ if __name__ == "__main__":
     password = os.environ["SUPERUSER_PASSWORD"]
     session, user = authenticate_user(email, password)
     clone_id = create_clone(session, user["id"])
+    print("this is clone_id:", clone_id)
     api_key = create_api_key(session, user["id"], clone_id)
     session.headers.update({"CLONR_API_KEY": api_key})
     convo_id = create_conversation(session, clone_id)
-    write_messages(session, convo_id)
-    print("---------------------------------")
-    get_memories(session, convo_id)
+    print("this is convo_id: ", convo_id)
+    memory_json = {
+        "memory": "this is a test memory",
+        "memory_embedding": [1.02, 2.03, 3.04],
+        "timestamp": datetime.datetime.now().isoformat(),
+        "last_accessed_at": datetime.datetime.now().isoformat(),
+        "importance": 0.1,
+        "is_shared": False,
+        "is_reflection": False,
+        "conversation_id": convo_id,
+        "clone_id": clone_id,
+    }
+    print(json.dumps(memory_json, indent=4))
+    create_memory(memory_json)
     # async_session = asyncio.run(get_async_session().__anext__())
     # asyncio.run(test_clone(clone_id, user["id"], api_key, convo_id, async_session))
 
