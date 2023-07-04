@@ -183,7 +183,6 @@ class Memory(CommonMixin, Base):
 
     memory: Mapped[str]
     memory_embedding: Mapped[List[float]]
-    importance: Mapped[float]
     timestamp: Mapped[datetime.datetime] = mapped_column(
         sa.DateTime(timezone=True),
         server_default=sa.func.now(),
@@ -192,8 +191,9 @@ class Memory(CommonMixin, Base):
         sa.DateTime(timezone=True),
         server_default=sa.func.now(),
     )
+    importance: Mapped[float]
     is_shared: Mapped[bool] = mapped_column(default=False)
-    is_reflection: Mapped[bool]
+    is_reflection: Mapped[bool] = mapped_column(default=False)
     # reflection_memories: Mapped[list["Memory"]] = relationship(
     #     "Node",
     #     secondary=memory_to_memory,
@@ -211,8 +211,8 @@ class Memory(CommonMixin, Base):
 
     def __repr__(self):
         if self.is_reflection:
-            return f"Reflection(timestamp={self.timestamp}, memory={self.memory})"
-        return f"Memory(timestamp={self.timestamp}, memory={self.memory})"
+            return f"Reflection(timestamp={self.timestamp}, memory={self.memory}), memory_embedding={self.memory_embedding})"
+        return f"Memory(timestamp={self.timestamp}, memory={self.memory}), memory_embedding={self.memory_embedding})"
 
 
 # class DocumentCollection(CommonMixin, Base):

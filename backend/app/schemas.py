@@ -130,21 +130,24 @@ class ExampleDialogue(ExampleDialogueCreate):
 
 
 class MemoryCreate(BaseModel):
-    content: str
-    content_embedding: List[float]
+    memory: str
+    memory_embedding: List[float]
     timestamp: datetime.datetime = datetime.datetime.utcnow()
     last_accessed_at: datetime.datetime = datetime.datetime.utcnow()
     importance: float = 0.0
     is_shared: bool = False
+    is_reflection: bool = False
     conversation_id: uuid.UUID
+    clone_id: uuid.UUID
 
 
 class MemoryUpdate(BaseModel):
-    content: str
-    content_embedding: List[float]
+    memory: str
+    memory_embedding: List[float]
     last_accessed_at: datetime.datetime
     importance: float
     is_shared: bool
+    is_reflection: bool
 
 
 class Memory(CommonMixin, MemoryCreate):

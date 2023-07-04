@@ -17,6 +17,8 @@ from app.models import Document as DBDocument
 from pydantic import Field
 from sqlalchemy.future import select
 from sqlalchemy import text
+from app.db.db import async_session_maker
+from app.api.memories import create_memory
 
 # import AsyncSession
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -61,8 +63,15 @@ class AuthenticatedDB:
     #     ).scalar()
 
     async def get_sample(self):
-        res = await self.session.execute(text("SELECT 1"))
-        return res
+        async with async_session_maker() as conn:
+            try:
+                res = await conn.execute(text("SELECT 1"))
+                print("THIS IS res: ", res)
+            except Exception as e:
+                print("ERROR: ", e)
+                raise e
+        # res = await self.session.execute(text("SELECT 1"))
+        return
 
     async def get_messages(self):
         promise = await self.session.scalars(

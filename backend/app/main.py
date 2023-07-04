@@ -76,6 +76,7 @@ app.include_router(api.voice_router)
 app.include_router(api.clones_router)
 app.include_router(api.apikeys_router)
 app.include_router(api.conversations_router)
+app.include_router(api.memories_router)
 # app.include_router(api.messages_router)
 # app.include_router(api.documents_router)
 
