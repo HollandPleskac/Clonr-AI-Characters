@@ -12,3 +12,7 @@ Roadmap
 - [ ] create Text-to-speech (TTS) API
 - [ ] market research on potential use cases (influencers, accounts, ad agencies, voiceovers, AI table reader for scripts/specs/TV/movie etc.)
 
+
+# Updated jul 3rd.
+
+Checkout the nb.ipynb notebook. Most of the actual Clonr stuff has been moved to its own directory.
