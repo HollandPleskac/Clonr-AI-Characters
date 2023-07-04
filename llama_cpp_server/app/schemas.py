@@ -99,7 +99,7 @@ class CreateCompletionRequest(BaseModel):
     model: Optional[str] = model_field
     n: Optional[int] = 1
     best_of: Optional[int] = 1
-    logit_bias: Optional[Dict[str, float]] = Field(None)
+    logit_bias: Optional[Dict[int, float]] = Field(None)
     user: Optional[str] = Field(None)
 
     # llama.cpp specific parameters
@@ -130,7 +130,7 @@ class CreateChatCompletionRequest(BaseModel):
     # ignored or currently unsupported
     model: Optional[str] = model_field
     n: Optional[int] = 1
-    logit_bias: Optional[Dict[str, float]] = Field(None)
+    logit_bias: Optional[Dict[int, float]] = Field(None)
     user: Optional[str] = Field(None)
 
     # llama.cpp specific parameters

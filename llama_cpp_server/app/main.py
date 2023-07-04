@@ -1,3 +1,4 @@
+import hashlib
 import json
 import multiprocessing
 import re
@@ -14,20 +15,35 @@ import llama_cpp
 import torch
 from anyio import Semaphore
 from anyio.streams.memory import MemoryObjectSendStream
+from app import schemas
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.concurrency import iterate_in_threadpool
 from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
-from pydantic import BaseSettings, Field, BaseModel
+from pydantic import BaseModel, BaseSettings, Field
 from sse_starlette import EventSourceResponse
 from starlette.concurrency import run_in_threadpool
 from transformers import LlamaTokenizer
 
-from app import schemas
-
 load_dotenv()
+
+
+class ZeroTempCache:
+    def __init__(self):
+        self._d = {}
+
+    def get(self, prompt: str):
+        key = hashlib.sha256(prompt.encode()).hexdigest()
+        return self._d.get(key)
+
+    def put(self, prompt: str, value):
+        key = hashlib.sha256(prompt.encode()).hexdigest()
+        self._d[key] = value
+
+
+zero_temp_cache = ZeroTempCache()
 
 
 class Settings(BaseSettings):
@@ -245,18 +261,37 @@ async def v2_chat(
     if body.stop and isinstance(body.stop, str):
         body.stop = [body.stop]
 
+    if body.logit_bias is None:
+        body.logit_bias = {}
+
     exclude = {
         "n",
         "logit_bias",
         "user",
     }
     kwargs = body.dict(exclude=exclude)
-    messages = kwargs.pop("messages")
 
+    # if bias := kwargs.pop("logit_bias"):
+    #     logger.error(f"Received bias: {bias}")
+
+    #     def _bias_fn(arr):
+    #         for k, v in bias.items():
+    #             arr[k] += v
+    #         return arr
+
+    #     kwargs["logits_processor"] = [_bias_fn]
+
+    print(json.dumps(kwargs, indent=2))
+
+    messages = kwargs.pop("messages")
     # WARNING. We concatenate with a newline. This might be an unexpected prompt adjustment from the user side!
     prompt = "\n".join([x["content"] for x in messages])
     logger.info(f"Received prompt: {prompt}")
     kwargs["prompt"] = messages[0]["content"]
+
+    if body.temperature <= 0 and (r := zero_temp_cache.get(kwargs["prompt"])):
+        logger.info("CACHE HIT!")
+        return r
 
     if body.stream:
         logger.info("Received STREAM chat request")
@@ -287,6 +322,7 @@ async def v2_chat(
     else:
         completion: llama_cpp.ChatCompletion = await run_in_guarded_threadpool(LLM, **kwargs)  # type: ignore
         completion = _convert_completion(completion)
+        zero_temp_cache.put(kwargs["prompt"], completion)
         return completion
 
 
@@ -300,7 +336,7 @@ class NumTokensResponse(BaseModel):
 
 @app.post("/v1/tokens", response_model=NumTokensResponse)
 async def num_tokens(inp: NumTokensRequest):
-    return {'num_tokens': len(LLM.tokenize(inp.prompt.encode()))}
+    return {"num_tokens": len(LLM.tokenize(inp.prompt.encode()))}
 
 
 class GuidanceRequest(BaseModel):
