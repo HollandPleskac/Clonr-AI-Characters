@@ -38,7 +38,8 @@ class Summarize(Template):
 {{- llm.system_end }}
 
 {{ llm.user_start -}}
-Summarize the following passage (enclosed with ---). \
+Summarize the following passage (enclosed with ---), using only the \
+text in the passage and not prior knowledge. \
 Write a brief and straightforward summarization, that includes as many \
 key points and as much salient information as possible. \
 Use only information present in the passage.
@@ -59,7 +60,8 @@ Below is an instruction that describes a task. Write a response that \
 appropriately completes the request
 
 ### Instruction:
-Summarize the following passage (enclosed with ---). \
+Summarize the following passage (enclosed with ---), using only the \
+text in the passage and not prior knowledge. \
 Write a brief and straightforward summarization, that includes as many \
 key points and as much salient information as possible. \
 Use only information present in the passage.
@@ -94,7 +96,8 @@ class SummarizeWithExamples(Template):
 {{- llm.system_end }}
 
 {{ llm.user_start -}}
-Your task is to the following passage enclosed with ---. Write a brief \
+Summarize the following passage enclosed with ---, using only the \
+text in the passage and not prior knowledge. Write a brief \
 and straightforward summarization, that includes as many key points and \
 as much salient information as possible. \
 Use only information present in the passage. \
@@ -133,7 +136,8 @@ Below is an instruction that describes a task. Write a response that \
 appropriately completes the request
 
 ### Instruction: 
-Summarize the following passage (enclosed with ---). \
+Summarize the following passage (enclosed with ---). using only the \
+text in the passage and not prior knowledge. \
 Write a brief and straightforward summarization, that includes as many \
 key points and as much salient information as possible. \
 Use only information present in the passage.

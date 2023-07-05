@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import datetime
 import uuid
+from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, Field, validator
+
+from clonr.utils import get_current_datetime
+from clonr.utils.formatting import datediff_to_str
 
 
 class Document(BaseModel):
@@ -28,9 +33,9 @@ class Chunk(BaseModel):
     content: str
     index: int
     context: str | None = None
-    document_id: uuid.UUID
-    embedding: list[float] | None = Field(default=None, repr=False)
+    embedding: list[float] = Field(default=None, repr=False)
     embedding_model: str | None = Field(default=None, repr=False)
+    document_id: uuid.UUID
 
     def __eq__(self, other):
         return (
@@ -68,9 +73,9 @@ class DialogueMessage(BaseModel):
     content: str
     index: int
     is_character: bool
-    embedding: list[float] | None = Field(default=None, repr=False)
-    embedding_model: str | None = Field(default=None, repr=False)
     dialogue_id: uuid.UUID
+    embedding: list[float] = Field(default=None, repr=False)
+    embedding_model: str | None = Field(default=None, repr=False)
 
 
 class Dialogue(BaseModel):
@@ -81,6 +86,47 @@ class Dialogue(BaseModel):
     source: str = Field(
         detail="The input source for this dialogue. Can be manual, discord, text, whatsapp, messenger, etc."
     )
-    embedding: list[float] | None = Field(default=None, repr=False)
-    embedding_model: str | None = Field(default=None, repr=False)
     message_ids: list[uuid.UUID] = Field(default_factory=lambda: [], repr=False)
+    messages: list[DialogueMessage] = Field(default_factory=lambda: [], repr=False)
+    embedding: list[float] = Field(default=None, repr=False)
+    embedding_model: str | None = Field(default=None, repr=False)
+
+    @property
+    def content(self):
+        return "\n".join(f"<{x.speaker}>: {x.content}" for x in self.messages)
+
+
+class Memory(BaseModel):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4)
+    content: str
+    timestamp: datetime.datetime = Field(
+        detail="The time at which the memory occurs, which may be different than the time it was created at. Stored as UTC. Converted to local time as necessary",
+        default_factory=get_current_datetime,
+    )
+    importance: int = Field(
+        detail="The LLM rated importance of this memory. scaled 0-9 to make guidance easier",
+        ge=0,
+        le=9,
+    )
+    embedding: list[float] = Field(default=None, repr=False)
+    embedding_model: str | None = Field(default=None, repr=False)
+
+    def to_relative_dt_str(self, tz: ZoneInfo | None = None):
+        now = get_current_datetime(tz=tz)
+        dt_str = datediff_to_str(start_date=self.timestamp, end_date=now)
+        return f"[{dt_str}] {self.content}"
+
+    def to_str(self, tz: ZoneInfo | None = None):
+        dt = self.timestamp
+        if tz is not None:
+            dt = dt.astimezone(tz=ZoneInfo(tz))
+        dt_str = dt.strftime("%Y-%m-%d %H:%M:%S")
+        return f"[{dt_str}] {self.content}"
+
+
+class Message(BaseModel):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4)
+    speaker: str
+    content: str
+    timestamp: datetime
+    is_character: bool

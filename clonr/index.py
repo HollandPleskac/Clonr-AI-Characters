@@ -8,11 +8,11 @@ from pydantic import BaseModel, validator
 from tqdm import tqdm
 
 from clonr import templates
-from clonr.data.data_structures import Document, Node
+from clonr.data_structures import Document, Node
 from clonr.llms import LLM, GenerationParams, LLMResponse, MockLLM
-from clonr.processing.text_splitters import TextSplitter
-from clonr.processing.utils import aggregate_by_length
+from clonr.text_splitters import TextSplitter
 from clonr.tokenizer import Tokenizer
+from clonr.utils import aggregate_by_length
 
 DEFAULT_SUMMARIZE_PARAMS = GenerationParams(
     max_tokens=512, temperature=0.3, presence_penalty=0.2, top_p=0.95

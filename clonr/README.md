@@ -1,6 +1,6 @@
 # Clonr
 
-This package contains the tools and code required to build a functional AI clone.
+This package contains the tools and code required to build a functional AI clone. For a notebook that steps through creating an eample clone, please see `nb.ipynb`
 
 ## LLMs
 
@@ -158,3 +158,70 @@ def tree_tokens_upper_bound(doc_size: int, context_size: int, summary_size: int)
 
 5. Tree index with causality (N * (1 + 2 / compression_ratio) * log_{compression_ratio}(N))
 * same as above, but double the summaries.
+
+
+## Database systems.
+
+Clones make use of the following database systems.
+
+1. Vector database. This is for performing similiarity search with a bi-encoder paired with a distance metric (cosine, euclidean) on a large corpus of vectors. In this case, our vectors are primarily text. Multimodal is not the goal here.
+2. Relational database. Typical relational stuff, useful for storing messages, wiki facts, items like documents that collect a bunch of document chunks. This is also storage method used for more comlicate graph data structures (trees, lists) created by our indexing.
+3. In-memory caching. Used for fast memory retrieval, and retrieval of dynamic memory, which has high read-write access.
+
+Databases are stored under `clonr.storage`. We provide a simple in-memory vectordb for running locally, that performs exact similarity search. We also provide a relational sqlite db for testing persistent storage. The downside is that pgvector unifies these, so the flow is not too similar to production. Also, sqlite is annoying about uuids.
+
+## Retrieval
+
+There are two types of similarity score
+1. bi-encoder distance computation. check the distance between query vector and all database vectors
+2. cross-encoder reranking. select the top K from (1), then re-rank similarity with a slower, but more powerful cross-encoder that takes in both arguments (so it learns a new distance metric other than e.g. cosine) like CrossEncoder(query, passage) => score.
+
+On top of that, we also build the GenerativeAgentsRetriever, which uses the retrieval method from their paper. It ranks according to the formula
+$$
+\text{score} = \alpha_recency * \text{recency} + \alpha_importance * \text{importance} + \alpha_relevance * \text{relevance}
+$$
+The default $\alpha$ values are 1. Recency is given by exponential decay with some factor $\gamma \in [0, 1]$ as $\gamma^t$. 1 means no time decay, and 0 means disregard time. Importance is computed via an LLM at storage time, and relevance is just the similarity score above, normalized to [0, 1] (cross-encoders need to apply a sigmoid, and cosine distance is like 1 - dist.).
+
+The above method fails in a typical vectordb, since you can't perform a combined search, but it succeeds in pgvector!
+
+## Text Splitting
+
+we have 3 options, sentence-level, token-level, character-level. The last option is the fastest, the middle is slower but will give more manageable outputs for downstream tasks that require token count, like embedding and LLM calls. The first has the highest accuracy if done correctly, but also many pitfalls. Chunks are uneven length as sentence lengths are variable, and it is designed only for English, as it relies on rules to determine when to end a sentence (spacy uses a model, but is slower and not worth it, nltk is rule-based).
+
+The two main parameters here are `chunk_size` and `overlap_size`. The former is the size of chunks that will be embedded and stored in a vector database. The latter is a guard against a bad naive splitting, i.e., what are the odds that we chop out important context. As an example, imagine a query, "Who is president of the U.S." retrieves a chunk "Jonny is president of the". If the following chunk is "Society of Physics Students", then you got an unlucky chunk that destroyed a critical part of the sentence. Your overlap size should be the maximum size that you believe two pieces of relevant information can be separated by in a document. Other examples are coreference resolution, i.e. resolving pronouns when you don't have the previous text that told you who "he, she, they" refers to. Again, think how long you can go with "he, she, they" before resolving. In some kinds of text, the answer is the entire document, in which case you should use the more advanced indexing methods discussed above for adding a global context to retrieval.
+
+
+## Clone
+
+This is the main stuff. How do we actually build a functioning AI bot? 
+
+### Inference
+Inference is done via LLM, which means the main object is the prompt. Roughly, the prompting is broken down into the following order/scheme.
+
+1. system_prompt (designed for this task)
+2. name
+3. short_description
+4. long_description
+5. example_dialogues
+6. agent_summary
+7. memories
+8. entity_context_summary
+9. conversation_messages
+
+The first 4 are static, and retrieved from the relational database. (5) uses a vector db retrieval for relevance from a static collection of example dialogues (maybe rethink this in the future?). (6) is retrieved every turn from the cache and synthesized periodically, when a certain importance criteria is met, via llm calls. (7) is a vector database retrieval with special retrieval function. (8) is retrieved from cache and also synthesized periodically like (6). (9) is retrieved from cache and just lists the recent messages.
+
+### Storage
+Some of the pieces above are dynamic and change over time. A critical component of our system is ensuring these update appropriately and timely. the agent and context summaries follow a 2-step process, of query the memory stream (vectordb) for relevant information, followed by an LLM call to use that as context for refining the current summaries.
+
+The memory stream contains the agent's interactions with the world, including messages sent and received. More importantly, it implements a recursive bottoms-up tree structure that makes use of _reflections_ to recursively form memories based on other memories and reflections (i.e. the recursive bit). Memory formation is similar to the synthesis part above, in that it triggers upon certain events. In this case, the event is when the importance scores of the memory stream pass a certain threshold.
+
+Reflections are generated in a 3-part process
+1. LLM call: what are the most important things about the last 100 messages?
+2. query the output of the above call against memory stream to obtain all relevant memories (beyond the last 100!)
+3. synthesize the result into reflections and store as memories with depth > 0. (there is another step of forming edges, but it's actually not necessary beyond being nice for later inspection of the memory tree.)
+
+### Planning
+lol we aren't doing planning. But this basically sets goals, motives, and objective for the agent to complete. We don't do this, since it adds many LLM calls + complexity, and does not make sense when the agent is not living in an environment with a running clock. If time doesn't move forward, it's hard to plan goals
+
+### External sources
+A crucial aspect of our pipeline is allowing users and creators to influence their clone dynamically. These appear in the form of "internal thoughts" which are just memories stated without the tint of observationality. These are statements like "I'm happy" or "I don't know what to eat for dinner". These integrate seamlessly with the memory stream, allowing people to hook up 3rd party sources of info, such as social media, that can pubsub update all clones with recent information. This part is cooooool.

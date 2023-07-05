@@ -1,19 +1,10 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
+from clonr.data.data_structures import Dialogue, Memory, Message
 from clonr.llms import LLM
 from clonr.templates.base import Template, env
-
-
-class SummaryExample(BaseModel):
-    passage: str
-    summary: str
-
-
-class OnlineSummaryExample(BaseModel):
-    passage: str
-    prev_summary: str
-    summary: str
-
 
 DEFAULT_SYSTEM_PROMPT = "You are an imitation AI. You assume the identity of the character you are given, and respond only as that character."
 
@@ -26,27 +17,52 @@ class Message(Template):
 {{- llm.system_end }}
 
 {{ llm.user_start -}}
-The following is a profile describing {{char}}. You are {{char}}. Respond only as {{char}}. Do not break \
-character.
-
+You are {{char}}. Each section of your profile will be enclosed with ---. The following \
+are your innate characteristics and fundamental qualities. These do not change easily.
+---
 Name: {{char}}
 {{short_description}}
 
-### Core characteristics:
+### Core characteristics
 {{long_description}}
 
 ### Example dialogues
 {{example_dialogues}}
+---
 
-### Current thoughts and 
+The following describes your current state. It contains a summary of your current state \
+and a list of retrieved memories. \
+Memories are thoughts, observations, actions, or reflections that you've had.
+---
+{% if (agent_summary) -%}
+{{agent_summary}}
+{%- endif %}
+### Retrieved memories
+{% for memory in memories -%}
+{{memory}}
+{%- endfor %}
+---
 
-TODO
+These are your thoughts and feelings about {{user}}.
+---
+{{entity_context_summary}}
+---
 
+Finally, the following are your most recent messages of your conversation with {{user}}.
+---
+{% for msg in messages -%}
+{{msg}}
+{%- endfor %}
+---
+
+The current datetime is {{cur_time}}}. \
+You are {{char}}. Respond to these messages as {{char}}. \
+Respond only as {{char}} and do not break character. \
+Separate distinct messages by using a newline.
 {{- llm.user_end }}
 
 {{ llm.assistant_start -}}
-UPDATED DESCRIPTION:
-{{ llm.assistant_end -}}
+{{- llm.assistant_end -}}
 """
     )
 
@@ -56,6 +72,54 @@ Below is an instruction that describes a task. Write a response that \
 appropriately completes the request
 
 ### Instruction: 
+You are an imitation AI. You assume the identity of the character you are given, \
+and respond only as that character. Each section of your profile will be enclosed \
+with ---. The following are your innate characteristics and fundamental qualities. \
+These do not change easily.
+---
+Name: {{char}}
+{{short_description}}
+
+### Core characteristics
+{{long_description}}
+
+### Example dialogues
+{% for dialogue in example_dialogues -%}
+Dialogue #{{ loop.index }}:
+{% for msg in dialogue -%}
+{% if (msg.is_character) -%}{{char}}{%- else -%}{{ msg.speaker }}{%- endif %}: {{ msg.content }}
+{%- endfor %}
+{%- endfor %}
+---
+
+The following describes your current state. It contains a summary of your current state \
+and a list of retrieved memories. \
+Memories are thoughts, observations, actions, or reflections that you've had.
+---
+{% if (agent_summary) -%}
+{{agent_summary}}
+{%- endif %}
+### Retrieved memories
+{% for memory in memories -%}
+{{memory}}
+{%- endfor %}
+---
+
+These are your thoughts and feelings about {{user}}.
+---
+{{entity_context_summary}}
+---
+
+Finally, the following are your most recent messages of your conversation with {{user}}.
+---
+{% for msg in messages -%}
+{{msg}}
+{%- endfor %}
+---
+
+You are {{char}} and you should respond to these messages as {{char}}. \
+Respond only as {{char}} and do not break character. \
+Separate distinct messages by using a newline.
 
 ### Response:
 """
@@ -64,9 +128,14 @@ appropriately completes the request
     @classmethod
     def render(
         cls,
-        current_description: str,
-        document_type: str,
-        document_content: str,
+        char: str,
+        short_description: str,
+        long_description: str,
+        example_dialogues: list[Dialogue],
+        agent_summary: str,
+        memories: list[Memory],
+        entity_context_summary,
+        messages,
         llm: LLM,
         system_prompt: str | None = None,
     ):
@@ -74,19 +143,39 @@ appropriately completes the request
             DEFAULT_SYSTEM_PROMPT if system_prompt is None else system_prompt
         )
         return cls.chat_template.render(
+            char=char,
+            short_description=short_description,
+            long_description=long_description,
+            example_dialogues=example_dialogues,
+            agent_summary=agent_summary,
+            memories=memories,
+            entity_context_summary=entity_context_summary,
+            messages=messages,
             llm=llm,
-            current_description=current_description,
-            document_type=document_type,
-            document_content=document_content,
             system_prompt=system_prompt,
         )
 
     @classmethod
     def render_instruct(
-        cls, current_description: str, document_type: str, document_content: str
+        cls,
+        char: str,
+        short_description: str,
+        long_description: str,
+        example_dialogues: list[Dialogue],
+        agent_summary: str,
+        memories: list[Memory],
+        entity_context_summary,
+        messages: list[Message],
     ):
         return cls.instruct_template.render(
-            current_description=current_description,
-            document_type=document_type,
-            document_content=document_content,
+            char=char,
+            short_description=short_description,
+            long_description=long_description,
+            example_dialogues=example_dialogues,
+            agent_summary=agent_summary,
+            memories=memories,
+            entity_context_summary=entity_context_summary,
+            messages=messages,
+            llm=llm,
+            system_prompt=system_prompt,
         )
