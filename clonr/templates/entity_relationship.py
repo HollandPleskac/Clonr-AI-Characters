@@ -66,18 +66,28 @@ Your answer should be concise yet contain all of the necessary information to pr
     def render(
         cls,
         llm: LLM,
+        char: str,
+        entity: str,
         statements: list[str],
         system_prompt: str | None = None,
     ):
         if system_prompt is None:
             system_prompt = llm.default_system_prompt
         return cls.chat_template.render(
-            llm=llm, system_prompt=system_prompt, statements=statements
+            llm=llm,
+            system_prompt=system_prompt,
+            statements=statements,
+            char=char,
+            entity=entity,
         )
 
     @classmethod
-    def render_chat(
+    def render_instruct(
         cls,
+        char: str,
+        entity: str,
         statements: list[str],
     ):
-        return cls.instruct_template.render(statements=statements)
+        return cls.instruct_template.render(
+            statements=statements, char=char, entity=entity
+        )

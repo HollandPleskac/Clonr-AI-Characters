@@ -36,5 +36,8 @@ This is a pretty critical aspect of the pipeline, and the greatest gains in acti
 
 Actually not sure how indexing is done in general, but trafilatura is pretty dope.
 
+__api integrations__
+Connect to Twitter, Instagram, social media APIs to receive live updates. Not sure what the data packet will look like, but status updates, photos, captions are all game. Photo conversion to text is another thing to consider here.
+
 ## Onboarding
 Broken into several sections, the idea is to look like a tabbed registration page, where you complete each page in order and then finish signup/creation.
