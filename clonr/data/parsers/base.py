@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from clonr.data.data_structures import Document
+from clonr.data_structures import Document
 
 
 class ParserException(Exception):

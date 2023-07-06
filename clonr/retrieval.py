@@ -63,6 +63,10 @@ class GenerativeAgentsRetriever(Retriever):
         seconds = 60 * 60 * half_life_hours
         self.time_decay = 0.5 ** (1 / seconds)
         self.max_importance_score = max_importance_score
+        self._alpha_sum = (
+            self.alpha_recency + self.alpha_importance + self.alpha_relevance
+        )
+        assert self._alpha_sum > 0, "At least one alpha value must be > 0."
 
     def query(self, query: str, db: InMemoryVectorDB, k: int = 3):
         """The vectordb must return objects that have keys for timestamp,
@@ -93,6 +97,7 @@ class GenerativeAgentsRetriever(Retriever):
 
             # calculate relevance score
             score += self.alpha_relevance * item["similarity_score"]
+            score /= self._alpha_sum
 
             # Use a negative score so that in the next argsort step we retrieve the smallest values.
             item["generative_agents_score"] = score

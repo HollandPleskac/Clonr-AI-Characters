@@ -17,6 +17,8 @@ and observations, answer the question that follows.
 ---
 {% for stmt in statements -%}
 {{loop.index}}. {{stmt}}
+{%- if not loop.last %}
+{% endif %}
 {%- endfor %} 
 ---
 
@@ -41,6 +43,8 @@ and observations, answer the question that follows.
 ---
 {% for stmt in statements -%}
 {{loop.index}}. {{stmt}}
+{%- if not loop.last %}
+{% endif %}
 {%- endfor %} 
 ---
 

@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo
 from pydantic import BaseModel, Field, validator
 
 from clonr.utils import get_current_datetime
-from clonr.utils.formatting import datediff_to_str
+from clonr.utils.formatting import DateFormat
 
 
 class Document(BaseModel):
@@ -111,16 +111,8 @@ class Memory(BaseModel):
     embedding: list[float] = Field(default=None, repr=False)
     embedding_model: str | None = Field(default=None, repr=False)
 
-    def to_relative_dt_str(self, tz: ZoneInfo | None = None):
-        now = get_current_datetime(tz=tz)
-        dt_str = datediff_to_str(start_date=self.timestamp, end_date=now)
-        return f"[{dt_str}] {self.content}"
-
-    def to_str(self, tz: ZoneInfo | None = None):
-        dt = self.timestamp
-        if tz is not None:
-            dt = dt.astimezone(tz=ZoneInfo(tz))
-        dt_str = dt.strftime("%Y-%m-%d %H:%M:%S")
+    def to_str(self) -> str:
+        dt_str = DateFormat.human_readable(self.timestamp)
         return f"[{dt_str}] {self.content}"
 
 
@@ -128,5 +120,9 @@ class Message(BaseModel):
     id: uuid.UUID = Field(default_factory=uuid.uuid4)
     speaker: str
     content: str
-    timestamp: datetime
+    timestamp: datetime.datetime = Field(default_factory=get_current_datetime)
     is_character: bool
+
+    def to_str(self) -> str:
+        dt_str = DateFormat.human_readable(self.timestamp)
+        return f"[{dt_str}] {self.content}"

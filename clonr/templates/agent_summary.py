@@ -1,9 +1,18 @@
+from clonr.data_structures import Memory
 from clonr.llms import LLM
 from clonr.templates.base import Template, env
 
+DEFAULT_AGENT_SUMMARY_QUESTIONS = [
+    "How would one describe {char}’s core characteristics?",
+    "How would one describe {char}’s feeling about their recent progress in life?"
+    # 'How would one describe {char}’s current daily occupation?',
+]
 
-# TODO: test this
-class AgentSumary(Template):
+
+# TODO: Think if we really want to do numbered outputs. It might be enought to ask to just
+# answer all questions, without having to guide it. In any event, we can parse numbere output with
+# re.split(r'\n\d\.\s*', string)
+class AgentSummary(Template):
     chat_template = env.from_string(
         """\
 {{ llm.system_start -}}
@@ -11,34 +20,33 @@ class AgentSumary(Template):
 {{- llm.system_end }}
 
 {{ llm.user_start -}}
-You are answering some questions about {{char}}. Here is a long description for the {{char}} innate traits that do not change easily: \
-{{long_description}}
-
-Write answers for the following three questions and relevant memories (enclosed with ---). \
-
-Question one: how would one describe {{char}}’s core characteristics given the following?
+You are answering questions about {{char}}.
+{% if (short_description) -%}{{short_description}}{%- endif %}
+{% if (long_description) -%}
+The following (enclosed with ---) are the innate traits and core characteristics of {{char}}. These do not change easily.
 ---
-{% for characteristic_memory in characteristic_memories -%}
-{{loop.index}}. {{characteristic_memory}}
+{{long_description}}
+---
+{% endif %}
+You have gathered the following relevant memories (enclosed with ---) that you will use to answer questions. \
+Memories are thoughts, feelings, actions, or observations that {{char}} has had or taken in the past.
+---
+{% for memory in memories -%}
+{{loop.index}}. {{memory}}
+{%- if not loop.last %}
+{% endif %}
 {%- endfor %} 
 ---
-
-Question two: how would one describe {{char}}’s current daily occupation?
----
-{% for occupation_memory in occupation_memories -%}
-{{loop.index}}. {{occupation_memory}}
+Using only the above information, and not prior knowledge, \
+answer the following questions about {{char}}.
+{% for question in questions -%}
+{{loop.index}}. {{question}}
+{%- if not loop.last %}
+{% endif %}
 {%- endfor %}
----
 
-Question three: how would one describe {{char}}’s feeling about the recent progress in life?
----
-{% for feeling_memory in feeling_memories -%}
-{{loop.index}}. {{feeling_memory}}
-{%- endfor %}
----
-
-Return your answers as a numbered list, 1-3, for each of the above corresponding questions.
-
+Return your answers as a numbered list, \
+with the number corresponding to which of the above questions is being answered.
 {{- llm.user_end }}
 
 {{ llm.assistant_start -}}
@@ -53,33 +61,34 @@ Below is an instruction that describes a task. Write a response that \
 appropriately completes the request
 
 ### Instruction: 
-You are answering some questions about {{char}}. Here is a long description for the {{char}} innate traits that do not change easily: \
-{{long_description}}
-
-Write answers for the following three questions and relevant memories (enclosed with ---). \
-
-Question one: how would one describe {{char}}’s core characteristics given the following?
+You are answering questions about {{char}}.
+{% if (short_description) -%}{{short_description}}{%- endif %}
+{% if (long_description) -%}
+The following (enclosed with ---) are the innate traits and core characteristics of {{char}}. These do not change easily.
 ---
-{% for characteristic_memory in characteristic_memories -%}
-{{loop.index}}. {{characteristic_memory}}
+{{long_description}}
+---
+{% endif %}
+You have gathered the following relevant memories (enclosed with ---) that you will use to answer questions. \
+Memories are thoughts, feelings, actions, or observations that {{char}} has had or taken in the past.
+---
+{% for memory in memories -%}
+{{loop.index}}. {{memory}}
+{%- if not loop.last %}
+{% endif %}
 {%- endfor %} 
 ---
 
-Question two: how would one describe {{char}}’s current daily occupation?
----
-{% for occupation_memory in occupation_memories -%}
-{{loop.index}}. {{occupation_memory}}
+Using only the above information, and not prior knowledge, \
+answer the following questions about {{char}}.
+{% for question in questions -%}
+{{loop.index}}. {{question}}
+{%- if not loop.last %}
+{% endif %}
 {%- endfor %}
----
 
-Question three: how would one describe {{char}}’s feeling about the recent progress in life?
----
-{% for feeling_memory in feeling_memories -%}
-{{loop.index}}. {{feeling_memory}}
-{%- endfor %}
----
-
-Return your answers as a numbered list, 1-3, for each of the above corresponding questions.
+Return your answers as a numbered list, \
+with the number corresponding to which of the above questions is being answered.
 
 ### Response:
 1.\
@@ -87,48 +96,67 @@ Return your answers as a numbered list, 1-3, for each of the above corresponding
     )
 
     @classmethod
-    def get_vectordb_queries(cls, char: str, entity: str) -> list[str]:
-        q1 = f"How would one describe {char}’s core characteristics?"
-        q2 = f"How would one describe {char}’s current daily occupation?"
-        q3 = f"How would one describe {char}’s feeling about the recent progress in life?"
-        return [q1, q2, q3]
-
-    @classmethod
     def render(
         cls,
         llm: LLM,
         char: str,
-        long_description: str,
-        characteristic_memories: str,
-        occupation_memories: str,
-        feeling_memories: str,
+        memories: list[str] | list[Memory],
+        questions: list[str] | None = None,
+        long_description: str | None = None,
+        short_description: str | None = None,
         system_prompt: str | None = None,
     ):
         if system_prompt is None:
             system_prompt = llm.default_system_prompt
+        if questions is None:
+            questions = DEFAULT_AGENT_SUMMARY_QUESTIONS
+        try:
+            questions = [x.format(char=char) for x in questions]
+        except KeyError as e:
+            raise KeyError(
+                (
+                    "When passing custom questions, "
+                    "you must format the clone's name as {char}. "
+                    f"{e}"
+                )
+            )
+        memories_ = [m if isinstance(m, str) else m.to_str() for m in memories]
         return cls.chat_template.render(
             llm=llm,
             system_prompt=system_prompt,
             char=char,
             long_description=long_description,
-            characteristic_memories=characteristic_memories,
-            occupation_memories=occupation_memories,
-            feeling_memories=feeling_memories,
+            memories=memories_,
+            questions=questions,
+            short_description=short_description,
         )
 
     @classmethod
     def render_instruct(
         cls,
         char: str,
-        long_description: str,
-        characteristic_memories: str,
-        occupation_memories: str,
-        feeling_memories: str,
+        memories: list[str] | list[Memory],
+        long_description: str | None = None,
+        short_description: str | None = None,
+        questions: list[str] | None = None,
     ):
+        if questions is None:
+            questions = DEFAULT_AGENT_SUMMARY_QUESTIONS
+        try:
+            questions = [x.format(char=char) for x in questions]
+        except KeyError as e:
+            raise KeyError(
+                (
+                    "When passing custom questions, "
+                    "you must format the clone's name as {char}. "
+                    f"{e}"
+                )
+            )
+        memories = [m if isinstance(m, str) else m.to_str() for m in memories]
         return cls.instruct_template.render(
             char=char,
             long_description=long_description,
-            characteristic_memories=characteristic_memories,
-            occupation_memories=occupation_memories,
-            feeling_memories=feeling_memories,
+            memories=memories,
+            questions=questions,
+            short_description=short_description,
         )

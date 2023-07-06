@@ -1,3 +1,4 @@
+from clonr.data_structures import Memory
 from clonr.llms import LLM
 from clonr.templates.base import Template, env
 
@@ -57,13 +58,14 @@ Return your response as a numbered list.
     def render(
         cls,
         llm: LLM,
-        memories: str,
+        memories: list[str] | list[Memory],
         system_prompt: str | None = None,
     ):
         if system_prompt is None:
             system_prompt = llm.default_system_prompt
+        memories_ = [m if isinstance(m, str) else m.to_str() for m in memories]
         return cls.chat_template.render(
-            llm=llm, system_prompt=system_prompt, memories=memories
+            llm=llm, system_prompt=system_prompt, memories=memories_
         )
 
     @classmethod
@@ -71,7 +73,8 @@ Return your response as a numbered list.
         cls,
         memories: str,
     ):
-        return cls.instruct_template.render(memories=memories)
+        memories_ = [m if isinstance(m, str) else m.to_str() for m in memories]
+        return cls.instruct_template.render(memories=memories_)
 
 
 # Generate actual reflections / insights based on retrieved salient memories
@@ -129,11 +132,12 @@ Return your answer as a numbered list.
     def render(
         cls,
         llm: LLM,
-        statements: str,
+        statements: list[str] | list[Memory],
         system_prompt: str | None = None,
     ):
         if system_prompt is None:
             system_prompt = llm.default_system_prompt
+        statements = [s if isinstance(s, str) else s.content for s in statements]
         return cls.template.render(
             llm=llm, system_prompt=system_prompt, statements=statements
         )
@@ -141,6 +145,7 @@ Return your answer as a numbered list.
     @classmethod
     def render_instruct(
         cls,
-        statements: str,
+        statements: list[str] | list[Memory],
     ):
+        statements = [s if isinstance(s, str) else s.content for s in statements]
         return cls.instruct_template.render(statements=statements)

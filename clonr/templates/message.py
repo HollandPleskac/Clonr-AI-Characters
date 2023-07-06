@@ -1,12 +1,17 @@
-from datetime import datetime
-
-from pydantic import BaseModel
-
-from clonr.data.data_structures import Dialogue, Memory, Message
+from clonr.data_structures import Dialogue, Memory
+from clonr.data_structures import Message as MessageStruct
 from clonr.llms import LLM
 from clonr.templates.base import Template, env
+from clonr.utils import get_current_datetime
+from clonr.utils.formatting import DateFormat
 
 DEFAULT_SYSTEM_PROMPT = "You are an imitation AI. You assume the identity of the character you are given, and respond only as that character."
+
+
+def cur_time():
+    return DateFormat.human_readable(
+        get_current_datetime(), use_today_and_yesterday=False
+    )
 
 
 class Message(Template):
@@ -25,9 +30,12 @@ Name: {{char}}
 
 ### Core characteristics
 {{long_description}}
-
+\
+{%- if (example_dialogues) -%}
 ### Example dialogues
 {{example_dialogues}}
+{%- endif %}
+\
 ---
 
 The following describes your current state. It contains a summary of your current state \
@@ -43,12 +51,12 @@ Memories are thoughts, observations, actions, or reflections that you've had.
 {%- endfor %}
 ---
 
-These are your thoughts and feelings about {{user}}.
+These are your thoughts and feelings about {{entity_name}}.
 ---
 {{entity_context_summary}}
 ---
 
-Finally, the following are your most recent messages of your conversation with {{user}}.
+Finally, the following are your most recent messages of your conversation with {{entity_name}}.
 ---
 {% for msg in messages -%}
 {{msg}}
@@ -105,12 +113,12 @@ Memories are thoughts, observations, actions, or reflections that you've had.
 {%- endfor %}
 ---
 
-These are your thoughts and feelings about {{user}}.
+These are your thoughts and feelings about {{entity_name}}.
 ---
 {{entity_context_summary}}
 ---
 
-Finally, the following are your most recent messages of your conversation with {{user}}.
+Finally, the following are your most recent messages of your conversation with {{entity_name}}.
 ---
 {% for msg in messages -%}
 {{msg}}
@@ -133,15 +141,19 @@ Separate distinct messages by using a newline.
         long_description: str,
         example_dialogues: list[Dialogue],
         agent_summary: str,
-        memories: list[Memory],
-        entity_context_summary,
-        messages,
+        memories: list[str] | list[Memory],
+        entity_context_summary: str,
+        entity_name: str,
+        messages: list[str] | list[MessageStruct],
         llm: LLM,
         system_prompt: str | None = None,
     ):
         system_prompt = (
             DEFAULT_SYSTEM_PROMPT if system_prompt is None else system_prompt
         )
+
+        memories = [m if isinstance(m, str) else m.to_str() for m in memories]
+        messages = [m if isinstance(m, str) else m.to_str() for m in messages]
         return cls.chat_template.render(
             char=char,
             short_description=short_description,
@@ -152,6 +164,8 @@ Separate distinct messages by using a newline.
             entity_context_summary=entity_context_summary,
             messages=messages,
             llm=llm,
+            entity_name=entity_name,
+            cur_time=cur_time(),
             system_prompt=system_prompt,
         )
 
@@ -163,10 +177,13 @@ Separate distinct messages by using a newline.
         long_description: str,
         example_dialogues: list[Dialogue],
         agent_summary: str,
-        memories: list[Memory],
-        entity_context_summary,
-        messages: list[Message],
+        memories: list[str] | list[Memory],
+        entity_context_summary: str,
+        entity_name: str,
+        messages: list[str] | list[MessageStruct],
     ):
+        memories = [m if isinstance(m, str) else m.to_str() for m in memories]
+        messages = [m if isinstance(m, str) else m.to_str() for m in messages]
         return cls.instruct_template.render(
             char=char,
             short_description=short_description,
@@ -174,8 +191,8 @@ Separate distinct messages by using a newline.
             example_dialogues=example_dialogues,
             agent_summary=agent_summary,
             memories=memories,
+            entity_name=entity_name,
+            cur_time=cur_time(),
             entity_context_summary=entity_context_summary,
             messages=messages,
-            llm=llm,
-            system_prompt=system_prompt,
         )

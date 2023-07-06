@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+from clonr.data_structures import Memory
 from clonr.llms import LLM, LlamaCpp, MockLLM, OpenAI
 from clonr.templates.base import Template, env
 
@@ -91,6 +92,8 @@ Let's try a few examples.
 {% for e in examples %}
 MEMORY: {{ e.memory }}
 RATING: {{ e.rating }}
+{%- if not loop.last %}
+{% endif %}
 {% endfor %}
 {%- endif %}
 Now rate the following memory.
@@ -230,8 +233,11 @@ Let's try a few examples.
 CONTEXT: {{ e.context }}
 MEMORY: {{ e.memory }}
 RATING: {{ e.rating }}
+{%- if not loop.last %}
+{% endif %}
 {% endfor %}
 {%- endif %}
+
 Now rate the following memory.
 CONTEXT: {{context}}
 MEMORY: {{memory}}
@@ -245,7 +251,7 @@ RATING: \
     def render(
         cls,
         llm: LLM,
-        memory: str,
+        memory: str | Memory,
         examples: list[MemoryExampleWithContext] | None = None,
         system_prompt: str | None = None,
     ):
@@ -253,12 +259,18 @@ RATING: \
             system_prompt = llm.default_system_prompt
         if examples is None:
             examples = DEFAULT_MEMORY_RATING_EXAMPLES
+        if isinstance(memory, Memory):
+            memory = memory.content
         return cls.chat_template.render(
             llm=llm, system_prompt=system_prompt, memory=memory, examples=examples
         )
 
     @classmethod
-    def render_instruct(cls, memory: str, examples: list[MemoryExample] | None = None):
+    def render_instruct(
+        cls, memory: str | Memory, examples: list[MemoryExample] | None = None
+    ):
+        if isinstance(memory, Memory):
+            memory = memory.content
         if examples is None:
             examples = DEFAULT_MEMORY_RATING_EXAMPLES
         return cls.instruct_template.render(memory=memory, examples=examples)

@@ -29,5 +29,12 @@ Example dialogues can be difficult to gather for several reasons: privacy, third
 
 TODO here is to set up the interface for chatting here
 
+__document upload__
+This is a pretty critical aspect of the pipeline, and the greatest gains in active users is likely to come from making this as painless as possible. Still a WIP figuring out the best way to do this, but here's one idea
+
+1. Use a web crawler to find your internet presence. Put in your name, and it will collect stuff about you, such as blog posts, personal sites, social media, etc, and display as a url + snippet/preview. Then you approve which links it finds and it will scrape those pages and index them. This is similar to the way chatbase does it, but chatbase scrapes within a single domain.
+
+Actually not sure how indexing is done in general, but trafilatura is pretty dope.
+
 ## Onboarding
 Broken into several sections, the idea is to look like a tabbed registration page, where you complete each page in order and then finish signup/creation.

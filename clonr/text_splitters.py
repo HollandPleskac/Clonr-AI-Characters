@@ -37,7 +37,7 @@ except ImportError:
         )
     )
 
-from clonr.data.data_structures import Chunk, Document
+from clonr.data_structures import Chunk, Document
 from clonr.tokenizer import Tokenizer
 
 T = TypeVar("T")
@@ -400,5 +400,5 @@ class TokenSplitter(TextSplitter):
         name = self.__class__.__name__
         return (
             f"{name}(chunk_size={self.chunk_size}, "
-            f"overlap={self.overlap}, tokenizer={self.tokenizer})"
+            f"overlap={self.chunk_overlap}, tokenizer={self.tokenizer})"
         )

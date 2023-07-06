@@ -11,7 +11,7 @@ T = TypeVar("T")
 
 
 def get_current_datetime(
-    include_seconds: bool = True, tz: str | ZoneInfo = ZoneInfo("utc")
+    include_seconds: bool = True, tz: str | ZoneInfo = ZoneInfo("US/Central")
 ) -> datetime:
     """Timezone stuff can get tricky. Machine local time is ZoneInfo('localtime'). The ZoneInfo
     library is part of the standard library as of Python 3.9+. Other timezone examples are

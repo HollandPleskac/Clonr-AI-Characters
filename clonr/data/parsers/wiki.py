@@ -2,8 +2,8 @@ from typing import Any, List
 
 from loguru import logger
 
-from clonr.data.data_structures import Document
 from clonr.data.parsers.base import Parser, ParserException
+from clonr.data_structures import Document
 from clonr.utils.shared import instance_level_lru_cache
 
 try:
