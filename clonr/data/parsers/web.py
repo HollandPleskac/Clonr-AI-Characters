@@ -13,12 +13,16 @@ from clonr.utils.shared import instance_level_lru_cache
 
 class BasicWebParser(Parser):
     @instance_level_lru_cache(maxsize=None)
-    def extract(self, url: str) -> Document:
-        logger.info(f"Fetching from url: {url}")
+    def extract(self, url: str, type: str = "web") -> Document:
+        logger.info(f"Attempting to parse text from url: {url}")
         downloaded = trafilatura.fetch_url(url)
         if not downloaded:
-            raise ParserException(f"Failed to get string from url: {url}")
-        response = trafilatura.extract(downloaded)
-        if not response:
-            raise ParserException(f"Failed to parse page: {url}")
-        return Document(content=response)
+            msg = f"Failed to get string from url: {url}"
+            logger.error(msg)
+            raise ParserException(msg)
+        if not (response := trafilatura.extract(downloaded)):
+            msg = f"Failed to parse page: {url}"
+            logger.error(msg)
+            raise ParserException(msg)
+        logger.info("✅ Extracted from url.")
+        return Document(content=response, url=url, type=type)

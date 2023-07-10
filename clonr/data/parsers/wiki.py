@@ -1,3 +1,5 @@
+import re
+from dataclasses import dataclass
 from typing import Any, List
 
 from loguru import logger
@@ -14,15 +16,45 @@ except ImportError:
     WIKIPEDIA_AVAILABLE = False
 
 
+@dataclass
+class ParsedURL:
+    title: str | None
+    lang: str
+    pageid: str | None
+
+
+# (Jonny): this library sucks frfr. not sure what to do with it.
 class WikipediaParser(Parser):
+    def _parse_url(self, url: str) -> ParsedURL:
+        if r := re.findall(r"https://(\w{2,})\.wikipedia\.org/wiki/(\w+)", url):
+            lang, title = r[0]
+            return ParsedURL(title=title, lang=lang, pageid=None)
+        elif r := re.findall(
+            r"https://(\w{2,})\.wikipedia.org/w/index\.php?title=(\w+)&oldid=(\d+).*",
+            url,
+        ):
+            lang, title, pageid = r[0]
+            return ParsedURL(title=title, lang=lang, pageid=pageid)
+        elif r := re.findall(r"https://(\w{2,})\.wikipedia\.org/wiki?curid=(\d+)", url):
+            lang, pageid = r[0]
+            return ParsedURL(title=None, lang=lang, pageid=pageid)
+        msg = "Invalid Wikipedia page url"
+        logger.error(msg)
+        raise ParserException(msg)
+
     @instance_level_lru_cache(maxsize=None)
-    def _extract(self, page: str, lang: str = "en") -> Document:
+    def _extract(
+        self,
+        title: str | None = None,
+        pageid: str | None = None,
+        lang: str = "en",
+    ) -> Document:
         if not WIKIPEDIA_AVAILABLE:
             raise ImportError("wikipedia package not found. `pip install wikipedia`.")
-        documents = []
         wikipedia.set_lang(lang)
         try:
-            content = wikipedia.page(page).content
+            page = wikipedia.page(title=title, pageid=pageid, auto_suggest=False)
+            content = page.content
         except wikipedia.exceptions.DisambiguationError as e:
             raise ParserException(
                 f"Failed to parse Wikipedia page: {page}. Reason: {str(e)}"
@@ -32,12 +64,25 @@ class WikipediaParser(Parser):
         return Document(content=content)
 
     def extract(
-        self, pages: str | list[str], lang: str = "en"
-    ) -> Document | list[Document]:
-        if not isinstance(pages, list):
-            return self.extract([pages], lang=lang)[0]
-        docs: list[Document] = docs
-        for i, page in enumerate(pages):
-            logger.info(f"Extracting Wikipedia page {i+1}/{len(pages)}: {page}")
-            docs.append(self._extract(page=page, lang=lang))
-        return docs
+        self,
+        *,
+        url: str | None = None,
+        title: str | None = None,
+        pageid: str | None = None,
+        lang: str = "en",
+        type: str = "wikipedia",
+    ) -> Document:
+        if url is None and title is None and pageid is None:
+            raise ValueError("Must provide one of url, title, or pageid")
+        logger.info(
+            f"Attempting to extract Wikipedia page. Title: {title}. PageID: {pageid}. url: {url}"
+        )
+        if url is not None:
+            r = self._parse_url(url=url)
+            title = r.title
+            pageid = r.pageid
+            lang = r.lang
+        doc = self._extract(title=title, pageid=pageid, lang=lang)
+        logger.info("✅ Extracted wikipedia page.")
+        doc.type = type
+        return doc

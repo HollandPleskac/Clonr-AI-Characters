@@ -38,9 +38,9 @@ class YoutubeTranscriptParser(Parser):
         for pattern in patterns:
             if match := re.search(pattern, yt_link):
                 return match.group(1)
-        raise ParserException(
-            f"Failed to extract YouTube video ID from link: {yt_link}"
-        )
+        msg = "Invalid Youtube page url"
+        logger.error(msg)
+        raise ParserException(msg)
 
     @instance_level_lru_cache(maxsize=None)
     def extract_captions_from_link(
@@ -68,21 +68,17 @@ class YoutubeTranscriptParser(Parser):
     def _extract_link(self, link: str, languages: tuple[str] | None = None) -> Document:
         captions = self.extract_captions_from_link(link=link, languages=languages)
         transcript = "\n".join(x.text for x in captions)
-        return Document(content=transcript)
+        return Document(content=transcript, url=link, type="youtube")
 
     def extract(
         self,
-        ytlinks: str | list[str],
-        languages: list[str] | None = None,
-    ) -> Document | list[Document]:
-        if isinstance(ytlinks, str):
-            return self.extract([ytlinks], languages=languages)[0]
-        documents: list[Document] = []
-        for i, link in enumerate(ytlinks):
-            logger.info(f"Extracting transcript {i+1}/{len(ytlinks)} from link: {link}")
-            doc = self._extract_link(link)
-            documents.append(doc)
-        return documents
+        url: str,
+        languages: tuple[str] | None = None,
+    ) -> Document:
+        logger.info(f"Attempting to extracting transcript from link: {url}")
+        doc = self._extract_link(link=url, languages=languages)
+        logger.info(f"✅ Extracted transcript from link: {url}")
+        return doc
 
 
 def test_this():
