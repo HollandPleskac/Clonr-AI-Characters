@@ -43,6 +43,10 @@ from clonr.tokenizer import Tokenizer
 T = TypeVar("T")
 
 
+# TODO (Jonny): We need a tokenizer that can split on lines of dialogue! Should
+# be able to rig this by using the regex_split function.
+
+
 @dataclass
 class DEFAULTS:
     max_chunk_size_chars: int = 512
@@ -84,7 +88,7 @@ def regex_split(text: str, pattern: str, include_separator: bool) -> str:
     r'[\?\!\.]+'. This captures stuff like What?!?! or ok..."""
     _validate_regex_split_pattern(pattern)
     if include_separator:
-        pattern = pattern if text[0] == "(" else f"({pattern})"
+        pattern = pattern if pattern[0] == "(" else f"({pattern})"
     splits = re.split(pattern, text)
     if include_separator:
         splits = ["".join(splits[i : i + 2]) for i in range(0, len(splits), 2)]
