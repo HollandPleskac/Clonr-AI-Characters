@@ -5,22 +5,26 @@ import os
 import platform
 import random
 import sys
+
 import discord
+import exceptions
 from discord.ext import commands, tasks
 from discord.ext.commands import Bot, Context
-import exceptions
 from dotenv import load_dotenv
 
 load_dotenv()
 
 intents = discord.Intents.default()
-# intents.message_content = True
+intents.message_content = True
 
 bot = Bot(
     command_prefix=commands.when_mentioned_or("!"),
     intents=intents,
     help_command=None,
 )
+
+
+history = []
 
 
 class LoggingFormatter(logging.Formatter):
@@ -96,6 +100,11 @@ async def status_task() -> None:
 async def on_message(message: discord.Message) -> None:
     if message.author == bot.user or message.author.bot:
         return
+    history.append({"author": message.author, "content": message.content})
+    msg = "Alright, here's your history:"
+    for h in history:
+        msg += f'\n----> Author: {h["author"]}.\tMessage: {h["content"]}'
+    await message.channel.send(msg)
     await bot.process_commands(message)
 
 
@@ -191,5 +200,7 @@ async def load_cogs() -> None:
                 bot.logger.error(f"Failed to load extension {extension}\n{exception}")
 
 
-asyncio.run(load_cogs())
-bot.run(os.environ["DISCORD_TOKEN"])
+if __name__ == "__main__":
+    asyncio.run(load_cogs())
+    token = os.environ["DISCORD_TOKEN"]
+    bot.run(token)
