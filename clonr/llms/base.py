@@ -2,6 +2,8 @@ from abc import ABC, abstractproperty
 
 
 class LLM(ABC):
+    is_chat_model: bool
+
     @abstractproperty
     def user_start(self):
         pass

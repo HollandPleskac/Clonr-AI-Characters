@@ -5,6 +5,7 @@ import aiohttp
 import requests
 from loguru import logger
 
+from .callbacks import LLMCallback
 from .openai import OpenAI
 from .schemas import Message
 
@@ -23,17 +24,19 @@ except Exception as e:
 class LlamaCpp(OpenAI):
     model_type = "llama-cpp"
     model = "llama-cpp"
-    chat_model: bool = False
+    is_chat_model: bool = False
 
     def __init__(
         self,
         api_key: str = "",
         api_base: str = "http://localhost:6000/v1",
         chat_mode: bool = False,
+        callbacks: list[LLMCallback] | None = None,
     ):
         self.api_key = api_key
         self.api_base = api_base
         self.chat_mode = chat_mode
+        self.callbacks = callbacks or []
 
     @property
     def user_start(self):

@@ -1,5 +1,7 @@
 import textwrap
+from abc import ABC, abstractmethod
 from enum import Enum
+from typing import Protocol
 
 from pydantic import BaseModel, Field, validator
 
@@ -39,6 +41,19 @@ class RoleEnum(str, Enum):
 class Message(BaseModel):
     role: RoleEnum
     content: str
+
+    def to_prompt(self, llm):
+        match self.role:
+            case RoleEnum.system:
+                start = llm.system_start
+                end = llm.system_end
+            case RoleEnum.user:
+                start = llm.user_start
+                end = llm.user_end
+            case RoleEnum.assistant:
+                start = llm.assistant_start
+                end = llm.assistant_end
+        return f"{start}{self.content}{end}"
 
 
 class Choice(BaseModel):

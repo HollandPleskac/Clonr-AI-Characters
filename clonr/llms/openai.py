@@ -1,8 +1,10 @@
 import asyncio
+import json
 import os
 import re
 import textwrap
 import time
+import uuid
 from enum import Enum
 from typing import AsyncGenerator, Generator
 
@@ -13,6 +15,7 @@ from tenacity import retry, retry_if_exception_type, wait_random
 from clonr.tokenizer import Tokenizer
 
 from .base import LLM
+from .callbacks import LLMCallback
 from .schemas import (
     ChatCompletionRequest,
     GenerationParams,
@@ -30,18 +33,21 @@ openai.api_key = os.environ.get("OPENAI_API_KEY", "")
 
 class OpenAI(LLM):
     model_type: str = "openai"
-    chat_model: bool = True
+    is_chat_model: bool = True
 
     def __init__(
         self,
         model: OpenAIModelEnum = OpenAIModelEnum.chatgpt_0613,
         api_key: str = "",
         api_base: str | None = None,
+        tokenizer: Tokenizer | None = None,
+        callbacks: list[LLMCallback] | None = None,
     ):
         self.model = model
         self.api_key = api_key
         self.api_base = api_base
-        self.tokenizer = Tokenizer.from_openai(model)
+        self.tokenizer = tokenizer or Tokenizer.from_openai(model)
+        self.callbacks = callbacks or []
 
     @property
     def user_start(self):
@@ -152,8 +158,16 @@ class OpenAI(LLM):
         self,
         prompt_or_messages: str | list[Message],
         params: GenerationParams | None = None,
+        **kwargs,
     ) -> LLMResponse:
         params = params or GenerationParams()
+        # NOTE (Jonny): This will be picked up callbacks, and it serves to place a unique ID on each
+        # LLM call so that we can go back and trace it through logs (defends against async messing up order)
+        kwargs["llm_call_id"] = kwargs.get("llm_call_id", str(uuid.uuid4()))
+
+        for c in self.callbacks:
+            await c.on_generate_start(self, prompt_or_messages, params, **kwargs)
+
         if isinstance(prompt_or_messages, str):
             messages = self.prompt_to_messages(prompt=prompt_or_messages)
         else:
@@ -190,6 +204,10 @@ class OpenAI(LLM):
             role=out.choices[0].message.role,
             tokens_per_second=round((out.usage.total_tokens) / total_time, 2),
         )
+
+        for c in self.callbacks:
+            await c.on_generate_end(self, response, **kwargs)
+
         return response
 
     def generate(
@@ -209,8 +227,13 @@ class OpenAI(LLM):
         self,
         prompt_or_messages: str | list[Message],
         params: GenerationParams | None = None,
+        **kwargs,
     ) -> AsyncGenerator[StreamDelta, None]:
         params = params or GenerationParams()
+
+        for c in self.callbacks:
+            await c.on_stream_start(self, prompt_or_messages, params, **kwargs)
+
         if isinstance(prompt_or_messages, str):
             messages = self.prompt_to_messages(prompt=prompt_or_messages)
         else:
@@ -231,9 +254,16 @@ class OpenAI(LLM):
                 )
                 async for chunk in chunks:
                     delta = OpenAIStreamResponse(**chunk)
+
+                    for c in self.callbacks:
+                        await c.on_token_received(self, delta=delta, **kwargs)
+
                     yield delta
             finally:
                 await openai.aiosession.get().close()  # type: ignore
+
+        for c in self.callbacks:
+            await c.on_stream_end(self, **kwargs)
 
     @retry(
         retry=retry_if_exception_type(openai.error.RateLimitError),
