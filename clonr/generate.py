@@ -49,27 +49,10 @@ class Params:
     )
 
 
-# TODO (Jonny): remove the duplicate code here and with TreeIndex.
-def _compute_long_desc_chunk_size(
-    llm: LLM, summary_size: int = Params.long_description.max_tokens
-) -> int:
-    assert summary_size > 0, "Must have positive summary size"
-    if llm.is_chat_model:
-        prompt = templates.LongDescription.render_instruct(
-            document_type="longest doc type possible",
-            document_content="",
-            current_description="",
-        )
-    else:
-        prompt = templates.LongDescription.render(
-            document_type="longest doc type possible",
-            document_content="",
-            current_description="",
-            llm=llm,
-        )
-    prompt_tokens = llm.num_tokens(prompt)
-    chunk_size = llm.context_length - prompt_tokens - 2 * summary_size
-
+def _max_chunk_size_formula(
+    prompt_tokens: int, output_tokens: int, context_length: int
+):
+    chunk_size = context_length - prompt_tokens - output_tokens
     if chunk_size <= MIN_CHUNK_SIZE:
         raise ValueError(
             (
@@ -77,6 +60,49 @@ def _compute_long_desc_chunk_size(
                 f"{MIN_CHUNK_SIZE}. Either lower the summary size or increase the context window."
             )
         )
+    return chunk_size
+
+
+def auto_chunk_size_long_desc(
+    llm: LLM, summary_size: int = Params.long_description.max_tokens
+) -> int:
+    assert summary_size > 0, "Must have positive summary size"
+    if llm.is_chat_model:
+        prompt = templates.LongDescription.render(
+            document_type="longest doc type possible",
+            document_content="",
+            current_description="",
+            llm=llm,
+        )
+    else:
+        prompt = templates.LongDescription.render_instruct(
+            document_type="longest doc type possible",
+            document_content="",
+            current_description="",
+        )
+    prompt_tokens = llm.num_tokens(prompt) + summary_size
+    chunk_size = _max_chunk_size_formula(
+        prompt_tokens=prompt_tokens,
+        output_tokens=summary_size,
+        context_length=llm.context_length,
+    )
+    return chunk_size
+
+
+def auto_chunk_size_summarize(
+    llm: LLM, summary_size: int = Params.summarize.max_tokens
+) -> int:
+    assert summary_size > 0, "Must have positive summary size"
+    if llm.is_chat_model:
+        prompt = templates.Summarize.render(passage="", llm=llm)
+    else:
+        prompt = templates.Summarize.render_instruct(passage="")
+    prompt_tokens = llm.num_tokens(prompt) + summary_size
+    chunk_size = _max_chunk_size_formula(
+        prompt_tokens=prompt_tokens,
+        output_tokens=summary_size,
+        context_length=llm.context_length,
+    )
     return chunk_size
 
 
@@ -125,7 +151,7 @@ async def long_description_create(
     through the LLM. but tests show this is the highest quality, using cached summaries
     doesn't work as well :("""
     current_description = short_description
-    chunk_size = _compute_long_desc_chunk_size(llm=llm)
+    chunk_size = auto_chunk_size_long_desc(llm=llm)
     splitter = TokenSplitter(
         tokenizer=getattr(llm, "tokenizer", Tokenizer.from_openai("gpt-3.5-turbo")),
         chunk_size=chunk_size,

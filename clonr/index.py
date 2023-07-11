@@ -9,7 +9,7 @@ from pydantic import BaseModel, validator
 
 from clonr import templates
 from clonr.data_structures import Document, IndexType, Node
-from clonr.generate import online_summarize, summarize
+from clonr.generate import auto_chunk_size_summarize, online_summarize, summarize
 from clonr.llms import LLM, GenerationParams, MockLLM
 from clonr.text_splitters import TextSplitter
 from clonr.tokenizer import Tokenizer
@@ -113,8 +113,10 @@ class ListIndex(Index):
         # No LLM calls in this one :)
         return nodes
 
-    def build(self, doc: Document) -> list[Node]:
-        return asyncio.get_event_loop().run_until_complete(self.abuild(doc=doc))
+    def build(self, doc: Document, **kwargs) -> list[Node]:
+        return asyncio.get_event_loop().run_until_complete(
+            self.abuild(doc=doc, **kwargs)
+        )
 
 
 class ListIndexWithContext(ListIndex):
@@ -139,18 +141,12 @@ class ListIndexWithContext(ListIndex):
         tokenizer: Tokenizer,
         splitter: TextSplitter,
         llm: LLM,
-        verbose: bool = False,
-        gen_params: GenerationParams = GenerationParams(
-            temperature=0.3, top_p=0.95, max_tokens=512, frequency_penalty=0.2
-        ),
     ):
         self.tokenizer = tokenizer
         self.splitter = splitter
         self.llm = llm
-        self.verbose = verbose
         self._index: dict[str, Node] = {}
         self._tokens_processed = 0
-        self.gen_params = gen_params
         prompt = templates.OnlineSummarize.render(
             passage="", prev_summary="", llm=MockLLM("")
         )
@@ -195,6 +191,11 @@ class ListIndexWithContext(ListIndex):
         self._index = {}  # TODO (Jonny): trying to make this stateless!
         return nodes
 
+    def build(self, doc: Document, **kwargs) -> list[Node]:
+        return asyncio.get_event_loop().run_until_complete(
+            self.abuild(doc=doc, **kwargs)
+        )
+
 
 class TreeIndex(Index):
     """Implements the TreeSummarize method. This iteratively
@@ -220,36 +221,21 @@ class TreeIndex(Index):
         tokenizer: Tokenizer,
         splitter: TextSplitter,
         llm: LLM,
-        verbose: bool = False,
         max_group_size: int | str = "auto",
-        gen_params: GenerationParams = GenerationParams(
-            temperature=0.3, top_p=0.95, max_tokens=512, frequency_penalty=0.2
-        ),
     ):
         self.tokenizer = tokenizer
         self.splitter = splitter
         self.llm = llm
-        self.verbose = verbose
         self._index: dict[str, Node] = {}
         self._tokens_processed = 0
-        self.gen_params = gen_params
-        prompt = templates.Summarize.render(passage="", llm=MockLLM(""))
 
+        prompt = templates.Summarize.render(passage="", llm=MockLLM(""))
         self._prompt_len = self.tokenizer.length(prompt)
         ctx = llm.context_length
         if isinstance(max_group_size, str):
             if max_group_size != "auto":
                 raise ValueError("Max group size should be an int or auto.")
-            size = ctx - self._prompt_len - 2 * self.gen_params.max_tokens
-            max_group_size = max(2 * self.gen_params.max_tokens, size)
-
-        if max_group_size >= ctx - self.gen_params.max_tokens:
-            raise ValueError(
-                (
-                    "Group size must be greater than twice the summary token max "
-                    f"{2 * self.gen_params.max_tokens} and less than the context window {ctx}."
-                )
-            )
+            max_group_size = auto_chunk_size_summarize(llm=llm)
         self.max_group_size = max_group_size
         self.root = None
 
@@ -352,10 +338,9 @@ class TreeIndex(Index):
             kwargs["depth"] = depth
             kwargs["subroutine"] = self.__class__.__name__
             kwargs["group"] = f"{i+1}/{len(groups)}"
-            r = await summarize(content=content, llm=self.llm, **kwargs)
-            self._tokens_processed += r.usage.total_tokens
+            content = await summarize(passage=content, llm=self.llm, **kwargs)
             node = Node(
-                content=r.content,
+                content=content,
                 document_id=doc.id,
                 index=i,
                 is_leaf=False,
@@ -370,7 +355,7 @@ class TreeIndex(Index):
         return nodes
 
     async def abuild(self, doc: Document, **kwargs) -> list[Node]:
-        logger.info(f"Building {self.__class__.__name__} on doc_id: {doc.id}.")
+        logger.info(f"Building {self.__class__.__name__} on doc_id: {str(doc.id)}.")
         nodes = create_leaf_nodes(doc=doc, splitter=self.splitter)
         if not nodes:
             return []
@@ -389,3 +374,8 @@ class TreeIndex(Index):
         r = list(self._index.values())
         self._index = {}  # TODO (Jonny): trying to make this stateless!
         return r
+
+    def build(self, doc: Document, **kwargs) -> list[Node]:
+        return asyncio.get_event_loop().run_until_complete(
+            self.abuild(doc=doc, **kwargs)
+        )

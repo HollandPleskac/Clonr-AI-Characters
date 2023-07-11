@@ -1,7 +1,7 @@
 from .agent_summary import AgentSummary
 from .base import Template
-from .character_description import LongDescription
 from .entity_relationship import EntityContextCreate
+from .long_description import LongDescription
 from .memory import MemoryRating, MemoryRatingWithContext
 from .message import Message, MessageQuery
 from .qa import QuestionAndAnswer
