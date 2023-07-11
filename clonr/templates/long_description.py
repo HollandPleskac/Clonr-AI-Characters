@@ -15,7 +15,8 @@ class OnlineSummaryExample(BaseModel):
     summary: str
 
 
-DEFAULT_SYSTEM_PROMPT = "You are a helpful and attentative AI with a deep understanding of human behavior. You give thoughtful, knowledgeable, and well-motivated answers to questions."
+DEFAULT_SYSTEM_PROMPT = "You are a helpful and attentative AI with a deep understanding of human behavior. \
+You give thoughtful, knowledgeable, and well-motivated answers to questions."
 
 
 class LongDescription(Template):
@@ -49,7 +50,8 @@ DESCRIPTION:
 {{ current_description }}
 ---
 
-Next, you are given the following excerpt (enclosed with ---) taken from a {{ document_type }}.
+Next, you are given the following excerpt (enclosed with ---) taken from a document of type: {{ document_type }}.
+{%- if (document_description) -%} The document can be described as: {{document_description}}{%- endif -%}
 ---
 {{ document_type.upper() }}:
 {{ document_content }}
@@ -97,6 +99,7 @@ DESCRIPTION:
 ---
 
 Next, you are given the following excerpt (enclosed with ---) taken from a {{ document_type }}.
+{%- if (document_description) -%} The document can be described as: {{document_description}}{%- endif -%}
 ---
 {{ document_type.upper() }}:
 {{ document_content }}
@@ -120,6 +123,7 @@ UPDATED DESCRIPTION:
         document_type: str,
         document_content: str,
         llm: LLM,
+        document_description: str | None = None,
         system_prompt: str | None = None,
     ):
         system_prompt = (
@@ -130,15 +134,21 @@ UPDATED DESCRIPTION:
             current_description=current_description,
             document_type=document_type,
             document_content=document_content,
+            document_description=document_description,
             system_prompt=system_prompt,
         )
 
     @classmethod
     def render_instruct(
-        cls, current_description: str, document_type: str, document_content: str
+        cls,
+        current_description: str,
+        document_type: str,
+        document_content: str,
+        document_description: str | None = None,
     ):
         return cls.instruct_template.render(
             current_description=current_description,
             document_type=document_type,
             document_content=document_content,
+            document_description=document_description,
         )

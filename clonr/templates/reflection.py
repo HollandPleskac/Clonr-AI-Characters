@@ -22,11 +22,11 @@ and observations, answer the question that follows.
 ---
 Given only the information above, what are the 3 most salient high-level \
 questions that we can answer about the subjects in the above statements? \
-Return your response as a numbered list.
+Return your response as a JSON list.
 {{- llm.user_end }}
 
 {{ llm.assistant_start -}}
-1.\
+["\
 {{- llm.assistant_end -}}
 """
     )
@@ -47,10 +47,10 @@ and observations, answer the question that follows.
 
 Given only the information above, what are the 3 most salient high-level \
 questions that we can answer about the subjects in the above statements? \
-Return your response as a numbered list.
+Return your response as a JSON list.
 
 ### Response:
-1.\
+["\
 """
     )
 
@@ -96,11 +96,11 @@ and observations, answer the question that follows.
 
 What 5 high-level insights can you infer from the above \
 statements of relevant memories, thoughts, and observations? \
-Return your answer as a numbered list.
+Return your answer as a JSON list.
 {{- llm.user_end }}
 
 {{ llm.assistant_start -}}
-1.\
+["\
 {{- llm.assistant_end -}}
 """
     )
@@ -121,10 +121,10 @@ and observations, answer the question that follows.
 
 What 5 high-level insights can you infer from the above \
 statements of relevant memories, thoughts, and observations? \
-Return your answer as a numbered list.
+Return your answer as a JSON list.
 
 ### Response:
-1.\
+["\
 """
     )
 

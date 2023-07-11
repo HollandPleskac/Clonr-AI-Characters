@@ -1,22 +1,19 @@
 import asyncio
 import json
 import uuid
+from abc import ABC, abstractmethod
 from pathlib import Path
 
 from loguru import logger
 from pydantic import BaseModel, validator
-from tqdm import tqdm
 
 from clonr import templates
-from clonr.data_structures import Document, Node
-from clonr.llms import LLM, GenerationParams, LLMResponse, MockLLM
+from clonr.data_structures import Document, IndexType, Node
+from clonr.generate import online_summarize, summarize
+from clonr.llms import LLM, GenerationParams, MockLLM
 from clonr.text_splitters import TextSplitter
 from clonr.tokenizer import Tokenizer
 from clonr.utils import aggregate_by_length
-
-DEFAULT_SUMMARIZE_PARAMS = GenerationParams(
-    max_tokens=512, temperature=0.3, presence_penalty=0.2, top_p=0.95
-)
 
 
 class TokenEstimate(BaseModel):
@@ -40,6 +37,7 @@ def create_leaf_nodes(doc: Document, splitter: TextSplitter) -> list[Node]:
             document_id=doc.id,
             index=i,
             is_leaf=True,
+            depth=0
             # embedding=embs[i],
             # embedding_model=self.encoder.name,
         )
@@ -47,39 +45,43 @@ def create_leaf_nodes(doc: Document, splitter: TextSplitter) -> list[Node]:
     return nodes
 
 
-async def online_summarize(
-    nodes: list[Node],
-    llm: LLM,
-    params: GenerationParams,
-    verbose: bool = False,
-) -> list[LLMResponse]:
-    calls: list[LLMResponse] = []
-    prev_summary = "No summary yet."
-    for node in tqdm(nodes) if verbose else nodes:
-        prompt = templates.OnlineSummarize.render(
-            passage=node.content, prev_summary=prev_summary, llm=llm
-        )
-        r = await llm.agenerate(prompt, params=params)
-        node.context = prev_summary = r.content
-        calls.append(r)
-    return calls
+## (Jonny): Not currently used.
+# async def summarize_with_context(
+#     content: str, prev_summary: str, llm: LLM, params: GenerationParams
+# ) -> LLMResponse:
+#     prompt = templates.SummarizeWithContext.render(
+#         passage=content, llm=llm, prev_summary=prev_summary
+#     )
+#     return await llm.agenerate(prompt, params=params)
 
 
-async def summarize(content: str, llm: LLM, params: GenerationParams) -> LLMResponse:
-    prompt = templates.Summarize.render(passage=content, llm=llm)
-    return await llm.agenerate(prompt, params=params)
+class Index(ABC):
+    @abstractmethod
+    def estimate_llm_tokens(self, doc: Document) -> TokenEstimate:
+        pass
+
+    @abstractmethod
+    async def abuild(self, doc: Document) -> list[Node]:
+        pass
+
+    @abstractmethod
+    def build(self, doc: Document) -> list[Node]:
+        pass
+
+    @classmethod
+    def from_type(cls, type: IndexType, **kwargs):
+        if type == IndexType.list:
+            return ListIndex(**kwargs)
+        if type == IndexType.list_with_context:
+            return ListIndexWithContext(**kwargs)
+        if type == IndexType.tree:
+            return TreeIndex(**kwargs)
+        raise TypeError("Invalid index type!")
 
 
-async def summarize_with_context(
-    content: str, prev_summary: str, llm: LLM, params: GenerationParams
-) -> LLMResponse:
-    prompt = templates.SummarizeWithContext.render(
-        passage=content, llm=llm, prev_summary=prev_summary
-    )
-    return await llm.agenerate(prompt, params=params)
+class ListIndex(Index):
+    type = IndexType.list
 
-
-class ListIndex:
     def __init__(
         self,
         tokenizer: Tokenizer,
@@ -101,11 +103,14 @@ class ListIndex:
     def get(self, id: str | uuid.UUID):
         return self._index.get(str(id))
 
-    async def abuild(self, doc: Document) -> list[Node]:
-        logger.info("Creating leaf nodes")
+    async def abuild(self, doc: Document, **kwargs) -> list[Node]:
+        logger.info(f"Building {self.__class__.__name__} on doc_id: {doc.id}.")
         nodes = create_leaf_nodes(doc=doc, splitter=self.splitter)
         for node in nodes:
             self._index[str(node.id)] = node
+        doc.index_type = self.type
+        self._index = {}  # TODO (Jonny): trying to make this stateless!
+        # No LLM calls in this one :)
         return nodes
 
     def build(self, doc: Document) -> list[Node]:
@@ -126,6 +131,8 @@ class ListIndexWithContext(ListIndex):
     as that will cause a lot of LLM calls! This is a really expensive
     method for small chunk sizes!
     """
+
+    type = IndexType.list_with_context
 
     def __init__(
         self,
@@ -171,19 +178,25 @@ class ListIndexWithContext(ListIndex):
             llm_call_tokens=llm_call_tokens,
         )
 
-    async def abuild(self, doc: Document) -> list[Node]:
+    async def abuild(self, doc: Document, **kwargs) -> list[Node]:
+        logger.info(f"Building {self.__class__.__name__} on doc_id: {doc.id}.")
         nodes = await super().abuild(doc=doc)
-        logger.info(f"LLM CALL: running online summarize on {len(nodes)} nodes.")
+        logger.info(f"Running online summarize on {len(nodes)} nodes.")
+        kwargs["subroutine"] = self.__class__.__name__
         llm_calls = await online_summarize(
-            nodes=nodes, llm=self.llm, verbose=self.verbose, params=self.gen_params
+            nodes=nodes,
+            llm=self.llm,
+            **kwargs,
         )
         for i, call in enumerate(llm_calls):
             nodes[i].context = call.content
             self._tokens_processed += call.usage.total_tokens
+        doc.index_type = self.type
+        self._index = {}  # TODO (Jonny): trying to make this stateless!
         return nodes
 
 
-class TreeIndex:
+class TreeIndex(Index):
     """Implements the TreeSummarize method. This iteratively
     aggregates leaf nodes then distills with an LLM summarization
     call until only one node, the root, remains.
@@ -199,6 +212,8 @@ class TreeIndex:
     aggregate(nodes) = nodes, which means that the number of nodes would
     never reduce (group_size = n_nodes).
     """
+
+    type = IndexType.tree
 
     def __init__(
         self,
@@ -219,6 +234,7 @@ class TreeIndex:
         self._tokens_processed = 0
         self.gen_params = gen_params
         prompt = templates.Summarize.render(passage="", llm=MockLLM(""))
+
         self._prompt_len = self.tokenizer.length(prompt)
         ctx = llm.context_length
         if isinstance(max_group_size, str):
@@ -226,6 +242,7 @@ class TreeIndex:
                 raise ValueError("Max group size should be an int or auto.")
             size = ctx - self._prompt_len - 2 * self.gen_params.max_tokens
             max_group_size = max(2 * self.gen_params.max_tokens, size)
+
         if max_group_size >= ctx - self.gen_params.max_tokens:
             raise ValueError(
                 (
@@ -301,7 +318,7 @@ class TreeIndex:
         return self
 
     def load(self, path: str | Path):
-        # TODO: really, this stuff should be made picklable with
+        # TODO (Jonny): really, this stuff should be made picklable with
         # __setstate__ and __getstate__ but like fuck it, we shouldn't
         # be using these anyway aside from debugging or notebook work.
         path = Path(path)
@@ -321,7 +338,7 @@ class TreeIndex:
         return sorted(nodes, key=lambda x: x.index)
 
     async def _process_level(
-        self, nodes: list[Node], depth: int, doc: Document
+        self, nodes: list[Node], depth: int, doc: Document, **kwargs
     ) -> list[Node]:
         def length_fn(node: Node):
             return self.tokenizer.length(node.content)
@@ -332,16 +349,17 @@ class TreeIndex:
         nodes = []
         for i, g in enumerate(groups):
             content = "".join(x.content for x in g)
-            logger.info(
-                f"LLM CALL: Depth {depth}. Group: {i+1}/{len(groups)}. Total Tokens: {self.tokens_processed}."
-            )
-            r = await summarize(content=content, llm=self.llm, params=self.gen_params)
+            kwargs["depth"] = depth
+            kwargs["subroutine"] = self.__class__.__name__
+            kwargs["group"] = f"{i+1}/{len(groups)}"
+            r = await summarize(content=content, llm=self.llm, **kwargs)
             self._tokens_processed += r.usage.total_tokens
             node = Node(
                 content=r.content,
                 document_id=doc.id,
                 index=i,
                 is_leaf=False,
+                depth=depth,
                 child_ids=[],
             )
             for nd in g:
@@ -351,18 +369,23 @@ class TreeIndex:
             self._index[str(node.id)] = node
         return nodes
 
-    async def abuild(self, doc: Document) -> list[Node]:
-        logger.info("Creating leaf nodes")
+    async def abuild(self, doc: Document, **kwargs) -> list[Node]:
+        logger.info(f"Building {self.__class__.__name__} on doc_id: {doc.id}.")
         nodes = create_leaf_nodes(doc=doc, splitter=self.splitter)
         if not nodes:
             return []
-        depth = 0
+        depth = 1
         for _ in range(len(nodes)):
             for node in nodes:
                 self._index[str(node.id)] = node
             if len(nodes) <= 1:
                 self.root = nodes[0]
                 break
-            nodes = await self._process_level(nodes=nodes, depth=depth, doc=doc)
+            nodes = await self._process_level(
+                nodes=nodes, depth=depth, doc=doc, **kwargs
+            )
             depth += 1
-        return list(self._index.values())
+        doc.index_type = self.type
+        r = list(self._index.values())
+        self._index = {}  # TODO (Jonny): trying to make this stateless!
+        return r
