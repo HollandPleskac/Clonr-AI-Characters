@@ -141,6 +141,7 @@ class EmbeddingModel:
         # we can go back to separate classes, but there's only 2 models for now, and this seems ok.
         if isinstance(text, str):
             text = [text]
+        assert all(isinstance(x, str) for x in text)
         if "e5" in getattr(self, "_pretrained_name", ""):
             text = [f"{EmbeddingType.query.value}: {x}" for x in text]
         return self._encode(text)
@@ -148,6 +149,7 @@ class EmbeddingModel:
     def encode_passage(self, text: list[str]) -> list[list[float]]:
         if isinstance(text, str):
             text = [text]
+        assert all(isinstance(x, str) for x in text)
         if "e5" in getattr(self, "_pretrained_name", ""):
             text = [f"{EmbeddingType.passage.value}: {x}" for x in text]
         return self._encode(text)

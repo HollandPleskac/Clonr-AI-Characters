@@ -20,3 +20,7 @@ class Cache:
     def delete(self, key):
         if key in self._d:
             self._d.pop(key)
+
+    def increment(self, key):
+        if key in self._d:
+            self._d[key] += 1

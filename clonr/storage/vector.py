@@ -98,7 +98,19 @@ class InMemoryVectorDB:
         for id in ids:
             self.delete(id)
 
-    def query(self, query: str, k: int = 3) -> list[dict]:
+    def query(self, query: str | list[str], k: int = 10) -> list[dict]:
+        if k < 1:
+            k = 1_000_000
+        if isinstance(query, list):
+            ids = set([])
+            res = [x for y in query for x in self.query(y, k)]
+            new_res = []
+            for x in res:
+                if x["id"] not in ids:
+                    ids.add(x["id"])
+                    new_res.append(x)
+            new_res.sort(key=lambda x: -x["similarity_score"])
+            return new_res[:k]
         q = np.array(self.encoder.encode_query(query))
         dists = cdist(q, self._vectors[: self._size], metric="cosine")[0]
         top_ids = np.argsort(dists)[:k]

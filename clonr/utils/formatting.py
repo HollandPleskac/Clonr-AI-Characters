@@ -60,12 +60,13 @@ class DateFormat:
         """
         arr: list[str] = []
         delta = datetime.now(tz=dt.tzinfo or ZoneInfo("utc")) - dt
-        if delta.days <= 0:
+        if use_today_and_yesterday and delta.days <= 0:
             arr.append("Today")
-        elif delta.days == 1:
+        elif use_today_and_yesterday and delta.days == 1:
             arr.append("Yesterday")
         else:
-            arr.append(calendar.day_name[dt.weekday()] + ",")
+            if add_weekday:
+                arr.append(calendar.day_name[dt.weekday()] + ",")
             month = calendar.month_name[dt.month]
             if dt.day in [1, 21, 31]:
                 suffix = "st"

@@ -85,7 +85,9 @@ def _validate_regex_split_pattern(s: str) -> None:
 
 def regex_split(text: str, pattern: str, include_separator: bool) -> str:
     """The recommended way to write a pattern would be something like this:
-    r'[\?\!\.]+'. This captures stuff like What?!?! or ok..."""
+    r'[\?\!\.]+'. This captures stuff like What?!?! or ok... Note (Jonny): that if you
+    wrap in parenthesis () with include_separator=False, you'll get chunks that
+    consist of only the separator. Not a bug, but a feature I guess :)."""
     _validate_regex_split_pattern(pattern)
     if include_separator:
         pattern = pattern if pattern[0] == "(" else f"({pattern})"
