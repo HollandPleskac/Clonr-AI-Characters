@@ -4,7 +4,14 @@ import logging
 import uuid
 
 from loguru import logger
-from tenacity import after_log, before_log, retry, stop_after_attempt, wait_random
+from tenacity import (
+    after_log,
+    before_log,
+    before_sleep_log,
+    retry,
+    stop_after_attempt,
+    wait_random,
+)
 
 from clonr import templates
 from clonr.data_structures import Document, Memory, Message, Node
@@ -107,7 +114,7 @@ def auto_chunk_size_summarize(
 
 
 async def agent_summary(
-    llm: OpenAI,
+    llm: LLM,
     char: str,
     memories: list[str] | list[Memory],
     questions: list[str] | None = None,
@@ -212,7 +219,7 @@ async def entity_context_create(
 @retry(
     stop=stop_after_attempt(MAX_RETRIES),
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
-    before=before_log(logger, logging.INFO),
+    before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
 )
 async def rate_memory(
@@ -253,7 +260,7 @@ async def rate_memory(
 @retry(
     stop=stop_after_attempt(MAX_RETRIES),
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
-    before=before_log(logger, logging.INFO),
+    before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
 )
 async def message_queries_create(
@@ -338,7 +345,7 @@ async def question_and_answer(
 @retry(
     stop=stop_after_attempt(MAX_RETRIES),
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
-    before=before_log(logger, logging.INFO),
+    before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
 )
 async def reflection_queries_create(
@@ -373,36 +380,67 @@ async def reflection_queries_create(
 @retry(
     stop=stop_after_attempt(MAX_RETRIES),
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
-    before=before_log(logger, logging.INFO),
+    before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
 )
-async def reflection_create(
+async def reflections_create(
     llm: LLM,
-    statements: list[str],
+    memories: list[Memory],
     system_prompt: str | None = None,
+    add_rating: bool = True,
     **kwargs,
-) -> list[str]:
+) -> list[Memory]:
+    """WARNING: This will produce memories that have not been rated for importance!"""
     if llm.is_chat_model:
         prompt = templates.ReflectionInsights.render(
             llm=llm,
-            statements=statements,
+            statements=memories,
             system_prompt=system_prompt,
         )
     else:
         prompt = templates.ReflectionInsights.render_instruct(
-            statements=statements,
+            statements=memories,
         )
     kwargs["template"] = templates.ReflectionInsights.__name__
     kwargs["subroutine"] = kwargs.get("subroutine", "reflections")
+    kwargs["retry_attempt"] = reflections_create.retry.statistics["attempt_number"]
+
+    index_to_memory = {i + 1: m for i, m in enumerate(memories)}
+
     r = await llm.agenerate(
         prompt_or_messages=prompt, params=Params.reflection_create, **kwargs
     )
-    text = f'["{r.content.strip()}'
+
+    text = '[{"insight":' + r.content
     try:
-        queries = json.loads(text)
+        data = json.loads(text)
     except json.JSONDecodeError:
         raise OutputParserError(f"Unable to convert output ({text}) to JSON.")
-    return queries
+
+    reflections: list[Memory] = []
+    for x in data:
+        try:
+            child_indexes = [int(z) for z in x["memories"]]
+            children = [index_to_memory[z] for z in child_indexes]
+        except Exception as e:
+            raise OutputParserError(
+                f"Failed to parse insight memory dependencies: ({e})"
+            )
+        depth = max(c.depth for c in children) + 1
+        child_ids = [c.id for c in children]
+        content = x["insight"]
+        if add_rating:
+            importance = await rate_memory(llm=llm, memory=content)
+        else:
+            importance = 4
+        m = Memory(
+            content=x["insight"],
+            importance=importance,
+            depth=depth,
+            child_ids=child_ids,
+        )
+        reflections.append(m)
+    return reflections
 
 
 async def summarize(

@@ -19,6 +19,11 @@ Clonr offers the following features, that set it apart from other chatbots out t
 * 3rd party integrations with social media. These allow your clones to mirror real life, acting and responding as if they're living your experience.
 * Multi-user chats. We can support group chats for our bot, by making use of our memory and entity context modules.
 
+### Business use cases
+Because our bots have long-term memory, understanding of entities that they interact with, ability to plan, and the ability to engage in group conversations, there are other business use cases available.
+
+Consider Pylon, a YC W23 company that converts your business messaging app conversations to TODOs and action items. The idea is to convert hundreds of open slack threads into a set of priority actions items and followups. We could instead invite our Clonr bot to all of these threads, and give the bot the ability to plan in real time. These plans would translate to reminders, contextual summaries, and the ability to anticipate responses. It would be like having a single master business copilot for all of your needs! It can understand moods, dialogue, and construct internal memory, as well as emulate your own particular business style if you choose it to clone your business persona. Price may be an issue though, as the estimate was something like ~$5 / 1500 messages (possibly much much lower depending on ratio of read to write). Estimating 200 messages sent per day (70 slack, 40 email + padding), that puts you at about $20 / user / month to break even. Wait... that's actually not bad!
+
 ## Usage
 
 We offer both an API based service, as well as integrated clones via Discord. Clones can be created via our frontend UI, and that's also where API Keys can be retrieved. You'll be charged per message to the Clone.

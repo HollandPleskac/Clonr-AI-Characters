@@ -34,18 +34,18 @@ services:
       retries: 5
       start_period: 5s
 
-  backend:
-    build: './backend'
-    env_file:
-      - .env
-    environment:
-      - port=8000
-    volumes:
-      - ./backend/app:/app
-      - ./backend/migrations:/migrations
-      - ./backend/_data:/_data
-    depends_on:
-      - postgres
-      - redis
-    ports:
-      - 8000:8000
+  # backend:
+  #   build: './backend'
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     - port=8000
+  #   volumes:
+  #     - ./backend/app:/app
+  #     - ./backend/migrations:/migrations
+  #     - ./backend/_data:/_data
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   ports:
+  #     - 8000:8000

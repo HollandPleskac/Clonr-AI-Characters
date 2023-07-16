@@ -137,7 +137,9 @@ class GenerativeAgentsRetriever(Retriever):
             score += self.alpha_importance * importance
 
             # calculate relevance score
-            score += self.alpha_relevance * item["similarity_score"]
+            score += (
+                self.alpha_relevance * item["similarity_score"] / 2.0
+            )  # cosine normalization!
             score /= self._alpha_sum
 
             # Use a negative score so that in the next argsort step we retrieve the smallest values.

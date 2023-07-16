@@ -59,17 +59,6 @@ class EmbeddingModel:
         self.max_batch_size = max_batch_size
 
     @classmethod
-    def _from_pretrained_transformers(
-        cls, model_name: EmbeddingModelEnum, normalized: bool = True
-    ):
-        raise ValueError("Bro, don't use this, it's gonna break")
-        model = transformers.AutoModel.from_pretrained(model_name.value)
-        tokenizer = _get_hf_tokenizer(model_name.value)
-        obj = cls(model=model, tokenizer=tokenizer, normalized=normalized)
-        obj._pretrained_name = model_name.value
-        return obj
-
-    @classmethod
     def default(cls):
         return cls.from_pretrained(EmbeddingModelEnum.e5_small_v2)
 
@@ -116,7 +105,7 @@ class EmbeddingModel:
         mask = attn_mask[..., None]
         emb = np.where(mask, h, 0.0).sum(axis=1) / (mask.sum(axis=1) + 1e-9)
         if self.normalized:
-            emb /= np.linalg.norm(emb, axis=1, keepdims=True)
+            emb = emb / np.linalg.norm(emb, axis=1, keepdims=True)
         return emb
 
     def _encode(self, texts: list[str]) -> list[list[float]]:
@@ -174,15 +163,6 @@ class CrossEncoder(EmbeddingModel):
         self.max_batch_size = max_batch_size
 
     @classmethod
-    def _from_pretrained_transformers(cls, model_name: CrossEncoderEnum):
-        raise ValueError("Bro, don't use this, it's gonna break")
-        model = transformers.AutoModel.from_pretrained(model_name.value)
-        tokenizer = _get_hf_tokenizer(model_name.value)
-        obj = cls(model=model, tokenizer=tokenizer)
-        obj._pretrained_name = model_name.value
-        return obj
-
-    @classmethod
     def default(cls):
         return cls.from_pretrained(CrossEncoderEnum.mmarco_mMiniLMv2_L12_H384_v1)
 
@@ -233,5 +213,5 @@ class CrossEncoder(EmbeddingModel):
         features = self.tokenizer(
             query, passages, padding=True, truncation=True, return_tensors="np"
         )
-        scores = self.model(**features).logits
+        scores = self.model(**features).logits.squeeze()
         return scores.tolist()

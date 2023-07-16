@@ -150,10 +150,24 @@ class Memory(BaseModel):
     )
     embedding: list[float] = Field(default=None, repr=False)
     embedding_model: str | None = Field(default=None, repr=False)
+    depth: int = Field(
+        default=0, detail="What depth of reflection this is. New memories are depth 0."
+    )
+    parent_ids: list[uuid.UUID] = Field(
+        default_factory=lambda: [],
+        detail="Higher-order reflections that this memory is apart of",
+    )
+    child_ids: list[uuid.UUID] = Field(
+        default_factory=lambda: [],
+        detail="lower-order memories used to produce this reflection",
+    )
 
     def to_str(self) -> str:
         dt_str = DateFormat.human_readable(self.timestamp)
         return f"[{dt_str}] {self.content}"
+
+    # TODO (Jonny): Need a way to prevent this from returning messages
+    # that are already displayed. Mostly an issue early in the conversation.
 
 
 class Message(BaseModel):

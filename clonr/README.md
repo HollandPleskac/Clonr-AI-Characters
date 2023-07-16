@@ -205,8 +205,11 @@ Inference is done via LLM, which means the main object is the prompt. Roughly, t
 5. example_dialogues
 6. agent_summary
 7. memories
+7.5. Wiki/facts?
 8. entity_context_summary
 9. conversation_messages
+
+__TODO__ (Jonny): I fucking forgot about wiki/facts retrieval. shiiiiit. Need to figure out where this goes!
 
 The first 4 are static, and retrieved from the relational database. (5) uses a vector db retrieval for relevance from a static collection of example dialogues (maybe rethink this in the future?). (6) is retrieved every turn from the cache and synthesized periodically, when a certain importance criteria is met, via llm calls. (7) is a vector database retrieval with special retrieval function. (8) is retrieved from cache and also synthesized periodically like (6). (9) is retrieved from cache and just lists the recent messages.
 

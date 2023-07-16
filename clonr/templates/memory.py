@@ -46,7 +46,7 @@ class MemoryRating(Template):
 Given a memory, rate the significance of that memory. \
 Use a scale of 0 to 9, where 0 is purely mundane (e.g., brushing teeth, making bed) \
 and 9 is extremely poignant (e.g., a break up, college acceptance). \
-Rate the likely poignancy of the following piece of memory, given in the format
+Rate the likely poignancy of the following memory, given in the format
 MEMORY: <memory>.
 Respond with a single integer in the format:
 RATING: <rating>.
@@ -83,7 +83,7 @@ appropriately completes the request
 Given a memory, rate the significance of that memory. \
 Use a scale of 0 to 9, where 0 is purely mundane (e.g., brushing teeth, making bed) \
 and 9 is extremely poignant (e.g., a break up, college acceptance). \
-Rate the likely poignancy of the following piece of memory, given in the format
+Rate the likely poignancy of the following memory, given in the format
 MEMORY: <memory>.
 Respond with a single integer in the format:
 RATING: <rating>.

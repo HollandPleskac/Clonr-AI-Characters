@@ -14,7 +14,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
-    type_annotation_map = {List[float]: Vector, dict[str, Any]: JSON}
+    type_annotation_map = {list[float]: Vector, dict[str, Any]: JSON}
 
 
 class CommonMixin:
@@ -190,7 +190,7 @@ class Document(CommonMixin, Base):
     type: Mapped[Optional[str]] = mapped_column(default=None)
     url: Mapped[Optional[str]] = mapped_column(default=None)
     index_type: Mapped[IndexType] = mapped_column(nullable=True)
-    embedding: Mapped[List[float]]
+    embedding: Mapped[list[float]]
     embedding_model: Mapped[str]
     clone_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
@@ -224,7 +224,7 @@ class Node(CommonMixin, Base):
     index: Mapped[int]
     content: Mapped[str]
     context: Mapped[Optional[str]] = mapped_column(nullable=True)
-    embedding: Mapped[List[float]]
+    embedding: Mapped[list[float]]
     embedding_model: Mapped[str]
     is_leaf: Mapped[bool]  # Note (Jonny): isn't this redundant with depth?
     depth: Mapped[int]
@@ -263,7 +263,7 @@ class ExampleDialogue(CommonMixin, Base):
     messages: Mapped[list["ExampleDialogueMessage"]] = relationship(
         "ExampleDialogueMessage", back_populates="dialogue"
     )
-    embedding: Mapped[List[float]]
+    embedding: Mapped[list[float]]
     embedding_model: Mapped[str]
     clone_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
@@ -287,7 +287,7 @@ class ExampleDialogueMessage(CommonMixin, Base):
     content: Mapped[str]
     sender_name: Mapped[str]
     is_clone: Mapped[bool]
-    embedding: Mapped[List[float]]
+    embedding: Mapped[list[float]]
     embedding_model: Mapped[str]
     dialogue_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("example_dialogues.id", ondelete="cascade")
@@ -324,7 +324,7 @@ class Memory(CommonMixin, Base):
     __tablename__ = "memories"
 
     content: Mapped[str]
-    embedding: Mapped[List[float]]
+    embedding: Mapped[list[float]]
     embedding_model: Mapped[str]
     timestamp: Mapped[datetime.datetime] = mapped_column(sa.DateTime(timezone=True))
     last_accessed_at: Mapped[datetime.datetime] = mapped_column(

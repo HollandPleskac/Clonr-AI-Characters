@@ -91,16 +91,21 @@ and observations, answer the question that follows.
 ---
 {% for statement in statements -%}
 {{loop.index}}. {{statement}}
+{%- if not loop.last %}
+{% endif -%} 
 {%- endfor %} 
 ---
 
 What 5 high-level insights can you infer from the above \
 statements of relevant memories, thoughts, and observations? \
-Return your answer as a JSON list.
+For each insight, provide a list of memories that were used to form the insight. \
+Return your answer as a list of JSON objects. For example, if the insight "foo bar" \
+depends on memories 2, 4, and 5, then the correct JSON format would be:
+{"insight":"foo bar", "memories":[2, 4, 5]}.
 {{- llm.user_end }}
 
 {{ llm.assistant_start -}}
-["\
+[{"insight":\
 {{- llm.assistant_end -}}
 """
     )
@@ -116,15 +121,20 @@ and observations, answer the question that follows.
 ---
 {% for statement in statements -%}
 {{loop.index}}. {{statement}}
+{%- if not loop.last %}
+{% endif -%} 
 {%- endfor %} 
 ---
 
 What 5 high-level insights can you infer from the above \
 statements of relevant memories, thoughts, and observations? \
-Return your answer as a JSON list.
+For each insight, provide a list of memories that were used to form the insight. \
+Return your answer as a list of JSON objects. For example, if the insight "foo bar" \
+depends on memories 2, 4, and 5, then the correct JSON format would be:
+{"insight":"foo bar", "memories":[2, 4, 5]}.
 
 ### Response:
-["\
+[{"insight":\
 """
     )
 
