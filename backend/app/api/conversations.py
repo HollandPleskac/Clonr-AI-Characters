@@ -14,25 +14,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy as sa
 from loguru import logger
 from slowapi import Limiter
+from slowapi.util import get_remote_address
 
-# from app.embedding import embed
-from clonr.llms import LLM
-from app.main import TOKENIZER
-from app.character import (
-    CHAR,
-    EXAMPLE_DIALOGUES,
-    INITIAL_MESSAGE,
-    USER,
-    create_message_query,
-    create_prompt,
+limiter = Limiter(
+    key_func=get_remote_address,
+    default_limits=["5/minute"],
+    storage_uri="redis://localhost:6379",
 )
-
-limiter = Limiter(default_limits=["5/minute"])
 
 
 def calculate_dynamic_rate_limit(request: Request):
     print("TODO")
-    return "5/minute"
+    # raise error for now
+    raise HTTPException(status_code=400, detail="Not implemented")
 
 
 router = APIRouter(
@@ -195,108 +189,13 @@ async def delete_message(
 @router.get("/v1/conversation/{convo_id}/response")
 @limiter.limit(calculate_dynamic_rate_limit)
 async def get_response(
+    request: Request,
     convo_id: str,
     db: Annotated[AsyncSession, Depends(get_async_session)],
     cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
 ):
-    # Retreive the past messages
-    logger.info("Retrieving current coversation")
-    current_message_token_lim = 1600
-    current_messages: list[models.Message] = []
-    q = await db.scalars(
-        sa.select(models.Message)
-        .where(models.Message.conversation_id == convo_id)
-        .order_by(models.Message.timestamp.desc())
-    )
-    for msg in q:
-        current_message_token_lim -= len(TOKENIZER.encode(msg.content)) + 3
-        if current_message_token_lim >= 0:
-            current_messages.append(msg)
-        else:
-            break
-    # because latest is the first element and out prompt does '\n'.join
-    current_messages = list(reversed(current_messages))
-    logger.info(f"Retrieved: {len(current_messages)} messages")
-
-    # create query for the past
-    logger.info("Using last 6 messages to construct a DB query")
-    queries = await create_message_query(llm=LLM, db=db, messages=current_messages[-6:])
-    if queries is None:
-        logger.error("\n Queries is None")
-        queries = []
-    logger.info("Retrieving similar records to query from DB")
-    facts_: list[models.Chunk] = []
-    past_messages_: list[models.Message] = []
-    # embeddings = embed(queries)
-    embeddings = []
-    for e in embeddings:
-        if f := (
-            await db.scalars(
-                sa.select(models.Chunk)
-                .order_by(models.Chunk.embedding.cosine_distance(e))
-                .limit(3)
-            )
-        ).all():
-            facts_.extend(f)
-        if p := (
-            await db.scalars(
-                sa.select(models.Message)
-                .where(models.Message.conversation_id == convo_id)
-                .order_by(models.Message.embedding.cosine_distance(e))
-                .limit(3)
-            )
-        ).all():
-            past_messages_.extend(p)
-    vis = set(str(x.id) for x in current_messages)
-    # logger.info(f"\n-----\n\n\nRELEVANT PAST MESSAGES:\n{past_messages_}\n\n\n------\n")
-    past_messages_ = [x for x in past_messages_ if str(x.id) not in vis]
-
-    fact_token_limit = 256
-    facts = []
-    for f in facts_:
-        fact_token_limit -= len(TOKENIZER.encode(f.content))
-        if fact_token_limit >= 0:
-            facts.append(f)
-        else:
-            break
-
-    past_message_token_limit = 128
-    past_messages = []
-    for f in past_messages_:
-        past_message_token_limit -= len(TOKENIZER.encode(f.content))
-        if past_message_token_limit >= 0:
-            past_messages.append(f)
-        else:
-            break
-
-    logger.info("Constructing Message prompt")
-    prompt = create_prompt(
-        facts=[x.content for x in facts],
-        past_msgs=past_messages,
-        current_msgs=current_messages,
-    )
-    logger.info("LLM call for message")
-    r = await LLM.agenerate(prompt)
-    msg = models.Message(
-        sender_name=CHAR,
-        content=r.content,
-        embedding=embed(r.content)[0],
-        conversation_id=convo_id,
-    )
-    # add to redis cache
-    await cache.message_add(convo_id, msg)
-    db.add(msg)
-    llm_call = models.LLMCall(
-        content=r.content,
-        prompt_tokens=r.usage.prompt_tokens,
-        completion_tokens=r.usage.completion_tokens,
-        total_tokens=r.usage.total_tokens,
-        finish_reason=r.finish_reason,
-        role=r.role,
-        tokens_per_second=r.tokens_per_second,
-        prompt=prompt,
-    )
-    db.add(llm_call)
-    await db.commit()
-    response = jsonable_encoder(r)
+    ## TODO: modify later, this is a stub
+    response = {"response": "hello world"}
+    # add to cache
+    await cache.conversation_add(convo_id, response)
     return response
