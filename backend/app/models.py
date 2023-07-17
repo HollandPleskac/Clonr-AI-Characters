@@ -410,3 +410,46 @@ class EntityContextSummary(CommonMixin, Base):
         if len(content) > 30 + len(msg):
             content = content[:30] + msg
         return f"{name}(id={str(self.id)}, entity_name={self.entity_name}, content={content})"
+
+
+### Stripe
+
+
+class UsageRecord(Base, CommonMixin):
+    __tablename__ = "usage_records"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        primary_key=True, server_default=sa.text("gen_random_uuid()")
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
+    subscription_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("subscriptions.id", ondelete="cascade"), nullable=False
+    )
+    quantity: Mapped[int] = mapped_column(sa.Integer, nullable=False)
+    timestamp: Mapped[datetime.datetime] = mapped_column(sa.DateTime, nullable=True)
+
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        sa.DateTime(timezone=True), server_default=sa.func.now()
+    )
+
+
+class Subscription(Base, CommonMixin):
+    __tablename__ = "subscriptions"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        primary_key=True, server_default=sa.text("gen_random_uuid()")
+    )
+    # Should match Stripe's subscription id
+    subscription_id: Mapped[str] = mapped_column(sa.String, nullable=False)
+    customer_id = mapped_column(sa.String, nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
+    stripe_status: Mapped[str] = mapped_column(sa.String, nullable=False)
+    stripe_created: Mapped[datetime.datetime] = mapped_column(sa.DateTime)
+    stripe_current_period_start: Mapped[datetime.datetime] = mapped_column(sa.DateTime)
+    stripe_current_period_end: Mapped[datetime.datetime] = mapped_column(sa.DateTime)
+    stripe_cancel_at_period_end: Mapped[bool] = mapped_column(sa.Boolean)
+    stripe_canceled_at: Mapped[datetime.datetime] = mapped_column(sa.DateTime)

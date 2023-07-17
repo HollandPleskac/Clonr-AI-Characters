@@ -12,6 +12,7 @@ from fastapi import (
     Response,
     JSONResponse,
 )
+from fastapi.responses import RedirectResponse
 from fastapi.routing import APIRouter
 from sqlalchemy import update, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,6 +20,9 @@ from app.settings import settings
 from pydantic import BaseModel
 import stripe
 from stripe.error import StripeError
+from app.models import UsageRecord, SubscriptionItem, Subscription
+import sqlalchemy as sa
+from datetime import datetime, timedelta
 
 router = APIRouter(
     prefix="/stripe",
@@ -132,7 +136,11 @@ async def create_customer(email: str, name: str):
 
 
 @router.post("/create-checkout-session")
-async def create_checkout_session(request: Request):
+async def create_checkout_session(
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+    user: Annotated[models.User, Depends(current_active_user)],
+):
     content_type = request.headers.get("Content-Type")
     if content_type is None:
         return "No Content-Type provided."
@@ -147,16 +155,31 @@ async def create_checkout_session(request: Request):
     else:
         print("Content-Type not supported.")
     try:
+        subscription_id = product_info["subscription"]
         checkout_session = stripe.checkout.Session.create(
             api_key=settings.STRIPE_KEY,
             payment_method_types=["card"],
-            line_items=product_info["items"],
+            # line_items=product_info["items"],
+            subbscription=subscription_id,
             mode="payment",
             success_url=settings.STRIPE_SUCCESS_URL,
             cancel_url=settings.STRIPE_CANCEL_URL,
         )
         print("success")
-        # TODO: add orders to db
+        # add subscription to db
+        subscription = models.Subscription(
+            customer_id=checkout_session["customer"],
+            subscription_id=subscription_id,
+            user_id=user.id,
+            stripe_status=checkout_session.subscription.status,
+            stripe_created=checkout_session.subscription.created,
+            stripe_current_period_start=checkout_session.subscription.current_period_start,
+            stripe_current_period_end=checkout_session.subscription.current_period_end,
+            stripe_cancel_at_period_end=checkout_session.subscription.cancel_at_period_end,
+            stripe_canceled_at=checkout_session.subscription.canceled_at,
+        )
+        await db.add(subscription)
+        await db.commit()
 
         return {"status_code": status.HTTP_200_OK, "detail": checkout_session}
     except Exception as e:
@@ -164,7 +187,11 @@ async def create_checkout_session(request: Request):
 
 
 @router.post("/create-subscription")
-async def create_subscription(request: Request):
+async def create_subscription(
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+    user: Annotated[models.User, Depends(current_active_user)],
+):
     content_type = request.headers.get("Content-Type")
     if content_type is None:
         return "No Content-Type provided."
@@ -182,8 +209,19 @@ async def create_subscription(request: Request):
             customer=subscription_info["customer"],
             items=subscription_info["items"],
         )
-        print("success")
-        # TODO: add subscriptions to db
+        subscription = models.Subscription(
+            user_id=user.id,
+            subscription_id=subscription["id"],
+            customer_id=subscription["customer"],
+            stripe_status=subscription["status"],
+            stripe_created=subscription["created"],
+            stripe_current_period_start=subscription["current_period_start"],
+            stripe_current_period_end=subscription["current_period_end"],
+            stripe_cancel_at_period_end=subscription["cancel_at_period_end"],
+            stripe_canceled_at=subscription["canceled_at"],
+        )
+        await db.add(subscription)
+        await db.commit()
 
         return {"status_code": status.HTTP_200_OK, "detail": subscription}
     except Exception as e:
@@ -219,7 +257,11 @@ async def create_payout(
 
 
 @router.post("/create-usage-record")
-async def create_usage_record(request: Request):
+async def create_usage_record(
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+    user: Annotated[models.User, Depends(current_active_user)],
+):
     content_type = request.headers.get("Content-Type")
     if content_type is None:
         raise HTTPException(status_code=400, detail="No Content-Type provided.")
@@ -233,11 +275,18 @@ async def create_usage_record(request: Request):
 
     try:
         usage_record = stripe.SubscriptionItem.create_usage_record(
-            subscription_item=usage_record_info["subscription_item"],
+            subscription_id=usage_record_info["subscription_item_id"],
             quantity=usage_record_info["quantity"],
             timestamp=usage_record_info.get("timestamp"),
         )
-        # TODO: Process the usage record
+        usage_record = models.UsageRecord(
+            user_id=user.id,
+            subscription_item_id=usage_record["subscription_item"],
+            quantity=usage_record["quantity"],
+            timestamp=usage_record["timestamp"],
+        )
+        await db.add(usage_record)
+        await db.commit()
 
         return JSONResponse(
             status_code=200, content={"status_code": 200, "detail": usage_record}
@@ -247,12 +296,27 @@ async def create_usage_record(request: Request):
 
 
 @router.get("/usage-total/{subscription_item_id}")
-async def get_usage_total(subscription_item_id: str):
+async def get_usage_total(
+    subscription_item_id: str,
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+    user: Annotated[models.User, Depends(current_active_user)],
+):
     try:
         subscription_item = stripe.SubscriptionItem.retrieve(subscription_item_id)
+        subscription_item_id = subscription_item["id"]
+        usage_records = await db.scalars(
+            sa.select(models.UsageRecord)
+            .where(models.UsageRecord.user_id == user.id)
+            .where(models.UsageRecord.subscription_item_id == subscription_item_id)
+        )
+        # sum up all the quantity
+        total = 0
+        for usage_record in usage_records:
+            total += usage_record.quantity
+
         return JSONResponse(
             status_code=200,
-            content={"status_code": 200, "detail": subscription_item.quantity},
+            content={"status_code": 200, "total": total},
         )
     except StripeError as e:
         raise HTTPException(status_code=403, detail=str(e))
