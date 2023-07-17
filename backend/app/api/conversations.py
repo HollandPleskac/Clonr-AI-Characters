@@ -4,10 +4,30 @@ from app import models, schemas
 from app.auth.api_keys import get_api_key
 from app.auth.users import current_active_user
 from app.db import RedisCache, get_async_redis_cache, get_async_session
+from fastapi import Depends, FastAPI
 from fastapi import Depends, HTTPException, status
 from fastapi.routing import APIRouter
+from fastapi.encoders import jsonable_encoder
+from fastapi import Request
 from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+import sqlalchemy as sa
+from loguru import logger
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+limiter = Limiter(
+    key_func=get_remote_address,
+    default_limits=["5/minute"],
+    storage_uri="redis://localhost:6379",
+)
+
+
+def calculate_dynamic_rate_limit(request: Request):
+    print("TODO")
+    # raise error for now
+    raise HTTPException(status_code=400, detail="Not implemented")
+
 
 router = APIRouter(
     prefix="/conversations",
@@ -147,6 +167,7 @@ async def delete_conversation(
     "/{conversation_id}/messages/{message_id}", response_model=schemas.Conversation
 )
 async def delete_message(
+    request: Request,
     conversation_id: str,
     message_id: str,
     db: Annotated[AsyncSession, Depends(get_async_session)],
@@ -163,3 +184,18 @@ async def delete_message(
     await db.delete(convo)
     await db.commit()
     return convo
+
+
+@router.get("/v1/conversation/{convo_id}/response")
+@limiter.limit(calculate_dynamic_rate_limit)
+async def get_response(
+    request: Request,
+    convo_id: str,
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+    cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
+):
+    ## TODO: modify later, this is a stub
+    response = {"response": "hello world"}
+    # add to cache
+    await cache.conversation_add(convo_id, response)
+    return response

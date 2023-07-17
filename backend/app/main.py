@@ -2,7 +2,7 @@ import asyncio
 import json
 import os
 from contextlib import asynccontextmanager
-
+import tiktoken
 import uvicorn
 from app import api, schemas, utils
 from app.auth.users import auth_backend, fastapi_users, google_oauth_client
@@ -58,6 +58,10 @@ async def lifespan(app: FastAPI):
     logger.info("Creating local storage directories")
     os.makedirs(str(utils.get_local_data_dir().resolve()), exist_ok=True)
     os.makedirs(str(utils.get_voice_data_dir().resolve()), exist_ok=True)
+
+    global TOKENIZER
+    model = "gpt-3.5-turbo-0613"
+    TOKENIZER = tiktoken.encoding_for_model(model)
 
     yield
 
