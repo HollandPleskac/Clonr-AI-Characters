@@ -15,6 +15,8 @@ from fastapi_users.authentication import (  # RedisStrategy,
 )
 from fastapi_users.db import SQLAlchemyUserDatabase
 from httpx_oauth.clients.google import GoogleOAuth2
+from sqlalchemy.orm import Session
+from app.db import RedisCache, get_async_redis_cache, get_async_session
 
 SECRET = settings.AUTH_SECRET
 # redis = redis.asyncio.from_url("redis://localhost:6379", decode_responses=True)
@@ -41,6 +43,13 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         self, user: User, token: str, request: Optional[Request] = None
     ):
         print(f"Verification requested for user {user.id}. Verification token: {token}")
+
+    async def ban_user(self, db: Session, user_id: uuid.UUID):
+        user = db.query(User).filter(User.id == user_id).first()
+        user.is_banned = True
+        db.commit()
+        async with get_async_redis_cache() as cache:
+            await cache.ban_user(user_id)
 
 
 async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db)):

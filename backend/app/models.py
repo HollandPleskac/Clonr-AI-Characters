@@ -59,6 +59,7 @@ class User(Base, SQLAlchemyBaseUserTableUUID):
     clones: Mapped[list["Clone"]] = relationship(
         "Clone", back_populates="user", lazy="joined"
     )
+    is_banned: Mapped[bool] = mapped_column(default=False)
 
     def __repr__(self):
         return f"User(id={self.id})"
@@ -453,3 +454,19 @@ class Subscription(Base, CommonMixin):
     stripe_current_period_end: Mapped[datetime.datetime] = mapped_column(sa.DateTime)
     stripe_cancel_at_period_end: Mapped[bool] = mapped_column(sa.Boolean)
     stripe_canceled_at: Mapped[datetime.datetime] = mapped_column(sa.DateTime)
+
+
+### Moderation
+class ModerationRecord(Base):
+    __tablename__ = "moderation_records"
+    id: Mapped[uuid.UUID] = mapped_column(
+        primary_key=True, server_default=sa.text("gen_random_uuid()")
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
+    violation_content: Mapped[str] = mapped_column(sa.String, nullable=False)
+    is_banned: Mapped[bool] = mapped_column(sa.Boolean, nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        sa.DateTime(timezone=True), server_default=sa.func.now()
+    )
