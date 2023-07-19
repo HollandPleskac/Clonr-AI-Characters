@@ -58,6 +58,7 @@ class RedisCache:
         self.api_key_prefix = "api_key"
         self.conversation_prefix = "conversation"
         self.clone_prefix = "clone"
+        self.user_ban_prefix = "user_ban"
 
     def make_api_key_key(self, apikey: str):
         return f"{self.api_key_prefix}{self.delimiter}{apikey}"
@@ -152,6 +153,14 @@ class RedisCache:
         if value is None:
             return await self.r.hgetall(clone_id) or None
         return await self.r.hget(key, value)
+
+    async def ban_user(self, user_id: int):
+        key = f"{self.user_ban_prefix}{self.delimiter}{user_id}"
+        await self.r.set(key, "True")
+
+    async def is_user_banned(self, user_id: int) -> bool:
+        key = f"{self.user_ban_prefix}{self.delimiter}{user_id}"
+        return await self.r.get(key) == b"True"
 
 
 async def get_async_redis_cache() -> AsyncGenerator[RedisCache, None]:
