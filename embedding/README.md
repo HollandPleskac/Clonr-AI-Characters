@@ -6,11 +6,11 @@ To run the server, just launch `python -m server.server`. You can then import `f
 
 ### Compiling
 
-Make sure that you've installed grpcio. On a mac M1/M2, the installation instructions are kinda fucked, you have to install from source using pip install --all or something. Once that works, from this directory, run
+Make sure that you've installed grpcio. On a mac M1/M2, the installation instructions are kinda fucked, you have to install from source using pip install --all or something. Once that works, from the root directory, run
 ```
-python -m grpc_tools.protoc --proto_path=./proto --python_out=. --pyi_out=. --grpc_python_out=. embed.proto 
-```
-
-to auto-generate the protobuf code.
+python -m grpc_tools.protoc --proto_path=./proto --python_out=./embedding/pb --pyi_out=./embedding/pb --grpc_python_out=./embedding/pb embedding.proto```
+, which is also given as a shell script `compile_proto.sh`, to auto-generate the protobuf code.
 
 Note that protobuf will add Servicer to the end of any service name, and auto create a function like add_<name>Servicer_to_server.
+
+To run the server, you just run python -m embedding.server from the root of the repository

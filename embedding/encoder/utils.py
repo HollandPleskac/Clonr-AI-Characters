@@ -13,6 +13,14 @@ def get_artifacts_dir() -> Path:
     raise ValueError(f"We're not really at the root, we're at {path.resolve()}")
 
 
+def get_transformers_dir() -> Path:
+    return get_artifacts_dir() / "transformers"
+
+
+def get_onnx_dir() -> Path:
+    return get_artifacts_dir() / "onnx"
+
+
 @lru_cache(maxsize=None)
 def get_hf_tokenizer(model_name_or_path: str):
     return AutoTokenizer.from_pretrained(model_name_or_path)

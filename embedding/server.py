@@ -2,13 +2,12 @@ import asyncio
 import logging
 
 import grpc
-import embed_pb2
-import embed_pb2_grpc
+from loguru import logger
+from embedding.pb import embed_pb2
+from embedding.pb import embed_pb2_grpc
 
-from .encoder import EmbeddingModel, CrossEncoder
-
-
-PORT = 50051
+from embedding.encoder import EmbeddingModel, CrossEncoder
+from embedding.shared import PORT
 
 
 class EmbedServicer(embed_pb2_grpc.EmbedServicer):
@@ -21,7 +20,7 @@ class EmbedServicer(embed_pb2_grpc.EmbedServicer):
     async def EncodeQueries(
         self, request: embed_pb2.EncodeQueryRequest, unused_context
     ) -> embed_pb2.EmbeddingResponse:
-        print(request.text)
+        logger.info("Received EncodeQueries request")
         encodings = self.encoder.encode_query(request.text)
         embeddings = [embed_pb2.Embedding(embedding=x) for x in encodings]
         return embed_pb2.EmbeddingResponse(embeddings=embeddings)
@@ -29,6 +28,7 @@ class EmbedServicer(embed_pb2_grpc.EmbedServicer):
     async def EncodePassages(
         self, request: embed_pb2.EncodePassageRequest, unused_context
     ) -> embed_pb2.EmbeddingResponse:
+        logger.info("Received EncodePassages request")
         encodings = self.encoder.encode_passage(request.text)
         embeddings = [embed_pb2.Embedding(embedding=x) for x in encodings]
         return embed_pb2.EmbeddingResponse(embeddings=embeddings)
@@ -36,6 +36,7 @@ class EmbedServicer(embed_pb2_grpc.EmbedServicer):
     async def GetRankingScores(
         self, request: embed_pb2.RankingScoreRequest, unused_context
     ) -> embed_pb2.RankingScoreResponse:
+        logger.info("Received GetRankingScores request")
         scores = self.cross_encoder.similarity_score(
             query=request.query, passages=request.passages
         )
@@ -45,9 +46,11 @@ class EmbedServicer(embed_pb2_grpc.EmbedServicer):
 async def serve() -> None:
     server = grpc.aio.server()
     embed_pb2_grpc.add_EmbedServicer_to_server(EmbedServicer(), server)
-    server.add_insecure_port("[::]:{PORT}")
+    server.add_insecure_port(f"[::]:{PORT}")
+    logger.info(f"Starting server on port: {PORT}")
     await server.start()
     await server.wait_for_termination()
+    logger.info("Server shutting down.")
 
 
 if __name__ == "__main__":

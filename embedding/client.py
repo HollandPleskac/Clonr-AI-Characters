@@ -4,11 +4,9 @@ import random
 from typing import Iterable, List
 
 import grpc
-import embed_pb2
-import embed_pb2_grpc
-
-
-PORT = 50051
+from embedding.pb import embed_pb2
+from embedding.pb import embed_pb2_grpc
+from embedding.shared import PORT
 
 
 class Client:

@@ -10,8 +10,8 @@ from optimum.onnxruntime import (
 )
 from optimum.onnxruntime.configuration import OptimizationConfig
 
-from clonr.embedding.encoder import CrossEncoderEnum, EmbeddingModelEnum
-from clonr.utils import get_onnx_dir, get_transformers_dir
+from .encoder import CrossEncoderEnum, EmbeddingModelEnum
+from .utils import get_onnx_dir, get_transformers_dir
 
 
 def _export(model_name_or_dir: str, ORTClass, output_dir: str | None = None) -> Path:
