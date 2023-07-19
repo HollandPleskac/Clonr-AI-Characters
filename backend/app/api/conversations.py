@@ -1,7 +1,6 @@
 from typing import Annotated
 
 from app import models, schemas
-from app.auth.api_keys import get_api_key
 from app.auth.users import current_active_user
 from app.db import RedisCache, get_async_redis_cache, get_async_session
 from fastapi import Depends, FastAPI
@@ -9,7 +8,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.routing import APIRouter
 from fastapi.encoders import jsonable_encoder
 from fastapi import Request
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, select, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
 import sqlalchemy as sa
 from loguru import logger
@@ -39,11 +38,11 @@ router = APIRouter(
 @router.post("/", response_model=schemas.Conversation)
 async def create_conversation(
     obj: schemas.ConversationCreate,
+    clone_id: str,
     db: Annotated[AsyncSession, Depends(get_async_session)],
     cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
-    api_key: Annotated[schemas.APIKey, Depends(get_api_key)],
 ):
-    clone = await db.get(models.Clone, api_key.clone_id)
+    clone = await db.get(models.Clone, clone_id)
     if not clone:
         raise HTTPException(
             status_code=400, detail="Clone corresponding to this key does not exist"
@@ -66,15 +65,16 @@ async def create_conversation(
 async def create_message(
     conversation_id: str,
     message: schemas.MessageCreate,
+    clone_id: str,
     db: Annotated[AsyncSession, Depends(get_async_session)],
-    api_key: Annotated[schemas.APIKey, Depends(get_api_key)],
+    user: Annotated[schemas.User, Depends(current_active_user)],
     cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
 ):
     if not (convo := await db.get(models.Conversation, conversation_id)):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Conversation not found"
         )
-    if api_key.clone_id != convo.clone_id:
+    if clone_id != convo.clone_id or user.id != convo.user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
     msg = models.Message(
         **message.dict(), from_clone=False, conversation_id=conversation_id
@@ -89,11 +89,11 @@ async def create_message(
 @router.get("/", response_model=list[schemas.Conversation])
 async def get_conversations(
     db: Annotated[AsyncSession, Depends(get_async_session)],
-    api_key: Annotated[schemas.APIKey, Depends(get_api_key)],
+    user: Annotated[schemas.User, Depends(current_active_user)],
 ):
     promise = await db.scalars(
         select(models.Conversation).where(
-            models.Conversation.clone_id == api_key.clone_id
+            models.Conversation.user_id == user.id,
         )
     )
     return promise.all()
@@ -107,11 +107,11 @@ async def get_conversations(
 async def get_conversation(
     conversation_id: str,
     db: Annotated[AsyncSession, Depends(get_async_session)],
-    api_key: Annotated[schemas.APIKey, Depends(get_api_key)],
+    user: Annotated[schemas.User, Depends(current_active_user)],
 ):
     if not (convo := await db.get(models.Conversation, conversation_id)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not found")
-    if api_key.clone_id == convo.clone_id:
+    if user.id != convo.user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not found")
     return convo
 
@@ -120,14 +120,14 @@ async def get_conversation(
 async def get_latest_messages(
     conversation_id: str,
     db: Annotated[AsyncSession, Depends(get_async_session)],
-    api_key: Annotated[schemas.APIKey, Depends(get_api_key)],
+    user: Annotated[schemas.User, Depends(current_active_user)],
     cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
     offset: int = 0,
     limit: int = 25,
 ):
     if not (convo := await db.get(models.Conversation, conversation_id)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not found")
-    if api_key.clone_id != convo.clone_id:
+    if user.id != convo.user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not found")
     # TODO: This blocks access to our DB since we likely won't have cache misses
     # Becomes problematic once our cache fills up! Also the FIFO eviction policy should
@@ -150,12 +150,12 @@ async def get_latest_messages(
 async def delete_conversation(
     id: str,
     db: Annotated[AsyncSession, Depends(get_async_session)],
+    user: Annotated[schemas.User, Depends(current_active_user)],
     cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
-    api_key: Annotated[schemas.APIKey, Depends(get_api_key)],
 ):
     if not (convo := db.get(models.Conversation, id)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not found")
-    if api_key.clone_id != convo.clone_id:
+    if user.id != convo.user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not found")
     await cache.conversation_delete(convo.id)
     await db.delete(convo)
@@ -171,14 +171,14 @@ async def delete_message(
     conversation_id: str,
     message_id: str,
     db: Annotated[AsyncSession, Depends(get_async_session)],
+    user: Annotated[schemas.User, Depends(current_active_user)],
     cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
-    api_key: Annotated[schemas.APIKey, Depends(get_api_key)],
 ):
     if not (convo := await db.get(models.Conversation, conversation_id)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not found")
     if not (msg := await db.get(models.Message, message_id)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not found")
-    if api_key.clone_id != convo.clone_id or msg.conversation_id != conversation_id:
+    if user.id != convo.user_id or msg.conversation_id != conversation_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not found")
     await cache.message_delete(conversation_id=conversation_id, message_id=message_id)
     await db.delete(convo)
@@ -192,6 +192,7 @@ async def get_response(
     request: Request,
     convo_id: str,
     db: Annotated[AsyncSession, Depends(get_async_session)],
+    user: Annotated[schemas.User, Depends(current_active_user)],
     cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
 ):
     ## TODO: modify later, this is a stub
@@ -199,3 +200,57 @@ async def get_response(
     # add to cache
     await cache.conversation_add(convo_id, response)
     return response
+
+
+@router.get("/total_conversations", response_model=int)
+async def get_total_conversations(
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+    user: Annotated[schemas.User, Depends(current_active_user)],
+    cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
+):
+    if (
+        cached_total_conversations := await cache.get_cached_total_conversations(
+            user.id
+        )
+    ) is not None:
+        return cached_total_conversations
+
+    total_conversations = await db.scalar(
+        select(func.count(models.Conversation.id)).where(
+            models.Conversation.user_id == user.id
+        )
+    )
+
+    await cache.cache_total_conversations(user.id, total_conversations)
+
+    return total_conversations
+
+
+@router.get("/total_messages", response_model=dict[str, int])
+async def get_total_messages(
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+    user: Annotated[schemas.User, Depends(current_active_user)],
+    cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
+):
+    if (
+        cached_total_messages := await cache.get_cached_total_messages(user.id)
+    ) is not None:
+        return cached_total_messages
+
+    num_msgs_sent = await db.scalar(
+        select(func.count(models.Message.id)).where(
+            sa.and_(
+                models.Message.clone_id == user.id, models.Message.is_clone == False
+            )
+        )
+    )
+
+    num_msgs_received = await db.scalar(
+        select(func.count(models.Message.id)).where(
+            sa.and_(models.Message.clone_id != user.id, models.Message.is_clone == True)
+        )
+    )
+
+    await cache.cache_total_messages(user.id, num_msgs_sent, num_msgs_received)
+
+    return {"num_msgs_sent": num_msgs_sent, "num_msgs_received": num_msgs_received}

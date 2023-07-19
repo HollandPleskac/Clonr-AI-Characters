@@ -87,6 +87,6 @@ async def get_documents_for_clone(
         select(models.Document)
         .filter(models.Document.clone_id == clone_id)
         .join(models.Clone)
-        .filter(models.Clone.user_id == user.id)
+        .filter(models.Clone.creator_id == user.id)
     )
     return documents.scalars().all()

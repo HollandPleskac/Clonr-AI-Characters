@@ -1,5 +1,6 @@
 import datetime
 import uuid
+import enum
 from typing import Any, Dict, List, Optional
 
 import randomname
@@ -70,6 +71,9 @@ class APIKey(CommonMixin, Base):
 
     hashed_key: Mapped[str] = mapped_column(unique=True)
     name: Mapped[str] = mapped_column(default=randomname.get_name)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
     clone_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )
@@ -88,7 +92,7 @@ class Clone(CommonMixin, Base):
     greeting_message: Mapped[str]
     is_active: Mapped[bool] = mapped_column(default=True)
     is_public: Mapped[bool] = mapped_column(default=False)
-    user_id: Mapped[uuid.UUID] = mapped_column(
+    creator_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
     # (Jonny): lazy="select" is important here. We cache the clone model so we don't want this loading
@@ -127,6 +131,9 @@ class Conversation(CommonMixin, Base):
     name: Mapped[str] = mapped_column(
         default=randomname.get_name
     )  # (Jonny) is this necessary?
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
     clone_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )
@@ -145,7 +152,7 @@ class Conversation(CommonMixin, Base):
     )
 
     def __repr__(self):
-        return f"Conversation(name={self.name}, clone_id={self.clone_id})"
+        return f"Conversation(name={self.name}, user_id={self.user_id} clone_id={self.clone_id})"
 
 
 class Message(CommonMixin, Base):
@@ -170,9 +177,6 @@ class Message(CommonMixin, Base):
 
     def __repr__(self):
         return f"Message(content={self.content}, sender={self.sender_name}, is_clone={self.from_clone})"
-
-
-import enum
 
 
 class IndexType(enum.Enum):

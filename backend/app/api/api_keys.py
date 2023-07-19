@@ -68,7 +68,7 @@ async def get(
     stmt = (
         select(models.APIKey)
         .join(models.Clone, models.Clone.id == models.APIKey.clone_id)
-        .join(models.User, models.User.id == models.Clone.user_id)
+        .join(models.User, models.User.id == models.Clone.creator_id)
         .where(models.User.id == user_id)
     )
     if id is not None:
