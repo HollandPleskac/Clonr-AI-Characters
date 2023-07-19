@@ -18,7 +18,6 @@ class Client:
 
     def __del__(self, *args, **kwargs):
         self.channel.close()
-        super().__del__(*args, **kwargs)
 
     async def encode_query(self, text: list[str]) -> list[list[float]]:
         request = embed_pb2.EncodeQueryRequest(text=text)

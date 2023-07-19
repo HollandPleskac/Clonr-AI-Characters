@@ -38,7 +38,7 @@ class EmbedServicer(embed_pb2_grpc.EmbedServicer):
     ) -> embed_pb2.RankingScoreResponse:
         logger.info("Received GetRankingScores request")
         scores = self.cross_encoder.similarity_score(
-            query=request.query, passages=request.passages
+            query=request.query, passages=[p for p in request.passages]
         )
         return embed_pb2.RankingScoreResponse(scores=scores)
 
