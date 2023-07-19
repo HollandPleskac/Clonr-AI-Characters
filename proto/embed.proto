@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+message EncodeQueryRequest {
+  repeated string text = 1;
+}
+
+message EncodePassageRequest {
+  repeated string text = 1;
+}
+
+message RankingScoreRequest {
+  string query = 1;
+  repeated string passages = 2;
+}
+
+message RankingScoreResponse {
+  repeated float scores = 1;
+}
+
+message Embedding {
+  repeated float embedding = 1;
+}
+
+message EmbeddingResponse {
+  repeated Embedding embeddings = 1;
+}
+
+service Embed {
+  rpc EncodeQueries(EncodeQueryRequest) returns (EmbeddingResponse) {}
+  rpc EncodePassages(EncodePassageRequest) returns (EmbeddingResponse) {}
+  rpc GetRankingScores(RankingScoreRequest) returns (RankingScoreResponse) {}
+}
