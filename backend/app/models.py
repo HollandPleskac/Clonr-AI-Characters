@@ -415,12 +415,9 @@ class EntityContextSummary(CommonMixin, Base):
 ### Stripe
 
 
-class UsageRecord(Base, CommonMixin):
+class UsageRecord(CommonMixin, Base):
     __tablename__ = "usage_records"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        primary_key=True, server_default=sa.text("gen_random_uuid()")
-    )
     user_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
@@ -430,12 +427,8 @@ class UsageRecord(Base, CommonMixin):
     quantity: Mapped[int] = mapped_column(sa.Integer, nullable=False)
     timestamp: Mapped[datetime.datetime] = mapped_column(sa.DateTime, nullable=True)
 
-    created_at: Mapped[datetime.datetime] = mapped_column(
-        sa.DateTime(timezone=True), server_default=sa.func.now()
-    )
 
-
-class Subscription(Base, CommonMixin):
+class Subscription(CommonMixin, Base):
     __tablename__ = "subscriptions"
 
     id: Mapped[uuid.UUID] = mapped_column(
