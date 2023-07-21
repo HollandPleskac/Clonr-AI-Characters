@@ -50,7 +50,7 @@ async def get_clones(
 ):
     clones = await db.scalars(
         select(models.Clone)
-        .where(models.Clone.user_id == user.id)
+        .where(models.Clone.creator_id == user.id)
         .order_by(models.Clone.updated_at.desc())
         .offset(offset)
         .limit(limit)

@@ -128,6 +128,38 @@ class RedisCache:
         logger.info(f"CACHE DELETE: {key}")
         return int(n)
 
+    async def cache_total_conversations(self, user_id: int, total_conversations: int):
+        key = f"{self.user_ban_prefix}{self.delimiter}{user_id}:total_conversations"
+        await self.r.set(key, total_conversations)
+        logger.info(f"CACHE SET: {key}")
+
+    async def get_cached_total_conversations(self, user_id: int) -> Optional[int]:
+        key = f"{self.user_ban_prefix}{self.delimiter}{user_id}:total_conversations"
+        if value := await self.r.get(key):
+            logger.info(f"CACHE HIT: {key}")
+            return int(value)
+        logger.info(f"CACHE MISS: {key}")
+
+    async def cache_total_messages(
+        self, user_id: int, num_msgs_sent: int, num_msgs_received: int
+    ):
+        key = f"{self.user_ban_prefix}{self.delimiter}{user_id}:total_messages"
+        await self.r.hmset(
+            key,
+            {"num_msgs_sent": num_msgs_sent, "num_msgs_received": num_msgs_received},
+        )
+        logger.info(f"CACHE SET: {key}")
+
+    async def get_cached_total_messages(self, user_id: int) -> Optional[dict[str, int]]:
+        key = f"{self.user_ban_prefix}{self.delimiter}{user_id}:total_messages"
+        if values := await self.r.hgetall(key):
+            logger.info(f"CACHE HIT: {key}")
+            return {
+                "num_msgs_sent": int(values.get(b"num_msgs_sent", 0)),
+                "num_msgs_received": int(values.get(b"num_msgs_received", 0)),
+            }
+        logger.info(f"CACHE MISS: {key}")
+
     async def conversation_delete(
         self,
         conversation_id: str,
