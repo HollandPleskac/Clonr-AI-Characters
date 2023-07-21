@@ -12,6 +12,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from tenacity import after_log, before_log, retry, stop_after_attempt, wait_exponential
+from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 
 DATABASE_URL = (
     f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}"
@@ -19,6 +20,7 @@ DATABASE_URL = (
 )
 
 engine = create_async_engine(DATABASE_URL)
+SQLAlchemyInstrumentor().instrument(engine=engine.sync_engine)
 
 async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
