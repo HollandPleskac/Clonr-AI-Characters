@@ -22,6 +22,13 @@ from fastapi import FastAPI
 from fastapi import Request, Depends, HTTPException, status
 from app import models, schemas
 from app.auth.users import current_active_user
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+import sentry_sdk
+
+sentry_sdk.init(
+    dsn="TODO:EDIT",
+    traces_sample_rate=1.0,
+)
 
 
 async def run_async_upgrade():
@@ -136,6 +143,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+FastAPIInstrumentor.instrument_app(app)
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=settings.PORT, reload=True)

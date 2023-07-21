@@ -67,7 +67,7 @@ async def create_message(
     message: schemas.MessageCreate,
     clone_id: str,
     db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[schemas.User, Depends(current_active_user)],
+    user: Annotated[models.User, Depends(current_active_user)],
     cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
 ):
     if not (convo := await db.get(models.Conversation, conversation_id)):
@@ -89,7 +89,7 @@ async def create_message(
 @router.get("/", response_model=list[schemas.Conversation])
 async def get_conversations(
     db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[schemas.User, Depends(current_active_user)],
+    user: Annotated[models.User, Depends(current_active_user)],
 ):
     promise = await db.scalars(
         select(models.Conversation).where(
@@ -107,7 +107,7 @@ async def get_conversations(
 async def get_conversation(
     conversation_id: str,
     db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[schemas.User, Depends(current_active_user)],
+    user: Annotated[models.User, Depends(current_active_user)],
 ):
     if not (convo := await db.get(models.Conversation, conversation_id)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not found")
@@ -120,7 +120,7 @@ async def get_conversation(
 async def get_latest_messages(
     conversation_id: str,
     db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[schemas.User, Depends(current_active_user)],
+    user: Annotated[models.User, Depends(current_active_user)],
     cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
     offset: int = 0,
     limit: int = 25,
@@ -150,7 +150,7 @@ async def get_latest_messages(
 async def delete_conversation(
     id: str,
     db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[schemas.User, Depends(current_active_user)],
+    user: Annotated[models.User, Depends(current_active_user)],
     cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
 ):
     if not (convo := db.get(models.Conversation, id)):
@@ -171,7 +171,7 @@ async def delete_message(
     conversation_id: str,
     message_id: str,
     db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[schemas.User, Depends(current_active_user)],
+    user: Annotated[models.User, Depends(current_active_user)],
     cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
 ):
     if not (convo := await db.get(models.Conversation, conversation_id)):
@@ -192,7 +192,7 @@ async def get_response(
     request: Request,
     convo_id: str,
     db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[schemas.User, Depends(current_active_user)],
+    user: Annotated[models.User, Depends(current_active_user)],
     cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
 ):
     ## TODO: modify later, this is a stub
@@ -205,7 +205,7 @@ async def get_response(
 @router.get("/total_conversations", response_model=int)
 async def get_total_conversations(
     db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[schemas.User, Depends(current_active_user)],
+    user: Annotated[models.User, Depends(current_active_user)],
     cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
 ):
     if (
@@ -229,7 +229,7 @@ async def get_total_conversations(
 @router.get("/total_messages", response_model=dict[str, int])
 async def get_total_messages(
     db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[schemas.User, Depends(current_active_user)],
+    user: Annotated[models.User, Depends(current_active_user)],
     cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
 ):
     if (
