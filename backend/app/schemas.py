@@ -78,7 +78,7 @@ class Message(CommonMixin, MessageCreate):
 
 class ConversationCreate(BaseModel):
     clone_id: uuid.UUID
-    useer_id: uuid.UUID = None
+    user_id: uuid.UUID = None
     name: Optional[str] = None
 
 
