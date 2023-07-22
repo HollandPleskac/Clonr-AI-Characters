@@ -21,7 +21,11 @@ class WikiQuotesParser(Parser):
         if no_results_div:
             raise ParserException(f"No results found for {character_name}.")
 
-        character_link = soup.find("a", {"class": "mw-search-result-heading"})["href"]
+        search_results = soup.find_all("li", {"class": "mw-search-result"})
+        if not search_results:
+            raise ParserException(f"No results found for {character_name}.")
+
+        character_link = search_results[0].find("a")["href"]
         character_url = f"{base_url}{character_link}"
 
         response = requests.get(character_url)
@@ -31,12 +35,16 @@ class WikiQuotesParser(Parser):
         quote_sections = soup.find_all("span", {"class": "mw-headline"})
 
         quotes = []
-        for section in quote_sections:
+        for section in quote_sections[:10]:
             section_name = section.text.strip()
             quotes_list = section.find_next("ul")
-            quotes += [quote.text.strip() for quote in quotes_list.find_all("li")]
+            for quote in quotes_list:
+                quotes.append(quote.text.strip())
 
-        return Document(content="\n".join(quotes))
+        # dedup
+        quotes = list(set(quotes))
+
+        return Document(content="\n\n".join(quotes))
 
     def extract(self, character_name: str):
         logger.info(
