@@ -88,7 +88,7 @@ class Clone(CommonMixin, Base):
     is_active: Mapped[bool] = mapped_column(default=True)
     is_public: Mapped[bool] = mapped_column(default=False)
     user_id: Mapped[uuid.UUID] = mapped_column(
-        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+        sa.ForeignKey("users.id", ondelete="cascade")
     )
     # (Jonny): lazy="select" is important here. We cache the clone model so we don't want this loading
     # and creating a vulnerability where user info is stored in the cache.
@@ -309,6 +309,33 @@ class ExampleDialogueMessage(CommonMixin, Base):
         if len(content) > 30 + len(msg):
             content = content[:30] + msg
         return f"{name}(sender_name={self.sender_name}, is_clone={self.is_clone}, content={content})"
+
+
+class Monologue(CommonMixin, Base):
+    """These are single line examples of clone speech. Since it's one-way,
+    we don't need any information on the clone. A max char limit is imposed."""
+
+    __tablename__ = "monologues"
+
+    content: Mapped[str]
+    source: Mapped[str]
+    hash: Mapped[str]
+    embedding: Mapped[list[float]]
+    embedding_model: Mapped[str]
+    clone_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
+    )
+    clone: Mapped["Clone"] = relationship(
+        "Clone", back_populates="example_dialogue_messages"
+    )
+
+    def __repr__(self):
+        name = self.__class__.__name__
+        content = self.content
+        msg = f"... + {len(content) - 30} chars"
+        if len(content) > 30 + len(msg):
+            content = content[:30] + msg
+        return f"{name}(source={self.source}, content={content})"
 
 
 memory_to_memory = sa.Table(

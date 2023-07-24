@@ -15,6 +15,7 @@ from app.db import (
     wait_for_redis,
 )
 from app.settings import settings
+from app.embedding import wait_for_embedding
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
@@ -43,6 +44,10 @@ async def lifespan(app: FastAPI):
     logger.info("Waiting for redis...")
     await wait_for_redis()
 
+    logger.info("Waiting for Embedding gRPC server...")
+    name = await wait_for_embedding()
+    logger.info(f"gRPC server up and running with model: {name}")
+
     if settings.USE_ALEMBIC:
         logger.info("Running migration upgrades")
         await run_async_upgrade()
@@ -55,9 +60,9 @@ async def lifespan(app: FastAPI):
     user = await create_superuser()
     logger.info(json.dumps(jsonable_encoder(user), indent=2))
 
-    logger.info("Creating local storage directories")
-    os.makedirs(str(utils.get_local_data_dir().resolve()), exist_ok=True)
-    os.makedirs(str(utils.get_voice_data_dir().resolve()), exist_ok=True)
+    # logger.info("Creating local storage directories")
+    # os.makedirs(str(utils.get_local_data_dir().resolve()), exist_ok=True)
+    # os.makedirs(str(utils.get_voice_data_dir().resolve()), exist_ok=True)
 
     global TOKENIZER
     model = "gpt-3.5-turbo-0613"

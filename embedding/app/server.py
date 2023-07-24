@@ -3,11 +3,13 @@ import asyncio
 import logging
 
 import grpc
+from grpc_reflection.v1alpha import reflection
 from loguru import logger
 from app.pb import embed_pb2
 from app.pb import embed_pb2_grpc
 
 from app.encoder import EmbeddingModel, CrossEncoder
+from app.interceptors import ExceptionInterceptor, UDSOpenTelemetryAioServerInterceptor
 
 
 HOST = os.environ.get("EMBEDDINGS_GRPC_HOST", "localhost")
@@ -46,17 +48,47 @@ class EmbedServicer(embed_pb2_grpc.EmbedServicer):
         )
         return embed_pb2.RankingScoreResponse(scores=scores)
 
+    async def IsNormalized(self, *args, **kwargs) -> embed_pb2.IsNormalizedResponse:
+        logger.info("Received IsNormalized request")
+        return embed_pb2.IsNormalized(is_normalized=self.encoder.normalized)
 
-async def serve(port: int) -> None:
+    async def GetEncoderName(self, *args, **kwargs) -> embed_pb2.EncoderNameResponse:
+        return embed_pb2.EncoderNameResponse(name=self.encoder.name)
+
+
+async def serve(port: int = 50051) -> None:
     server = grpc.aio.server()
+    # unix_socket_template = "unix://{}-{}"
+    # local_url = unix_socket_template.format(uds_path, 0)
+    local_url = f"[::]:{port}"
+    # local_url = f"unix://{uds_path}"
+
+    server = grpc.aio.server(
+        interceptors=[
+            ExceptionInterceptor(),
+            UDSOpenTelemetryAioServerInterceptor(),
+        ]
+    )
     embed_pb2_grpc.add_EmbedServicer_to_server(EmbedServicer(), server)
-    server.add_insecure_port(f"[::]:{port}")
-    logger.info(f"gRPC Embedding server listening server on port: {port}")
+
+    SERVICE_NAMES = (
+        embed_pb2.DESCRIPTOR.services_by_name["Embed"].full_name,
+        reflection.SERVICE_NAME,
+    )
+    reflection.enable_server_reflection(SERVICE_NAMES, server)
+    server.add_insecure_port(local_url)
+
     await server.start()
-    await server.wait_for_termination()
-    logger.info("gRPC Embedding server shutting down.")
+
+    logger.info("Server started at {}".format(local_url))
+
+    try:
+        await server.wait_for_termination()
+    except KeyboardInterrupt:
+        logger.info("Signal received. Shutting down.")
+        await server.stop(0)
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    asyncio.get_event_loop().run_until_complete(serve(PORT))
+    asyncio.run(serve())

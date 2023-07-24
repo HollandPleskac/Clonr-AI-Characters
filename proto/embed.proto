@@ -25,8 +25,20 @@ message EmbeddingResponse {
   repeated Embedding embeddings = 1;
 }
 
+message Empty {}
+
+message IsNormalizedResponse {
+  bool is_normalized = 1;
+}
+
+message EncoderNameResponse {
+  string name = 1;
+}
+
 service Embed {
   rpc EncodeQueries(EncodeQueryRequest) returns (EmbeddingResponse) {}
   rpc EncodePassages(EncodePassageRequest) returns (EmbeddingResponse) {}
   rpc GetRankingScores(RankingScoreRequest) returns (RankingScoreResponse) {}
+  rpc IsNormalized(Empty) returns (IsNormalizedResponse) {}
+  rpc GetEncoderName(Empty) returns (EncoderNameResponse) {}
 }

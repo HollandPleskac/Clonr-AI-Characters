@@ -37,3 +37,7 @@ class Client:
         request = embed_pb2.RankingScoreRequest(query=query, passages=passages)
         r = await self.stub.GetRankingScores(request=request)
         return [x for x in r.scores]
+
+    async def is_normalized(self):
+        request = await self.stub.IsNormalized()
+        return request.is_normalized

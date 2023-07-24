@@ -20,5 +20,6 @@ RUN --mount=type=cache,target=/root/.cache/pip python3.10 -m pip install --no-ca
 COPY ./alembic.ini /alembic.ini
 COPY ./migrations /migrations
 COPY ./app /app
+COPY ./pb /pb
 
 ENTRYPOINT [ "python", "-m", "app.main"]

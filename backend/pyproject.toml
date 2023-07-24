@@ -29,6 +29,7 @@ openai = "^0.27.8"
 tiktoken = "^0.4.0"
 slowapi = "^0.1.8"
 grpcio = "^1.56.0"
+grpcio-tools = "^1.56.2"
 
 [tool.poetry.dev-dependencies]
 black = "^23.3.0"

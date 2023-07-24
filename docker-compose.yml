@@ -57,5 +57,6 @@ services:
     depends_on:
       - postgres
       - redis
+      - embedding
     ports:
       - 8000:8000
