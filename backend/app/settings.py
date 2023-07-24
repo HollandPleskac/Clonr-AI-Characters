@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     REDIS_PASSWORD: str
     REDIS_PORT: str
     REDIS_HOST: str
+    EMBEDDINGS_GRPC_HOST: str
+    EMBEDDINGS_GRPC_PORT: str
     USE_ALEMBIC: bool = False
     SUPERUSER_EMAIL: str
     SUPERUSER_PASSWORD: str

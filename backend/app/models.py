@@ -316,6 +316,33 @@ class ExampleDialogueMessage(CommonMixin, Base):
         return f"{name}(sender_name={self.sender_name}, is_clone={self.is_clone}, content={content})"
 
 
+class Monologue(CommonMixin, Base):
+    """These are single line examples of clone speech. Since it's one-way,
+    we don't need any information on the clone. A max char limit is imposed."""
+
+    __tablename__ = "monologues"
+
+    content: Mapped[str]
+    source: Mapped[str]
+    hash: Mapped[str]
+    embedding: Mapped[list[float]]
+    embedding_model: Mapped[str]
+    clone_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
+    )
+    clone: Mapped["Clone"] = relationship(
+        "Clone", back_populates="example_dialogue_messages"
+    )
+
+    def __repr__(self):
+        name = self.__class__.__name__
+        content = self.content
+        msg = f"... + {len(content) - 30} chars"
+        if len(content) > 30 + len(msg):
+            content = content[:30] + msg
+        return f"{name}(source={self.source}, content={content})"
+
+
 memory_to_memory = sa.Table(
     "memory_to_memory",
     Base.metadata,
@@ -420,12 +447,9 @@ class EntityContextSummary(CommonMixin, Base):
 ### Stripe
 
 
-class UsageRecord(Base, CommonMixin):
+class UsageRecord(CommonMixin, Base):
     __tablename__ = "usage_records"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        primary_key=True, server_default=sa.text("gen_random_uuid()")
-    )
     user_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
@@ -435,12 +459,8 @@ class UsageRecord(Base, CommonMixin):
     quantity: Mapped[int] = mapped_column(sa.Integer, nullable=False)
     timestamp: Mapped[datetime.datetime] = mapped_column(sa.DateTime, nullable=True)
 
-    created_at: Mapped[datetime.datetime] = mapped_column(
-        sa.DateTime(timezone=True), server_default=sa.func.now()
-    )
 
-
-class Subscription(Base, CommonMixin):
+class Subscription(CommonMixin, Base):
     __tablename__ = "subscriptions"
 
     id: Mapped[uuid.UUID] = mapped_column(

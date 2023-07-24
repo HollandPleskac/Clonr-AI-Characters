@@ -1,11 +1,11 @@
 FROM python:3.10-slim
 
 ENV PYTHONUNBUFFERED=true \
-  PYTHONDONTWRITEBYTECODE=1 \
-  PIP_NO_CACHE_DIR=off \
-  PIP_DISABLE_VERSION_CHECK=on \
-  PIP_DEFAULT_TIMEOUT=100 \
-  DEBIAN_FRONTEND=noninteractive
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=off \
+    PIP_DISABLE_VERSION_CHECK=on \
+    PIP_DEFAULT_TIMEOUT=100 \
+    DEBIAN_FRONTEND=noninteractive
 
 RUN python -m pip install --no-cache-dir --upgrade pip
 
@@ -17,9 +17,8 @@ RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
 
 RUN --mount=type=cache,target=/root/.cache/pip python3.10 -m pip install --no-cache-dir --upgrade -r requirements.txt
 
-COPY ./alembic.ini /alembic.ini
-COPY ./migrations /migrations
-COPY ./app /app
-COPY ./pb /pb
+RUN pip install onnx
 
-ENTRYPOINT [ "python", "-m", "app.main"]
+COPY ./app /app
+
+ENTRYPOINT [ "python", "-m", "app.server"]

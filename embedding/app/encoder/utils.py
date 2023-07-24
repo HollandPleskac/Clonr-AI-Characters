@@ -5,12 +5,13 @@ from transformers import AutoTokenizer
 
 
 def get_artifacts_dir() -> Path:
-    path = Path(__file__).parent.parent.parent
-    for _ in range(2):
-        if (path / ".github").exists():
-            return path / "artifacts"
-        path = path.parent
-    raise ValueError(f"We're not really at the root, we're at {path.resolve()}")
+    return Path("/artifacts")  # Docker filesystem approach here.
+    # path = Path(__file__).parent.parent.parent.parent
+    # for _ in range(2):
+    #     if (path / ".github").exists():
+    #         return path / "artifacts"
+    #     path = path.parent
+    # raise ValueError(f"We're not really at the root, we're at {path.resolve()}")
 
 
 def get_transformers_dir() -> Path:

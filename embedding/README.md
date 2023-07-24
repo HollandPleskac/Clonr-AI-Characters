@@ -2,7 +2,7 @@
 
 This is still a WIP, not sure yet how to port this, other than making a poetry package and importing it.
 
-To run the server, just launch `python -m server.server`. You can then import `from client import Client` and run the rpc methods.
+To run the server, just launch `python -m app.server`. We provide an example client for accessing the remote procedure calls (RPCs), but this same client code is duplicated inside of backend where it is also called.
 
 ### Compiling
 
@@ -14,3 +14,8 @@ python -m grpc_tools.protoc --proto_path=./proto --python_out=./embedding/pb --p
 Note that protobuf will add Servicer to the end of any service name, and auto create a function like add_<name>Servicer_to_server.
 
 To run the server, you just run python -m embedding.server from the root of the repository
+
+
+### Accessing locally
+
+You can spin up the gRPC server via `docker compose up embedding`. If you are having trouble with the client, make sure that host=localhost when running locally, and host=embedding (or whatever is in the .env) when running inside of docker compose

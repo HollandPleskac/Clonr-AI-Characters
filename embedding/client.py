@@ -4,9 +4,11 @@ import random
 from typing import Iterable, List
 
 import grpc
-from embedding.pb import embed_pb2
-from embedding.pb import embed_pb2_grpc
-from embedding.shared import PORT
+from embedding.app.pb import embed_pb2
+from embedding.app.pb import embed_pb2_grpc
+
+
+PORT = 50051
 
 
 class Client:
@@ -35,3 +37,7 @@ class Client:
         request = embed_pb2.RankingScoreRequest(query=query, passages=passages)
         r = await self.stub.GetRankingScores(request=request)
         return [x for x in r.scores]
+
+    async def is_normalized(self):
+        request = await self.stub.IsNormalized()
+        return request.is_normalized
