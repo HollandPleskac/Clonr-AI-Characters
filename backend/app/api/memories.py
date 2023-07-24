@@ -91,7 +91,7 @@ async def get_memories_for_conversation(
         .join(models.Clone)
         .filter(
             models.Clone.conversation_id == conversation_id
-            and models.Clone.user_id == user.id
+            and models.Clone.creator_id == user.id
         )
     )
     return memories.scalars().all()

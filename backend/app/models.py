@@ -1,5 +1,6 @@
 import datetime
 import uuid
+import enum
 from typing import Any, Dict, List, Optional
 
 import randomname
@@ -59,6 +60,7 @@ class User(Base, SQLAlchemyBaseUserTableUUID):
     clones: Mapped[list["Clone"]] = relationship(
         "Clone", back_populates="user", lazy="joined"
     )
+    is_banned: Mapped[bool] = mapped_column(default=False)
 
     def __repr__(self):
         return f"User(id={self.id})"
@@ -69,6 +71,9 @@ class APIKey(CommonMixin, Base):
 
     hashed_key: Mapped[str] = mapped_column(unique=True)
     name: Mapped[str] = mapped_column(default=randomname.get_name)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
     clone_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )
@@ -87,8 +92,8 @@ class Clone(CommonMixin, Base):
     greeting_message: Mapped[str]
     is_active: Mapped[bool] = mapped_column(default=True)
     is_public: Mapped[bool] = mapped_column(default=False)
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        sa.ForeignKey("users.id", ondelete="cascade")
+    creator_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
     # (Jonny): lazy="select" is important here. We cache the clone model so we don't want this loading
     # and creating a vulnerability where user info is stored in the cache.
@@ -126,6 +131,9 @@ class Conversation(CommonMixin, Base):
     name: Mapped[str] = mapped_column(
         default=randomname.get_name
     )  # (Jonny) is this necessary?
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
     clone_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )
@@ -144,7 +152,7 @@ class Conversation(CommonMixin, Base):
     )
 
     def __repr__(self):
-        return f"Conversation(name={self.name}, clone_id={self.clone_id})"
+        return f"Conversation(name={self.name}, user_id={self.user_id} clone_id={self.clone_id})"
 
 
 class Message(CommonMixin, Base):
@@ -169,9 +177,6 @@ class Message(CommonMixin, Base):
 
     def __repr__(self):
         return f"Message(content={self.content}, sender={self.sender_name}, is_clone={self.from_clone})"
-
-
-import enum
 
 
 class IndexType(enum.Enum):
@@ -473,3 +478,19 @@ class Subscription(CommonMixin, Base):
     stripe_current_period_end: Mapped[datetime.datetime] = mapped_column(sa.DateTime)
     stripe_cancel_at_period_end: Mapped[bool] = mapped_column(sa.Boolean)
     stripe_canceled_at: Mapped[datetime.datetime] = mapped_column(sa.DateTime)
+
+
+### Moderation
+class ModerationRecord(Base):
+    __tablename__ = "moderation_records"
+    id: Mapped[uuid.UUID] = mapped_column(
+        primary_key=True, server_default=sa.text("gen_random_uuid()")
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
+    violation_content: Mapped[str] = mapped_column(sa.String, nullable=False)
+    is_banned: Mapped[bool] = mapped_column(sa.Boolean, nullable=False)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        sa.DateTime(timezone=True), server_default=sa.func.now()
+    )

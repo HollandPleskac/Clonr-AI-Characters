@@ -78,6 +78,8 @@ class CacheCounter:
         return int(r)
 
 
+# FixMe (Jonny): This whole class is probably broken. Refactored clone-related
+# caching to its own file under app/clone/cache.py
 class RedisCache:
     def __init__(self, conn):
         self.conn = conn
@@ -168,6 +170,38 @@ class RedisCache:
         n = await self.conn.zrem(key, value)
         return int(n)
 
+    async def cache_total_conversations(self, user_id: int, total_conversations: int):
+        key = f"{self.user_ban_prefix}{self.delimiter}{user_id}:total_conversations"
+        await self.r.set(key, total_conversations)
+        logger.info(f"CACHE SET: {key}")
+
+    async def get_cached_total_conversations(self, user_id: int) -> Optional[int]:
+        key = f"{self.user_ban_prefix}{self.delimiter}{user_id}:total_conversations"
+        if value := await self.r.get(key):
+            logger.info(f"CACHE HIT: {key}")
+            return int(value)
+        logger.info(f"CACHE MISS: {key}")
+
+    async def cache_total_messages(
+        self, user_id: int, num_msgs_sent: int, num_msgs_received: int
+    ):
+        key = f"{self.user_ban_prefix}{self.delimiter}{user_id}:total_messages"
+        await self.r.hmset(
+            key,
+            {"num_msgs_sent": num_msgs_sent, "num_msgs_received": num_msgs_received},
+        )
+        logger.info(f"CACHE SET: {key}")
+
+    async def get_cached_total_messages(self, user_id: int) -> Optional[dict[str, int]]:
+        key = f"{self.user_ban_prefix}{self.delimiter}{user_id}:total_messages"
+        if values := await self.r.hgetall(key):
+            logger.info(f"CACHE HIT: {key}")
+            return {
+                "num_msgs_sent": int(values.get(b"num_msgs_sent", 0)),
+                "num_msgs_received": int(values.get(b"num_msgs_received", 0)),
+            }
+        logger.info(f"CACHE MISS: {key}")
+
     async def conversation_delete(
         self,
         conversation_id: str,
@@ -175,6 +209,31 @@ class RedisCache:
         key = self._conversation_key(conversation_id)
         res = await self.conn.delete(key)
         return res
+
+    async def clone_add(self, clone: models.Clone) -> str:
+        key = self.make_clone_key(clone.id)
+        value = jsonable_encoder(clone)
+        await self.r.hmset(key, value)
+        return key
+
+    async def clone_delete(self, clone_id: str) -> str:
+        key = self.make_clone_key(clone_id)
+        value = await self.r.delete(key)
+        return value
+
+    async def clone_get(self, clone_id: str, value: Optional[str] = None):
+        key = self.make_clone_key(clone_id)
+        if value is None:
+            return await self.r.hgetall(clone_id) or None
+        return await self.r.hget(key, value)
+
+    async def ban_user(self, user_id: int):
+        key = f"{self.user_ban_prefix}{self.delimiter}{user_id}"
+        await self.r.set(key, "True")
+
+    async def is_user_banned(self, user_id: int) -> bool:
+        key = f"{self.user_ban_prefix}{self.delimiter}{user_id}"
+        return await self.r.get(key) == b"True"
 
 
 async def get_async_redis_cache() -> AsyncGenerator[RedisCache, None]:

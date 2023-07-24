@@ -39,13 +39,14 @@ class CloneUpdate(CloneCreate):
 
 
 class Clone(CommonMixin, CloneCreate):
-    user_id: uuid.UUID
+    creator_id: uuid.UUID
 
     class Config:
         orm_mode = True
 
 
 class APIKeyCreate(BaseModel):
+    user_id: uuid.UUID
     clone_id: uuid.UUID
     name: Optional[str] = None
     user_id: Optional[uuid.UUID] = None
@@ -77,6 +78,7 @@ class Message(CommonMixin, MessageCreate):
 
 class ConversationCreate(BaseModel):
     clone_id: uuid.UUID
+    user_id: uuid.UUID = None
     name: Optional[str] = None
 
 

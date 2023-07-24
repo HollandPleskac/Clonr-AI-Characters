@@ -20,6 +20,16 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from fastapi import FastAPI
+from fastapi import Request, Depends, HTTPException, status
+from app import models, schemas
+from app.auth.users import current_active_user
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+import sentry_sdk
+
+sentry_sdk.init(
+    dsn="TODO:EDIT",
+    traces_sample_rate=1.0,
+)
 
 
 async def run_async_upgrade():
@@ -34,6 +44,14 @@ async def run_async_downgrade():
     await asyncio.create_subprocess_shell(
         cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )
+
+
+async def moderation_middleware(
+    request: Request, user: models.User = Depends(current_active_user)
+):
+    if user.is_banned:
+        raise HTTPException(status_code=403, detail="User is banned!")
+    return request
 
 
 @asynccontextmanager
@@ -81,6 +99,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+app.middleware("http")(moderation_middleware)
 app.include_router(api.voice_router)
 app.include_router(api.clones_router)
 app.include_router(api.apikeys_router)
@@ -129,6 +148,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+FastAPIInstrumentor.instrument_app(app)
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=settings.PORT, reload=True)
