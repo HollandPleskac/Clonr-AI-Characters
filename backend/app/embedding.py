@@ -1,11 +1,12 @@
-import grpc
 import asyncio
-from pb import embed_pb2
-from pb import embed_pb2_grpc
-from app.settings import settings
-from tenacity import after_log, before_log, retry, stop_after_attempt, wait_exponential
-from loguru import logger
 import logging
+
+import grpc
+from loguru import logger
+from tenacity import after_log, before_log, retry, stop_after_attempt, wait_exponential
+
+from app.settings import settings
+from pb import embed_pb2, embed_pb2_grpc
 
 
 class EmbeddingClient:
@@ -26,15 +27,19 @@ class EmbeddingClient:
     async def __aexit__(self, *args, **kwargs):
         await self.channel.close()
 
-    async def encode_query(self, text: list[str]) -> list[list[float]]:
+    async def encode_query(self, text: str | list[str]) -> list[list[float]]:
+        if isinstance(text, str):
+            text = [text]
         request = embed_pb2.EncodeQueryRequest(text=text)
         r = await self.stub.EncodeQueries(request=request)
         embedding = [[y for y in x.embedding] for x in r.embeddings]
         return embedding
 
-    async def encode_passage(self, text: list[str]) -> list[list[float]]:
+    async def encode_passage(self, text: str | list[str]) -> list[list[float]]:
+        if isinstance(text, str):
+            text = [text]
         request = embed_pb2.EncodePassageRequest(text=text)
-        r = await self.stub.EncodeQueries(request=request)
+        r = await self.stub.EncodePassages(request=request)
         embedding = [[y for y in x.embedding] for x in r.embeddings]
         return embedding
 
