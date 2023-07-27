@@ -155,3 +155,53 @@ class MemoryUpdate(BaseModel):
 class Memory(CommonMixin, MemoryCreate):
     class Config:
         orm_mode = True
+
+
+class CreatorPartnerSignupBase(BaseModel):
+    name: str
+    email: str
+    phone_number: Optional[str] = None
+    social_media_handles: Optional[str] = None
+
+
+class CreatorPartnerSignupCreate(CreatorPartnerSignupBase):
+    pass
+
+
+class CreatorPartnerSignupUpdate(CreatorPartnerSignupBase):
+    pass
+
+
+class CreatorPartnerSignup(CreatorPartnerSignupBase):
+    id: uuid.UUID
+    user_id: uuid.UUID
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class NSFWSignupBase(BaseModel):
+    name: str
+    email: str
+    phone_number: Optional[str] = None
+    social_media_handles: Optional[str] = None
+
+
+class NSFWSignupCreate(NSFWSignupBase):
+    pass
+
+
+class NSFWSignupUpdate(NSFWSignupBase):
+    pass
+
+
+class NSFWSignup(NSFWSignupBase):
+    id: uuid.UUID
+    user_id: uuid.UUID
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        orm_mode = True
