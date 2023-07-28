@@ -519,7 +519,7 @@ class CreatorPartnerProgramSignup(Base):
         return f"CreatorPartnerSignup(id={self.id}, user_id={self.user_id}, name='{self.name}', email='{self.email}')"
 
 
-class NSWFSignup(Base):
+class NSFWSignup(Base):
     __tablename__ = "nsfw_signups"
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -536,4 +536,4 @@ class NSWFSignup(Base):
     user = relationship("User", back_populates="nsfw_signup")
 
     def __repr__(self):
-        return f"NSWFSignup(id={self.id}, user_id={self.user_id}, name='{self.name}', email='{self.email}')"
+        return f"NSFWSignup(id={self.id}, user_id={self.user_id}, name='{self.name}', email='{self.email}')"

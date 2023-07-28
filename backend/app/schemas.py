@@ -157,22 +157,22 @@ class Memory(CommonMixin, MemoryCreate):
         orm_mode = True
 
 
-class CreatorPartnerSignupBase(BaseModel):
+class CreatorPartnerProgramSignupBase(BaseModel):
     name: str
     email: str
     phone_number: Optional[str] = None
     social_media_handles: Optional[str] = None
 
 
-class CreatorPartnerSignupCreate(CreatorPartnerSignupBase):
+class CreatorPartnerProgramSignupCreate(CreatorPartnerProgramSignupBase):
     pass
 
 
-class CreatorPartnerSignupUpdate(CreatorPartnerSignupBase):
+class CreatorPartnerProgramSignupUpdate(CreatorPartnerProgramSignupBase):
     pass
 
 
-class CreatorPartnerSignup(CreatorPartnerSignupBase):
+class CreatorPartnerProgramSignup(CreatorPartnerProgramSignupBase):
     id: uuid.UUID
     user_id: uuid.UUID
     created_at: datetime
