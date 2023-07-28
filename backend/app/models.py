@@ -494,3 +494,46 @@ class ModerationRecord(Base):
     created_at: Mapped[datetime.datetime] = mapped_column(
         sa.DateTime(timezone=True), server_default=sa.func.now()
     )
+
+
+### Signups
+
+
+class CreatorPartnerProgramSignup(Base):
+    __tablename__ = "creator_partner_signups"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        primary_key=True, server_default=sa.text("gen_random_uuid()")
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(sa.String, nullable=False)
+    email: Mapped[str] = mapped_column(sa.String, nullable=False)
+    phone: Mapped[str] = mapped_column(sa.String, nullable=False)
+    social_media_handles: Mapped[str] = mapped_column(sa.String, nullable=False)
+
+    user = relationship("User", back_populates="creator_partner_signup")
+
+    def __repr__(self):
+        return f"CreatorPartnerSignup(id={self.id}, user_id={self.user_id}, name='{self.name}', email='{self.email}')"
+
+
+class NSFWSignup(Base):
+    __tablename__ = "nsfw_signups"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        primary_key=True, server_default=sa.text("gen_random_uuid()")
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(sa.String, nullable=False)
+    email: Mapped[str] = mapped_column(sa.String, nullable=False)
+    phone: Mapped[str] = mapped_column(sa.String, nullable=False)
+    social_media_handles: Mapped[str] = mapped_column(sa.String, nullable=False)
+
+    user = relationship("User", back_populates="nsfw_signup")
+
+    def __repr__(self):
+        return f"NSFWSignup(id={self.id}, user_id={self.user_id}, name='{self.name}', email='{self.email}')"
