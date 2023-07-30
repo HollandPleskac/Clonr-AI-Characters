@@ -3,6 +3,7 @@ from .fandom import FandomParser, JonnyURLParser
 from .web import BasicWebParser
 from .wiki import WikipediaParser
 from .yt_transcript import YoutubeTranscriptParser
+from .wikiquotes import WikiQuotesParser
 
 
 def url_to_doc(url: str):
