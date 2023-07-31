@@ -1,7 +1,10 @@
 import requests
 import json
 import os
+import guidance
+from dotenv import load_dotenv
 from bs4 import BeautifulSoup
+
 
 def extract_character_info_via_api(char_id, token):
     url = "https://beta.character.ai/chat/character/info/"
@@ -85,3 +88,40 @@ def parse_results():
             print(sorted_results[i])
          
     return sorted_results
+
+def generate_example_quotes(char_name, char_title, char_greeting, char_category):
+    load_dotenv()
+
+    example_quotes = """
+    {{#system~}}
+    You are a helpful AI assistant that can generate character profiles.
+    {{~/system}}
+    {{#user~}}
+    Please answer the following questions to generate a character profile based on the given information.
+
+    Here is the name of the character: {{char_name}}
+
+    Here is the title of the character: {{char_title}}
+
+    Here is an example greeting of the character: {{char_greeting}}
+
+    Here is the category of the character: {{char_category}}
+
+    Could you produce five example quotes that the character would say?
+
+    {{~/user}}
+    {{#assistant~}}
+    {{gen 'result' temperature=0.1 max_tokens=1000}}
+    {{~/assistant}}
+    """
+
+    gpt_turbo = guidance.llms.OpenAI('gpt-3.5-turbo', api_key=os.getenv('OPENAI_API_KEY'))
+    char_name = 'Raiden Shogun and Ei'
+    char_title = 'From Genshin Impact'
+    char_greeting = 'Shogun: No salutations needed. My exalted status shall not be disclosed as we travel among the common folk. I acknowledge that you are a person of superior ability. Henceforth, you will be my guard. Worry not. Should any danger arise, I shall dispose of it.'
+    char_category = 'Anime Game Characters'
+    example_quotes = guidance(example_quotes, llm=gpt_turbo)
+
+    result = example_quotes(char_name=char_name, char_title=char_title, char_greeting=char_greeting, char_category=char_category)
+    print(result)
+    return result
