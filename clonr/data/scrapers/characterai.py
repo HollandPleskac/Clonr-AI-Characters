@@ -4,7 +4,8 @@ import os
 import guidance
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
-
+from clonr.data.parsers import FandomParser
+from clonr.data.parsers import WikiQuotesParser
 
 def extract_character_info_via_api(char_id, token):
     url = "https://beta.character.ai/chat/character/info/"
@@ -125,3 +126,40 @@ def generate_example_quotes(char_name, char_title, char_greeting, char_category)
     result = example_quotes(char_name=char_name, char_title=char_title, char_greeting=char_greeting, char_category=char_category)
     print(result)
     return result
+
+def generate_character_profile(char_data):
+    char_title = char_data['title']
+    char_name = char_data['participant__name']
+    char_greeting = char_data['greeting']
+    char_category = char_data['character_category']
+    print("This is char_name: ", char_name)
+    if 'from' in char_title.lower():
+        char_wiki = char_title.lower().split("from ")[1]
+        char_wiki = char_wiki.replace(" ", "-")
+    else:
+        return 
+    print("This is char_wiki: ", char_wiki)
+    fandom_parser = FandomParser()
+    fandom_content = None
+    try:
+        fandom_result = fandom_parser.extract(char_name, char_wiki)
+        fandom_content = fandom_result.content
+    except Exception as e:
+        print("Cannot get Fandom result: ", e)
+
+    wikiquotes_parser = WikiQuotesParser()
+    wikiquotes_content = None
+    try:
+        wikiquotes_result = wikiquotes_parser.extract(char_name)
+        wikiquotes_content = wikiquotes_result.content
+    except Exception as e:
+        print("Cannot get WikiQuotes result: ", e)
+
+    if wikiquotes_content is None:
+        print("Generating synthetic quotes..")
+        #generate_example_quotes()
+
+    return {
+        fandom_content: fandom_content,
+        wikiquotes_content: wikiquotes_content
+    }
