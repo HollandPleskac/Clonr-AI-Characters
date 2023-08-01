@@ -1,5 +1,5 @@
 import re
-
+import json
 import requests
 from bs4 import BeautifulSoup, Tag
 from loguru import logger
@@ -8,6 +8,12 @@ from clonr.data.parsers.base import Parser, ParserException
 from clonr.data_structures import Document
 from clonr.utils.shared import instance_level_lru_cache
 
+try:
+    import fandom
+
+    FANDOM_AVAILABLE = True
+except ImportError:
+    FANDOM_AVAILABLE = False
 
 def convert_to_markdown(tag: Tag) -> str:
     if tag.name == "h1":
@@ -54,7 +60,7 @@ def extract_character_info(soup: BeautifulSoup) -> str:
     return "\n".join(f"{k}: {v}." for k, v in character.items())
 
 
-class FandomParser(Parser):
+class FandomParserPrev(Parser):
     def _is_valid_url(self, url: str):
         if re.match(r"https://[\.a-zA-Z0-9_-]+\.fandom.com/wiki/.*", url) is None:
             msg = "Invalid Fandom URL"
@@ -128,3 +134,26 @@ class JonnyURLParser(Parser):
         r = self._extract(url=url, type=type)
         logger.info("✅ Extracted from url.")
         return r
+
+class FandomParser(Parser):
+    @instance_level_lru_cache(maxsize=None)
+    def _extract(self, character_name: str, wiki: str):
+        if not FANDOM_AVAILABLE:
+            raise ImportError("fandom package not found. `pip install fandom-py`.")
+        try:
+            fandom.set_wiki(wiki)
+            page = fandom.page(character_name)
+            page_content = json.dumps(page.content)
+        except Exception as e:
+            raise ParserException(f"No results found for {character_name}.")
+
+        return Document(content=page_content)
+
+    def extract(self, character_name: str, wiki: str):
+        logger.info(
+            f"Attempting to extract Fandom, character_name: {character_name}, wiki {wiki}"
+        )
+        r = self._extract(character_name, wiki)
+        logger.info("✅ Extracted fandom for character name.")
+        return r
+    
