@@ -1,14 +1,17 @@
+# TODO (Jonny): API Keys are a V2 features, so this goes to the backlog for now.
+
 from typing import Annotated, Optional
 
-from app import models, schemas
-from app.auth.users import current_active_user
-from app.db import RedisCache, get_async_redis_cache, get_async_session
-from app.utils import generate_api_key, sha256_hash
 from fastapi import Depends, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.routing import APIRouter
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app import models, schemas
+from app.auth.users import current_active_user
+from app.db import RedisCache, get_async_redis_cache, get_async_session
+from app.utils import generate_api_key, sha256_hash
 
 router = APIRouter(
     prefix="/api_keys",

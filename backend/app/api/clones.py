@@ -1,12 +1,24 @@
-from typing import Annotated
+from typing import Annotated, Literal
+from loguru import logger
+from fastapi import Depends, HTTPException, status, Query, Path
+from fastapi.routing import APIRouter
+import sqlalchemy as sa
+from datetime import datetime
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models, schemas
-from app.auth.users import current_active_user
+from app.auth.users import current_active_user, current_active_creator
 from app.db import get_async_session
-from fastapi import Depends, HTTPException, status
-from fastapi.routing import APIRouter
-from sqlalchemy import update, select
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.embedding import EmbeddingClient, get_embedding_client
+from app.clone.dependencies import get_clonedb
+from app.clone.db import CloneDB
+from clonr.data_structures import Document, Monologue
+from clonr.tokenizer import Tokenizer
+from app.clone.dependencies import get_tokenizer, get_splitter, DynamicTextSplitter
+
+# # llm is not needed for the basic list index! We can revisit TreeIndex in the future
+# # but for now, it's too much complexity for a yet to be demonstrated reward
+from clonr.index import ListIndex
 
 router = APIRouter(
     prefix="/clones",
@@ -14,83 +26,428 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+# reddit uses 60 * 60 * 5.4, but we will roughly double the time,
+# since we expect the bot lifecycle to refresh slower than reddit's post lifecycle
+HOT_TIME: float = 60 * 60 * 12
 
-@router.post("/", response_model=schemas.Clone)
-async def create(
+# TODO (Jonny): the query stuff doesn't properly filter out column-level is_public flags
+# we should maybe just make a class to only return like name, short_desc, prof_pic, num_messages, num_convos
+
+
+async def get_clone(
+    clone_id: Annotated[str, Path(description="Clone id")],
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+) -> models.Clone:
+    if (clone := await db.get(models.Clone, clone_id)) is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Clone does not exist."
+        )
+    return clone
+
+
+async def get_document(
+    document_id: Annotated[str, Path()],
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+) -> models.Document:
+    if not (doc := await db.get(models.Document, document_id)):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Document does not exist."
+        )
+    return doc
+
+
+async def get_monologue(
+    monologue_id: Annotated[str, Path()],
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+) -> models.Monologue:
+    if not (doc := await db.get(models.Monologue, monologue_id)):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Monologue does not exist."
+        )
+    return doc
+
+
+@router.post(
+    "/create", response_model=schemas.Clone, status_code=status.HTTP_201_CREATED
+)
+async def create_clone(
     obj: schemas.CloneCreate,
     db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[models.User, Depends(current_active_user)],
+    creator: Annotated[models.Creator, Depends(current_active_creator)],
+    embedding_client: Annotated[EmbeddingClient, Depends(get_embedding_client)],
 ):
-    clone = models.Clone(**obj.dict(), user_id=user.id)
+    clone = models.Clone(**obj.dict(exclude_none=True), creator_id=creator.user_id)
+    # NOTE (Jonny): idk some arbitrary length here to prevent zero length string embeddings
+    if clone.long_description and len(clone.long_description) > 16:
+        clone.embedding = (
+            await embedding_client.encode_passage(clone.long_description)
+        )[0]
+        clone.embedding_model = await embedding_client.encoder_name()
     db.add(clone)
     await db.commit()
+    # (Jonny): the second argument forces sqlalchemy to load in the result
+    # if you get a greenlet spawn error, that's why. Could do lazy=joined too
+    # or add , ["tags"] to the refresh.
     await db.refresh(clone)
     return clone
 
 
-@router.get("/{id}", response_model=schemas.Clone)
-async def get(
-    id: str,
+# For running a vector db search of clones. Only clones with a long description are eligible
+@router.get("/similar", response_model=list[schemas.CloneSearchResult])
+async def semantic_search_clones(
+    q: Annotated[str, Query(max_length=128)],
     db: Annotated[AsyncSession, Depends(get_async_session)],
     user: Annotated[models.User, Depends(current_active_user)],
+    embedding_client: Annotated[EmbeddingClient, Depends(get_embedding_client)],
+    offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
+    limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
 ):
-    if (clone := await db.get(models.Clone, id)) is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not found")
-    if not clone.is_public and not clone.user_id == user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not found")
-    return clone
+    query = sa.select(models.Clone).where(models.Clone.embedding.is_not(None))
+    if not user.is_superuser:
+        query = query.where(models.Clone.is_active).where(models.Clone.is_public)
+    emb = (await embedding_client.encode_query(q))[0]
+    dist = models.Clone.embedding.cosine_distance(emb).label("distance")
+    query = query.order_by(dist.asc())
+    query = query.offset(offset=offset).limit(limit=limit)
+    clones = await db.scalars(query)
+    return clones.unique().all()
 
 
-@router.get("/", response_model=list[schemas.Clone])
-async def get_clones(
+# TODO (Jonny): add routes for top clones, trending, and recent
+# TODO (Jonny): add an order by for these queries
+@router.get("/search", response_model=list[schemas.CloneSearchResult])
+async def query_clones(
     db: Annotated[AsyncSession, Depends(get_async_session)],
     user: Annotated[models.User, Depends(current_active_user)],
-    limit: int = 10,
-    offset: int = 0,
+    offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
+    limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
+    tags: Annotated[list[str] | None, Query()] = None,
+    q: Annotated[str | None, Query()] = None,
+    created_after: Annotated[datetime | None, Query()] = None,
+    created_before: Annotated[datetime | None, Query()] = None,
 ):
-    clones = await db.scalars(
-        select(models.Clone)
-        .where(models.Clone.creator_id == user.id)
-        .order_by(models.Clone.updated_at.desc())
+    query = sa.select(models.Clone)
+    if not user.is_superuser:
+        query = query.where(models.Clone.is_active).where(models.Clone.is_public)
+    if tags is not None:
+        query = query.where(models.Clone.tags.in_(tags))
+    if q is not None:
+        query = query.where(models.Clone.case_insensitive_name.ilike(f"%{q}%"))
+        # query = query.where(models.Clone.case_insensitive_name.match(q))
+        # query = query.order_by(sa.func.similarity(models.Clone.case_insensitive_name, q).desc())
+        # query = query.where(sa.func.soundex(models.Clone.name) == sa.func.soundex(query))
+    if created_after is not None:
+        query = query.where(models.Clone.created_at >= created_after)
+    if created_before is not None:
+        query = query.where(models.Clone.created_at <= created_before)
+    query = query.offset(offset=offset).limit(limit=limit)
+    clones = await db.scalars(query)
+    return clones.unique().all()
+
+
+@router.get("/hot", response_model=list[schemas.CloneSearchResult])
+async def hot_clones(
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+    user: Annotated[models.User, Depends(current_active_user)],
+    offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
+    limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
+):
+    """Uses the Reddit algorithm for returning "hot" clones.
+    https://www.evanmiller.org/deriving-the-reddit-formula.html
+    The algorithm is something like score = ln(likes - dislikes) + age / (60s * 60 * 5.43).
+    the rule of thumb is the number of likes you need to beat out a new post doubles for every
+    5 hours of age. 16 likes to stay relevant by end of day, 256 for 2 days, 4096 for 3 days...
+    """
+    # NOTE (Jonny): Should we use created_at or updated_at? if we use updated at, it will be easier for
+    # creators to cheese the rankings
+    seconds = sa.func.extract("epoch", models.Clone.created_at).cast(sa.Float)
+    time_factor = seconds / HOT_TIME
+    # FixMe (Jonny): should be base-10 log here, but too lazy to figure out how to do it
+    like_factor = sa.func.log(models.Clone.num_messages + 1)
+    score = (like_factor + time_factor).label("score")
+    q = await db.scalars(
+        sa.select(models.Clone)
+        .where(models.Clone.is_active)
+        .where(models.Clone.is_public)
+        .order_by(score.desc())
         .offset(offset)
         .limit(limit)
     )
-    return clones.all()
+    return q.unique().all()
 
 
-@router.put("/{id}", response_model=schemas.Clone)
-async def update_(
-    id: str,
+# @router.get("/for_you", response_model=list[schemas.Clone])
+# async def for_you_clones(
+#     db: Annotated[AsyncSession, Depends(get_async_session)],
+#     user: Annotated[models.User, Depends(current_active_user)],
+#     offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
+#     limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
+# ):
+#     """Returns the user's personal chatbot recommendations. We can use surprise to compute these
+#     once we have enough data. LightFM looks like a good out-of-the-box hybrid recommender system, see here
+#     for more details: https://github.com/pgvector/pgvector-python/blob/master/examples/lightfm_recs.py"""
+
+
+@router.get("/top", response_model=list[schemas.CloneSearchResult])
+async def top_clones(
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+    user: Annotated[models.User, Depends(current_active_user)],
+    offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
+    limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
+):
+    """Returns the bots with the highest counts. Very close to exact, barring a disconnect on sqlalchemy events."""
+    query = sa.select(models.Clone)
+    if not user.is_superuser:
+        query = query.where(models.Clone.is_active).where(models.Clone.is_public)
+    query = (
+        query.order_by(models.Clone.num_messages)
+        .offset(offset=offset)
+        .limit(limit=limit)
+    )
+    clones = await db.scalars(query)
+    return clones.unique().all()
+
+
+# NOTE (Jonny): wild card paths have to come at the end otherwise order of resolution is messed up
+# and you'll get the similar route being viewed as something like below
+@router.get("/{clone_id}", response_model=schemas.Clone)
+async def get_clone_by_id(
+    clone: Annotated[models.Clone, Depends(get_clone)],
+    user: Annotated[models.User, Depends(current_active_user)],
+):
+    if user.is_superuser or clone.creator_id == user.id:
+        return clone
+    if not clone.is_public:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Clone does not exist."
+        )
+    response = schemas.Clone.from_orm(clone)
+    if not clone.is_long_description_public:
+        response.long_description = None
+    if not clone.is_short_description_public:
+        response.short_description = None
+    if not clone.is_greeting_message_public:
+        response.greeting_message = None
+    return response
+
+
+@router.patch("/{clone_id}", response_model=schemas.Clone)
+async def patch_clone(
+    clone: Annotated[models.Clone, Depends(get_clone)],
     obj: schemas.CloneUpdate,
     db: Annotated[AsyncSession, Depends(get_async_session)],
     user: Annotated[models.User, Depends(current_active_user)],
+    embedding_client: Annotated[EmbeddingClient, Depends(get_embedding_client)],
 ):
-    if not user.is_superuser and not id == user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-    if not await db.get(models.Clone, id):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not found")
-    promise = await db.scalars(
-        update(models.Clone)
-        .where(models.Clone.id == id)
-        .values(**obj.dict(exclude_unset=True))
-        .returning(models.Clone)
+    if user.is_superuser or clone.creator_id == user.id:
+        not_modified = True
+        for k, v in obj.dict(exclude_unset=True).items():
+            if getattr(clone, k) == v:
+                continue
+            not_modified = False
+            setattr(clone, k, v)
+            # TODO (Jonny): combine with the create endpoint
+            if k == "long_description" and len(v) > 16:
+                clone.embedding = (
+                    await embedding_client.encode_passage(clone.long_description)
+                )[0]
+                clone.embedding_model = await embedding_client.encoder_name()
+        if not_modified:
+            raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
+        else:
+            db.add(clone)
+            await db.commit()
+            await db.refresh(clone)
+            return clone
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED, detail="Insufficient privileges"
     )
-    clone = promise.first()
-    await db.commit()
-    await db.refresh(clone)
-    return clone
 
 
-@router.delete("/{id}", response_model=schemas.Clone)
+@router.delete("/{clone_id}", response_model=schemas.Clone)
 async def delete(
-    id: str,
+    clone: Annotated[models.Clone, Depends(get_clone)],
     db: Annotated[AsyncSession, Depends(get_async_session)],
     user: Annotated[models.User, Depends(current_active_user)],
 ):
-    if not user.is_superuser and not id == user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-    if (clone := await db.get(models.Clone, id)) is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Not found")
+    if not user.is_superuser and clone.creator_id != user.id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     await db.delete(clone)
     await db.commit()
     return clone
+
+
+# ------------ Documents ------------ #
+@router.post("/{clone_id}/documents/create", response_model=schemas.Document)
+async def create_document(
+    doc_create: schemas.DocumentCreate,
+    clonedb: Annotated[CloneDB, Depends(get_clonedb)],
+    tokenizer: Annotated[Tokenizer, Depends(get_tokenizer)],
+    splitter: Annotated[DynamicTextSplitter, Depends(get_splitter)],
+):
+    doc = Document(**doc_create.dict(exclude_unset=True))
+    index = ListIndex(tokenizer=tokenizer, splitter=splitter)
+    nodes = await index.abuild(doc=doc)
+    doc_model = await clonedb.add_document(doc=doc, nodes=nodes)
+    return doc_model
+
+
+@router.patch("/{clone_id}/documents/{document_id}", response_model=schemas.Document)
+async def update_document(
+    doc_update: schemas.DocumentUpdate,
+    doc: Annotated[models.Document, Depends(get_document)],
+    clonedb: Annotated[
+        CloneDB, Depends(get_clonedb)
+    ],  # used only for auth, to make sure that user has access to edit this clone
+):
+    data = doc_update.dict(exclude_unset=True)
+    not_modified = True
+    for k, v in data.items():
+        if getattr(doc, k) == v:
+            continue
+        not_modified = False
+        setattr(doc, k, v)
+    if not_modified:
+        raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
+    clonedb.db.add(doc)
+    await clonedb.db.commit()
+    await clonedb.db.refresh(doc)
+    return doc
+
+
+@router.delete("/{clone_id}/documents/{document_id}", response_model=schemas.Document)
+async def delete_document(
+    doc: Annotated[models.Document, Depends(get_document)],
+    clonedb: Annotated[CloneDB, Depends(get_clonedb)],
+):
+    return await clonedb.delete_document(doc=doc)
+
+
+@router.get("/{clone_id}/documents", response_model=list[schemas.Document])
+async def get_documents(
+    user: Annotated[models.User, Depends(current_active_user)],
+    clone: Annotated[models.Clone, Depends(get_clone)],
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+    offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
+    limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
+    description: Annotated[str | None, Query()] = None,
+    name: Annotated[str | None, Query()] = None,
+    created_after: Annotated[datetime | None, Query()] = None,
+    created_before: Annotated[datetime | None, Query()] = None,
+):
+    if not user.is_superuser and not user.id == clone.creator_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    q = sa.select(models.Document).where(models.Document.clone_id == clone.id)
+    if description is not None:
+        q = q.where(
+            sa.and_(
+                models.Document.description.is_not(None),
+                sa.func.lower(models.Document.description).ilike(description.lower()),
+            )
+        )
+    if name is not None:
+        q = q.where(
+            sa.and_(
+                models.Document.name.is_not(None),
+                sa.func.lower(models.Document.name).ilike(name.lower()),
+            )
+        )
+    if created_before is not None:
+        q = q.where(models.Document.created_at <= created_before)
+    if created_after is not None:
+        q = q.where(models.Document.created_at >= created_after)
+    q = (
+        q.offset(offset=offset)
+        .limit(limit=limit)
+        .order_by(models.Document.created_at.desc())
+    )
+    docs = await db.scalars(q)
+    return docs.unique().all()
+
+
+# ------------ Monologues ------------ #
+@router.post("/{clone_id}/monologues/create", response_model=schemas.Monologue)
+async def create_monologue(
+    monologue_create: schemas.MonologueCreate,
+    clonedb: Annotated[CloneDB, Depends(get_clonedb)],
+):
+    monologue = Monologue(**monologue_create.dict(exclude_none=True))
+    m = await clonedb.add_monologues([monologue])
+    return m
+
+
+@router.patch("/{clone_id}/monologues/{monologue_id}", response_model=schemas.Monologue)
+async def update_monologue(
+    monologue_update: schemas.DocumentUpdate,
+    monologue: Annotated[models.Monologue, Depends(get_monologue)],
+    clonedb: Annotated[
+        CloneDB, Depends(get_clonedb)
+    ],  # used only for auth, to make sure that user has access to edit this clone
+):
+    data = monologue_update.dict(exclude_unset=True)
+    not_modified = True
+    for k, v in data.items():
+        if getattr(monologue, k) == v:
+            continue
+        not_modified = False
+        setattr(monologue, k, v)
+    if not_modified:
+        raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
+    clonedb.db.add(monologue)
+    await clonedb.db.commit()
+    await clonedb.db.refresh(monologue)
+    return monologue
+
+
+@router.delete("/{clone_id}/monologues/{document_id}", response_model=schemas.Monologue)
+async def delete_monologue(
+    monologue: Annotated[models.Monologue, Depends(get_monologue)],
+    clonedb: Annotated[CloneDB, Depends(get_clonedb)],
+):
+    return await clonedb.delee_monologue(monologue=monologue)
+
+
+@router.get("/{clone_id}/monologues", response_model=list[schemas.Monologue])
+async def get_monologues(
+    user: Annotated[models.User, Depends(current_active_user)],
+    clone: Annotated[models.Clone, Depends(get_clone)],
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+    offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
+    limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
+    content: Annotated[str | None, Query()] = None,
+    source: Annotated[str | None, Query()] = None,
+    created_after: Annotated[datetime | None, Query()] = None,
+    created_before: Annotated[datetime | None, Query()] = None,
+):
+    if not user.is_superuser and not user.id == clone.creator_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    q = sa.select(models.Monologue).where(models.Monologue.clone_id == clone.id)
+    if content is not None:
+        q = q.where(
+            sa.and_(
+                models.Monologue.description.is_not(None),
+                sa.func.lower(models.Monologue.description).ilike(content.lower()),
+            )
+        )
+    if source is not None:
+        q = q.where(
+            sa.and_(
+                models.Monologue.name.is_not(None),
+                sa.func.lower(models.Monologue.name).ilike(source.lower()),
+            )
+        )
+    if created_before is not None:
+        q = q.where(models.Monologue.created_at <= created_before)
+    if created_after is not None:
+        q = q.where(models.Monologue.created_at >= created_after)
+    q = (
+        q.offset(offset=offset)
+        .limit(limit=limit)
+        .order_by(models.Monologue.created_at.desc())
+    )
+    m = await db.scalars(q)
+    return m.unique().all()
+
+
+# TODO (Jonny): Create a route for generating the long description. This is a function in clonr.generate
+# we just need to run some checks (like auth and making sure docs exist) and set this up.

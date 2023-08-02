@@ -1,15 +1,16 @@
+import datetime
+import enum
+from dataclasses import dataclass
+from typing import Protocol, TypeVar
+
 import numpy as np
 import sqlalchemy as sa
-import datetime
-from typing import Protocol, TypeVar
-from dataclasses import dataclass
 from pydantic import BaseModel, Field
-import enum
-from app.embedding import EmbeddingClient
 from sqlalchemy.ext.asyncio import AsyncSession
-from clonr.tokenizer import Tokenizer
-from app import models
 
+from app import models
+from app.embedding import EmbeddingClient
+from clonr.tokenizer import Tokenizer
 
 INF = int(1e6)
 DEFAULT_RERANK_FIRST_PASS_MAX_ITEMS = 20
@@ -95,15 +96,15 @@ class ReRankSearchParams(VectorSearchParams):
 
 class GenAgentsSearchParams(VectorSearchParams):
     alpha_recency: float = Field(
-        detail=1.0,
+        le=1.0,
         ge=0.0,
         detail="Weighting for how recently this memory was accessed.",
     )
     alpha_relevance: float = Field(
-        default=1.0, ge=0.0, detail="Weighting for cosine distance similarity score"
+        le=1.0, ge=0.0, detail="Weighting for cosine distance similarity score"
     )
     alpha_importance: float = Field(
-        default=1.0, ge=0.0, detail="Weighting for LLM predicted importance score"
+        le=1.0, ge=0.0, detail="Weighting for LLM predicted importance score"
     )
     half_life_seconds: float = Field(
         default=24.0 * 60 * 60,
@@ -125,7 +126,7 @@ async def vector_search(
     tokenizer: Tokenizer,
     filters: list[sa.SQLColumnExpression] | None = None,
 ) -> list[VectorSearchResult]:
-    q = embedding_client.encode_query(query)[0]
+    q = (await embedding_client.encode_query(query))[0]
 
     if params.metric == MetricType.cosine:
         dist = model.embedding.cosine_distance(q)
@@ -133,7 +134,7 @@ async def vector_search(
         dist = -model.embedding.l2_distance(q)
     elif params.metric == MetricType.inner_product:
         assert (
-            embedding_client.is_normalized()
+            await embedding_client.is_normalized()
         ), "Cannot user inner product with non-normalized embeddings."
         # NOTE (Jonny): I have no fucking idea why, but max_inner_product is actually the negative of A \cdot B
         # cosine distance in pgvector is correctly 1 - A \cdot B, so here we have to do 1 + to match it.
@@ -191,7 +192,7 @@ async def rerank_search(
     first_pass_params = VectorSearchParams(
         metric=params.metric, max_items=first_pass_max_items, max_tokens=INF
     )
-    vsearch_results = vector_search(
+    vsearch_results = await vector_search(
         query=query,
         model=model,
         params=first_pass_params,
@@ -202,8 +203,8 @@ async def rerank_search(
     )
 
     # batch compute the rerank scores
-    rerank_scores = embedding_client.rerank_score(
-        query=query, passages=[x.content for x in vsearch_results]
+    rerank_scores = await embedding_client.rerank_score(
+        query=query, passages=[x.model.content for x in vsearch_results]
     )
 
     # the rerank score is a logit for the similarity score, with domain [0, 1]
@@ -246,7 +247,7 @@ async def gen_agents_search(
     recency_score = sa.func.pow(time_decay, seconds)
 
     # relevance score
-    q = embedding_client.encode_query(query)[0]
+    q = (await embedding_client.encode_query(query))[0]
     dist = model.embedding.cosine_distance(
         q
     )  # TODO (Jonny): check if inner product is ok
@@ -281,7 +282,7 @@ async def gen_agents_search(
         if i >= params.max_items or max_tokens < 0:
             break
         cur = GenAgentsSearchResult(
-            model=x.model,
+            model=x,
             score=ga_scr,
             recency_score=rec_scr,
             relevance_score=rel_scr,

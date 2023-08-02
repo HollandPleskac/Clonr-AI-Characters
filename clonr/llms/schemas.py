@@ -109,7 +109,7 @@ class ChatCompletionRequest(GenerationParams):
 
 class NotebookStreamResponse(BaseModel):
     completion: str
-    time: float
+    duration: float
     tokens_per_second: float
     input_tokens: int
     completion_tokens: int
@@ -124,7 +124,7 @@ class NotebookStreamResponse(BaseModel):
             f"""
         Response(
             completion={s}, 
-            time={self.time:.02f}s, 
+            duration={self.duration:.02f}s, 
             speed={self.tokens_per_second:.02f} tokens/second, 
             completion_tokens={self.completion_tokens}, 
             input_tokens={self.input_tokens}, 
@@ -139,7 +139,8 @@ class LLMResponse(BaseModel):
     model_name: str
     created_at: int
     usage: Usage
-    time: float
+    duration: float
+    input_prompt: str
     finish_reason: FinishReason | None = None
     role: str | None = None
     tokens_per_second: float | None = None
@@ -148,4 +149,4 @@ class LLMResponse(BaseModel):
     def compute_tok_per_sec(cls, v, values):
         if v is not None:
             return v
-        return round((values["usage"].total_tokens) / values["time"], 2)
+        return round((values["usage"].total_tokens) / values["duration"], 2)

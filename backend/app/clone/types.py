@@ -1,9 +1,9 @@
-import numpy as np
-
-from typing import Protocol, TypeVar
-from dataclasses import dataclass
-from pydantic import BaseModel, Field
 import enum
+from dataclasses import dataclass
+from typing import Protocol, TypeVar
+
+import numpy as np
+from pydantic import BaseModel, Field
 
 INF = int(1e10)
 

@@ -1,11 +1,12 @@
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Annotated, List
+
+import sqlalchemy as sa
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.db import get_async_session
-from app.auth.users import current_active_user
+
 from app import models, schemas
-from sqlalchemy import delete, select, update
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.auth.users import current_active_creator, current_active_user
+from app.db import get_async_session
 
 router = APIRouter(
     prefix="/documents",
@@ -14,79 +15,16 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=schemas.Document)
+# See the doc suggestion output schema for what would be returned
+@router.get("/suggest", response_model=list[schemas.DocumentSuggestion])
 async def create_document(
-    document: schemas.DocumentCreate,
-    db: AsyncSession = Depends(get_async_session),
-    user: models.User = Depends(current_active_user),
+    clone_name: Annotated[str, Query(max_length=64)],
 ):
-    new_document = models.Document(**document.dict())
-    user.documents.append(new_document)
-    db.add(new_document)
-    await db.commit()
-    await db.refresh(new_document)
-    return new_document
-
-
-@router.get("/{id}", response_model=schemas.Document)
-async def get_document(
-    id: str,
-    db: AsyncSession = Depends(get_async_session),
-    user: models.User = Depends(current_active_user),
-):
-    document = await db.get(models.Document, id)
-    if document is None or document.clone.user_id != user.id:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Document not found"
-        )
-    return document
-
-
-@router.put("/{id}", response_model=schemas.Document)
-async def update_document(
-    id: str,
-    updated_document: schemas.DocumentUpdate,
-    db: AsyncSession = Depends(get_async_session),
-    user: models.User = Depends(current_active_user),
-):
-    document = await db.get(models.Document, id)
-    if document is None or document.clone.user_id != user.id:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Document not found"
-        )
-    for field, value in updated_document.dict(exclude_unset=True).items():
-        setattr(document, field, value)
-    await db.commit()
-    await db.refresh(document)
-    return document
-
-
-@router.delete("/{id}", response_model=schemas.Document)
-async def delete_document(
-    id: str,
-    db: AsyncSession = Depends(get_async_session),
-    user: models.User = Depends(current_active_user),
-):
-    document = await db.get(models.Document, id)
-    if document is None or document.clone.user_id != user.id:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Document not found"
-        )
-    db.delete(document)
-    await db.commit()
-    return document
-
-
-@router.get("/clone/{clone_id}", response_model=List[schemas.Document])
-async def get_documents_for_clone(
-    clone_id: str,
-    db: AsyncSession = Depends(get_async_session),
-    user: models.User = Depends(current_active_user),
-):
-    documents = await db.execute(
-        select(models.Document)
-        .filter(models.Document.clone_id == clone_id)
-        .join(models.Clone)
-        .filter(models.Clone.creator_id == user.id)
+    # TODO (Jonny): implement this to automatically search wikipedia and fandom, plus others?
+    # we can get an image preview using the meta property if it exists. As an example
+    # <meta property="og:image" content="https://static.wikia.nocookie.net/chainsaw-man/images/
+    # d/d9/Makima_anime_design_2.png/revision/latest?cb=20220919121118"/>
+    raise HTTPException(
+        status_code=status.HTTP_501_NOT_IMPLEMENTED,
+        detail="Clone suggestion is currently unavailable.",
     )
-    return documents.scalars().all()

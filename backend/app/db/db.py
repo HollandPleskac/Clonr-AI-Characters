@@ -2,17 +2,24 @@ import logging
 from typing import Annotated, AsyncGenerator
 
 import redis.asyncio as redis
-from app.models import Base, OAuthAccount, User
-from app.settings import settings
 from fastapi import Depends
 from fastapi_users.db import SQLAlchemyUserDatabase
 from fastapi_users.password import PasswordHelper
 from loguru import logger
+from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from tenacity import after_log, before_log, retry, stop_after_attempt, wait_exponential
-from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
+
+from app.db.events import (
+    decrement_clone_num_conversations,
+    decrement_clone_num_messages,
+    increment_clone_num_conversations,
+    increment_clone_num_messages,
+)
+from app.models import Base, Creator, OAuthAccount, User
+from app.settings import settings
 
 DATABASE_URL = (
     f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}"
@@ -43,7 +50,14 @@ async def wait_for_db():
 
 async def init_db():
     async with engine.begin() as conn:
-        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;"))
+        # await conn.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trm;"))
+        # for hybrid search, see: https://github.com/pgvector/pgvector-python/blob/master/examples/hybrid_search.py
+        # an example usage is:
+        # await cur.execute("SELECT id, content FROM document, plainto_tsquery('english', %s) query WHERE
+        # to_tsvector('english', content) @@ query ORDER BY ts_rank_cd(to_tsvector('english', content), query) DESC LIMIT 5", (query,))
+        # await conn.execute("CREATE INDEX ON document USING GIN (to_tsvector('english', content))")
         await conn.run_sync(Base.metadata.create_all)
 
 
@@ -70,9 +84,11 @@ async def create_superuser() -> User:
             is_superuser=True,
             hashed_password=hashed_password,
         )
-        db.add(user)
+        creator = Creator(user=user, username="superuser")
+        db.add(creator)
         try:
             await db.commit()
-        except:
+        except Exception as e:
+            logger.exception(e)
             await db.rollback()
     return user

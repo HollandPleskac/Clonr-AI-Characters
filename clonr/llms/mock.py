@@ -75,6 +75,7 @@ class MockLLM(OpenAI):
         prompt = prompt_or_messages
         if not isinstance(prompt, str):
             prompt = " ".join([x["content"] for x in prompt])
+        input_prompt = prompt
 
         for c in self.callbacks:
             await c.on_generate_start(self, prompt, params, **kwargs)
@@ -94,7 +95,8 @@ class MockLLM(OpenAI):
             },
             finish_reason="length",
             role="assistant",
-            time=1 + time.time() - st,
+            duration=1 + time.time() - st,
+            input_prompt=prompt,
         )
 
         for c in self.callbacks:

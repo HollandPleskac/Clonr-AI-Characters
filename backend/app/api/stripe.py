@@ -1,28 +1,29 @@
-from typing import Annotated, Optional, List, Dict, Any
+from datetime import datetime, timedelta
+from typing import Annotated, Any, Dict, List, Optional
+
+import sqlalchemy as sa
+import stripe
+from fastapi import (
+    Depends,
+    Header,
+    HTTPException,
+    JSONResponse,
+    Request,
+    Response,
+    status,
+)
+from fastapi.responses import RedirectResponse
+from fastapi.routing import APIRouter
+from pydantic import BaseModel
+from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession
+from stripe.error import StripeError
 
 from app import models, schemas
 from app.auth.users import current_active_user
 from app.db import get_async_session
-from fastapi import (
-    Depends,
-    HTTPException,
-    status,
-    Header,
-    Request,
-    Response,
-    JSONResponse,
-)
-from fastapi.responses import RedirectResponse
-from fastapi.routing import APIRouter
-from sqlalchemy import update, select
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.models import Subscription, SubscriptionItem, UsageRecord
 from app.settings import settings
-from pydantic import BaseModel
-import stripe
-from stripe.error import StripeError
-from app.models import UsageRecord, SubscriptionItem, Subscription
-import sqlalchemy as sa
-from datetime import datetime, timedelta
 
 router = APIRouter(
     prefix="/stripe",
