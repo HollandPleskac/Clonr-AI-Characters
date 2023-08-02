@@ -238,7 +238,7 @@ class Clone(CommonMixin, Base):
 _ = sa.Index("ix_clones_case_insensitive_name", Clone.case_insensitive_name)
 
 
-## I need to rewrite the dockerfile to install the pg_trm extension. Don't wanna do that.
+# I need to rewrite the dockerfile to install the pg_trm extension. Don't wanna do that.
 # clone_trigram_index = sa.Index(
 #     "idx_clones_case_insensitive_name_trigram",
 #     Clone.case_insensitive_name,
@@ -633,82 +633,82 @@ class LLMCall(CommonMixin, Base):
 
 
 # ------------- Stripe ------------- #
-class UsageRecord(CommonMixin, Base):
-    __tablename__ = "usage_records"
+# class UsageRecord(CommonMixin, Base):
+#     __tablename__ = "usage_records"
 
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
-    )
-    subscription_id: Mapped[uuid.UUID] = mapped_column(
-        sa.ForeignKey("subscriptions.id", ondelete="cascade"), nullable=False
-    )
-    quantity: Mapped[int] = mapped_column(sa.Integer, nullable=False)
-    timestamp: Mapped[datetime.datetime] = mapped_column(nullable=True)
-
-
-class Subscription(CommonMixin, Base):
-    __tablename__ = "subscriptions"
-
-    # Should match Stripe's subscription id
-    subscription_id: Mapped[str] = mapped_column(nullable=False)
-    customer_id: Mapped[str] = mapped_column(nullable=False)
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
-    )
-    stripe_status: Mapped[str] = mapped_column(nullable=False)
-    stripe_created: Mapped[datetime.datetime]
-    stripe_current_period_start: Mapped[datetime.datetime]
-    stripe_current_period_end: Mapped[datetime.datetime]
-    stripe_cancel_at_period_end: Mapped[bool]
-    stripe_canceled_at: Mapped[datetime.datetime]
+#     user_id: Mapped[uuid.UUID] = mapped_column(
+#         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+#     )
+#     subscription_id: Mapped[uuid.UUID] = mapped_column(
+#         sa.ForeignKey("subscriptions.id", ondelete="cascade"), nullable=False
+#     )
+#     quantity: Mapped[int] = mapped_column(sa.Integer, nullable=False)
+#     timestamp: Mapped[datetime.datetime] = mapped_column(nullable=True)
 
 
-### Moderation
-class ModerationRecord(CommonMixin, Base):
-    __tablename__ = "moderation_records"
+# class Subscription(CommonMixin, Base):
+#     __tablename__ = "subscriptions"
 
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
-    )
-    violation_content: Mapped[str] = mapped_column(nullable=False)
-    is_banned: Mapped[bool] = mapped_column(nullable=False)
-
-
-### Signups
-
-
-class CreatorPartnerProgramSignup(Base):
-    __tablename__ = "creator_partner_signups"
-
-    id: Mapped[uuid.UUID] = mapped_column(
-        primary_key=True, server_default=sa.text("gen_random_uuid()")
-    )
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
-    )
-    name: Mapped[str] = mapped_column(sa.String, nullable=False)
-    email: Mapped[str] = mapped_column(sa.String, nullable=False)
-    phone: Mapped[str] = mapped_column(sa.String, nullable=False)
-    social_media_handles: Mapped[str] = mapped_column(sa.String, nullable=False)
-
-    user = relationship("User", back_populates="creator_partner_signup")
-
-    def __repr__(self):
-        return f"CreatorPartnerSignup(id={self.id}, user_id={self.user_id}, name='{self.name}', email='{self.email}')"
+#     # Should match Stripe's subscription id
+#     subscription_id: Mapped[str] = mapped_column(nullable=False)
+#     customer_id: Mapped[str] = mapped_column(nullable=False)
+#     user_id: Mapped[uuid.UUID] = mapped_column(
+#         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+#     )
+#     stripe_status: Mapped[str] = mapped_column(nullable=False)
+#     stripe_created: Mapped[datetime.datetime]
+#     stripe_current_period_start: Mapped[datetime.datetime]
+#     stripe_current_period_end: Mapped[datetime.datetime]
+#     stripe_cancel_at_period_end: Mapped[bool]
+#     stripe_canceled_at: Mapped[datetime.datetime]
 
 
-class NSFWSignup(CommonMixin, Base):
-    __tablename__ = "nsfw_signups"
+# ### Moderation
+# class ModerationRecord(CommonMixin, Base):
+#     __tablename__ = "moderation_records"
 
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
-    )
-    name: Mapped[str] = mapped_column(sa.String, nullable=False)
-    email: Mapped[str] = mapped_column(sa.String, nullable=False)
-    phone: Mapped[str] = mapped_column(sa.String, nullable=False)
-    social_media_handles: Mapped[str] = mapped_column(sa.String, nullable=False)
+#     user_id: Mapped[uuid.UUID] = mapped_column(
+#         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+#     )
+#     violation_content: Mapped[str] = mapped_column(nullable=False)
+#     is_banned: Mapped[bool] = mapped_column(nullable=False)
 
-    user = relationship("User", back_populates="nsfw_signup")
 
-    def __repr__(self):
-        return f"NSFWSignup(id={self.id}, user_id={self.user_id}, name='{self.name}', email='{self.email}')"
+# ### Signups
+
+
+# class CreatorPartnerProgramSignup(Base):
+#     __tablename__ = "creator_partner_signups"
+
+#     id: Mapped[uuid.UUID] = mapped_column(
+#         primary_key=True, server_default=sa.text("gen_random_uuid()")
+#     )
+#     user_id: Mapped[uuid.UUID] = mapped_column(
+#         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+#     )
+#     name: Mapped[str] = mapped_column(sa.String, nullable=False)
+#     email: Mapped[str] = mapped_column(sa.String, nullable=False)
+#     phone: Mapped[str] = mapped_column(sa.String, nullable=False)
+#     social_media_handles: Mapped[str] = mapped_column(sa.String, nullable=False)
+
+#     user = relationship("User", back_populates="creator_partner_signup")
+
+#     def __repr__(self):
+#         return f"CreatorPartnerSignup(id={self.id}, user_id={self.user_id}, name='{self.name}', email='{self.email}')"
+
+
+# class NSFWSignup(CommonMixin, Base):
+#     __tablename__ = "nsfw_signups"
+
+#     user_id: Mapped[uuid.UUID] = mapped_column(
+#         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+#     )
+#     name: Mapped[str] = mapped_column(sa.String, nullable=False)
+#     email: Mapped[str] = mapped_column(sa.String, nullable=False)
+#     phone: Mapped[str] = mapped_column(sa.String, nullable=False)
+#     social_media_handles: Mapped[str] = mapped_column(sa.String, nullable=False)
+
+#     user = relationship("User", back_populates="nsfw_signup")
+
+#     def __repr__(self):
+#         return f"NSFWSignup(id={self.id}, user_id={self.user_id}, name='{self.name}', email='{self.email}')"

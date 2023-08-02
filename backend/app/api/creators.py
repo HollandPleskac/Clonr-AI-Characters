@@ -2,13 +2,9 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.routing import APIRouter
-from loguru import logger
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import models, schemas
-from app.auth.users import current_active_creator, current_active_user, get_superuser
-from app.db import get_async_session
+from app import deps, models, schemas
 
 router = APIRouter(
     prefix="/creators",
@@ -19,10 +15,10 @@ router = APIRouter(
 
 # Doesn't actually delete anything O.o
 @router.patch("/me", response_model=schemas.Creator)
-async def patch(
+async def patch_me(
     obj: schemas.CreatorPatch,
-    db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[models.User, Depends(current_active_user)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
 ):
     not_modified = True
     if creator := await db.get(models.Creator, user.id):
@@ -47,16 +43,18 @@ async def patch(
 
 
 @router.get("/me", response_model=schemas.Creator)
-async def get_me(creator: Annotated[models.User, Depends(current_active_creator)]):
+async def get_me(
+    creator: Annotated[models.User, Depends(deps.get_current_active_creator)]
+):
     return creator
 
 
 @router.get(
-    "/{id}", response_model=schemas.Creator, dependencies=[Depends(get_superuser)]
+    "/{id}", response_model=schemas.Creator, dependencies=[Depends(deps.get_superuser)]
 )
 async def get_by_id(
     id: str,
-    db: Annotated[AsyncSession, Depends(get_async_session)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
 ):
     if creator := await db.get(models.Creator, id):
         return creator
@@ -65,10 +63,10 @@ async def get_by_id(
     )
 
 
-@router.delete("/{id}", dependencies=[Depends(get_superuser)])
+@router.delete("/{id}", dependencies=[Depends(deps.get_superuser)])
 async def delete_by_id(
     id: str,
-    db: Annotated[AsyncSession, Depends(get_async_session)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
 ):
     if creator := await db.get(models.Creator, id):
         db.delete(creator)
@@ -88,8 +86,8 @@ async def delete_by_id(
 @router.post("/upgrade", response_model=schemas.Creator, status_code=201)
 async def create(
     obj: schemas.CreatorCreate,
-    db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[models.User, Depends(current_active_user)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
 ):
     creator = await db.get(models.Creator, user.id)
     if creator is None:

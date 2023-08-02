@@ -1,13 +1,14 @@
 import json
-import pytest
 from pathlib import Path
+
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
+from app import schemas
 from app.main import app as main_app
 from tests.types import LoginData
-from app import schemas
 
 
 @pytest.fixture(name="db", scope="session")

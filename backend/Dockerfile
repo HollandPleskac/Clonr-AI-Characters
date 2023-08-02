@@ -17,10 +17,13 @@ RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
 
 RUN --mount=type=cache,target=/root/.cache/pip python3.10 -m pip install --no-cache-dir --upgrade -r requirements.txt
 
+RUN python -c "import nltk; nltk.download('punkt')"
+
 COPY ./alembic.ini /alembic.ini
 COPY ./migrations /migrations
 COPY ./app /app
 COPY ./pb /pb
+COPY ./clonr /clonr
 
 RUN pip install Pillow
 COPY ./makima.jpeg /makima.jpeg

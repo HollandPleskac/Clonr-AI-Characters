@@ -1,24 +1,31 @@
-from typing import Annotated, Literal
-from loguru import logger
-from fastapi import Depends, HTTPException, status, Query, Path
-from fastapi.routing import APIRouter
-import sqlalchemy as sa
 from datetime import datetime
+from typing import Annotated, Literal
+
+import sqlalchemy as sa
+from fastapi import Depends, HTTPException, Path, Query, status
+from fastapi.routing import APIRouter
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import models, schemas
-from app.auth.users import current_active_user, current_active_creator
-from app.db import get_async_session
-from app.embedding import EmbeddingClient, get_embedding_client
-from app.clone.dependencies import get_clonedb
+from app import deps, models, schemas
 from app.clone.db import CloneDB
+from app.clone.shared import DynamicTextSplitter
+
+# from app.clone.dependencies import (
+#     DynamicTextSplitter,
+#     get_clonedb,
+#     get_llm,
+#     get_text_splitter,
+#     get_tokenizer,
+# )
+from app.embedding import EmbeddingClient
 from clonr.data_structures import Document, Monologue
-from clonr.tokenizer import Tokenizer
-from app.clone.dependencies import get_tokenizer, get_splitter, DynamicTextSplitter
 
 # # llm is not needed for the basic list index! We can revisit TreeIndex in the future
 # # but for now, it's too much complexity for a yet to be demonstrated reward
-from clonr.index import ListIndex
+from clonr.index import IndexType, ListIndex
+from clonr.llms import LLM
+from clonr.tokenizer import Tokenizer
 
 router = APIRouter(
     prefix="/clones",
@@ -36,7 +43,7 @@ HOT_TIME: float = 60 * 60 * 12
 
 async def get_clone(
     clone_id: Annotated[str, Path(description="Clone id")],
-    db: Annotated[AsyncSession, Depends(get_async_session)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
 ) -> models.Clone:
     if (clone := await db.get(models.Clone, clone_id)) is None:
         raise HTTPException(
@@ -47,7 +54,7 @@ async def get_clone(
 
 async def get_document(
     document_id: Annotated[str, Path()],
-    db: Annotated[AsyncSession, Depends(get_async_session)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
 ) -> models.Document:
     if not (doc := await db.get(models.Document, document_id)):
         raise HTTPException(
@@ -58,7 +65,7 @@ async def get_document(
 
 async def get_monologue(
     monologue_id: Annotated[str, Path()],
-    db: Annotated[AsyncSession, Depends(get_async_session)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
 ) -> models.Monologue:
     if not (doc := await db.get(models.Monologue, monologue_id)):
         raise HTTPException(
@@ -72,9 +79,9 @@ async def get_monologue(
 )
 async def create_clone(
     obj: schemas.CloneCreate,
-    db: Annotated[AsyncSession, Depends(get_async_session)],
-    creator: Annotated[models.Creator, Depends(current_active_creator)],
-    embedding_client: Annotated[EmbeddingClient, Depends(get_embedding_client)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    creator: Annotated[models.Creator, Depends(deps.get_current_active_creator)],
+    embedding_client: Annotated[EmbeddingClient, Depends(deps.get_embedding_client)],
 ):
     clone = models.Clone(**obj.dict(exclude_none=True), creator_id=creator.user_id)
     # NOTE (Jonny): idk some arbitrary length here to prevent zero length string embeddings
@@ -96,9 +103,9 @@ async def create_clone(
 @router.get("/similar", response_model=list[schemas.CloneSearchResult])
 async def semantic_search_clones(
     q: Annotated[str, Query(max_length=128)],
-    db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[models.User, Depends(current_active_user)],
-    embedding_client: Annotated[EmbeddingClient, Depends(get_embedding_client)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
+    embedding_client: Annotated[EmbeddingClient, Depends(deps.get_embedding_client)],
     offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
     limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
 ):
@@ -117,8 +124,8 @@ async def semantic_search_clones(
 # TODO (Jonny): add an order by for these queries
 @router.get("/search", response_model=list[schemas.CloneSearchResult])
 async def query_clones(
-    db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[models.User, Depends(current_active_user)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
     offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
     limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
     tags: Annotated[list[str] | None, Query()] = None,
@@ -147,8 +154,8 @@ async def query_clones(
 
 @router.get("/hot", response_model=list[schemas.CloneSearchResult])
 async def hot_clones(
-    db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[models.User, Depends(current_active_user)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
     offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
     limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
 ):
@@ -178,8 +185,8 @@ async def hot_clones(
 
 # @router.get("/for_you", response_model=list[schemas.Clone])
 # async def for_you_clones(
-#     db: Annotated[AsyncSession, Depends(get_async_session)],
-#     user: Annotated[models.User, Depends(current_active_user)],
+#     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+#     user: Annotated[models.User, Depends(deps.get_current_active_user)],
 #     offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
 #     limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
 # ):
@@ -190,8 +197,8 @@ async def hot_clones(
 
 @router.get("/top", response_model=list[schemas.CloneSearchResult])
 async def top_clones(
-    db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[models.User, Depends(current_active_user)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
     offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
     limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
 ):
@@ -213,7 +220,7 @@ async def top_clones(
 @router.get("/{clone_id}", response_model=schemas.Clone)
 async def get_clone_by_id(
     clone: Annotated[models.Clone, Depends(get_clone)],
-    user: Annotated[models.User, Depends(current_active_user)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
 ):
     if user.is_superuser or clone.creator_id == user.id:
         return clone
@@ -235,9 +242,9 @@ async def get_clone_by_id(
 async def patch_clone(
     clone: Annotated[models.Clone, Depends(get_clone)],
     obj: schemas.CloneUpdate,
-    db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[models.User, Depends(current_active_user)],
-    embedding_client: Annotated[EmbeddingClient, Depends(get_embedding_client)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
+    embedding_client: Annotated[EmbeddingClient, Depends(deps.get_embedding_client)],
 ):
     if user.is_superuser or clone.creator_id == user.id:
         not_modified = True
@@ -267,8 +274,8 @@ async def patch_clone(
 @router.delete("/{clone_id}", response_model=schemas.Clone)
 async def delete(
     clone: Annotated[models.Clone, Depends(get_clone)],
-    db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[models.User, Depends(current_active_user)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
 ):
     if not user.is_superuser and clone.creator_id != user.id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
@@ -277,14 +284,28 @@ async def delete(
     return clone
 
 
+# # ------------ Long Description ------------ #
+# @router.post(
+#     "/{clone_id}/generate_long_description",
+#     response_model=schemas.Document,
+#     dependencies=[Depends(deps.get_superuser)],
+# )
+# async def create_document(
+#     clonedb: Annotated[CloneDB, Depends(get_clonedb)],
+#     llm: Annotated[LLM, Depends(get_llm)],
+# ):
+#     pass
+
+
 # ------------ Documents ------------ #
 @router.post("/{clone_id}/documents/create", response_model=schemas.Document)
 async def create_document(
     doc_create: schemas.DocumentCreate,
-    clonedb: Annotated[CloneDB, Depends(get_clonedb)],
-    tokenizer: Annotated[Tokenizer, Depends(get_tokenizer)],
-    splitter: Annotated[DynamicTextSplitter, Depends(get_splitter)],
+    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
+    tokenizer: Annotated[Tokenizer, Depends(deps.get_tokenizer)],
+    splitter: Annotated[DynamicTextSplitter, Depends(deps.get_text_splitter)],
 ):
+    doc_create.index_type == IndexType.list
     doc = Document(**doc_create.dict(exclude_unset=True))
     index = ListIndex(tokenizer=tokenizer, splitter=splitter)
     nodes = await index.abuild(doc=doc)
@@ -297,7 +318,7 @@ async def update_document(
     doc_update: schemas.DocumentUpdate,
     doc: Annotated[models.Document, Depends(get_document)],
     clonedb: Annotated[
-        CloneDB, Depends(get_clonedb)
+        CloneDB, Depends(deps.get_clonedb)
     ],  # used only for auth, to make sure that user has access to edit this clone
 ):
     data = doc_update.dict(exclude_unset=True)
@@ -318,16 +339,16 @@ async def update_document(
 @router.delete("/{clone_id}/documents/{document_id}", response_model=schemas.Document)
 async def delete_document(
     doc: Annotated[models.Document, Depends(get_document)],
-    clonedb: Annotated[CloneDB, Depends(get_clonedb)],
+    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
 ):
     return await clonedb.delete_document(doc=doc)
 
 
 @router.get("/{clone_id}/documents", response_model=list[schemas.Document])
 async def get_documents(
-    user: Annotated[models.User, Depends(current_active_user)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
     clone: Annotated[models.Clone, Depends(get_clone)],
-    db: Annotated[AsyncSession, Depends(get_async_session)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
     offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
     limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
     description: Annotated[str | None, Query()] = None,
@@ -369,7 +390,7 @@ async def get_documents(
 @router.post("/{clone_id}/monologues/create", response_model=schemas.Monologue)
 async def create_monologue(
     monologue_create: schemas.MonologueCreate,
-    clonedb: Annotated[CloneDB, Depends(get_clonedb)],
+    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
 ):
     monologue = Monologue(**monologue_create.dict(exclude_none=True))
     m = await clonedb.add_monologues([monologue])
@@ -381,7 +402,7 @@ async def update_monologue(
     monologue_update: schemas.DocumentUpdate,
     monologue: Annotated[models.Monologue, Depends(get_monologue)],
     clonedb: Annotated[
-        CloneDB, Depends(get_clonedb)
+        CloneDB, Depends(deps.get_clonedb)
     ],  # used only for auth, to make sure that user has access to edit this clone
 ):
     data = monologue_update.dict(exclude_unset=True)
@@ -399,19 +420,21 @@ async def update_monologue(
     return monologue
 
 
-@router.delete("/{clone_id}/monologues/{document_id}", response_model=schemas.Monologue)
+@router.delete(
+    "/{clone_id}/monologues/{monologue_id}", response_model=schemas.Monologue
+)
 async def delete_monologue(
     monologue: Annotated[models.Monologue, Depends(get_monologue)],
-    clonedb: Annotated[CloneDB, Depends(get_clonedb)],
+    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
 ):
-    return await clonedb.delee_monologue(monologue=monologue)
+    return await clonedb.delete_monologue(monologue=monologue)
 
 
 @router.get("/{clone_id}/monologues", response_model=list[schemas.Monologue])
 async def get_monologues(
-    user: Annotated[models.User, Depends(current_active_user)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
     clone: Annotated[models.Clone, Depends(get_clone)],
-    db: Annotated[AsyncSession, Depends(get_async_session)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
     offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
     limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
     content: Annotated[str | None, Query()] = None,

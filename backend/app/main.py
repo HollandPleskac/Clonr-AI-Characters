@@ -1,24 +1,16 @@
 import asyncio
 import json
-import os
 from contextlib import asynccontextmanager
 
-import sentry_sdk
-import tiktoken
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
-from app import api, models, schemas, utils
-from app.auth.users import (
-    auth_backend,
-    current_active_user,
-    fastapi_users,
-    google_oauth_client,
-)
+from app import api, deps, models, schemas
+from app.auth.users import auth_backend, google_oauth_client
 from app.db import (
     clear_db,
     clear_redis,
@@ -27,9 +19,11 @@ from app.db import (
     wait_for_db,
     wait_for_redis,
 )
+from app.deps.users import fastapi_users
 from app.embedding import wait_for_embedding
 from app.settings import settings
 
+# import sentry_sdk
 # sentry_sdk.init(
 #     dsn="https://foo@sentry.io/123",
 #     traces_sample_rate=1.0,
@@ -51,7 +45,7 @@ async def run_async_downgrade():
 
 
 async def moderation_middleware(
-    request: Request, user: models.User = Depends(current_active_user)
+    request: Request, user: models.User = Depends(deps.get_current_active_user)
 ):
     if user.is_banned:
         raise HTTPException(status_code=403, detail="User is banned!")
@@ -66,9 +60,9 @@ async def lifespan(app: FastAPI):
     logger.info("Waiting for redis...")
     await wait_for_redis()
 
-    # logger.info("Waiting for Embedding gRPC server...")
-    # name = await wait_for_embedding()
-    # logger.info(f"gRPC server up and running with model: {name}")
+    logger.info("Waiting for Embedding gRPC server...")
+    name = await wait_for_embedding()
+    logger.info(f"gRPC server up and running with model: {name}")
 
     if settings.USE_ALEMBIC:
         logger.info("Running migration upgrades")
@@ -81,14 +75,6 @@ async def lifespan(app: FastAPI):
     logger.info(f"Creating superuser: {settings.SUPERUSER_EMAIL}")
     user = await create_superuser()
     logger.info(json.dumps(jsonable_encoder(user, exclude={"creator"}), indent=2))
-
-    # logger.info("Creating local storage directories")
-    # os.makedirs(str(utils.get_local_data_dir().resolve()), exist_ok=True)
-    # os.makedirs(str(utils.get_voice_data_dir().resolve()), exist_ok=True)
-
-    global TOKENIZER
-    model = "gpt-3.5-turbo-0613"
-    TOKENIZER = tiktoken.encoding_for_model(model)
 
     yield
 
@@ -154,10 +140,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-import io
+import io  # noqa
 
-from fastapi.responses import Response
-from PIL import Image
+from fastapi.responses import Response  # noqa
+from PIL import Image  # noqa
 
 
 @app.get(

@@ -8,7 +8,6 @@ import sqlalchemy as sa
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import models
 from app.embedding import EmbeddingClient
 from clonr.tokenizer import Tokenizer
 

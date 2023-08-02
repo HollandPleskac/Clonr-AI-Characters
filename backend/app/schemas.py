@@ -126,9 +126,10 @@ class DocumentCreate(BaseModel):
     url: str | None = Field(
         max_length=256, description="The resource URL if applicable", default=None
     )
-    index_type: IndexType = Field(
-        default=IndexType.list, description="The type of index to build."
-    )
+    # Only list is allowed right now
+    # index_type: IndexType = Field(
+    #     default=IndexType.list, description="The type of index to build."
+    # )
 
 
 # we don't allow updates on the other fields. URL, content, and type are packaged together
@@ -191,163 +192,143 @@ class Tag(TagCreate):
 # ------------------------------------#
 
 
-class APIKeyCreate(BaseModel):
-    user_id: uuid.UUID
-    clone_id: uuid.UUID
-    name: Optional[str] = None
-    user_id: Optional[uuid.UUID] = None
+# class APIKeyCreate(BaseModel):
+#     user_id: uuid.UUID
+#     clone_id: uuid.UUID
+#     name: Optional[str] = None
+#     user_id: Optional[uuid.UUID] = None
 
 
-class APIKey(CommonMixin, APIKeyCreate):
-    name: str
+# class APIKey(CommonMixin, APIKeyCreate):
+#     name: str
 
-    class Config:
-        orm_mode = True
-
-
-class APIKeyOnce(APIKey):
-    key: str
+#     class Config:
+#         orm_mode = True
 
 
-class MessageCreate(BaseModel):
-    content: str
-    sender_name: str
+# class APIKeyOnce(APIKey):
+#     key: str
 
 
-class Message(CommonMixin, MessageCreate):
-    from_clone: bool
-    conversation_id: uuid.UUID
-
-    class Config:
-        orm_mode = True
+# class MessageCreate(BaseModel):
+#     content: str
+#     sender_name: str
 
 
-class ConversationCreate(BaseModel):
-    clone_id: uuid.UUID
-    user_id: uuid.UUID = None
-    name: Optional[str] = None
+# class Message(CommonMixin, MessageCreate):
+#     from_clone: bool
+#     conversation_id: uuid.UUID
+
+#     class Config:
+#         orm_mode = True
 
 
-class Conversation(CommonMixin, ConversationCreate):
-    ## This raises an error when fastapi tries to convert
-    ## sqlalchemy.exc.MissingGreenlet: greenlet_spawn has not been called
-    # messages: Optional[list[Message]] = None
-
-    class Config:
-        orm_mode = True
+# class ConversationCreate(BaseModel):
+#     clone_id: uuid.UUID
+#     user_id: uuid.UUID = None
+#     name: Optional[str] = None
 
 
-class DocumentCreate(BaseModel):
-    content: str
-    content_embedding: List[float]
-    num_tokens: int
-    summary: str
-    summary_embedding: List[float]
-    is_shared: bool = True
+# class Conversation(CommonMixin, ConversationCreate):
+#     # This raises an error when fastapi tries to convert
+#     # sqlalchemy.exc.MissingGreenlet: greenlet_spawn has not been called
+#     # messages: Optional[list[Message]] = None
+
+#     class Config:
+#         orm_mode = True
 
 
-class DocumentUpdate(DocumentCreate):
-    pass
+# class ExampleDialogueCreate(BaseModel):
+#     content: str
+#     content_embedding: List[float]
+#     num_tokens: int
+#     summary: str
+#     summary_embedding: List[float]
+#     chunk_index: int
+#     is_shared: bool = True
+#     conversation_id: uuid.UUID
 
 
-class Document(CommonMixin, DocumentCreate):
-    clone_id: uuid.UUID
-
-    class Config:
-        orm_mode = True
+# class ExampleDialogueUpdate(ExampleDialogueCreate):
+#     pass
 
 
-class ExampleDialogueCreate(BaseModel):
-    content: str
-    content_embedding: List[float]
-    num_tokens: int
-    summary: str
-    summary_embedding: List[float]
-    chunk_index: int
-    is_shared: bool = True
-    conversation_id: uuid.UUID
+# class ExampleDialogue(ExampleDialogueCreate):
+#     class Config:
+#         orm_mode = True
 
 
-class ExampleDialogueUpdate(ExampleDialogueCreate):
-    pass
+# class MemoryCreate(BaseModel):
+#     memory: str
+#     memory_embedding: List[float]
+#     timestamp: datetime.datetime = datetime.datetime.utcnow()
+#     last_accessed_at: datetime.datetime = datetime.datetime.utcnow()
+#     importance: float = 0.0
+#     is_shared: bool = False
+#     is_reflection: bool = False
+#     conversation_id: uuid.UUID
+#     clone_id: uuid.UUID
 
 
-class ExampleDialogue(ExampleDialogueCreate):
-    class Config:
-        orm_mode = True
+# class MemoryUpdate(BaseModel):
+#     memory: str
+#     memory_embedding: List[float]
+#     last_accessed_at: datetime.datetime
+#     importance: float
+#     is_shared: bool
+#     is_reflection: bool
 
 
-class MemoryCreate(BaseModel):
-    memory: str
-    memory_embedding: List[float]
-    timestamp: datetime.datetime = datetime.datetime.utcnow()
-    last_accessed_at: datetime.datetime = datetime.datetime.utcnow()
-    importance: float = 0.0
-    is_shared: bool = False
-    is_reflection: bool = False
-    conversation_id: uuid.UUID
-    clone_id: uuid.UUID
+# class Memory(CommonMixin, MemoryCreate):
+#     class Config:
+#         orm_mode = True
 
 
-class MemoryUpdate(BaseModel):
-    memory: str
-    memory_embedding: List[float]
-    last_accessed_at: datetime.datetime
-    importance: float
-    is_shared: bool
-    is_reflection: bool
+# class CreatorPartnerProgramSignupBase(BaseModel):
+#     name: str
+#     email: str
+#     phone_number: Optional[str] = None
+#     social_media_handles: Optional[str] = None
 
 
-class Memory(CommonMixin, MemoryCreate):
-    class Config:
-        orm_mode = True
+# class CreatorPartnerProgramSignupCreate(CreatorPartnerProgramSignupBase):
+#     pass
 
 
-class CreatorPartnerProgramSignupBase(BaseModel):
-    name: str
-    email: str
-    phone_number: Optional[str] = None
-    social_media_handles: Optional[str] = None
+# class CreatorPartnerProgramSignupUpdate(CreatorPartnerProgramSignupBase):
+#     pass
 
 
-class CreatorPartnerProgramSignupCreate(CreatorPartnerProgramSignupBase):
-    pass
+# class CreatorPartnerProgramSignup(CreatorPartnerProgramSignupBase):
+#     id: uuid.UUID
+#     user_id: uuid.UUID
+#     created_at: datetime.datetime
+#     updated_at: datetime.datetime
+
+#     class Config:
+#         orm_mode = True
 
 
-class CreatorPartnerProgramSignupUpdate(CreatorPartnerProgramSignupBase):
-    pass
+# class NSFWSignupBase(BaseModel):
+#     name: str
+#     email: str
+#     phone_number: Optional[str] = None
+#     social_media_handles: Optional[str] = None
 
 
-class CreatorPartnerProgramSignup(CreatorPartnerProgramSignupBase):
-    id: uuid.UUID
-    user_id: uuid.UUID
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        orm_mode = True
+# class NSFWSignupCreate(NSFWSignupBase):
+#     pass
 
 
-class NSFWSignupBase(BaseModel):
-    name: str
-    email: str
-    phone_number: Optional[str] = None
-    social_media_handles: Optional[str] = None
+# class NSFWSignupUpdate(NSFWSignupBase):
+#     pass
 
 
-class NSFWSignupCreate(NSFWSignupBase):
-    pass
+# class NSFWSignup(NSFWSignupBase):
+#     id: uuid.UUID
+#     user_id: uuid.UUID
+#     created_at: datetime.datetime
+#     updated_at: datetime.datetime
 
-
-class NSFWSignupUpdate(NSFWSignupBase):
-    pass
-
-
-class NSFWSignup(NSFWSignupBase):
-    id: uuid.UUID
-    user_id: uuid.UUID
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        orm_mode = True
+#     class Config:
+#         orm_mode = True

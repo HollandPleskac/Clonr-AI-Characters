@@ -8,7 +8,6 @@ from app import models, schemas
 from app.auth.users import get_superuser
 from app.db import get_async_session
 
-
 router = APIRouter(
     prefix="/tags",
     tags=["tags"],

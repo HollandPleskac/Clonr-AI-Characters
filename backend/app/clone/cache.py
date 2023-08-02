@@ -68,9 +68,9 @@ class CloneCache:
         data = json.loads(r.decode("utf-8"))
         return models.Clone(**data)
 
-    ## Note (Jonny): Decided against using Redis to retrieve messages. These
-    ## will grow the cache quickly and could cause problems, and setting a smart eviction
-    ## policy that handles all edge cases is really not obvious
+    # Note (Jonny): Decided against using Redis to retrieve messages. These
+    # will grow the cache quickly and could cause problems, and setting a smart eviction
+    # policy that handles all edge cases is really not obvious
     # async def add_message(self, message: models.Message) -> bool:
     #     key = self._conversation_key(message.conversation_id)
     #     score = message.timestamp.timestamp()

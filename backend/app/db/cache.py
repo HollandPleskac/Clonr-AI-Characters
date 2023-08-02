@@ -13,7 +13,7 @@ from app.settings import settings
 from app.utils import iso2unix
 
 
-def _redis_connection(host: str | None = None, port: str | None = None):
+def redis_connection(host: str | None = None, port: str | None = None):
     return redis.Redis(
         host=host or settings.REDIS_HOST,
         port=port or settings.REDIS_PORT,
@@ -28,7 +28,7 @@ def _redis_connection(host: str | None = None, port: str | None = None):
     after=after_log(logger, logging.WARN),
 )
 async def wait_for_redis():
-    r = _redis_connection()
+    r = redis_connection()
     try:
         await r.ping()
     except Exception as e:
@@ -38,17 +38,9 @@ async def wait_for_redis():
 
 
 async def clear_redis():
-    r = _redis_connection()
+    r = redis_connection()
     try:
         await r.flushall()
-    finally:
-        await r.close()
-
-
-async def get_async_redis() -> AsyncGenerator[redis.Redis, None]:
-    r = _redis_connection()
-    try:
-        yield r
     finally:
         await r.close()
 
@@ -229,7 +221,7 @@ class RedisCache:
 
 
 async def get_async_redis_cache() -> AsyncGenerator[RedisCache, None]:
-    r = _redis_connection()
+    r = redis_connection()
     try:
         yield RedisCache(r=r)
     finally:

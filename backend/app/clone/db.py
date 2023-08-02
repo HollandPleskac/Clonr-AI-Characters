@@ -1,12 +1,8 @@
 import uuid
-from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import Union
 
 import numpy as np
 import sqlalchemy as sa
-from fastapi import status
-from fastapi.exceptions import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
@@ -359,7 +355,7 @@ class CloneDB:
         # We filter to retrieve either private memories for the conversation, or public memories
         # shared across all conversations
         is_public = sa.and_(
-            models.Memory.clone_id == self.clone_id, models.Memory.is_shared == True
+            models.Memory.clone_id == self.clone_id, models.Memory.is_shared
         )
         is_private = models.Memory.conversation_id == self.conversation_id
         filters = [sa.or_(is_public, is_private)]

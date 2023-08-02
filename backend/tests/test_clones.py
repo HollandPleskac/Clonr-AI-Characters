@@ -1,7 +1,7 @@
+import lorem
 from fastapi.testclient import TestClient
 
 from app import schemas
-import lorem
 
 
 def test_clones(

@@ -33,6 +33,9 @@ grpcio-tools = "^1.56.2"
 opentelemetry-instrumentation-fastapi = "^0.40b0"
 sentry-sdk = {extras = ["fastapi"], version = "^1.28.1"}
 opentelemetry-instrumentation-sqlalchemy = "^0.40b0"
+transformers = "^4.31.0"
+jinja2 = "^3.1.2"
+nltk = "^3.8.1"
 
 [tool.poetry.dev-dependencies]
 black = "^23.3.0"

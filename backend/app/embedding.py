@@ -69,8 +69,3 @@ async def wait_for_embedding():
     async with EmbeddingClient() as client:
         logger.info(f"Attempting to connect to gRPC server at addr: {client.addr}")
         return await client.encoder_name()
-
-
-async def get_embedding_client():
-    async with EmbeddingClient() as client:
-        yield client
