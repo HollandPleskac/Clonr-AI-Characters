@@ -53,7 +53,7 @@ services:
     volumes:
       - ./backend/app:/app
       - ./backend/migrations:/migrations
-      - ./backend/_data:/_data
+      - ./backend/tests:/tests
     depends_on:
       - postgres
       - redis

@@ -2,10 +2,23 @@ import asyncio
 import json
 import os
 from contextlib import asynccontextmanager
+
+import sentry_sdk
 import tiktoken
 import uvicorn
-from app import api, schemas, utils
-from app.auth.users import auth_backend, fastapi_users, google_oauth_client
+from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.middleware.cors import CORSMiddleware
+from loguru import logger
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+
+from app import api, models, schemas, utils
+from app.auth.users import (
+    auth_backend,
+    current_active_user,
+    fastapi_users,
+    google_oauth_client,
+)
 from app.db import (
     clear_db,
     clear_redis,
@@ -14,22 +27,13 @@ from app.db import (
     wait_for_db,
     wait_for_redis,
 )
-from app.settings import settings
 from app.embedding import wait_for_embedding
-from fastapi.encoders import jsonable_encoder
-from fastapi.middleware.cors import CORSMiddleware
-from loguru import logger
-from fastapi import FastAPI
-from fastapi import Request, Depends, HTTPException, status
-from app import models, schemas
-from app.auth.users import current_active_user
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-import sentry_sdk
+from app.settings import settings
 
-sentry_sdk.init(
-    dsn="TODO:EDIT",
-    traces_sample_rate=1.0,
-)
+# sentry_sdk.init(
+#     dsn="https://foo@sentry.io/123",
+#     traces_sample_rate=1.0,
+# )
 
 
 async def run_async_upgrade():
@@ -62,9 +66,9 @@ async def lifespan(app: FastAPI):
     logger.info("Waiting for redis...")
     await wait_for_redis()
 
-    logger.info("Waiting for Embedding gRPC server...")
-    name = await wait_for_embedding()
-    logger.info(f"gRPC server up and running with model: {name}")
+    # logger.info("Waiting for Embedding gRPC server...")
+    # name = await wait_for_embedding()
+    # logger.info(f"gRPC server up and running with model: {name}")
 
     if settings.USE_ALEMBIC:
         logger.info("Running migration upgrades")
@@ -76,7 +80,7 @@ async def lifespan(app: FastAPI):
 
     logger.info(f"Creating superuser: {settings.SUPERUSER_EMAIL}")
     user = await create_superuser()
-    logger.info(json.dumps(jsonable_encoder(user), indent=2))
+    logger.info(json.dumps(jsonable_encoder(user, exclude={"creator"}), indent=2))
 
     # logger.info("Creating local storage directories")
     # os.makedirs(str(utils.get_local_data_dir().resolve()), exist_ok=True)
@@ -99,17 +103,18 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-app.middleware("http")(moderation_middleware)
-app.include_router(api.voice_router)
+app.include_router(router=api.creator_router)
 app.include_router(api.clones_router)
-app.include_router(api.apikeys_router)
-app.include_router(api.conversations_router)
-app.include_router(api.memories_router)
+# app.middleware("http")(moderation_middleware)
+# app.include_router(api.voice_router)
+# app.include_router(api.apikeys_router)
+# app.include_router(api.conversations_router)
+# app.include_router(api.memories_router)
 # app.include_router(api.messages_router)
 # app.include_router(api.documents_router)
 
 app.include_router(
-    fastapi_users.get_auth_router(auth_backend), prefix="/auth/jwt", tags=["auth"]
+    fastapi_users.get_auth_router(auth_backend), prefix="/auth/cookies", tags=["auth"]
 )
 app.include_router(
     fastapi_users.get_register_router(schemas.UserRead, schemas.UserCreate),
@@ -121,6 +126,7 @@ app.include_router(
     prefix="/auth",
     tags=["auth"],
 )
+# email verification
 app.include_router(
     fastapi_users.get_verify_router(schemas.UserRead),
     prefix="/auth",
@@ -147,6 +153,23 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+import io
+
+from fastapi.responses import Response
+from PIL import Image
+
+
+@app.get(
+    "/image", responses={200: {"content": {"image/png": {}}}}, response_class=Response
+)
+async def get_image():
+    arr = Image.open("./makima.jpeg")
+    buf = io.BytesIO()
+    arr.save(buf, format="JPEG")
+    b = buf.getvalue()
+    return Response(content=b, media_type="image/jpeg")
+
 
 FastAPIInstrumentor.instrument_app(app)
 

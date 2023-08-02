@@ -1,19 +1,20 @@
+# TODO (Jonny): This is the most important route and needs to be completed ASAP
+
 from typing import Annotated
+
+import sqlalchemy as sa
+from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.routing import APIRouter
+from loguru import logger
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from sqlalchemy import delete, func, select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models, schemas
 from app.auth.users import current_active_user
 from app.db import RedisCache, get_async_redis_cache, get_async_session
-from fastapi import Depends, FastAPI
-from fastapi import Depends, HTTPException, status
-from fastapi.routing import APIRouter
-from fastapi.encoders import jsonable_encoder
-from fastapi import Request
-from sqlalchemy import delete, select, update, func
-from sqlalchemy.ext.asyncio import AsyncSession
-import sqlalchemy as sa
-from loguru import logger
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 
 limiter = Limiter(
     key_func=get_remote_address,

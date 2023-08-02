@@ -150,6 +150,9 @@ class OpenAI(LLM):
 
         return messages
 
+    def messages_to_prompt(self, messages: list[Message]) -> str:
+        return "\n".join(m.to_prompt() for m in messages)
+
     @retry(
         retry=retry_if_exception_type(openai.error.RateLimitError),
         wait=wait_random(min=0.1, max=2),
@@ -169,8 +172,10 @@ class OpenAI(LLM):
             await c.on_generate_start(self, prompt_or_messages, params, **kwargs)
 
         if isinstance(prompt_or_messages, str):
+            input_prompt = prompt_or_messages
             messages = self.prompt_to_messages(prompt=prompt_or_messages)
         else:
+            input_prompt = self.messages_to_prompt(prompt_or_messages)
             messages = prompt_or_messages
         request = ChatCompletionRequest(
             model=self.model,
@@ -203,6 +208,7 @@ class OpenAI(LLM):
             finish_reason=out.choices[0].finish_reason,
             role=out.choices[0].message.role,
             tokens_per_second=round((out.usage.total_tokens) / total_time, 2),
+            input_prompt=input_prompt,
         )
 
         for c in self.callbacks:

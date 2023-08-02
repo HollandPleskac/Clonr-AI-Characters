@@ -1,21 +1,22 @@
 import json
-import uuid
 import logging
+import uuid
 from typing import AsyncGenerator, Optional
 
 import redis.asyncio as redis
-from app import models, schemas
-from app.settings import settings
-from app.utils import iso2unix
 from fastapi.encoders import jsonable_encoder
 from loguru import logger
 from tenacity import after_log, before_log, retry, stop_after_attempt, wait_exponential
 
+from app import models, schemas
+from app.settings import settings
+from app.utils import iso2unix
 
-def _redis_connection():
+
+def _redis_connection(host: str | None = None, port: str | None = None):
     return redis.Redis(
-        host=settings.REDIS_HOST,
-        port=settings.REDIS_PORT,
+        host=host or settings.REDIS_HOST,
+        port=port or settings.REDIS_PORT,
         password=settings.REDIS_PASSWORD,
     )
 
@@ -44,21 +45,12 @@ async def clear_redis():
         await r.close()
 
 
-async def get_async_redis_client() -> AsyncGenerator[redis.Redis, None]:
+async def get_async_redis() -> AsyncGenerator[redis.Redis, None]:
     r = _redis_connection()
     try:
         yield r
     finally:
         await r.close()
-
-
-def redis_conn():
-    r = redis.Redis(
-        host="localhost",
-        port=settings.REDIS_PORT,
-        password=settings.REDIS_PASSWORD,
-    )
-    return r
 
 
 class CacheCounter:
@@ -128,112 +120,112 @@ class RedisCache:
     #     if value := await self.r.get(key):
     #         return schemas.APIKey(**json.loads(value.decode("utf-8")))
 
-    async def add_clone(self, clone: models.Clone) -> bool:
-        key = self._clone_key(clone.id)
-        value = json.dumps(jsonable_encoder(clone)).encode()
-        return await self.conn.set(key, value)
+    # async def add_clone(self, clone: models.Clone) -> bool:
+    #     key = self._clone_key(clone.id)
+    #     value = json.dumps(jsonable_encoder(clone)).encode()
+    #     return await self.conn.set(key, value)
 
-    async def delete_clone(self, clone_id: str) -> str:
-        key = self._clone_key(clone_id)
-        return await self.conn.delete(key)
+    # async def delete_clone(self, clone_id: str) -> str:
+    #     key = self._clone_key(clone_id)
+    #     return await self.conn.delete(key)
 
-    async def get_clone(self, clone_id: str) -> models.Clone:
-        key = self._clone_key(clone_id)
-        r = await self.conn.get(key)
-        data = json.loads(r.decode("utf-8"))
-        return models.Clone(**data)
+    # async def get_clone(self, clone_id: str) -> models.Clone:
+    #     key = self._clone_key(clone_id)
+    #     r = await self.conn.get(key)
+    #     data = json.loads(r.decode("utf-8"))
+    #     return models.Clone(**data)
 
-    async def add_message(self, message: models.Message) -> bool:
-        key = self._conversation_key(message.conversation_id)
-        score = message.timestamp.timestamp()
-        value = json.dumps(jsonable_encoder(message))
-        # (redis docs): nx forces ZADD to only create new elements and not to update scores for elements that already exist.
-        # this makes a sorted set on key, where elements are value and they sort according to score.
-        return await self.conn.zadd(key, {value: score}, nx=True)
+    # async def add_message(self, message: models.Message) -> bool:
+    #     key = self._conversation_key(message.conversation_id)
+    #     score = message.timestamp.timestamp()
+    #     value = json.dumps(jsonable_encoder(message))
+    #     # (redis docs): nx forces ZADD to only create new elements and not to update scores for elements that already exist.
+    #     # this makes a sorted set on key, where elements are value and they sort according to score.
+    #     return await self.conn.zadd(key, {value: score}, nx=True)
 
-    async def get_messages(
-        self, conversation_id: str, offset: int = 0, limit: int = 20
-    ) -> list[models.Message]:
-        key = self._conversation_key(conversation_id)
-        values = await self.conn.zrevrange(key, offset, limit)
-        return [models.Message(**json.loads(m.decode("utf-8"))) for m in values]
+    # async def get_messages(
+    #     self, conversation_id: str, offset: int = 0, limit: int = 20
+    # ) -> list[models.Message]:
+    #     key = self._conversation_key(conversation_id)
+    #     values = await self.conn.zrevrange(key, offset, limit)
+    #     return [models.Message(**json.loads(m.decode("utf-8"))) for m in values]
 
-    async def count_messages(self, conversation_id: str) -> int:
-        key = self._conversation_key(conversation_id)
-        n = await self.conn.zcard(key)
-        n = n or 0
-        return int(n)
+    # async def count_messages(self, conversation_id: str) -> int:
+    #     key = self._conversation_key(conversation_id)
+    #     n = await self.conn.zcard(key)
+    #     n = n or 0
+    #     return int(n)
 
-    async def delete_message(self, message: models.Message) -> int:
-        key = self._conversation_key(message.conversation_id)
-        value = json.dumps(jsonable_encoder(message))
-        n = await self.conn.zrem(key, value)
-        return int(n)
+    # async def delete_message(self, message: models.Message) -> int:
+    #     key = self._conversation_key(message.conversation_id)
+    #     value = json.dumps(jsonable_encoder(message))
+    #     n = await self.conn.zrem(key, value)
+    #     return int(n)
 
-    async def cache_total_conversations(self, user_id: int, total_conversations: int):
-        key = f"{self.user_ban_prefix}{self.delimiter}{user_id}:total_conversations"
-        await self.r.set(key, total_conversations)
-        logger.info(f"CACHE SET: {key}")
+    # async def cache_total_conversations(self, user_id: int, total_conversations: int):
+    #     key = f"{self.user_ban_prefix}{self.delimiter}{user_id}:total_conversations"
+    #     await self.r.set(key, total_conversations)
+    #     logger.info(f"CACHE SET: {key}")
 
-    async def get_cached_total_conversations(self, user_id: int) -> Optional[int]:
-        key = f"{self.user_ban_prefix}{self.delimiter}{user_id}:total_conversations"
-        if value := await self.r.get(key):
-            logger.info(f"CACHE HIT: {key}")
-            return int(value)
-        logger.info(f"CACHE MISS: {key}")
+    # async def get_cached_total_conversations(self, user_id: int) -> Optional[int]:
+    #     key = f"{self.user_ban_prefix}{self.delimiter}{user_id}:total_conversations"
+    #     if value := await self.r.get(key):
+    #         logger.info(f"CACHE HIT: {key}")
+    #         return int(value)
+    #     logger.info(f"CACHE MISS: {key}")
 
-    async def cache_total_messages(
-        self, user_id: int, num_msgs_sent: int, num_msgs_received: int
-    ):
-        key = f"{self.user_ban_prefix}{self.delimiter}{user_id}:total_messages"
-        await self.r.hmset(
-            key,
-            {"num_msgs_sent": num_msgs_sent, "num_msgs_received": num_msgs_received},
-        )
-        logger.info(f"CACHE SET: {key}")
+    # async def cache_total_messages(
+    #     self, user_id: int, num_msgs_sent: int, num_msgs_received: int
+    # ):
+    #     key = f"{self.user_ban_prefix}{self.delimiter}{user_id}:total_messages"
+    #     await self.r.hmset(
+    #         key,
+    #         {"num_msgs_sent": num_msgs_sent, "num_msgs_received": num_msgs_received},
+    #     )
+    #     logger.info(f"CACHE SET: {key}")
 
-    async def get_cached_total_messages(self, user_id: int) -> Optional[dict[str, int]]:
-        key = f"{self.user_ban_prefix}{self.delimiter}{user_id}:total_messages"
-        if values := await self.r.hgetall(key):
-            logger.info(f"CACHE HIT: {key}")
-            return {
-                "num_msgs_sent": int(values.get(b"num_msgs_sent", 0)),
-                "num_msgs_received": int(values.get(b"num_msgs_received", 0)),
-            }
-        logger.info(f"CACHE MISS: {key}")
+    # async def get_cached_total_messages(self, user_id: int) -> Optional[dict[str, int]]:
+    #     key = f"{self.user_ban_prefix}{self.delimiter}{user_id}:total_messages"
+    #     if values := await self.r.hgetall(key):
+    #         logger.info(f"CACHE HIT: {key}")
+    #         return {
+    #             "num_msgs_sent": int(values.get(b"num_msgs_sent", 0)),
+    #             "num_msgs_received": int(values.get(b"num_msgs_received", 0)),
+    #         }
+    #     logger.info(f"CACHE MISS: {key}")
 
-    async def conversation_delete(
-        self,
-        conversation_id: str,
-    ) -> list[models.Message]:
-        key = self._conversation_key(conversation_id)
-        res = await self.conn.delete(key)
-        return res
+    # async def conversation_delete(
+    #     self,
+    #     conversation_id: str,
+    # ) -> list[models.Message]:
+    #     key = self._conversation_key(conversation_id)
+    #     res = await self.conn.delete(key)
+    #     return res
 
-    async def clone_add(self, clone: models.Clone) -> str:
-        key = self.make_clone_key(clone.id)
-        value = jsonable_encoder(clone)
-        await self.r.hmset(key, value)
-        return key
+    # async def clone_add(self, clone: models.Clone) -> str:
+    #     key = self.make_clone_key(clone.id)
+    #     value = jsonable_encoder(clone)
+    #     await self.r.hmset(key, value)
+    #     return key
 
-    async def clone_delete(self, clone_id: str) -> str:
-        key = self.make_clone_key(clone_id)
-        value = await self.r.delete(key)
-        return value
+    # async def clone_delete(self, clone_id: str) -> str:
+    #     key = self.make_clone_key(clone_id)
+    #     value = await self.r.delete(key)
+    #     return value
 
-    async def clone_get(self, clone_id: str, value: Optional[str] = None):
-        key = self.make_clone_key(clone_id)
-        if value is None:
-            return await self.r.hgetall(clone_id) or None
-        return await self.r.hget(key, value)
+    # async def clone_get(self, clone_id: str, value: Optional[str] = None):
+    #     key = self.make_clone_key(clone_id)
+    #     if value is None:
+    #         return await self.r.hgetall(clone_id) or None
+    #     return await self.r.hget(key, value)
 
-    async def ban_user(self, user_id: int):
-        key = f"{self.user_ban_prefix}{self.delimiter}{user_id}"
-        await self.r.set(key, "True")
+    # async def ban_user(self, user_id: int):
+    #     key = f"{self.user_ban_prefix}{self.delimiter}{user_id}"
+    #     await self.r.set(key, "True")
 
-    async def is_user_banned(self, user_id: int) -> bool:
-        key = f"{self.user_ban_prefix}{self.delimiter}{user_id}"
-        return await self.r.get(key) == b"True"
+    # async def is_user_banned(self, user_id: int) -> bool:
+    #     key = f"{self.user_ban_prefix}{self.delimiter}{user_id}"
+    #     return await self.r.get(key) == b"True"
 
 
 async def get_async_redis_cache() -> AsyncGenerator[RedisCache, None]:

@@ -81,7 +81,7 @@ class LoggingCallback(LLMCallback):
         logger.info(
             (
                 f"LLM CALL FINISH: Usage: {llm_response.usage.json()}. "
-                f"Time: {llm_response.time:.02f}, {llm_response.tokens_per_second:.02f} tok/s. "
+                f"Duration: {llm_response.duration:.02f}, {llm_response.tokens_per_second:.02f} tok/s. "
                 f"Info: {info}"
             )
         )

@@ -22,4 +22,6 @@ COPY ./migrations /migrations
 COPY ./app /app
 COPY ./pb /pb
 
+RUN pip install Pillow
+COPY ./makima.jpeg /makima.jpeg
 ENTRYPOINT [ "python", "-m", "app.main"]

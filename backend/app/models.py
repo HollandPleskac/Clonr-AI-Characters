@@ -1,7 +1,7 @@
 import datetime
-import uuid
 import enum
-from typing import Any, Dict, List, Optional
+import uuid
+from typing import Any, Optional
 
 import randomname
 import sqlalchemy as sa
@@ -11,7 +11,26 @@ from fastapi_users.db import (
 )
 from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.ext.hybrid import Comparator, hybrid_property
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
+
+class CaseInsensitiveComparator(Comparator[str]):
+    # taken from https://docs.sqlalchemy.org/en/20/orm/extensions/hybrid.html#building-custom-comparators
+    def __eq__(self, other: Any) -> sa.ColumnElement[bool]:  # type: ignore[override]  # noqa: E501
+        return sa.func.lower(self.__clause_element__()) == sa.func.lower(other)
+
+    def ilike(self, other: Any, **kwargs) -> sa.ColumnElement[bool]:
+        return sa.func.lower(self.__clause_element__()).ilike(other.lower(), **kwargs)
+
+    def like(self, other: Any, **kwargs) -> sa.ColumnElement[bool]:
+        return sa.func.lower(self.__clause_element__()).like(other.lower(), **kwargs)
+
+    # (Jonny): dunno if this works
+    def levenshtein(self, other: Any, **kwargs) -> sa.ColumnElement[int]:
+        return sa.func.levenshtein(
+            sa.func.lower(self.__clause_element__()), other.lower()
+        )
 
 
 class Base(DeclarativeBase):
@@ -38,6 +57,16 @@ class OAuthAccount(SQLAlchemyBaseOAuthAccountTableUUID, Base):
     )
 
 
+# Each created clone can have many users talking to it
+# And each user can talk to many clones
+users_to_clones = sa.Table(
+    "users_to_clones",
+    Base.metadata,
+    sa.Column("user_id", sa.ForeignKey("users.id"), primary_key=True),
+    sa.Column("clone_id", sa.ForeignKey("clones.id"), primary_key=True),
+)
+
+
 class User(Base, SQLAlchemyBaseUserTableUUID):
     """Contains the fields:
     id, email, hashed_password, is_active, is_superuser, is_verified
@@ -52,35 +81,85 @@ class User(Base, SQLAlchemyBaseUserTableUUID):
         server_default=sa.func.now(),
         onupdate=sa.func.current_timestamp(),
     )
+    is_banned: Mapped[bool] = mapped_column(default=False)
     # (Jonny): Idk why, but select breaks with greenlet spawn error and this doesn't
     oauth_accounts: Mapped[list[OAuthAccount]] = relationship(
         "OAuthAccount", lazy="joined"
     )
     # (Jonny): probably never a situation where you don't need clones when grabbing a user.
     clones: Mapped[list["Clone"]] = relationship(
-        "Clone", back_populates="user", lazy="joined"
+        secondary=users_to_clones, back_populates="users"
     )
-    is_banned: Mapped[bool] = mapped_column(default=False)
+    creator: Mapped["Creator"] = relationship("Creator", back_populates="user")
+    llm_calls: Mapped[list["LLMCall"]] = relationship(
+        "LLMCall", back_populates="user", passive_deletes=True
+    )
 
     def __repr__(self):
         return f"User(id={self.id})"
 
 
-class APIKey(CommonMixin, Base):
-    __tablename__ = "api_keys"
+class Creator(Base):
+    __tablename__ = "creators"
 
-    hashed_key: Mapped[str] = mapped_column(unique=True)
-    name: Mapped[str] = mapped_column(default=randomname.get_name)
+    username: Mapped[str] = mapped_column(unique=True)
     user_id: Mapped[uuid.UUID] = mapped_column(
-        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False, primary_key=True
     )
-    clone_id: Mapped[uuid.UUID] = mapped_column(
-        sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        sa.DateTime(timezone=True), server_default=sa.func.now()
     )
-    clone: Mapped["Clone"] = relationship("Clone", back_populates="api_keys")
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        server_default=sa.func.now(),
+        onupdate=sa.func.current_timestamp(),
+    )
+    is_active: Mapped[bool] = mapped_column(default=True)
+    is_public: Mapped[bool] = mapped_column(default=False)
+    user: Mapped["User"] = relationship("User", back_populates="creator")
+    clones: Mapped[list["Clone"]] = relationship("Clone", back_populates="creator")
 
-    def __repr__(self):
-        return f"APIKey(hashed_key={self.hashed_key}, clone_id={self.clone_id})"
+
+# class APIKey(CommonMixin, Base):
+#     __tablename__ = "api_keys"
+
+#     hashed_key: Mapped[str] = mapped_column(unique=True)
+#     name: Mapped[str] = mapped_column(default=randomname.get_name)
+#     user_id: Mapped[uuid.UUID] = mapped_column(
+#         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+#     )
+#     clone_id: Mapped[uuid.UUID] = mapped_column(
+#         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
+#     )
+#     clone: Mapped["Clone"] = relationship("Clone", back_populates="api_keys")
+
+#     def __repr__(self):
+#         return f"APIKey(hashed_key={self.hashed_key}, clone_id={self.clone_id})"
+
+
+clones_to_tags = sa.Table(
+    "clones_to_tags",
+    Base.metadata,
+    sa.Column("tag", sa.Text, sa.ForeignKey("tags.name"), primary_key=True),
+    sa.Column("clone_id", sa.Uuid, sa.ForeignKey("clones.id"), primary_key=True),
+)
+
+
+class Tag(CommonMixin, Base):
+    __tablename__ = "tags"
+
+    name: Mapped[str] = mapped_column(primary_key=True, unique=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        sa.DateTime(timezone=True), server_default=sa.func.now()
+    )
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        server_default=sa.func.now(),
+        onupdate=sa.func.current_timestamp(),
+    )
+    clones: Mapped[list["Clone"]] = relationship(
+        secondary=clones_to_tags, back_populates="tags"
+    )
 
 
 class Clone(CommonMixin, Base):
@@ -88,17 +167,31 @@ class Clone(CommonMixin, Base):
 
     name: Mapped[str]
     short_description: Mapped[str]
-    long_description: Mapped[str]
-    greeting_message: Mapped[str]
+    # TODO (Jonny): make a separate Image table for when Creators have multiple images
+    # This is a temporary ship-asap solution
+    avatar_uri: Mapped[str] = mapped_column(nullable=True)
+    long_description: Mapped[str] = mapped_column(nullable=True)
+    greeting_message: Mapped[str] = mapped_column(nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True)
     is_public: Mapped[bool] = mapped_column(default=False)
-    creator_id: Mapped[uuid.UUID] = mapped_column(
-        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+    is_short_description_public: Mapped[bool] = mapped_column(default=True)
+    is_long_description_public: Mapped[bool] = mapped_column(default=False)
+    is_greeting_message_public: Mapped[bool] = mapped_column(default=True)
+    embedding: Mapped[list[float]] = mapped_column(nullable=True, default=None)
+    embedding_model: Mapped[str] = mapped_column(nullable=True, default=None)
+    num_messages: Mapped[int] = mapped_column(default=0)
+    num_conversations: Mapped[int] = mapped_column(default=0)
+    tags: Mapped[list["Tag"]] = relationship(
+        secondary=clones_to_tags, back_populates="clones", lazy="joined"
     )
-    # (Jonny): lazy="select" is important here. We cache the clone model so we don't want this loading
-    # and creating a vulnerability where user info is stored in the cache.
-    user: Mapped["User"] = relationship("User", back_populates="clones", lazy="select")
-    api_keys: Mapped[list["APIKey"]] = relationship("APIKey", back_populates="clone")
+    creator_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("creators.user_id", ondelete="cascade"), nullable=False
+    )
+    creator: Mapped["Creator"] = relationship("Creator", back_populates="clones")
+    users: Mapped[list["User"]] = relationship(
+        secondary=users_to_clones, back_populates="clones"
+    )
+    # api_keys: Mapped[list["APIKey"]] = relationship("APIKey", back_populates="clone")
     conversations: Mapped[list["Conversation"]] = relationship(
         "Conversation", back_populates="clone"
     )
@@ -113,6 +206,9 @@ class Clone(CommonMixin, Base):
     example_dialogue_messages: Mapped[list["ExampleDialogueMessage"]] = relationship(
         "ExampleDialogueMessage", back_populates="clone"
     )
+    monologues: Mapped[list["Monologue"]] = relationship(
+        "Monologue", back_populates="clone"
+    )
     memories: Mapped[list["Memory"]] = relationship("Memory", back_populates="clone")
     agent_summaries: Mapped[list["AgentSummary"]] = relationship(
         "AgentSummary", back_populates="clone"
@@ -120,9 +216,35 @@ class Clone(CommonMixin, Base):
     entity_context_summaries: Mapped[list["EntityContextSummary"]] = relationship(
         "EntityContextSummary", back_populates="clone"
     )
+    llm_calls: Mapped[list["LLMCall"]] = relationship(
+        "LLMCall", back_populates="clone", passive_deletes=True
+    )
+
+    # taken from https://docs.sqlalchemy.org/en/20/orm/extensions/hybrid.html#building-custom-comparators
+    # these automatically lowercase everything in a comparison
+    @hybrid_property
+    def case_insensitive_name(self) -> str:
+        return self.name.lower()
+
+    @case_insensitive_name.inplace.comparator
+    @classmethod
+    def _case_insensitive_comparator(cls) -> CaseInsensitiveComparator:
+        return CaseInsensitiveComparator(cls.name)
 
     def __repr__(self):
         return f"Clone(clone_id={self.id}, active={self.is_active}, public={self.is_public})"
+
+
+_ = sa.Index("ix_clones_case_insensitive_name", Clone.case_insensitive_name)
+
+
+## I need to rewrite the dockerfile to install the pg_trm extension. Don't wanna do that.
+# clone_trigram_index = sa.Index(
+#     "idx_clones_case_insensitive_name_trigram",
+#     Clone.case_insensitive_name,
+#     postgresql_using="gin",
+#     postgresql_ops={"case_insensitive_name": "gin_trgm_ops"},
+# )
 
 
 class Conversation(CommonMixin, Base):
@@ -150,6 +272,9 @@ class Conversation(CommonMixin, Base):
     entity_context_summaries: Mapped[list["EntityContextSummary"]] = relationship(
         "EntityContextSummary", back_populates="conversation"
     )
+    llm_calls: Mapped[list["LLMCall"]] = relationship(
+        "LLMCall", back_populates="conversation", passive_deletes=True
+    )
 
     def __repr__(self):
         return f"Conversation(name={self.name}, user_id={self.user_id} clone_id={self.clone_id})"
@@ -164,6 +289,8 @@ class Message(CommonMixin, Base):
     timestamp: Mapped[datetime.datetime] = mapped_column(
         sa.DateTime(timezone=True), server_default=sa.func.now()
     )
+    embedding: Mapped[list[float]]
+    embedding_model: Mapped[str]
     clone_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )
@@ -174,6 +301,15 @@ class Message(CommonMixin, Base):
     conversation: Mapped["Conversation"] = relationship(
         "Conversation", back_populates="messages"
     )
+
+    @hybrid_property
+    def case_insensitive_content(self) -> str:
+        return self.content.lower()
+
+    @case_insensitive_content.inplace.comparator
+    @classmethod
+    def _case_insensitive_comparator(cls) -> CaseInsensitiveComparator:
+        return CaseInsensitiveComparator(cls.content)
 
     def __repr__(self):
         return f"Message(content={self.content}, sender={self.sender_name}, is_clone={self.from_clone})"
@@ -330,9 +466,7 @@ class Monologue(CommonMixin, Base):
     clone_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )
-    clone: Mapped["Clone"] = relationship(
-        "Clone", back_populates="example_dialogue_messages"
-    )
+    clone: Mapped["Clone"] = relationship("Clone", back_populates="monologues")
 
     def __repr__(self):
         name = self.__class__.__name__
@@ -444,9 +578,61 @@ class EntityContextSummary(CommonMixin, Base):
         return f"{name}(id={str(self.id)}, entity_name={self.entity_name}, content={content})"
 
 
-### Stripe
+class LLMCall(CommonMixin, Base):
+    __tablename__ = "llm_calls"
+
+    content: Mapped[str]
+    model_type: Mapped[str]
+    model_name: Mapped[str]
+    prompt_tokens: Mapped[int]
+    completion_tokens: Mapped[int]
+    total_tokens: Mapped[int]
+    duration: Mapped[float]
+    role: Mapped[str]
+    tokens_per_second: Mapped[float]
+    input_prompt: Mapped[str]
+    # Any time a generate template is called
+    template: Mapped[str] = mapped_column(nullable=True)
+    # number of retries for calls that require output parsing
+    retry_attempt: Mapped[int] = mapped_column(nullable=True)
+    # Metadata from LongDescription generation
+    document_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("documents.id", ondelete="SET NULL"),
+        nullable=False,
+        server_default=None,
+    )
+    # Metadata from Indexing
+    chunk_index: Mapped[int] = mapped_column(nullable=True)
+    depth: Mapped[int] = mapped_column(nullable=True)
+    subroutine: Mapped[str] = mapped_column(nullable=True)
+    group: Mapped[int] = mapped_column(nullable=True)
+    # Track usage and costs on a particular clone.
+    # Note, creator stats require a join
+    clone_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("clones.id", ondelete="SET NULL"),
+        nullable=False,
+        server_default=None,
+    )
+    # Track usage and costs incurred by any particular user
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=False,
+        server_default=None,
+    )
+    # Track usage and costs within a conversation
+    conversation_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("conversations.id", ondelete="SET NULL"),
+        nullable=False,
+        server_default=None,
+    )
+    clone: Mapped["Clone"] = relationship("Clone", back_populates="llm_calls")
+    user: Mapped["User"] = relationship("User", back_populates="llm_calls")
+    conversation: Mapped["Conversation"] = relationship(
+        "Conversation", back_populates="llm_calls"
+    )
 
 
+# ------------- Stripe ------------- #
 class UsageRecord(CommonMixin, Base):
     __tablename__ = "usage_records"
 
@@ -457,43 +643,35 @@ class UsageRecord(CommonMixin, Base):
         sa.ForeignKey("subscriptions.id", ondelete="cascade"), nullable=False
     )
     quantity: Mapped[int] = mapped_column(sa.Integer, nullable=False)
-    timestamp: Mapped[datetime.datetime] = mapped_column(sa.DateTime, nullable=True)
+    timestamp: Mapped[datetime.datetime] = mapped_column(nullable=True)
 
 
 class Subscription(CommonMixin, Base):
     __tablename__ = "subscriptions"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        primary_key=True, server_default=sa.text("gen_random_uuid()")
-    )
     # Should match Stripe's subscription id
-    subscription_id: Mapped[str] = mapped_column(sa.String, nullable=False)
-    customer_id = mapped_column(sa.String, nullable=False)
+    subscription_id: Mapped[str] = mapped_column(nullable=False)
+    customer_id: Mapped[str] = mapped_column(nullable=False)
     user_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
-    stripe_status: Mapped[str] = mapped_column(sa.String, nullable=False)
-    stripe_created: Mapped[datetime.datetime] = mapped_column(sa.DateTime)
-    stripe_current_period_start: Mapped[datetime.datetime] = mapped_column(sa.DateTime)
-    stripe_current_period_end: Mapped[datetime.datetime] = mapped_column(sa.DateTime)
-    stripe_cancel_at_period_end: Mapped[bool] = mapped_column(sa.Boolean)
-    stripe_canceled_at: Mapped[datetime.datetime] = mapped_column(sa.DateTime)
+    stripe_status: Mapped[str] = mapped_column(nullable=False)
+    stripe_created: Mapped[datetime.datetime]
+    stripe_current_period_start: Mapped[datetime.datetime]
+    stripe_current_period_end: Mapped[datetime.datetime]
+    stripe_cancel_at_period_end: Mapped[bool]
+    stripe_canceled_at: Mapped[datetime.datetime]
 
 
 ### Moderation
-class ModerationRecord(Base):
+class ModerationRecord(CommonMixin, Base):
     __tablename__ = "moderation_records"
-    id: Mapped[uuid.UUID] = mapped_column(
-        primary_key=True, server_default=sa.text("gen_random_uuid()")
-    )
+
     user_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
-    violation_content: Mapped[str] = mapped_column(sa.String, nullable=False)
-    is_banned: Mapped[bool] = mapped_column(sa.Boolean, nullable=False)
-    created_at: Mapped[datetime.datetime] = mapped_column(
-        sa.DateTime(timezone=True), server_default=sa.func.now()
-    )
+    violation_content: Mapped[str] = mapped_column(nullable=False)
+    is_banned: Mapped[bool] = mapped_column(nullable=False)
 
 
 ### Signups
@@ -519,12 +697,9 @@ class CreatorPartnerProgramSignup(Base):
         return f"CreatorPartnerSignup(id={self.id}, user_id={self.user_id}, name='{self.name}', email='{self.email}')"
 
 
-class NSFWSignup(Base):
+class NSFWSignup(CommonMixin, Base):
     __tablename__ = "nsfw_signups"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        primary_key=True, server_default=sa.text("gen_random_uuid()")
-    )
     user_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )

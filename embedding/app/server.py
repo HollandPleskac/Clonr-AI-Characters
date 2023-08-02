@@ -26,7 +26,9 @@ class EmbedServicer(embed_pb2_grpc.EmbedServicer):
     async def EncodeQueries(
         self, request: embed_pb2.EncodeQueryRequest, unused_context
     ) -> embed_pb2.EmbeddingResponse:
-        logger.info("Received EncodeQueries request")
+        logger.info(
+            f"EncodeQueries request. Batch size: {len(request.text)}. Chars: {sum(len(x) for x in request.text)}"
+        )
         encodings = self.encoder.encode_query(request.text)
         embeddings = [embed_pb2.Embedding(embedding=x) for x in encodings]
         return embed_pb2.EmbeddingResponse(embeddings=embeddings)
@@ -34,7 +36,9 @@ class EmbedServicer(embed_pb2_grpc.EmbedServicer):
     async def EncodePassages(
         self, request: embed_pb2.EncodePassageRequest, unused_context
     ) -> embed_pb2.EmbeddingResponse:
-        logger.info("Received EncodePassages request")
+        logger.info(
+            f"EncodePassages request. Batch size: {len(request.text)}. Chars: {sum(len(x) for x in request.text)}"
+        )
         encodings = self.encoder.encode_passage(request.text)
         embeddings = [embed_pb2.Embedding(embedding=x) for x in encodings]
         return embed_pb2.EmbeddingResponse(embeddings=embeddings)
@@ -42,15 +46,20 @@ class EmbedServicer(embed_pb2_grpc.EmbedServicer):
     async def GetRankingScores(
         self, request: embed_pb2.RankingScoreRequest, unused_context
     ) -> embed_pb2.RankingScoreResponse:
-        logger.info("Received GetRankingScores request")
+        logger.info(
+            (
+                f"GetRankingScores request. Batch size: {len(request.passages)}. Query: {request.query}. "
+                f"Num Passages: {len(request.passages)}. Passage chars: {sum(len(x) for x in request.passages)}"
+            )
+        )
         scores = self.cross_encoder.similarity_score(
             query=request.query, passages=[p for p in request.passages]
         )
         return embed_pb2.RankingScoreResponse(scores=scores)
 
     async def IsNormalized(self, *args, **kwargs) -> embed_pb2.IsNormalizedResponse:
-        logger.info("Received IsNormalized request")
-        return embed_pb2.IsNormalized(is_normalized=self.encoder.normalized)
+        logger.info(f"IsNormalized request. Value: {self.encoder.normalized}")
+        return embed_pb2.IsNormalizedResponse(is_normalized=self.encoder.normalized)
 
     async def GetEncoderName(self, *args, **kwargs) -> embed_pb2.EncoderNameResponse:
         return embed_pb2.EncoderNameResponse(name=self.encoder.name)
