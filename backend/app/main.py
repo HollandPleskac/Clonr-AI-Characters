@@ -90,7 +90,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(router=api.creator_router)
-app.include_router(api.clones_router)
+app.include_router(router=api.clones_router)
 # app.middleware("http")(moderation_middleware)
 # app.include_router(api.voice_router)
 # app.include_router(api.apikeys_router)

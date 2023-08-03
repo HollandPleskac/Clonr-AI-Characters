@@ -125,7 +125,7 @@ def makima_fixture(client: TestClient, creator_headers: dict[str, str], db: Sess
         greeting_message=greeting_message,
     )
     data = inp.dict()
-    r = client.post("/clones/create", headers=creator_headers, json=data)
+    r = client.post("/clones/", headers=creator_headers, json=data)
     data = r.json()
     clone_id = str(data["id"])
     assert r.status_code == 201, data

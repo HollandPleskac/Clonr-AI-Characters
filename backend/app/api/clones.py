@@ -1,8 +1,9 @@
 from datetime import datetime
+from enum import Enum
 from typing import Annotated, Literal
 
 import sqlalchemy as sa
-from fastapi import Depends, HTTPException, Path, Query, status
+from fastapi import Body, Depends, HTTPException, Path, Query, status
 from fastapi.responses import Response
 from fastapi.routing import APIRouter
 from loguru import logger
@@ -34,8 +35,17 @@ HOT_TIME: float = 60 * 60 * 12
 # we should maybe just make a class to only return like name, short_desc, prof_pic, num_messages, num_convos
 
 
+class CloneSortType(str, Enum):
+    hot: str = "hot"
+    top: str = "top"
+    newest: str = "newest"
+    oldest: str = "oldest"
+
+
 async def get_clone(
-    clone_id: Annotated[str, Path(description="Clone id")],
+    clone_id: Annotated[
+        str, Path(min_length=36, max_length=36, description="Clone ID")
+    ],
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
 ) -> models.Clone:
     if (clone := await db.get(models.Clone, clone_id)) is None:
@@ -46,7 +56,9 @@ async def get_clone(
 
 
 async def get_document(
-    document_id: Annotated[str, Path()],
+    document_id: Annotated[
+        str, Path(min_length=36, max_length=36, description="Document ID")
+    ],
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
 ) -> models.Document:
     if not (doc := await db.get(models.Document, document_id)):
@@ -57,7 +69,9 @@ async def get_document(
 
 
 async def get_monologue(
-    monologue_id: Annotated[str, Path()],
+    monologue_id: Annotated[
+        str, Path(min_length=36, max_length=36, description="Monologue ID")
+    ],
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
 ) -> models.Monologue:
     if not (doc := await db.get(models.Monologue, monologue_id)):
@@ -67,9 +81,29 @@ async def get_monologue(
     return doc
 
 
-@router.post(
-    "/create", response_model=schemas.Clone, status_code=status.HTTP_201_CREATED
-)
+def clone_sort_selectable(query: sa.Select, sort: CloneSortType):
+    match sort:
+        case CloneSortType.newest:
+            return query.order_by(models.Clone.created_at.desc())
+        case CloneSortType.oldest:
+            return query.order_by(models.Clone.created_at.asc())
+        case CloneSortType.hot:
+            # Uses the Reddit algorithm for returning "hot" clones.
+            # https://www.evanmiller.org/deriving-the-reddit-formula.html
+            # The algorithm is something like score = ln(likes - dislikes) + age / (60s * 60 * 5.43).
+            # Rule of thumb is the No. of likes needed to beat a new post doubles for every 5 hours
+            # FixMe (Jonny): should be base-10 log here, but too lazy to figure out how to do it
+            seconds = sa.func.extract("epoch", models.Clone.created_at).cast(sa.Float)
+            time_factor = seconds / HOT_TIME
+            like_factor = sa.func.log(models.Clone.num_messages + 1)
+            score = (like_factor + time_factor).label("score")
+            return query.order_by(score.desc())
+        case CloneSortType.top:
+            return query.order_by(models.Clone.num_messages)
+    raise TypeError(f"Invalid sort type: {sort}")
+
+
+@router.post("/", response_model=schemas.Clone, status_code=status.HTTP_201_CREATED)
 async def create_clone(
     obj: schemas.CloneCreate,
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
@@ -92,47 +126,29 @@ async def create_clone(
     return clone
 
 
-# For running a vector db search of clones. Only clones with a long description are eligible
-@router.get("/similar", response_model=list[schemas.CloneSearchResult])
-async def semantic_search_clones(
-    q: Annotated[str, Query(max_length=128)],
-    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
-    user: Annotated[models.User, Depends(deps.get_current_active_user)],
-    embedding_client: Annotated[EmbeddingClient, Depends(deps.get_embedding_client)],
-    offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
-    limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
-):
-    query = sa.select(models.Clone).where(models.Clone.embedding.is_not(None))
-    if not user.is_superuser:
-        query = query.where(models.Clone.is_active).where(models.Clone.is_public)
-    emb = (await embedding_client.encode_query(q))[0]
-    dist = models.Clone.embedding.cosine_distance(emb).label("distance")
-    query = query.order_by(dist.asc())
-    query = query.offset(offset=offset).limit(limit=limit)
-    clones = await db.scalars(query)
-    return clones.unique().all()
-
-
 # TODO (Jonny): add routes for top clones, trending, and recent
 # TODO (Jonny): add an order by for these queries
-@router.get("/search", response_model=list[schemas.CloneSearchResult])
+@router.get("/", response_model=list[schemas.CloneSearchResult])
 async def query_clones(
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
     user: Annotated[models.User, Depends(deps.get_current_active_user)],
-    offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
-    limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
+    embedding_client: Annotated[EmbeddingClient, Depends(deps.get_embedding_client)],
     tags: Annotated[list[str] | None, Query()] = None,
-    q: Annotated[str | None, Query()] = None,
+    name: Annotated[str | None, Query()] = None,
+    sort: Annotated[CloneSortType, Query()] = CloneSortType.top,
+    similar: Annotated[str | None, Query()] = None,
     created_after: Annotated[datetime | None, Query()] = None,
     created_before: Annotated[datetime | None, Query()] = None,
+    offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
+    limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
 ):
     query = sa.select(models.Clone)
     if not user.is_superuser:
         query = query.where(models.Clone.is_active).where(models.Clone.is_public)
     if tags is not None:
         query = query.where(models.Clone.tags.in_(tags))
-    if q is not None:
-        query = query.where(models.Clone.case_insensitive_name.ilike(f"%{q}%"))
+    if name is not None:
+        query = query.where(models.Clone.case_insensitive_name.ilike(f"%{name}%"))
         # query = query.where(models.Clone.case_insensitive_name.match(q))
         # query = query.order_by(sa.func.similarity(models.Clone.case_insensitive_name, q).desc())
         # query = query.where(sa.func.soundex(models.Clone.name) == sa.func.soundex(query))
@@ -140,70 +156,15 @@ async def query_clones(
         query = query.where(models.Clone.created_at >= created_after)
     if created_before is not None:
         query = query.where(models.Clone.created_at <= created_before)
+    if similar:
+        emb = (await embedding_client.encode_query(similar))[0]
+        dist = models.Clone.embedding.max_inner_product(emb).label("distance")
+        query = query.where(models.Clone.embedding.is_not(None)).order_by(
+            dist.asc()
+        )  # it must have an embedding!
+    else:
+        query = clone_sort_selectable(query=query, sort=sort)
     query = query.offset(offset=offset).limit(limit=limit)
-    clones = await db.scalars(query)
-    return clones.unique().all()
-
-
-@router.get("/hot", response_model=list[schemas.CloneSearchResult])
-async def hot_clones(
-    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
-    user: Annotated[models.User, Depends(deps.get_current_active_user)],
-    offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
-    limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
-):
-    """Uses the Reddit algorithm for returning "hot" clones.
-    https://www.evanmiller.org/deriving-the-reddit-formula.html
-    The algorithm is something like score = ln(likes - dislikes) + age / (60s * 60 * 5.43).
-    the rule of thumb is the number of likes you need to beat out a new post doubles for every
-    5 hours of age. 16 likes to stay relevant by end of day, 256 for 2 days, 4096 for 3 days...
-    """
-    # NOTE (Jonny): Should we use created_at or updated_at? if we use updated at, it will be easier for
-    # creators to cheese the rankings
-    seconds = sa.func.extract("epoch", models.Clone.created_at).cast(sa.Float)
-    time_factor = seconds / HOT_TIME
-    # FixMe (Jonny): should be base-10 log here, but too lazy to figure out how to do it
-    like_factor = sa.func.log(models.Clone.num_messages + 1)
-    score = (like_factor + time_factor).label("score")
-    q = await db.scalars(
-        sa.select(models.Clone)
-        .where(models.Clone.is_active)
-        .where(models.Clone.is_public)
-        .order_by(score.desc())
-        .offset(offset)
-        .limit(limit)
-    )
-    return q.unique().all()
-
-
-# @router.get("/for_you", response_model=list[schemas.Clone])
-# async def for_you_clones(
-#     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
-#     user: Annotated[models.User, Depends(deps.get_current_active_user)],
-#     offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
-#     limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
-# ):
-#     """Returns the user's personal chatbot recommendations. We can use surprise to compute these
-#     once we have enough data. LightFM looks like a good out-of-the-box hybrid recommender system, see here
-#     for more details: https://github.com/pgvector/pgvector-python/blob/master/examples/lightfm_recs.py"""
-
-
-@router.get("/top", response_model=list[schemas.CloneSearchResult])
-async def top_clones(
-    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
-    user: Annotated[models.User, Depends(deps.get_current_active_user)],
-    offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
-    limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
-):
-    """Returns the bots with the highest counts. Very close to exact, barring a disconnect on sqlalchemy events."""
-    query = sa.select(models.Clone)
-    if not user.is_superuser:
-        query = query.where(models.Clone.is_active).where(models.Clone.is_public)
-    query = (
-        query.order_by(models.Clone.num_messages)
-        .offset(offset=offset)
-        .limit(limit=limit)
-    )
     clones = await db.scalars(query)
     return clones.unique().all()
 
@@ -233,8 +194,8 @@ async def get_clone_by_id(
 
 @router.patch("/{clone_id}", response_model=schemas.Clone)
 async def patch_clone(
-    clone: Annotated[models.Clone, Depends(get_clone)],
     obj: schemas.CloneUpdate,
+    clone: Annotated[models.Clone, Depends(get_clone)],
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
     user: Annotated[models.User, Depends(deps.get_current_active_user)],
     embedding_client: Annotated[EmbeddingClient, Depends(deps.get_embedding_client)],

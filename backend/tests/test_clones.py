@@ -15,7 +15,7 @@ def test_clones(
     data = inp.dict()
 
     # Create a basic clone
-    r = client.post("/clones/create", headers=creator_headers, json=data)
+    r = client.post("/clones/", headers=creator_headers, json=data)
     data = r.json()
     id = str(data["id"])
     assert r.status_code == 201, data
@@ -74,7 +74,7 @@ def test_clones(
         ],
     ):
         r = client.post(
-            "/clones/create",
+            "/clones/",
             headers=creator_headers,
             json=dict(
                 name=name, long_description=desc, short_description=desc, is_public=True
@@ -84,7 +84,7 @@ def test_clones(
 
     # test that similarity search works
     r = client.get(
-        "/clones/similar", params=dict(q="rappers", limit=10), headers=creator_headers
+        "/clones/", params=dict(limit=10, similar="rappers"), headers=creator_headers
     )
     assert r.status_code == 200, r.json()
     assert (
@@ -92,7 +92,7 @@ def test_clones(
     ), r.json()  # rapper whould be similar to hip hop artist... I hope.
 
     # test that substring search works
-    r = client.get("/clones/search", params=dict(q="pEnC"), headers=creator_headers)
+    r = client.get("/clones/", params=dict(name="pEnC"), headers=creator_headers)
     assert r.status_code == 200, r.json()
     assert r.json()[0]["name"] == "dangerous pencil", r.json()
 
