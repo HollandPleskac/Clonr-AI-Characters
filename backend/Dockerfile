@@ -25,8 +25,13 @@ COPY ./app /app
 COPY ./pb /pb
 COPY ./clonr /clonr
 
-RUN pip install Pillow
+# Testing. We'll remove all of this in prod and have two dockerfiles
+RUN poetry export -f requirements.txt --output requirements_only_dev.txt --only dev
+RUN --mount=type=cache,target=/root/.cache/pip python3.10 -m pip install -r requirements_only_dev.txt
 
 COPY ./tests /tests
-RUN pytest tests
+COPY ./.env.dev /.env
+
+# To test, run: docker exec -it <container-id-here> pytest -v--disable-warnings ./tests
+
 ENTRYPOINT [ "python", "-m", "app.main"]

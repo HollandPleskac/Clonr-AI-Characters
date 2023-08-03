@@ -1,5 +1,4 @@
-import json
-from pathlib import Path
+import os
 
 import pytest
 from fastapi.testclient import TestClient
@@ -13,7 +12,8 @@ from tests.types import LoginData
 
 @pytest.fixture(name="db", scope="session")
 def db_fixture():
-    DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/postgres"
+    host = os.environ["POSTGRES_HOST"]
+    DATABASE_URL = f"postgresql://postgres:postgres@{host}:5432/postgres"
     engine = create_engine(DATABASE_URL)
     SessionLocal = sessionmaker(engine, class_=Session, expire_on_commit=False)
     with SessionLocal() as session:
