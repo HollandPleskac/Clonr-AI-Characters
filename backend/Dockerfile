@@ -26,5 +26,5 @@ COPY ./pb /pb
 COPY ./clonr /clonr
 
 RUN pip install Pillow
-COPY ./makima.jpeg /makima.jpeg
+
 ENTRYPOINT [ "python", "-m", "app.main"]

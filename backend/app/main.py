@@ -140,23 +140,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-import io  # noqa
-
-from fastapi.responses import Response  # noqa
-from PIL import Image  # noqa
-
-
-@app.get(
-    "/image", responses={200: {"content": {"image/png": {}}}}, response_class=Response
-)
-async def get_image():
-    arr = Image.open("./makima.jpeg")
-    buf = io.BytesIO()
-    arr.save(buf, format="JPEG")
-    b = buf.getvalue()
-    return Response(content=b, media_type="image/jpeg")
-
-
 FastAPIInstrumentor.instrument_app(app)
 
 if __name__ == "__main__":
