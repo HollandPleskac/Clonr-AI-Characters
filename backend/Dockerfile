@@ -27,4 +27,6 @@ COPY ./clonr /clonr
 
 RUN pip install Pillow
 
+COPY ./tests /tests
+RUN pytest tests
 ENTRYPOINT [ "python", "-m", "app.main"]

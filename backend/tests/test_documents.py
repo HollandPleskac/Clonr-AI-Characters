@@ -1,4 +1,3 @@
-import pytest
 import sqlalchemy as sa
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -25,11 +24,9 @@ def test_documents(client: TestClient, makima: tuple[dict[str, str], str], db: S
         url="https://nickelback.the.one.true.god.com",
     ).dict()
     for d in [doc1_create, doc2_create]:
-        r = client.post(
-            f"/clones/{clone_id}/documents/create", json=d, headers=makima_headers
-        )
+        r = client.post(f"/clones/{clone_id}/documents", json=d, headers=makima_headers)
         data = r.json()
-        r.status_code == 201, data
+        assert r.status_code == 201, data
         doc_id = data["id"]  # the last doc_id is nickelback. python quirk.
 
     # test the nodes exist, and
@@ -67,4 +64,4 @@ def test_documents(client: TestClient, makima: tuple[dict[str, str], str], db: S
     r = client.delete(f"/clones/{clone_id}/documents/{doc_id}", headers=makima_headers)
     assert r.status_code == 204, r
     r = client.get(f"/clones/{clone_id}/documents/{doc_id}", headers=makima_headers)
-    assert r.status_code == 400, r.json()
+    assert r.status_code == 404, r.json()

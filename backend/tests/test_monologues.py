@@ -1,14 +1,10 @@
-import pytest
-import sqlalchemy as sa
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app import models, schemas
+from app import schemas
 
 
-def test_monologues(
-    client: TestClient, makima: tuple[dict[str, str], str], db: Session
-):
+def test_monologues(client: TestClient, makima: tuple[dict[str, str], str]):
     makima_headers, clone_id = makima
 
     # Create some monologues
@@ -22,10 +18,10 @@ def test_monologues(
     ).dict()
     for d in [m1_create, m2_create]:
         r = client.post(
-            f"/clones/{clone_id}/monologues/create", json=d, headers=makima_headers
+            f"/clones/{clone_id}/monologues", json=d, headers=makima_headers
         )
         data = r.json()
-        r.status_code == 201, data
+        assert r.status_code == 201, data
         monologue_id = data["id"]
 
     # test get monologue
@@ -44,4 +40,4 @@ def test_monologues(
     r = client.get(
         f"/clones/{clone_id}/monologues/{monologue_id}", headers=makima_headers
     )
-    assert r.status_code == 400, r.json()
+    assert r.status_code == 404, r.json()

@@ -60,7 +60,7 @@ async def get_by_id(
     if creator := await db.get(models.Creator, id):
         return creator
     raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST, detail="Creator ({id}) does not exist."
+        status_code=status.HTTP_404_NOT_FOUND, detail="Creator ({id}) does not exist."
     )
 
 
@@ -77,7 +77,7 @@ async def delete_by_id(
         await db.commit()
         return Response(status_code=status.HTTP_204_NO_CONTENT)
     raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST, detail="Creator ({id}) does not exist."
+        status_code=status.HTTP_404_NOT_FOUND, detail="Creator ({id}) does not exist."
     )
 
 

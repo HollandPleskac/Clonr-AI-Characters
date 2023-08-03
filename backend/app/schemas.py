@@ -1,8 +1,8 @@
 import datetime
-import re
 import uuid
 from typing import Dict, List, Optional
 
+import randomname
 from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate
 from pgvector.sqlalchemy import Vector
 from pydantic import BaseModel, Field, validator
@@ -185,6 +185,29 @@ class TagCreate(BaseModel):
 
 
 class Tag(TagCreate):
+    class Config:
+        orm_mode = True
+
+
+class ConversationCreate(BaseModel):
+    name: str = Field(
+        default=None,
+        description="A name to assign to the conversation to later remember it.",
+    )
+    is_active: bool = Field(
+        default=True, description="Wether to archive the conversation or not."
+    )
+    clone_id: uuid.UUID = Field(description="The clone that a user will chat with")
+
+
+class ConversationUpdate(BaseModel):
+    name: str | None = None
+    is_active: bool | None = None
+
+
+class Conversation(CommonMixin, ConversationCreate):
+    user_id: uuid.UUID = Field(description="The user that will chat with this clone")
+
     class Config:
         orm_mode = True
 

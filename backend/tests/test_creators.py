@@ -1,15 +1,7 @@
-import pytest
-import sqlalchemy as sa
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
-
-from app import models
-from tests.types import LoginData
 
 
-def test_creators(
-    client: TestClient, creator_headers: dict[str, str], creator_data: LoginData
-):
+def test_creators(client: TestClient, creator_headers: dict[str, str]):
     # get user info
     r = client.get("/users/me", headers=creator_headers)
     assert r.status_code == 200, r.json()

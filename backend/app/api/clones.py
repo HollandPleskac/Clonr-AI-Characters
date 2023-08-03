@@ -50,7 +50,7 @@ async def get_clone(
 ) -> models.Clone:
     if (clone := await db.get(models.Clone, clone_id)) is None:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Clone does not exist."
+            status_code=status.HTTP_404_NOT_FOUND, detail="Clone does not exist."
         )
     return clone
 
@@ -63,7 +63,7 @@ async def get_document(
 ) -> models.Document:
     if not (doc := await db.get(models.Document, document_id)):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Document does not exist."
+            status_code=status.HTTP_404_NOT_FOUND, detail="Document does not exist."
         )
     return doc
 
@@ -76,7 +76,7 @@ async def get_monologue(
 ) -> models.Monologue:
     if not (doc := await db.get(models.Monologue, monologue_id)):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Monologue does not exist."
+            status_code=status.HTTP_404_NOT_FOUND, detail="Monologue does not exist."
         )
     return doc
 
@@ -180,7 +180,7 @@ async def get_clone_by_id(
         return clone
     if not clone.is_public:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Clone does not exist."
+            status_code=status.HTTP_404_NOT_FOUND, detail="Clone does not exist."
         )
     response = schemas.Clone.from_orm(clone)
     if not clone.is_long_description_public:
@@ -254,20 +254,6 @@ async def delete(
 
 
 # ------------ Documents ------------ #
-@router.post("/{clone_id}/documents/create", response_model=schemas.Document)
-async def create_document(
-    doc_create: schemas.DocumentCreate,
-    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
-    tokenizer: Annotated[Tokenizer, Depends(deps.get_tokenizer)],
-    splitter: Annotated[DynamicTextSplitter, Depends(deps.get_text_splitter)],
-):
-    doc = Document(index_type=IndexType.list, **doc_create.dict(exclude_unset=True))
-    index = ListIndex(tokenizer=tokenizer, splitter=splitter)
-    nodes = await index.abuild(doc=doc)
-    doc_model = await clonedb.add_document(doc=doc, nodes=nodes)
-    return doc_model
-
-
 @router.patch("/{clone_id}/documents/{document_id}", response_model=schemas.Document)
 async def update_document(
     doc_update: schemas.DocumentUpdate,
@@ -308,6 +294,24 @@ async def get_document_by_id(
     clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
 ):
     return doc
+
+
+@router.post(
+    "/{clone_id}/documents",
+    response_model=schemas.Document,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_document(
+    doc_create: schemas.DocumentCreate,
+    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
+    tokenizer: Annotated[Tokenizer, Depends(deps.get_tokenizer)],
+    splitter: Annotated[DynamicTextSplitter, Depends(deps.get_text_splitter)],
+):
+    doc = Document(index_type=IndexType.list, **doc_create.dict(exclude_unset=True))
+    index = ListIndex(tokenizer=tokenizer, splitter=splitter)
+    nodes = await index.abuild(doc=doc)
+    doc_model = await clonedb.add_document(doc=doc, nodes=nodes)
+    return doc_model
 
 
 @router.get("/{clone_id}/documents", response_model=list[schemas.Document])
@@ -353,22 +357,6 @@ async def get_documents(
 
 
 # ------------ Monologues ------------ #
-@router.post("/{clone_id}/monologues/create", response_model=schemas.Monologue)
-async def create_monologue(
-    monologue_create: schemas.MonologueCreate,
-    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
-):
-    monologue = Monologue(**monologue_create.dict(exclude_none=True))
-    m = await clonedb.add_monologues([monologue])
-    if not m:
-        raise HTTPException(
-            status_code=status.HTTP_304_NOT_MODIFIED, detail="Monologue already exists."
-        )
-    return m[0]
-
-    return m[0] if m else {}
-
-
 @router.patch("/{clone_id}/monologues/{monologue_id}", response_model=schemas.Monologue)
 async def update_monologue(
     monologue_update: schemas.DocumentUpdate,
@@ -407,6 +395,24 @@ async def get_monologue_by_id(
     clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
 ):
     return monologue
+
+
+@router.post(
+    "/{clone_id}/monologues",
+    response_model=schemas.Monologue,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_monologue(
+    monologue_create: schemas.MonologueCreate,
+    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
+):
+    monologue = Monologue(**monologue_create.dict(exclude_none=True))
+    m = await clonedb.add_monologues([monologue])
+    if not m:
+        raise HTTPException(
+            status_code=status.HTTP_304_NOT_MODIFIED, detail="Monologue already exists."
+        )
+    return m[0]
 
 
 @router.get("/{clone_id}/monologues", response_model=list[schemas.Monologue])

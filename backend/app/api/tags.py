@@ -43,7 +43,7 @@ async def check_tag(
     if tag := await db.get(models.Tag, name):
         return tag
     raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST, detail=f"Tag {name} does not exist"
+        status_code=status.HTTP_404_NOT_FOUND, detail=f"Tag {name} does not exist"
     )
 
 

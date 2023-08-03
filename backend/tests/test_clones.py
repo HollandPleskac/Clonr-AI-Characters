@@ -7,7 +7,10 @@ def test_clones(
     client: TestClient, creator_headers: dict[str, str], user_headers: dict[str, str]
 ):
     name = "Makima"
-    short_description = "Makima is the leader of the Public Safety Devil Hunter organization, and also the Control Devil."
+    short_description = (
+        "Makima is the leader of the Public Safety Devil Hunter organization"
+        ", and also the Control Devil."
+    )
     greeting_message = "Hmm... you seem interesting"
     inp = schemas.CloneCreate(
         name=name, short_description=short_description, is_public=False
@@ -37,7 +40,7 @@ def test_clones(
 
     # assert the clone is not visible to others
     r = client.get(f"/clones/{id}", headers=user_headers)
-    assert r.status_code == 400, r.json()
+    assert r.status_code == 404, r.json()
 
     # change clone to be publicly visible, but hide greeting message
     r = client.patch(
@@ -69,7 +72,7 @@ def test_clones(
         ["badass penguin", "bar", "dangerous pencil"],
         [
             "a penguin with a mean streak",
-            "This creator is a grammy award winning hip hop artist with years of freestyle experience spitting on trap beats.",
+            "This creator is a grammy award winning hip hop artist with years of experience",
             "a radioactive pencil eraser",
         ],
     ):

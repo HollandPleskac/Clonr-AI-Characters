@@ -250,9 +250,11 @@ _ = sa.Index("ix_clones_case_insensitive_name", Clone.case_insensitive_name)
 class Conversation(CommonMixin, Base):
     __tablename__ = "conversations"
 
-    name: Mapped[str] = mapped_column(
-        default=randomname.get_name
-    )  # (Jonny) is this necessary?
+    # (Jonny) is the name field necessary?
+    name: Mapped[str] = mapped_column(default=randomname.get_name)
+    is_active: Mapped[bool] = mapped_column(default=True)
+    # Multi-user chat is hard to configure, maybe we have API-key validation
+    # only for those, and just charge the api-key per minute
     user_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
