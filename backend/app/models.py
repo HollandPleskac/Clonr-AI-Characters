@@ -337,7 +337,9 @@ class Document(CommonMixin, Base):
         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )
     clone: Mapped["Clone"] = relationship("Clone", back_populates="documents")
-    nodes: Mapped[list["Node"]] = relationship("Node", back_populates="document")
+    nodes: Mapped[list["Node"]] = relationship(
+        "Node", back_populates="document", cascade="all, delete"
+    )
 
     def __eq__(self, other):
         return self.id == other.id
@@ -381,7 +383,7 @@ class Node(CommonMixin, Base):
     )
     document: Mapped["Document"] = relationship("Document", back_populates="nodes")
     clone_id: Mapped[uuid.UUID] = mapped_column(
-        sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
+        sa.ForeignKey("clones.id"), nullable=False
     )
     clone: Mapped["Clone"] = relationship("Clone", back_populates="nodes")
 

@@ -112,6 +112,27 @@ def creator_headers(
     assert not r.cookies
 
 
+@pytest.fixture(name="makima", scope="session")
+def makima_fixture(client: TestClient, creator_headers: dict[str, str], db: Session):
+    # Create a basic clone
+    name = "Makima"
+    short_description = "Makima is the leader of the Public Safety Devil Hunter organization, and also the Control Devil."
+    greeting_message = "Hmm... you seem interesting"
+    inp = schemas.CloneCreate(
+        name=name,
+        short_description=short_description,
+        is_public=True,
+        greeting_message=greeting_message,
+    )
+    data = inp.dict()
+    r = client.post("/clones/create", headers=creator_headers, json=data)
+    data = r.json()
+    clone_id = str(data["id"])
+    assert r.status_code == 201, data
+
+    yield creator_headers, clone_id
+
+
 # @pytest.fixture
 # def makima_create(
 #     client: TestClient, creator_headers: dict[str, str]

@@ -3,6 +3,7 @@ from typing import Annotated, Literal
 
 import sqlalchemy as sa
 from fastapi import Depends, HTTPException, Path, Query, status
+from fastapi.responses import Response
 from fastapi.routing import APIRouter
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,14 +11,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import deps, models, schemas
 from app.clone.db import CloneDB
 from app.clone.shared import DynamicTextSplitter
-
-# from app.clone.dependencies import (
-#     DynamicTextSplitter,
-#     get_clonedb,
-#     get_llm,
-#     get_text_splitter,
-#     get_tokenizer,
-# )
 from app.embedding import EmbeddingClient
 from clonr.data_structures import Document, Monologue
 
@@ -271,17 +264,19 @@ async def patch_clone(
     )
 
 
-@router.delete("/{clone_id}", response_model=schemas.Clone)
+# (Jonny): We can't delete a clone, because that will cause a cascade that
+# deletes the conversation and message history, which is also necessary
+# for tracking stats and payment! Be careful, don't do this unless you're sure.
+@router.delete(
+    "/{clone_id}", response_class=Response, dependencies=[Depends(deps.get_superuser)]
+)
 async def delete(
     clone: Annotated[models.Clone, Depends(get_clone)],
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
-    user: Annotated[models.User, Depends(deps.get_current_active_user)],
 ):
-    if not user.is_superuser and clone.creator_id != user.id:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     await db.delete(clone)
     await db.commit()
-    return clone
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # # ------------ Long Description ------------ #
@@ -305,8 +300,7 @@ async def create_document(
     tokenizer: Annotated[Tokenizer, Depends(deps.get_tokenizer)],
     splitter: Annotated[DynamicTextSplitter, Depends(deps.get_text_splitter)],
 ):
-    doc_create.index_type == IndexType.list
-    doc = Document(**doc_create.dict(exclude_unset=True))
+    doc = Document(index_type=IndexType.list, **doc_create.dict(exclude_unset=True))
     index = ListIndex(tokenizer=tokenizer, splitter=splitter)
     nodes = await index.abuild(doc=doc)
     doc_model = await clonedb.add_document(doc=doc, nodes=nodes)
@@ -336,12 +330,23 @@ async def update_document(
     return doc
 
 
-@router.delete("/{clone_id}/documents/{document_id}", response_model=schemas.Document)
+@router.delete(
+    "/{clone_id}/documents/{document_id}",
+)
 async def delete_document(
     doc: Annotated[models.Document, Depends(get_document)],
     clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
 ):
-    return await clonedb.delete_document(doc=doc)
+    await clonedb.delete_document(doc=doc)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/{clone_id}/documents/{document_id}", response_model=schemas.Document)
+async def get_document_by_id(
+    doc: Annotated[models.Document, Depends(get_document)],
+    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
+):
+    return doc
 
 
 @router.get("/{clone_id}/documents", response_model=list[schemas.Document])
@@ -370,7 +375,7 @@ async def get_documents(
         q = q.where(
             sa.and_(
                 models.Document.name.is_not(None),
-                sa.func.lower(models.Document.name).ilike(name.lower()),
+                sa.func.lower(models.Document.name).ilike(f"%{name.lower()}%"),
             )
         )
     if created_before is not None:
@@ -394,7 +399,13 @@ async def create_monologue(
 ):
     monologue = Monologue(**monologue_create.dict(exclude_none=True))
     m = await clonedb.add_monologues([monologue])
-    return m
+    if not m:
+        raise HTTPException(
+            status_code=status.HTTP_304_NOT_MODIFIED, detail="Monologue already exists."
+        )
+    return m[0]
+
+    return m[0] if m else {}
 
 
 @router.patch("/{clone_id}/monologues/{monologue_id}", response_model=schemas.Monologue)
@@ -420,14 +431,21 @@ async def update_monologue(
     return monologue
 
 
-@router.delete(
-    "/{clone_id}/monologues/{monologue_id}", response_model=schemas.Monologue
-)
+@router.delete("/{clone_id}/monologues/{monologue_id}")
 async def delete_monologue(
     monologue: Annotated[models.Monologue, Depends(get_monologue)],
     clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
 ):
-    return await clonedb.delete_monologue(monologue=monologue)
+    await clonedb.delete_monologue(monologue=monologue)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/{clone_id}/monologues/{monologue_id}", response_model=schemas.Monologue)
+async def get_monologue_by_id(
+    monologue: Annotated[models.Document, Depends(get_monologue)],
+    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
+):
+    return monologue
 
 
 @router.get("/{clone_id}/monologues", response_model=list[schemas.Monologue])

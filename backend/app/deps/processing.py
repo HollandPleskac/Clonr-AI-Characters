@@ -15,6 +15,9 @@ from app.clone.shared import (
     DynamicTextSplitter,
 )
 from app.embedding import EmbeddingClient
+from app.settings import settings
+from clonr.llms import LLM, MockLLM, OpenAI
+from clonr.llms.callbacks import AddToPostgresCallback, LLMCallback, LoggingCallback
 from clonr.tokenizer import Tokenizer
 
 from .db import get_async_redis, get_async_session
@@ -45,11 +48,14 @@ async def get_clonedb(
 ) -> CloneDB:
     """This method is authenticated, and ensures that the user has access to edit
     the clone"""
-    if not user.is_superuser and not (
-        await db.execute(
-            sa.select(models.Clone.creator_id)
-            .where(models.Clone.creator_id == user.id)
-            .where(models.Clone.id == clone_id)
+    if (
+        not user.is_superuser
+        and not (
+            await db.execute(
+                sa.select(models.Clone.creator_id)
+                .where(models.Clone.creator_id == user.id)
+                .where(models.Clone.id == clone_id)
+            )
         ).all()
     ):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
@@ -65,41 +71,27 @@ async def get_clonedb(
     yield clonedb
 
 
-# async def get_llm_as_creator(
-#     db: Annotated[AsyncSession, Depends(get_async_session)],
-#     clone_id: Annotated[str, Path()],
-#     user: Annotated[str, Depends(get_current_active_user)],
-#     tokenizer: Annotated[Tokenizer, Depends(get_tokenizer)],
-# ) -> LLM:
-#     callbacks: list[LLMCallback] = [
-#         LoggingCallback(),
-#         AddToPostgresCallback(
-#             db=db, clone_id=clone_id, user_id=user_id, conversation_id=conversation_id
-#         ),
-#     ]
-#     if settings.LLM == "mock":
-#         llm = MockLLM(callbacks=callbacks)
-#     else:
-#         llm = OpenAI(
-#             model=settings.LLM,
-#             api_key=settings.OPENAI_API_KEY,
-#             tokenizer=tokenizer,
-#             callbacks=callbacks,
-#         )
-#     yield llm
-
-
-# async def get_clone_model_as_creator(
-#     db: Annotated[AsyncSession, Depends(get_async_session)],
-#     clone_id: Annotated[str, Path()],
-#     user: Annotated[str, Depends(get_current_active_user)],
-# ) -> models.Clone:
-#     if clone := await db.get(models.Clone, clone_id):
-#         if user.id == clone.creator_id or user.is_superuser:
-#             yield clone
-#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-#     else:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail=f"Clone id ({clone_id}) not found.",
-#         )
+# no auth done here, it's assumed to have been done in the clonedb
+async def get_llm(
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+    clone_id: Annotated[str, Path()],
+    user: Annotated[str, Depends(get_current_active_user)],
+    tokenizer: Annotated[Tokenizer, Depends(get_tokenizer)],
+    conversation_id: Annotated[str | None, Path()] = None,
+) -> LLM:
+    callbacks: list[LLMCallback] = [
+        LoggingCallback(),
+        AddToPostgresCallback(
+            db=db, clone_id=clone_id, user_id=user.id, conversation_id=conversation_id
+        ),
+    ]
+    if settings.LLM == "mock":
+        llm = MockLLM(callbacks=callbacks)
+    else:
+        llm = OpenAI(
+            model=settings.LLM,
+            api_key=settings.OPENAI_API_KEY,
+            tokenizer=tokenizer,
+            callbacks=callbacks,
+        )
+    yield llm

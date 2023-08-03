@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
+from fastapi.responses import Response
 from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -63,7 +64,10 @@ async def get_by_id(
     )
 
 
-@router.delete("/{id}", dependencies=[Depends(deps.get_superuser)])
+@router.delete(
+    "/{id}",
+    dependencies=[Depends(deps.get_superuser)],
+)
 async def delete_by_id(
     id: str,
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
@@ -71,6 +75,7 @@ async def delete_by_id(
     if creator := await db.get(models.Creator, id):
         db.delete(creator)
         await db.commit()
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
     raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST, detail="Creator ({id}) does not exist."
     )

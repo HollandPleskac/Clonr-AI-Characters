@@ -174,18 +174,18 @@ class CloneDB:
             self.db.add(dlg)
             await self.db.commit()
 
-    async def add_monologues(self, monologues: list[Monologue]):
+    async def add_monologues(
+        self, monologues: list[Monologue]
+    ) -> list[models.Monologue]:
         monologue_models: list[models.Monologue] = []
-        monologues = [
-            m
-            for m in monologues
-            if (
-                await self.db.scalar(
-                    sa.select(models.Monologue).where(models.Monologue.hash == m.hash)
-                )
-            )
-            is not None
-        ]
+        hashes = [m.hash for m in monologues]
+        r = await self.db.execute(
+            sa.select(models.Monologue.hash).where(models.Monologue.hash.in_(hashes))
+        )
+        redundant_hashes = set(r.all())
+        monologues = [m for m in monologues if m.hash not in redundant_hashes]
+        if not monologues:
+            return []
         embeddings = await self.embedding_client.encode_passage(
             [m.content for m in monologues]
         )
@@ -203,6 +203,7 @@ class CloneDB:
             monologue_models.append(m1)
         self.db.add_all(monologue_models)
         await self.db.commit()
+        return monologue_models
 
     async def add_memories(self, memories: list[Memory]):
         # batch embed
@@ -349,15 +350,17 @@ class CloneDB:
         params: retrieval.GenAgentsSearchParams,
         update_access_date: bool,
     ) -> list[QueryMemoryResult]:
-        if self.conversation_id is None:
-            raise ValueError("Retrieving memories requires conversation_id.")
-
         # We filter to retrieve either private memories for the conversation, or public memories
         # shared across all conversations
         is_public = sa.and_(
             models.Memory.clone_id == self.clone_id, models.Memory.is_shared
         )
         is_private = models.Memory.conversation_id == self.conversation_id
+
+        if self.conversation_id is None:
+            # if no conversation_id is provided, only show public memories
+            filters = [is_public]
+
         filters = [sa.or_(is_public, is_private)]
 
         memory_results = await retrieval.gen_agents_search(
@@ -505,14 +508,12 @@ class CloneDB:
             value=value
         )
 
-    async def delete_document(self, doc: models.Document) -> models.Document:
+    async def delete_document(self, doc: models.Document) -> None:
         await self.db.delete(doc)
         await self.db.commit()
-        await self.db.refresh(doc)
-        return doc
+        return None
 
-    async def delete_monologue(self, monologue: models.Monologue) -> models.Monologue:
+    async def delete_monologue(self, monologue: models.Monologue) -> None:
         await self.db.delete(monologue)
         await self.db.commit()
-        await self.db.refresh(monologue)
-        return monologue
+        return None

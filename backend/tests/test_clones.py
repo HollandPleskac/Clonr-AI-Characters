@@ -1,4 +1,3 @@
-import lorem
 from fastapi.testclient import TestClient
 
 from app import schemas
@@ -99,29 +98,4 @@ def test_clones(
 
     # delete the clone
     r = client.delete(f"/clones/{id}", headers=creator_headers)
-    data = r.json()
-    assert r.status_code == 200, data
-
-
-# def test_clone_document_stuff(
-#     client: TestClient, creator_headers: dict[str, str], user_headers: dict[str, str]
-# ):
-#     name = "Makima"
-#     short_description = "Makima is the leader of the Public Safety Devil Hunter organization, and also the Control Devil."
-#     greeting_message = "Hmm... you seem interesting"
-#     inp = schemas.CloneCreate(
-#         name=name,
-#         short_description=short_description,
-#         is_public=False,
-#         greeting_message=greeting_message,
-#     )
-#     data = inp.dict()
-
-#     # Create a basic clone
-#     r = client.post("/clones/create", headers=creator_headers, json=data)
-#     data = r.json()
-#     clone_id = str(data["id"])
-#     assert r.status_code == 201, data
-
-#     # create some documents
-#     schemas.DocumentCreate(content)
+    assert r.status_code == 403, "Only superusers can delete clones!"
