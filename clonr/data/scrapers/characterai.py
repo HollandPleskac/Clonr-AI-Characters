@@ -1,11 +1,18 @@
 import requests
 import json
 import os
+import io
 import guidance
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
-from clonr.data.parsers import FandomParser
+import requests
+from urllib.parse import urljoin, urlparse
+from clonr.data.parsers import FullURLParser, FandomParser
 from clonr.data.parsers import WikiQuotesParser
+from clonr.data.parsers import WikipediaParser
+from .utils import find_links_with_same_base_url
+#from PIL import Image
+#from google.cloud import storage
 
 def extract_character_info_via_api(char_id, token):
     url = "https://beta.character.ai/chat/character/info/"
@@ -127,11 +134,27 @@ def generate_example_quotes(char_name, char_title, char_greeting, char_category)
     print(result)
     return result
 
+# def download_webp_image(image_url: str) -> Image.Image:
+#     response = requests.get(image_url)
+#     response.raise_for_status() 
+#     return Image.open(io.BytesIO(response.content))
+
+# def upload_to_gcs(file_data: bytes, filename: str, content_type: str):
+#     bucket_name = "TODO"
+#     client = storage.Client()
+#     bucket = client.get_bucket(bucket_name)
+#     blob = bucket.blob(filename)
+#     #content_type='image/webp'
+#     blob.upload_from_string(file_data, content_type=content_type)
+#     return
+
 def generate_character_profile(char_data):
     char_title = char_data['title']
     char_name = char_data['participant__name']
     char_greeting = char_data['greeting']
     char_category = char_data['character_category']
+    avatar_file_name = char_data['avatar_file_name']
+
     print("This is char_name: ", char_name)
     if 'from' in char_title.lower():
         char_wiki = char_title.lower().split("from ")[1]
@@ -158,8 +181,113 @@ def generate_character_profile(char_data):
     if wikiquotes_content is None:
         print("Generating synthetic quotes..")
         #generate_example_quotes()
+    
+    img_prefix = 'https://characterai.io/i/80/static/avatars/'
+    img = None
+    
+    # try:
+    #     img = download_webp_image(img_prefix + avatar_file_name)
+    # except Exception as e:
+    #     print("Cannot download image: ", e)
 
     return {
         fandom_content: fandom_content,
-        wikiquotes_content: wikiquotes_content
+        wikiquotes_content: wikiquotes_content,
+        img: img,
     }
+
+## NEW FLOW - FANDOM 
+
+def find_links_with_same_base_url(base_url):
+    try:
+        response = requests.get(base_url)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print("Error fetching the webpage:", e)
+        return []
+
+    soup = BeautifulSoup(response.content, 'html.parser')
+    p = urlparse(base_url)
+    page_domain = p.scheme + "://" + p.netloc + p.path
+
+    links = []
+    for link in soup.find_all('a', href=True):
+        link_url = link['href']
+        full_url = urljoin(base_url, link_url)
+
+        # Check if the full_url contains the original webpage domain
+        if full_url.startswith(page_domain):
+            p = urlparse(full_url)
+            if not p.params and not p.query and '#' not in full_url:
+                links.append(full_url)
+
+    return sorted(set(links))
+
+def find_char_url(char_name, char_wiki):
+    modified_char_name = char_name.replace(" ", "_")
+    try:
+        base_url = f"https://{char_wiki}.fandom.com/wiki/{modified_char_name}"
+        response = requests.get(base_url)
+        response.raise_for_status()
+        if response.status_code == 200:
+            return base_url
+    except requests.exceptions.RequestException as e:
+        print("Error fetching the webpage:", e)
+        return None
+    return None
+
+def extract_quotes_from_url(parser, url):
+    fandom_result = parser.extract(url)
+    if fandom_result:
+        return fandom_result.content
+    else:
+        return None
+
+def get_all_example_dialogues(char_name, char_wiki, parser):
+    char_url = find_char_url(char_name, char_wiki)
+    results = []
+    if char_url:
+        found_links = find_links_with_same_base_url(char_url)
+        print("Links on the webpage that contain the original webpage URL:")
+        print(found_links)
+        for found_link in found_links:
+            print("Processing link: ", found_link)
+            result = extract_quotes_from_url(parser, found_link)
+            if result:
+                results.append(result)
+    
+    results = "\n\n".join(results)
+
+    if len(results) < 100:
+        print("No results found for this character.")
+        return None
+
+    file_path = f'clonr/data/examples/{char_name}_{char_wiki}.txt'
+
+    if not os.path.exists(file_path):
+        with open(file_path, 'x') as f:
+            f.write(results)
+    else:
+        print(f"File '{file_path}' already exists. Won't overwrite.")
+    return results
+
+parser = FullURLParser()
+
+results = parse_results()
+
+for result in results:
+    char_name = result['participant__name']
+    char_title = result['title']
+    char_wiki = ''
+    if 'from' in char_title.lower():
+        char_wiki = char_title.lower().split("from ")[1]
+        char_wiki = char_wiki.replace(" ", "-").strip('.').strip('!')
+    if 'of' in char_title.lower():
+        char_wiki = char_title.lower().split("of")[1].strip("of ")
+        char_wiki = char_wiki.replace(" ", "-").strip('.').strip('!')
+    
+    if char_wiki == '':
+        continue 
+
+    print(f"Processing char_name = {char_name}, char_wiki = {char_wiki}")
+    total_results = get_all_example_dialogues(char_name, char_wiki, parser)

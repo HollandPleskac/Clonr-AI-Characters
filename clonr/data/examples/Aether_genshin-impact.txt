@@ -1,0 +1,316 @@
+TravelerOutlanderCardsIn-Game (Aether)In-Game (Lumine)QualityNoneBioFamilyVoice ActorsReal NameAether (Male)Lumine (Female)Aether:Lumine:(Male)(Female)Affil­i­a­tion—September 28, 20202 years, 10 months agoSiblingEnglishAether:Lumine:ChineseAether:Lumine:JapaneseAether:Lumine:KoreanAether:Lumine:Categories
+- 
+TheTraveleris the playable protagonist of. In the opening cutscene, twin siblings from another world travel through the universe, until anblocks their path. The player gets to choose eitherAether(male) orLumine(female) as the traveler andgets captured. Their power to travel is sealed, leaving them stranded on. They saveby fishing her out of the water and she accompanies them as their new travel companion. Together they set out on a journey to findand reunite with the Traveler's lost sibling.
+Although players can choose the name they want to be referred by, therefers to the Traveler by their real name, regardless of their custom name.
+### Ascensions and Stats
+Toggle Ascension Materials
+1. After using theduring thein: Act I -, the Traveler's Base ATK is permanently increased by3.
+1. Does not include weapon ATK value.
+1. Characters gain special stats starting with 2✦.
+- After using theduring thein: Act I -, the Traveler's Base ATK is permanently increased by3.
+- Does not include weapon ATK value.
+### Elemental Alignment
+At the beginning of the game and induring, the Traveler is "unaligned," a special elemental relation exclusive to them. When unaligned, the color of the Traveler's "vision" and background when the Traveler is selected in the Character Menu is gray. Although the Traveler's Profile lists theirproperly as Viator/Viatrix, attempting to open the Constellations tab will show a blank screen with "Constellation Unavailable" in the bottom-right corner. When unaligned, the Traveler has only one talent,, their Normal/Charged Attack.
+When unaligned, screens that show character cards with their elements show a gray "no" symbol (🚫︎) in the place of the element symbol.
+Shortly afterward they will unlock their Anemo talents and Constellations by resonating with the firstin. The Traveler can resonate with any other Statue of The Seven they find and change their element to match the statue's element.Seefor each region's element.
+* Passive Talent 1,: "The last hit of acombo unleashes a wind blade, dealing 60% of ATK asAnemo DMGto all opponents in its path."The wind blade created by Slitting Wind is considered Normal Attack damage, and thus can trigger weapon passives such as those belonging toand.
+Normal Attack (Aether)
+Normal Attack (Lumine)
+Charged Attack (Aether)
+Charged Attack (Lumine)
+Plunging Attack (Aether)
+Plunging Attack (Lumine)
+* When this skill hits at least one, it generates2if it was pressed and3.33if it was held.Only the final hit of this skill generates Elemental Particles.
+* Only the final hit of this skill generates Elemental Particles.
+* The DMG multiplier of the absorbed element is25%of the Anemo DMG multiplier.
+* When the skill button is held,Initial Cutting DMGticks 2 times (at 0.35s and 0.5s), then it switches toMax Cutting DMG, which ticks 4 more times (at 0.85s, 1s, 1.35s and 1.5s).
+* When the skill button is pressed, it will immediately triggerInitial Storm DMG.
+* can occur from both elements on the target as well as elements afflicting the Traveler.
+- Only the final hit of this skill generates Elemental Particles.
+- The DMG multiplier of the absorbed element is25%of the Anemo DMG multiplier.
+- When the skill button is held,Initial Cutting DMGticks 2 times (at 0.35s and 0.5s), then it switches toMax Cutting DMG, which ticks 4 more times (at 0.85s, 1s, 1.35s and 1.5s).
+- When the skill button is pressed, it will immediately triggerInitial Storm DMG.
+- can occur from both elements on the target as well as elements afflicting the Traveler.
+- Passive Talent 2,: "kills regenerate 2% HP for 5s. This effect can only occur once every 5s."
+# Constellation Effects
+* Constellation Level 1,: "pulls in opponents and objects within a 5m radius."
+* Constellation Level 4,: "Reduces DMG taken while castingby 10%."
+- Constellation Level 1,: "pulls in opponents and objects within a 5m radius."
+- Constellation Level 4,: "Reduces DMG taken while castingby 10%."
+* Tornado DMG and Additional Elemental DMG can strike up to9times: once every 0.5 seconds from 2 to 6 seconds after activating Gust Surge.
+* Unlike other Talents with Elemental Absorption, Anemo Traveler's absorption priority is>>>.
+* The tornado will continuously apply astate to enemies near it whoseis less than or equal to100, preventing them from performing any actions and allowing them to be lifted into the air by the Vacuum Field.However, the Struggle state will not be applied to enemies more than 20 levels higher than Traveler.
+- Tornado DMG and Additional Elemental DMG can strike up to9times: once every 0.5 seconds from 2 to 6 seconds after activating Gust Surge.
+- Unlike other Talents with Elemental Absorption, Anemo Traveler's absorption priority is>>>.
+- However, the Struggle state will not be applied to enemies more than 20 levels higher than Traveler.
+# Constellation Effects
+* Constellation Level 3,: Increases this talent's level by 3 and raises its maximum level to 15.
+- Constellation Level 3,: Increases this talent's level by 3 and raises its maximum level to 15.
+* Passive Talent 2,: "The final hit of acombo triggers a collapse, dealing 60% of ATK asGeo DMG."The collapse created by Frenzied Rockslide is considered Normal Attack damage, and thus can trigger weapon passives such as those belonging toand.
+Normal Attack (Aether)
+Normal Attack (Lumine)
+Charged Attack (Aether)
+Charged Attack (Lumine)
+Plunging Attack (Aether)
+Plunging Attack (Lumine)
+* When this skill hits at least one, it generates3.33.
+* In, the other players are able to see the yellow targeting reticule when the Traveler is in the aiming mode.
+- When this skill hits at least one, it generates3.33.
+- In, the other players are able to see the yellow targeting reticule when the Traveler is in the aiming mode.
+- Passive Talent 1,: "Reduces's CD by 2s."
+# Constellation Effects
+* Constellation Level 2,: "When the meteorite created byis destroyed, it will also explode, dealing additionalAoE Geo DMGequal to the amount of damage dealt by Starfell Sword."
+- Constellation Level 2,: "When the meteorite created byis destroyed, it will also explode, dealing additionalAoE Geo DMGequal to the amount of damage dealt by Starfell Sword."
+* There are 4 instances of Shockwave DMG.
+- There are 4 instances of Shockwave DMG.
+- Thecreated do not contribute to the 3 construct limit.
+# Constellation Effects
+* Constellation Level 1,: "Party members within the radius ofhave their CRIT Rate increased by 10% and have increased."
+* Constellation Level 3,: Increases this talent's level by 3 and raises its maximum level to 15.
+* Constellation Level 4,: "The shockwave triggered byregenerates 5 Energy for every opponent hit. A maximum of 25 Energy can be regenerated in this manner at any one time."
+- Constellation Level 1,: "Party members within the radius ofhave their CRIT Rate increased by 10% and have increased."
+- Constellation Level 3,: Increases this talent's level by 3 and raises its maximum level to 15.
+- Constellation Level 4,: "The shockwave triggered byregenerates 5 Energy for every opponent hit. A maximum of 25 Energy can be regenerated in this manner at any one time."
+# Elemental Skill & Burst
+# Elemental Skill & Burst
+* The meteorite explosion follows the defaultof2.5seconds/3hits.This ICD is shared with the Skill DMG of.
+Normal Attack (Aether)
+Charged Attack (Aether)
+Plunging Attack (Aether)
+Normal Attack (Lumine)
+Charged Attack (Lumine)
+Plunging Attack (Lumine)
+* Restores Elemental Energy
+- Restores Elemental Energy
+* Passive Talent 1,: "When another nearby character in the party obtains an Abundance Amulet created by,Lightning Blade'sCD is decreased by 1.5s."
+- Passive Talent 1,: "When another nearby character in the party obtains an Abundance Amulet created by,Lightning Blade'sCD is decreased by 1.5s."
+- Passive Talent 2,: "Increases theeffect granted by's Abundance Amulet by 10% of the Traveler's Energy Recharge."
+# Constellation Effects
+* Constellation Level 1,: "The number ofthat can be generated usingis increased to 3."
+* Constellation Level 4,: "When a character obtainsgenerated by, if this character's Energy is less than 35%, the Energy restored by the Abundance Amulets is increased by 100%."
+- Constellation Level 1,: "The number ofthat can be generated usingis increased to 3."
+- Constellation Level 4,: "When a character obtainsgenerated by, if this character's Energy is less than 35%, the Energy restored by the Abundance Amulets is increased by 100%."
+- This talent can hit a theoretical maximum of 24 times. In practice, hitting more than 14 times is a feat.
+# Constellation Effects
+* Constellation Level 2,: "When Falling Thunder created byhits an opponent, it will decrease theirElectro RESby 15% for 8s."
+* Constellation Level 3,: Increases this talent's level by 3 and raises its maximum level to 15.
+- Constellation Level 2,: "When Falling Thunder created byhits an opponent, it will decrease theirElectro RESby 15% for 8s."
+- Constellation Level 3,: Increases this talent's level by 3 and raises its maximum level to 15.
+Normal Attack (Aether)
+Charged Attack (Aether)
+Plunging Attack (Aether)
+- Passive Talent 4,: "Every point ofthe Traveler possesses increases the DMG dealt byby 0.15% and the DMG dealt byby 0.1%."
+# Constellation Effects
+* Constellation Level 1,: "Afterhits an opponent, it will regenerate 3.5 Energy for the Traveler."
+- Constellation Level 1,: "Afterhits an opponent, it will regenerate 3.5 Energy for the Traveler."
+* Hydro: the Lamp's AoE and the AoE of its attacks are increased.
+* Electro: the Lamp's ATK SPD is increased.
+- Hydro: the Lamp's AoE and the AoE of its attacks are increased.
+- Electro: the Lamp's ATK SPD is increased.
+* The Lea Lotus Lamp in its original state or after Hydro transformation attacks every1.5seconds.
+* The Lea Lotus Lamp after Electro transformation attacks every0.9seconds.
+- The Lea Lotus Lamp in its original state or after Hydro transformation attacks every1.5seconds.
+- The Lea Lotus Lamp after Electro transformation attacks every0.9seconds.
+- The Lea Lotus Lamp carries0.4ofwhile in its normal state. Applyingto it will triggerand produce a Dendro Core.
+# Constellation Effects
+* Constellation Level 2,: "'s duration is increased by 3s."
+* Constellation Level 4,: "After the Lea Lotus Lamp triggers a Lotuslight Transfiguration, it will obtain 5 stacks of the Overflowing Lotuslight effect from the Passive Talent "." You must have unlocked this Passive Talent first."
+- Constellation Level 2,: "'s duration is increased by 3s."
+- Constellation Level 4,: "After the Lea Lotus Lamp triggers a Lotuslight Transfiguration, it will obtain 5 stacks of the Overflowing Lotuslight effect from the Passive Talent "." You must have unlocked this Passive Talent first."
+Hydro Transformation
+Electro Transformation
+Normal Attack (Aether)
+Charged Attack (Aether)
+Plunging Attack (Aether)
+Normal Attack (Lumine)
+Charged Attack (Lumine)
+Plunging Attack (Lumine)
+TheTraveleris obtained at the start of the game and is not featured in any.
+1. ↑Value indicated is the damage of each hit.
+1. Korean:Aether calls Lumine형형熒Hyeongin the, based on the Chinese name. By extension, Aether's name would be공공空Gong. However, in all later quests (e.g.,), their names have been localized as아이테르Aitereuand루미네Rumine.
+* Addedelemental alignment.
+* Updates to character voice-overs:Updated audio for all languages:Updated audio for Aether and Lumine:New Sumeru-based story voice-overs:"About Canned Knowledge", "About the Eremites", "About the Wall of Samiel", "About Beliefs", "About Akasha Terminals", "About Aranara Names", "About Aranara Cuisine", "About Dori's Genie", "About Bimarstan", "About the Scholars", "About Amurta", "About Sumpter Beasts", "About the Seventh Darshan", "About Shroomboars", "About the Grand Bazaar", "About Divination", "About Purbiruni and Pursina", "About Studying Abroad", "About the Divine Tree", "About Inter-Darshan Relations", "About Port Ormos", "About the Alliance of Twenty-Nine Ocean Deys", "About Cyno and Genius Invokation TCG...", "About Sumeru Nursery Rhymes...", "About Aranara Tongue Twisters..."New Combat voice-overs for Dendro alignment
+* Updated audio for all languages:Updated audio for Aether and Lumine:New Sumeru-based story voice-overs:"About Canned Knowledge", "About the Eremites", "About the Wall of Samiel", "About Beliefs", "About Akasha Terminals", "About Aranara Names", "About Aranara Cuisine", "About Dori's Genie", "About Bimarstan", "About the Scholars", "About Amurta", "About Sumpter Beasts", "About the Seventh Darshan", "About Shroomboars", "About the Grand Bazaar", "About Divination", "About Purbiruni and Pursina", "About Studying Abroad", "About the Divine Tree", "About Inter-Darshan Relations", "About Port Ormos", "About the Alliance of Twenty-Nine Ocean Deys", "About Cyno and Genius Invokation TCG...", "About Sumeru Nursery Rhymes...", "About Aranara Tongue Twisters..."New Combat voice-overs for Dendro alignment
+* Updated audio for Aether and Lumine:New Sumeru-based story voice-overs:"About Canned Knowledge", "About the Eremites", "About the Wall of Samiel", "About Beliefs", "About Akasha Terminals", "About Aranara Names", "About Aranara Cuisine", "About Dori's Genie", "About Bimarstan", "About the Scholars", "About Amurta", "About Sumpter Beasts", "About the Seventh Darshan", "About Shroomboars", "About the Grand Bazaar", "About Divination", "About Purbiruni and Pursina", "About Studying Abroad", "About the Divine Tree", "About Inter-Darshan Relations", "About Port Ormos", "About the Alliance of Twenty-Nine Ocean Deys", "About Cyno and Genius Invokation TCG...", "About Sumeru Nursery Rhymes...", "About Aranara Tongue Twisters..."New Combat voice-overs for Dendro alignment
+* New Sumeru-based story voice-overs:"About Canned Knowledge", "About the Eremites", "About the Wall of Samiel", "About Beliefs", "About Akasha Terminals", "About Aranara Names", "About Aranara Cuisine", "About Dori's Genie", "About Bimarstan", "About the Scholars", "About Amurta", "About Sumpter Beasts", "About the Seventh Darshan", "About Shroomboars", "About the Grand Bazaar", "About Divination", "About Purbiruni and Pursina", "About Studying Abroad", "About the Divine Tree", "About Inter-Darshan Relations", "About Port Ormos", "About the Alliance of Twenty-Nine Ocean Deys", "About Cyno and Genius Invokation TCG...", "About Sumeru Nursery Rhymes...", "About Aranara Tongue Twisters..."
+* "About Canned Knowledge", "About the Eremites", "About the Wall of Samiel", "About Beliefs", "About Akasha Terminals", "About Aranara Names", "About Aranara Cuisine", "About Dori's Genie", "About Bimarstan", "About the Scholars", "About Amurta", "About Sumpter Beasts", "About the Seventh Darshan", "About Shroomboars", "About the Grand Bazaar", "About Divination", "About Purbiruni and Pursina", "About Studying Abroad", "About the Divine Tree", "About Inter-Darshan Relations", "About Port Ormos", "About the Alliance of Twenty-Nine Ocean Deys", "About Cyno and Genius Invokation TCG...", "About Sumeru Nursery Rhymes...", "About Aranara Tongue Twisters..."
+- Addedelemental alignment.
+* Updated audio for all languages:Updated audio for Aether and Lumine:New Sumeru-based story voice-overs:"About Canned Knowledge", "About the Eremites", "About the Wall of Samiel", "About Beliefs", "About Akasha Terminals", "About Aranara Names", "About Aranara Cuisine", "About Dori's Genie", "About Bimarstan", "About the Scholars", "About Amurta", "About Sumpter Beasts", "About the Seventh Darshan", "About Shroomboars", "About the Grand Bazaar", "About Divination", "About Purbiruni and Pursina", "About Studying Abroad", "About the Divine Tree", "About Inter-Darshan Relations", "About Port Ormos", "About the Alliance of Twenty-Nine Ocean Deys", "About Cyno and Genius Invokation TCG...", "About Sumeru Nursery Rhymes...", "About Aranara Tongue Twisters..."New Combat voice-overs for Dendro alignment
+* Updated audio for Aether and Lumine:New Sumeru-based story voice-overs:"About Canned Knowledge", "About the Eremites", "About the Wall of Samiel", "About Beliefs", "About Akasha Terminals", "About Aranara Names", "About Aranara Cuisine", "About Dori's Genie", "About Bimarstan", "About the Scholars", "About Amurta", "About Sumpter Beasts", "About the Seventh Darshan", "About Shroomboars", "About the Grand Bazaar", "About Divination", "About Purbiruni and Pursina", "About Studying Abroad", "About the Divine Tree", "About Inter-Darshan Relations", "About Port Ormos", "About the Alliance of Twenty-Nine Ocean Deys", "About Cyno and Genius Invokation TCG...", "About Sumeru Nursery Rhymes...", "About Aranara Tongue Twisters..."New Combat voice-overs for Dendro alignment
+* New Sumeru-based story voice-overs:"About Canned Knowledge", "About the Eremites", "About the Wall of Samiel", "About Beliefs", "About Akasha Terminals", "About Aranara Names", "About Aranara Cuisine", "About Dori's Genie", "About Bimarstan", "About the Scholars", "About Amurta", "About Sumpter Beasts", "About the Seventh Darshan", "About Shroomboars", "About the Grand Bazaar", "About Divination", "About Purbiruni and Pursina", "About Studying Abroad", "About the Divine Tree", "About Inter-Darshan Relations", "About Port Ormos", "About the Alliance of Twenty-Nine Ocean Deys", "About Cyno and Genius Invokation TCG...", "About Sumeru Nursery Rhymes...", "About Aranara Tongue Twisters..."
+* "About Canned Knowledge", "About the Eremites", "About the Wall of Samiel", "About Beliefs", "About Akasha Terminals", "About Aranara Names", "About Aranara Cuisine", "About Dori's Genie", "About Bimarstan", "About the Scholars", "About Amurta", "About Sumpter Beasts", "About the Seventh Darshan", "About Shroomboars", "About the Grand Bazaar", "About Divination", "About Purbiruni and Pursina", "About Studying Abroad", "About the Divine Tree", "About Inter-Darshan Relations", "About Port Ormos", "About the Alliance of Twenty-Nine Ocean Deys", "About Cyno and Genius Invokation TCG...", "About Sumeru Nursery Rhymes...", "About Aranara Tongue Twisters..."
+* Updated audio for Aether and Lumine:New Sumeru-based story voice-overs:"About Canned Knowledge", "About the Eremites", "About the Wall of Samiel", "About Beliefs", "About Akasha Terminals", "About Aranara Names", "About Aranara Cuisine", "About Dori's Genie", "About Bimarstan", "About the Scholars", "About Amurta", "About Sumpter Beasts", "About the Seventh Darshan", "About Shroomboars", "About the Grand Bazaar", "About Divination", "About Purbiruni and Pursina", "About Studying Abroad", "About the Divine Tree", "About Inter-Darshan Relations", "About Port Ormos", "About the Alliance of Twenty-Nine Ocean Deys", "About Cyno and Genius Invokation TCG...", "About Sumeru Nursery Rhymes...", "About Aranara Tongue Twisters..."New Combat voice-overs for Dendro alignment
+* New Sumeru-based story voice-overs:"About Canned Knowledge", "About the Eremites", "About the Wall of Samiel", "About Beliefs", "About Akasha Terminals", "About Aranara Names", "About Aranara Cuisine", "About Dori's Genie", "About Bimarstan", "About the Scholars", "About Amurta", "About Sumpter Beasts", "About the Seventh Darshan", "About Shroomboars", "About the Grand Bazaar", "About Divination", "About Purbiruni and Pursina", "About Studying Abroad", "About the Divine Tree", "About Inter-Darshan Relations", "About Port Ormos", "About the Alliance of Twenty-Nine Ocean Deys", "About Cyno and Genius Invokation TCG...", "About Sumeru Nursery Rhymes...", "About Aranara Tongue Twisters..."
+* "About Canned Knowledge", "About the Eremites", "About the Wall of Samiel", "About Beliefs", "About Akasha Terminals", "About Aranara Names", "About Aranara Cuisine", "About Dori's Genie", "About Bimarstan", "About the Scholars", "About Amurta", "About Sumpter Beasts", "About the Seventh Darshan", "About Shroomboars", "About the Grand Bazaar", "About Divination", "About Purbiruni and Pursina", "About Studying Abroad", "About the Divine Tree", "About Inter-Darshan Relations", "About Port Ormos", "About the Alliance of Twenty-Nine Ocean Deys", "About Cyno and Genius Invokation TCG...", "About Sumeru Nursery Rhymes...", "About Aranara Tongue Twisters..."
+* New Sumeru-based story voice-overs:"About Canned Knowledge", "About the Eremites", "About the Wall of Samiel", "About Beliefs", "About Akasha Terminals", "About Aranara Names", "About Aranara Cuisine", "About Dori's Genie", "About Bimarstan", "About the Scholars", "About Amurta", "About Sumpter Beasts", "About the Seventh Darshan", "About Shroomboars", "About the Grand Bazaar", "About Divination", "About Purbiruni and Pursina", "About Studying Abroad", "About the Divine Tree", "About Inter-Darshan Relations", "About Port Ormos", "About the Alliance of Twenty-Nine Ocean Deys", "About Cyno and Genius Invokation TCG...", "About Sumeru Nursery Rhymes...", "About Aranara Tongue Twisters..."
+* "About Canned Knowledge", "About the Eremites", "About the Wall of Samiel", "About Beliefs", "About Akasha Terminals", "About Aranara Names", "About Aranara Cuisine", "About Dori's Genie", "About Bimarstan", "About the Scholars", "About Amurta", "About Sumpter Beasts", "About the Seventh Darshan", "About Shroomboars", "About the Grand Bazaar", "About Divination", "About Purbiruni and Pursina", "About Studying Abroad", "About the Divine Tree", "About Inter-Darshan Relations", "About Port Ormos", "About the Alliance of Twenty-Nine Ocean Deys", "About Cyno and Genius Invokation TCG...", "About Sumeru Nursery Rhymes...", "About Aranara Tongue Twisters..."
+- "About Canned Knowledge", "About the Eremites", "About the Wall of Samiel", "About Beliefs", "About Akasha Terminals", "About Aranara Names", "About Aranara Cuisine", "About Dori's Genie", "About Bimarstan", "About the Scholars", "About Amurta", "About Sumpter Beasts", "About the Seventh Darshan", "About Shroomboars", "About the Grand Bazaar", "About Divination", "About Purbiruni and Pursina", "About Studying Abroad", "About the Divine Tree", "About Inter-Darshan Relations", "About Port Ormos", "About the Alliance of Twenty-Nine Ocean Deys", "About Cyno and Genius Invokation TCG...", "About Sumeru Nursery Rhymes...", "About Aranara Tongue Twisters..."
+* Updates to character voice-overs:Removed from all languages:"Disengaging Wind Glider"
+* Removed from all languages:"Disengaging Wind Glider"
+* Removed from all languages:"Disengaging Wind Glider"
+* Updates to character voice-overs:New audio for All Languages:New audio for Aether and Lumine:New Inazuma-based story voice-over"About Kimonos"
+* New audio for All Languages:New audio for Aether and Lumine:New Inazuma-based story voice-over"About Kimonos"
+* New audio for Aether and Lumine:New Inazuma-based story voice-over"About Kimonos"
+* New audio for All Languages:New audio for Aether and Lumine:New Inazuma-based story voice-over"About Kimonos"
+* New audio for Aether and Lumine:New Inazuma-based story voice-over"About Kimonos"
+* New audio for Aether and Lumine:New Inazuma-based story voice-over"About Kimonos"
+* Glowing effect while Lumine and Aether are Elementless has been updated.
+* Updates to character voice-overs:Updated audio for All Languages:Updated audio for Aether and Lumine:New Inazuma-based story voice-overs"About Drawing Fortune Slips", "About Musou no Hitotachi", "About Sangonomiya Kokomi", "About Transience", "About Shrine Maidens", "About the Artist Utamarou", "About the Teahouse and Its Owner", "About the Sakoku Decree"
+* Updated audio for All Languages:Updated audio for Aether and Lumine:New Inazuma-based story voice-overs"About Drawing Fortune Slips", "About Musou no Hitotachi", "About Sangonomiya Kokomi", "About Transience", "About Shrine Maidens", "About the Artist Utamarou", "About the Teahouse and Its Owner", "About the Sakoku Decree"
+* Updated audio for Aether and Lumine:New Inazuma-based story voice-overs"About Drawing Fortune Slips", "About Musou no Hitotachi", "About Sangonomiya Kokomi", "About Transience", "About Shrine Maidens", "About the Artist Utamarou", "About the Teahouse and Its Owner", "About the Sakoku Decree"
+* New Inazuma-based story voice-overs"About Drawing Fortune Slips", "About Musou no Hitotachi", "About Sangonomiya Kokomi", "About Transience", "About Shrine Maidens", "About the Artist Utamarou", "About the Teahouse and Its Owner", "About the Sakoku Decree"
+- Glowing effect while Lumine and Aether are Elementless has been updated.
+* Updated audio for All Languages:Updated audio for Aether and Lumine:New Inazuma-based story voice-overs"About Drawing Fortune Slips", "About Musou no Hitotachi", "About Sangonomiya Kokomi", "About Transience", "About Shrine Maidens", "About the Artist Utamarou", "About the Teahouse and Its Owner", "About the Sakoku Decree"
+* Updated audio for Aether and Lumine:New Inazuma-based story voice-overs"About Drawing Fortune Slips", "About Musou no Hitotachi", "About Sangonomiya Kokomi", "About Transience", "About Shrine Maidens", "About the Artist Utamarou", "About the Teahouse and Its Owner", "About the Sakoku Decree"
+* New Inazuma-based story voice-overs"About Drawing Fortune Slips", "About Musou no Hitotachi", "About Sangonomiya Kokomi", "About Transience", "About Shrine Maidens", "About the Artist Utamarou", "About the Teahouse and Its Owner", "About the Sakoku Decree"
+* Updated audio for Aether and Lumine:New Inazuma-based story voice-overs"About Drawing Fortune Slips", "About Musou no Hitotachi", "About Sangonomiya Kokomi", "About Transience", "About Shrine Maidens", "About the Artist Utamarou", "About the Teahouse and Its Owner", "About the Sakoku Decree"
+* New Inazuma-based story voice-overs"About Drawing Fortune Slips", "About Musou no Hitotachi", "About Sangonomiya Kokomi", "About Transience", "About Shrine Maidens", "About the Artist Utamarou", "About the Teahouse and Its Owner", "About the Sakoku Decree"
+* New Inazuma-based story voice-overs"About Drawing Fortune Slips", "About Musou no Hitotachi", "About Sangonomiya Kokomi", "About Transience", "About Shrine Maidens", "About the Artist Utamarou", "About the Teahouse and Its Owner", "About the Sakoku Decree"
+* Addedelemental alignment.
+* Updates to character voice-overs:Updated audio for All Languages:Updated audio for Aether and Lumine:New Inazuma-based story voice-overs:"About the Vision Hunt Decree", "About the Resistance", "About Kamujima Cannons", "About Taroumaru", "About Gorou", "About Publishing Novels", "About Kaedehara Kazuha", "About Kamisato Ayaka", "About Imitating Ayaka", "About Festival Traditions", "About Yoimiya", "About Sayu's Troubles", "About Onikabuto", "About Naku Weed", "About Naku Weed and Storms", "About Sakura Blooms", "About Lavender Melons", "About Swords", "About Hot Springs", "About Jugemu", "About Inazuma's Islands", "About Tanuki", "About Tanuki and Their Illusions", "About Other Shrines", "About the Rain on Yashiori Island", "About Bantan Sango Detective Agency"New Combat voice-overs for Electro alignmentUpdated audio for Japanese:Updated audio for Aether and Lumine:All Combat voice-overs
+* Updated audio for All Languages:Updated audio for Aether and Lumine:New Inazuma-based story voice-overs:"About the Vision Hunt Decree", "About the Resistance", "About Kamujima Cannons", "About Taroumaru", "About Gorou", "About Publishing Novels", "About Kaedehara Kazuha", "About Kamisato Ayaka", "About Imitating Ayaka", "About Festival Traditions", "About Yoimiya", "About Sayu's Troubles", "About Onikabuto", "About Naku Weed", "About Naku Weed and Storms", "About Sakura Blooms", "About Lavender Melons", "About Swords", "About Hot Springs", "About Jugemu", "About Inazuma's Islands", "About Tanuki", "About Tanuki and Their Illusions", "About Other Shrines", "About the Rain on Yashiori Island", "About Bantan Sango Detective Agency"New Combat voice-overs for Electro alignment
+* Updated audio for Aether and Lumine:New Inazuma-based story voice-overs:"About the Vision Hunt Decree", "About the Resistance", "About Kamujima Cannons", "About Taroumaru", "About Gorou", "About Publishing Novels", "About Kaedehara Kazuha", "About Kamisato Ayaka", "About Imitating Ayaka", "About Festival Traditions", "About Yoimiya", "About Sayu's Troubles", "About Onikabuto", "About Naku Weed", "About Naku Weed and Storms", "About Sakura Blooms", "About Lavender Melons", "About Swords", "About Hot Springs", "About Jugemu", "About Inazuma's Islands", "About Tanuki", "About Tanuki and Their Illusions", "About Other Shrines", "About the Rain on Yashiori Island", "About Bantan Sango Detective Agency"New Combat voice-overs for Electro alignment
+* New Inazuma-based story voice-overs:"About the Vision Hunt Decree", "About the Resistance", "About Kamujima Cannons", "About Taroumaru", "About Gorou", "About Publishing Novels", "About Kaedehara Kazuha", "About Kamisato Ayaka", "About Imitating Ayaka", "About Festival Traditions", "About Yoimiya", "About Sayu's Troubles", "About Onikabuto", "About Naku Weed", "About Naku Weed and Storms", "About Sakura Blooms", "About Lavender Melons", "About Swords", "About Hot Springs", "About Jugemu", "About Inazuma's Islands", "About Tanuki", "About Tanuki and Their Illusions", "About Other Shrines", "About the Rain on Yashiori Island", "About Bantan Sango Detective Agency"
+* "About the Vision Hunt Decree", "About the Resistance", "About Kamujima Cannons", "About Taroumaru", "About Gorou", "About Publishing Novels", "About Kaedehara Kazuha", "About Kamisato Ayaka", "About Imitating Ayaka", "About Festival Traditions", "About Yoimiya", "About Sayu's Troubles", "About Onikabuto", "About Naku Weed", "About Naku Weed and Storms", "About Sakura Blooms", "About Lavender Melons", "About Swords", "About Hot Springs", "About Jugemu", "About Inazuma's Islands", "About Tanuki", "About Tanuki and Their Illusions", "About Other Shrines", "About the Rain on Yashiori Island", "About Bantan Sango Detective Agency"
+* New Combat voice-overs for Electro alignment
+* Updated audio for Japanese:Updated audio for Aether and Lumine:All Combat voice-overs
+* Updated audio for Aether and Lumine:All Combat voice-overs
+- Addedelemental alignment.
+* Updated audio for All Languages:Updated audio for Aether and Lumine:New Inazuma-based story voice-overs:"About the Vision Hunt Decree", "About the Resistance", "About Kamujima Cannons", "About Taroumaru", "About Gorou", "About Publishing Novels", "About Kaedehara Kazuha", "About Kamisato Ayaka", "About Imitating Ayaka", "About Festival Traditions", "About Yoimiya", "About Sayu's Troubles", "About Onikabuto", "About Naku Weed", "About Naku Weed and Storms", "About Sakura Blooms", "About Lavender Melons", "About Swords", "About Hot Springs", "About Jugemu", "About Inazuma's Islands", "About Tanuki", "About Tanuki and Their Illusions", "About Other Shrines", "About the Rain on Yashiori Island", "About Bantan Sango Detective Agency"New Combat voice-overs for Electro alignment
+* Updated audio for Aether and Lumine:New Inazuma-based story voice-overs:"About the Vision Hunt Decree", "About the Resistance", "About Kamujima Cannons", "About Taroumaru", "About Gorou", "About Publishing Novels", "About Kaedehara Kazuha", "About Kamisato Ayaka", "About Imitating Ayaka", "About Festival Traditions", "About Yoimiya", "About Sayu's Troubles", "About Onikabuto", "About Naku Weed", "About Naku Weed and Storms", "About Sakura Blooms", "About Lavender Melons", "About Swords", "About Hot Springs", "About Jugemu", "About Inazuma's Islands", "About Tanuki", "About Tanuki and Their Illusions", "About Other Shrines", "About the Rain on Yashiori Island", "About Bantan Sango Detective Agency"New Combat voice-overs for Electro alignment
+* New Inazuma-based story voice-overs:"About the Vision Hunt Decree", "About the Resistance", "About Kamujima Cannons", "About Taroumaru", "About Gorou", "About Publishing Novels", "About Kaedehara Kazuha", "About Kamisato Ayaka", "About Imitating Ayaka", "About Festival Traditions", "About Yoimiya", "About Sayu's Troubles", "About Onikabuto", "About Naku Weed", "About Naku Weed and Storms", "About Sakura Blooms", "About Lavender Melons", "About Swords", "About Hot Springs", "About Jugemu", "About Inazuma's Islands", "About Tanuki", "About Tanuki and Their Illusions", "About Other Shrines", "About the Rain on Yashiori Island", "About Bantan Sango Detective Agency"
+* "About the Vision Hunt Decree", "About the Resistance", "About Kamujima Cannons", "About Taroumaru", "About Gorou", "About Publishing Novels", "About Kaedehara Kazuha", "About Kamisato Ayaka", "About Imitating Ayaka", "About Festival Traditions", "About Yoimiya", "About Sayu's Troubles", "About Onikabuto", "About Naku Weed", "About Naku Weed and Storms", "About Sakura Blooms", "About Lavender Melons", "About Swords", "About Hot Springs", "About Jugemu", "About Inazuma's Islands", "About Tanuki", "About Tanuki and Their Illusions", "About Other Shrines", "About the Rain on Yashiori Island", "About Bantan Sango Detective Agency"
+* New Combat voice-overs for Electro alignment
+* Updated audio for Japanese:Updated audio for Aether and Lumine:All Combat voice-overs
+* Updated audio for Aether and Lumine:All Combat voice-overs
+* Updated audio for Aether and Lumine:New Inazuma-based story voice-overs:"About the Vision Hunt Decree", "About the Resistance", "About Kamujima Cannons", "About Taroumaru", "About Gorou", "About Publishing Novels", "About Kaedehara Kazuha", "About Kamisato Ayaka", "About Imitating Ayaka", "About Festival Traditions", "About Yoimiya", "About Sayu's Troubles", "About Onikabuto", "About Naku Weed", "About Naku Weed and Storms", "About Sakura Blooms", "About Lavender Melons", "About Swords", "About Hot Springs", "About Jugemu", "About Inazuma's Islands", "About Tanuki", "About Tanuki and Their Illusions", "About Other Shrines", "About the Rain on Yashiori Island", "About Bantan Sango Detective Agency"New Combat voice-overs for Electro alignment
+* New Inazuma-based story voice-overs:"About the Vision Hunt Decree", "About the Resistance", "About Kamujima Cannons", "About Taroumaru", "About Gorou", "About Publishing Novels", "About Kaedehara Kazuha", "About Kamisato Ayaka", "About Imitating Ayaka", "About Festival Traditions", "About Yoimiya", "About Sayu's Troubles", "About Onikabuto", "About Naku Weed", "About Naku Weed and Storms", "About Sakura Blooms", "About Lavender Melons", "About Swords", "About Hot Springs", "About Jugemu", "About Inazuma's Islands", "About Tanuki", "About Tanuki and Their Illusions", "About Other Shrines", "About the Rain on Yashiori Island", "About Bantan Sango Detective Agency"
+* "About the Vision Hunt Decree", "About the Resistance", "About Kamujima Cannons", "About Taroumaru", "About Gorou", "About Publishing Novels", "About Kaedehara Kazuha", "About Kamisato Ayaka", "About Imitating Ayaka", "About Festival Traditions", "About Yoimiya", "About Sayu's Troubles", "About Onikabuto", "About Naku Weed", "About Naku Weed and Storms", "About Sakura Blooms", "About Lavender Melons", "About Swords", "About Hot Springs", "About Jugemu", "About Inazuma's Islands", "About Tanuki", "About Tanuki and Their Illusions", "About Other Shrines", "About the Rain on Yashiori Island", "About Bantan Sango Detective Agency"
+* New Inazuma-based story voice-overs:"About the Vision Hunt Decree", "About the Resistance", "About Kamujima Cannons", "About Taroumaru", "About Gorou", "About Publishing Novels", "About Kaedehara Kazuha", "About Kamisato Ayaka", "About Imitating Ayaka", "About Festival Traditions", "About Yoimiya", "About Sayu's Troubles", "About Onikabuto", "About Naku Weed", "About Naku Weed and Storms", "About Sakura Blooms", "About Lavender Melons", "About Swords", "About Hot Springs", "About Jugemu", "About Inazuma's Islands", "About Tanuki", "About Tanuki and Their Illusions", "About Other Shrines", "About the Rain on Yashiori Island", "About Bantan Sango Detective Agency"
+* "About the Vision Hunt Decree", "About the Resistance", "About Kamujima Cannons", "About Taroumaru", "About Gorou", "About Publishing Novels", "About Kaedehara Kazuha", "About Kamisato Ayaka", "About Imitating Ayaka", "About Festival Traditions", "About Yoimiya", "About Sayu's Troubles", "About Onikabuto", "About Naku Weed", "About Naku Weed and Storms", "About Sakura Blooms", "About Lavender Melons", "About Swords", "About Hot Springs", "About Jugemu", "About Inazuma's Islands", "About Tanuki", "About Tanuki and Their Illusions", "About Other Shrines", "About the Rain on Yashiori Island", "About Bantan Sango Detective Agency"
+- "About the Vision Hunt Decree", "About the Resistance", "About Kamujima Cannons", "About Taroumaru", "About Gorou", "About Publishing Novels", "About Kaedehara Kazuha", "About Kamisato Ayaka", "About Imitating Ayaka", "About Festival Traditions", "About Yoimiya", "About Sayu's Troubles", "About Onikabuto", "About Naku Weed", "About Naku Weed and Storms", "About Sakura Blooms", "About Lavender Melons", "About Swords", "About Hot Springs", "About Jugemu", "About Inazuma's Islands", "About Tanuki", "About Tanuki and Their Illusions", "About Other Shrines", "About the Rain on Yashiori Island", "About Bantan Sango Detective Agency"
+- New Combat voice-overs for Electro alignment
+* Updated audio for Aether and Lumine:All Combat voice-overs
+* Updates to character voice-overs:Updated audio for English:Updated audio for Aether:"Yawning Idle" Combat voice-over"Elemental Skill" Combat voice-over"Elemental Burst" Combat voice-overUpdated audio for Chinese:Updated audio for Aether:All of the Combat voice-oversUpdated audio for Lumine:Majority of the Combat voice-oversUpdated audio for Japanese:Updated audio for Aether:"About the Sound of the Ocean"Updated audio for Lumine:"About the Sound of the Ocean"
+* Updated audio for English:Updated audio for Aether:"Yawning Idle" Combat voice-over"Elemental Skill" Combat voice-over"Elemental Burst" Combat voice-over
+* Updated audio for Aether:"Yawning Idle" Combat voice-over"Elemental Skill" Combat voice-over"Elemental Burst" Combat voice-over
+* "Yawning Idle" Combat voice-over
+* "Elemental Skill" Combat voice-over
+* "Elemental Burst" Combat voice-over
+* Updated audio for Chinese:Updated audio for Aether:All of the Combat voice-oversUpdated audio for Lumine:Majority of the Combat voice-overs
+* Updated audio for Aether:All of the Combat voice-overs
+* All of the Combat voice-overs
+* Updated audio for Lumine:Majority of the Combat voice-overs
+* Majority of the Combat voice-overs
+* Updated audio for Japanese:Updated audio for Aether:"About the Sound of the Ocean"Updated audio for Lumine:"About the Sound of the Ocean"
+* Updated audio for Aether:"About the Sound of the Ocean"
+* "About the Sound of the Ocean"
+* Updated audio for Lumine:"About the Sound of the Ocean"
+* Updated audio for English:Updated audio for Aether:"Yawning Idle" Combat voice-over"Elemental Skill" Combat voice-over"Elemental Burst" Combat voice-over
+* Updated audio for Aether:"Yawning Idle" Combat voice-over"Elemental Skill" Combat voice-over"Elemental Burst" Combat voice-over
+* "Yawning Idle" Combat voice-over
+* "Elemental Skill" Combat voice-over
+* "Elemental Burst" Combat voice-over
+* Updated audio for Chinese:Updated audio for Aether:All of the Combat voice-oversUpdated audio for Lumine:Majority of the Combat voice-overs
+* Updated audio for Aether:All of the Combat voice-overs
+* All of the Combat voice-overs
+* Updated audio for Lumine:Majority of the Combat voice-overs
+* Majority of the Combat voice-overs
+* Updated audio for Japanese:Updated audio for Aether:"About the Sound of the Ocean"Updated audio for Lumine:"About the Sound of the Ocean"
+* Updated audio for Aether:"About the Sound of the Ocean"
+* "About the Sound of the Ocean"
+* Updated audio for Lumine:"About the Sound of the Ocean"
+* Updated audio for Aether:"Yawning Idle" Combat voice-over"Elemental Skill" Combat voice-over"Elemental Burst" Combat voice-over
+* "Yawning Idle" Combat voice-over
+* "Elemental Skill" Combat voice-over
+* "Yawning Idle" Combat voice-over
+* "Elemental Skill" Combat voice-over
+- "Yawning Idle" Combat voice-over
+- "Elemental Skill" Combat voice-over
+- "Elemental Burst" Combat voice-over
+* Updated audio for Aether:All of the Combat voice-overs
+* All of the Combat voice-overs
+* Updated audio for Lumine:Majority of the Combat voice-overs
+- All of the Combat voice-overs
+- Majority of the Combat voice-overs
+* Updated audio for Aether:"About the Sound of the Ocean"
+* "About the Sound of the Ocean"
+* Updated audio for Lumine:"About the Sound of the Ocean"
+- "About the Sound of the Ocean"
+* Updates to character voice-overs:Updated audio for English:Updated audio for Aether:"About Benny's Adventure Team""About Weight Gain""About the Guhua Clan""About the Tavern Owner"Updated audio for Lumine:"About Benny's Adventure Team""About the Guhua Clan""About the Tavern Owner"Updated audio for Japanese:Updated audio for Lumine:"Elemental Skill #1" Combat voice-overUpdated audio for Korean:Updated audio for Aether:"About Cider Lake""Elemental Skill #2" Combat voice-overUpdated audio for Lumine:"About Cider Lake""About Weight Gain""Elemental Skill #2" Combat voice-over
+* Updated audio for English:Updated audio for Aether:"About Benny's Adventure Team""About Weight Gain""About the Guhua Clan""About the Tavern Owner"Updated audio for Lumine:"About Benny's Adventure Team""About the Guhua Clan""About the Tavern Owner"
+* Updated audio for Aether:"About Benny's Adventure Team""About Weight Gain""About the Guhua Clan""About the Tavern Owner"
+* "About Benny's Adventure Team"
+* "About Weight Gain"
+* "About the Guhua Clan"
+* "About the Tavern Owner"
+* Updated audio for Lumine:"About Benny's Adventure Team""About the Guhua Clan""About the Tavern Owner"
+* "About Benny's Adventure Team"
+* "About the Guhua Clan"
+* "About the Tavern Owner"
+* Updated audio for Japanese:Updated audio for Lumine:"Elemental Skill #1" Combat voice-over
+* Updated audio for Lumine:"Elemental Skill #1" Combat voice-over
+* "Elemental Skill #1" Combat voice-over
+* Updated audio for Korean:Updated audio for Aether:"About Cider Lake""Elemental Skill #2" Combat voice-overUpdated audio for Lumine:"About Cider Lake""About Weight Gain""Elemental Skill #2" Combat voice-over
+* Updated audio for Aether:"About Cider Lake""Elemental Skill #2" Combat voice-over
+* "About Cider Lake"
+* "Elemental Skill #2" Combat voice-over
+* Updated audio for Lumine:"About Cider Lake""About Weight Gain""Elemental Skill #2" Combat voice-over
+* "About Cider Lake"
+* "About Weight Gain"
+* Updated audio for English:Updated audio for Aether:"About Benny's Adventure Team""About Weight Gain""About the Guhua Clan""About the Tavern Owner"Updated audio for Lumine:"About Benny's Adventure Team""About the Guhua Clan""About the Tavern Owner"
+* Updated audio for Aether:"About Benny's Adventure Team""About Weight Gain""About the Guhua Clan""About the Tavern Owner"
+* "About Benny's Adventure Team"
+* "About Weight Gain"
+* "About the Guhua Clan"
+* "About the Tavern Owner"
+* Updated audio for Lumine:"About Benny's Adventure Team""About the Guhua Clan""About the Tavern Owner"
+* "About Benny's Adventure Team"
+* "About the Guhua Clan"
+* "About the Tavern Owner"
+* Updated audio for Japanese:Updated audio for Lumine:"Elemental Skill #1" Combat voice-over
+* Updated audio for Lumine:"Elemental Skill #1" Combat voice-over
+* "Elemental Skill #1" Combat voice-over
+* Updated audio for Korean:Updated audio for Aether:"About Cider Lake""Elemental Skill #2" Combat voice-overUpdated audio for Lumine:"About Cider Lake""About Weight Gain""Elemental Skill #2" Combat voice-over
+* Updated audio for Aether:"About Cider Lake""Elemental Skill #2" Combat voice-over
+* "About Cider Lake"
+* "Elemental Skill #2" Combat voice-over
+* Updated audio for Lumine:"About Cider Lake""About Weight Gain""Elemental Skill #2" Combat voice-over
+* "About Cider Lake"
+* "About Weight Gain"
+* Updated audio for Aether:"About Benny's Adventure Team""About Weight Gain""About the Guhua Clan""About the Tavern Owner"
+* "About Benny's Adventure Team"
+* "About Weight Gain"
+* "About the Guhua Clan"
+* "About the Tavern Owner"
+* Updated audio for Lumine:"About Benny's Adventure Team""About the Guhua Clan""About the Tavern Owner"
+* "About Benny's Adventure Team"
+* "About the Guhua Clan"
+* "About Benny's Adventure Team"
+* "About Weight Gain"
+* "About the Guhua Clan"
+- "About Benny's Adventure Team"
+- "About Weight Gain"
+- "About the Guhua Clan"
+- "About the Tavern Owner"
+* "About Benny's Adventure Team"
+* "About the Guhua Clan"
+- "About Benny's Adventure Team"
+- "About the Guhua Clan"
+- "About the Tavern Owner"
+* Updated audio for Lumine:"Elemental Skill #1" Combat voice-over
+- "Elemental Skill #1" Combat voice-over
+* Updated audio for Aether:"About Cider Lake""Elemental Skill #2" Combat voice-over
+* "About Cider Lake"
+* "Elemental Skill #2" Combat voice-over
+* Updated audio for Lumine:"About Cider Lake""About Weight Gain""Elemental Skill #2" Combat voice-over
+* "About Cider Lake"
+* "About Weight Gain"
+* "About Cider Lake"
+- "About Cider Lake"
+- "Elemental Skill #2" Combat voice-over
+* "About Cider Lake"
+* "About Weight Gain"
+- "About Cider Lake"
+- "About Weight Gain"
+### Explore properties

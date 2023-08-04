@@ -1,0 +1,114 @@
+- 
+Himuro Sena / 氷室セナIconPortraitSpriteHaloUnit InformationStar Icon⁠Star Icon⁠Star Icon⁠Bond⁠Blue Font 6⁠Cross 1⁠SPECIAL⁠Tactical⁠ TacticalBACK⁠MysticLightMain StatsOther StatsLEVEL 1BASE★HPATKDEFHEAL2310185182049LEVEL 100BASE★1726018501106147LEVEL 100Star Icon⁠Star Icon⁠Star Icon⁠Star Icon⁠1864720621106775LEVEL 100Star Icon⁠Star Icon⁠Star Icon⁠Star Icon⁠Star Icon⁠2080423201107559DEFAULT VALUESACCEVACRIT.RCRIT.D1081008216200%STABLERANGECC.PCC.R10531000100100ProfileAge17BirthdayApril 07thHeight155cmSchool YearThird YearClubHobbyStand-byPharmacology ArrangementObtainabilityGift (Amazing/ Great/ Normal)AGGNNNFurniture InteractionLog Large Table⁠Other InformationVoice ActorSaori Onishi / 大西沙織IllustratorIcomochi
+## Himuro Sena / 氷室セナ
+* Stand-by
+- Stand-by
+### Gift (Amazing/ Great/ Normal)
+### Furniture Interaction
+## Other Information
+Himuro Sena(氷室セナ,Himuro Sena)is one of thestudying inwho wields a.
+She is a head of the.
+Sena, the head of the Emergency Medical Department, continues to transport the injured without complaining no matter what the situation is in Gehenna. However, due to her habit of mistakenly calling the injured "corpses", she is not well received by some...
+A relatively expressionless girl who focuses on the well-being of others as head of the Emergency Medical Department. Although she has quite the morbid curiosity and a habit of referring to the injured with the word "corpses" or "dead bodies," she does not wish for any harm and in fact wishes that no people get injured.
+She uses a purple M79 Grenade Launcher with the barrel and wooden stock sawed off. A white Gehenna logo is imprinted on the barrel.
+Emergency Vehicle No. 11
+For her EX skill she rides on a Horch 108 Kfz. 31 heavy off-road car.
+* LV01~ Sena boards Tactical Ambulance 11, granting it16.2%of her HEAL. Tactical Ambulance 11 increases ATK of all other allies within a radius of itself by17%. Grants18.7%of its HEAL every10sec (Only one Tactical ambulance appears at a time).
+* LV02~ Sena boards Tactical Ambulance 11, granting it18.6%of her HEAL. Tactical Ambulance 11 increases ATK of all other allies within a radius of itself by17.9%. Grants18.7%of its HEAL every10sec (Only one Tactical ambulance appears at a time).
+* LV03~ Sena boards Tactical Ambulance 11, granting it21.1%of her HEAL. Tactical Ambulance 11 increases ATK of all other allies within a radius of itself by18.3%. Grants19.2%of its HEAL every10sec (Only one Tactical ambulance appears at a time).
+* LV04~ Sena boards Tactical Ambulance 11, granting it23.5%of her HEAL. Tactical Ambulance 11 increases ATK of all other allies within a radius of itself by21.7%. Grants19.2%of its HEAL every10sec (Only one Tactical ambulance appears at a time).
+- LV01~ Sena boards Tactical Ambulance 11, granting it16.2%of her HEAL. Tactical Ambulance 11 increases ATK of all other allies within a radius of itself by17%. Grants18.7%of its HEAL every10sec (Only one Tactical ambulance appears at a time).
+- LV02~ Sena boards Tactical Ambulance 11, granting it18.6%of her HEAL. Tactical Ambulance 11 increases ATK of all other allies within a radius of itself by17.9%. Grants18.7%of its HEAL every10sec (Only one Tactical ambulance appears at a time).
+- LV03~ Sena boards Tactical Ambulance 11, granting it21.1%of her HEAL. Tactical Ambulance 11 increases ATK of all other allies within a radius of itself by18.3%. Grants19.2%of its HEAL every10sec (Only one Tactical ambulance appears at a time).
+- LV04~ Sena boards Tactical Ambulance 11, granting it23.5%of her HEAL. Tactical Ambulance 11 increases ATK of all other allies within a radius of itself by21.7%. Grants19.2%of its HEAL every10sec (Only one Tactical ambulance appears at a time).
+* LV01~ Increases ATK by16.8%for1ally with the highest ATK every40sec (30sec).
+* LV02~ Increases ATK by17.6%for1ally with the highest ATK every40sec (30sec).
+* LV03~ Increases ATK by18.5%for1ally with the highest ATK every40sec (30sec).
+* LV04~ Increases ATK by21.8%for1ally with the highest ATK every40sec (30sec).
+* LV05~ Increases ATK by22.7%for1ally with the highest ATK every40sec (30sec).
+* LV06~ Increases ATK by23.5%for1ally with the highest ATK every40sec (30sec).
+* LV07~ Increases ATK by26.9%for1ally with the highest ATK every40sec (30sec).
+* LV08~ Increases ATK by27.7%for1ally with the highest ATK every40sec (30sec).
+* LV09~ Increases ATK by28.5%for1ally with the highest ATK every40sec (30sec).
+- LV01~ Increases ATK by16.8%for1ally with the highest ATK every40sec (30sec).
+- LV02~ Increases ATK by17.6%for1ally with the highest ATK every40sec (30sec).
+- LV03~ Increases ATK by18.5%for1ally with the highest ATK every40sec (30sec).
+- LV04~ Increases ATK by21.8%for1ally with the highest ATK every40sec (30sec).
+- LV05~ Increases ATK by22.7%for1ally with the highest ATK every40sec (30sec).
+- LV06~ Increases ATK by23.5%for1ally with the highest ATK every40sec (30sec).
+- LV07~ Increases ATK by26.9%for1ally with the highest ATK every40sec (30sec).
+- LV08~ Increases ATK by27.7%for1ally with the highest ATK every40sec (30sec).
+- LV09~ Increases ATK by28.5%for1ally with the highest ATK every40sec (30sec).
+* LV01~ Increases HEAL by14%.
+* LV02~ Increases HEAL by14.7%.
+* LV03~ Increases HEAL by15.4%.
+* LV04~ Increases HEAL by18.2%.
+* LV05~ Increases HEAL by18.9%.
+* LV06~ Increases HEAL by19.6%.
+* LV07~ Increases HEAL by22.4%.
+* LV08~ Increases HEAL by23.1%.
+* LV09~ Increases HEAL by23.8%.
+- LV01~ Increases HEAL by14%.
+- LV02~ Increases HEAL by14.7%.
+- LV03~ Increases HEAL by15.4%.
+- LV04~ Increases HEAL by18.2%.
+- LV05~ Increases HEAL by18.9%.
+- LV06~ Increases HEAL by19.6%.
+- LV07~ Increases HEAL by22.4%.
+- LV08~ Increases HEAL by23.1%.
+- LV09~ Increases HEAL by23.8%.
+* LV01~ Increases ally ATK by9.1%.
+* LV02~ Increases ally ATK by9.5%.
+* LV03~ Increases ally ATK by10%.
+* LV04~ Increases ally ATK by11.8%.
+* LV05~ Increases ally ATK by12.3%.
+* LV06~ Increases ally ATK by12.7%.
+* LV07~ Increases ally ATK by14.5%.
+* LV08~ Increases ally ATK by15%.
+* LV09~ Increases ally ATK by15.5%.
+- LV01~ Increases ally ATK by9.1%.
+- LV02~ Increases ally ATK by9.5%.
+- LV03~ Increases ally ATK by10%.
+- LV04~ Increases ally ATK by11.8%.
+- LV05~ Increases ally ATK by12.3%.
+- LV06~ Increases ally ATK by12.7%.
+- LV07~ Increases ally ATK by14.5%.
+- LV08~ Increases ally ATK by15%.
+- LV09~ Increases ally ATK by15.5%.
+### Growth Material[]
+### Unique Equipment[]
+* LV01~ Increases HEAL by698. Also increases HEAL by14%.
+* LV02~ Increases HEAL by733. Also increases HEAL by14.7%.
+* LV03~ Increases HEAL by767. Also increases HEAL by15.4%.
+* LV04~ Increases HEAL by907. Also increases HEAL by18.2%.
+* LV05~ Increases HEAL by942. Also increases HEAL by18.9%.
+* LV06~ Increases HEAL by977. Also increases HEAL by19.6%.
+* LV07~ Increases HEAL by1116. Also increases HEAL by22.4%.
+* LV08~ Increases HEAL by1151. Also increases HEAL by23.1%.
+* LV09~ Increases HEAL by1186. Also increases HEAL by23.8%.
+- LV01~ Increases HEAL by698. Also increases HEAL by14%.
+- LV02~ Increases HEAL by733. Also increases HEAL by14.7%.
+- LV03~ Increases HEAL by767. Also increases HEAL by15.4%.
+- LV04~ Increases HEAL by907. Also increases HEAL by18.2%.
+- LV05~ Increases HEAL by942. Also increases HEAL by18.9%.
+- LV06~ Increases HEAL by977. Also increases HEAL by19.6%.
+- LV07~ Increases HEAL by1116. Also increases HEAL by22.4%.
+- LV08~ Increases HEAL by1151. Also increases HEAL by23.1%.
+- LV09~ Increases HEAL by1186. Also increases HEAL by23.8%.
+### Explore properties
+
+### Explore properties
+
+# Himuro Sena/Gallery
+### Explore properties
+
+# Himuro Sena/Relationship
+Sena was assigned by Hina to retrieve the apprehendedin V3C2E7 to avoid political conflict with.
+An ex-member of the Emergency Medical Department who moved out for unknown reasons. Whatever that reason is, Sena wants Chinatsu back in the team, but Chinatsu can't return even if she wants to due to her job at the Disciplinary Committee.
+One of the Seven Prisoners who managed to escape from prison and began wreaking havoc during Sena's Valentine's patrol with Sensei in theevent. Eventually, after Wakamo escaped from custody for the sixth time, Sena attempted to confront Wakamo herself, only to be led by a thug disguised as Wakamo.
+One of the people responsible in aiding Valkyrie in apprehending and keeping Wakamo from escaping alongside Sena. Chihiro was responsible for upgrading and managing security systems around Wakamo's prison.
+## Public Safety Bureau[]
+One of the people responsible in aiding Valkyrie in apprehending and keeping Wakamo from escaping alongside Sena. Due to how cunning Wakamo was, Kirino alongside otherstudents kept being fooled by her.
+One of the people responsible in aiding Valkyrie in apprehending and keeping Wakamo from escaping alongside Sena. Following Fubuki's nature, she underestimated Wakamo's abilities heavily, allowing Wakamo to escape several times, repeatedly causing Sena and Sensei to have to deal with her.
+Sena's companion during her patrol in theevent. Sensei is also the one responsible for handing in theduring V3C2E7 to avoid political conflict with.
+### Explore properties

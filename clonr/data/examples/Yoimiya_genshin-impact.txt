@@ -1,0 +1,374 @@
+YoimiyaFrolicking FlamesCardWishIn-GameQualityBioFamilyVoice ActorsReal NameNaganohara Yoimiya()RegionAffil­i­a­tionPrevious:August 10, 20211 year, 11 months agoAncestryFatherEnglishChineseJapaneseKoreanAdditional TitlesCategoriesOwner of Naganohara Fireworks
+## Frolicking Flames
+- 
+Naganohara Yoimiya(Japanese:長野原宵宮Naganohara Yoimiya) is a playablein.
+Yoimiya is the current owner of; with her colorful fireworks and outgoing personality, Yoimiya is loved by everyone on. She was coined as the "Queen of the Summer Festival," as they believe summer is not the same without her.
+### Ascensions and Stats
+Toggle Ascension Materials
+1. Does not include weapon ATK value.
+1. Characters gain special stats starting with 2✦.
+- Does not include weapon ATK value.
+* Charge Level 1: Fires off a flaming arrow that dealsPyro DMG.
+- Charge Level 1: Fires off a flaming arrow that dealsPyro DMG.
+* After using, Yoimiya's Normal, Charged, and Plunging Attack DMG will be converted toDMGfor 10 seconds.
+* The Kindling Arrows home in much as'sdo. They can home in onlike birds and boars as well as other targets such as torches,, and hay bales.
+* Unlike's fully charged, Yoimiya's fully charged Aimed Shots (and Kindling Arrows) do not burn grass unless at least two of them land in the same place in a short period of time. This is due to Yoimiya's charged shots only applying 1ofwhile Amber's applies 2.
+- After using, Yoimiya's Normal, Charged, and Plunging Attack DMG will be converted toDMGfor 10 seconds.
+- The Kindling Arrows home in much as'sdo. They can home in onlike birds and boars as well as other targets such as torches,, and hay bales.
+- Unlike's fully charged, Yoimiya's fully charged Aimed Shots (and Kindling Arrows) do not burn grass unless at least two of them land in the same place in a short period of time. This is due to Yoimiya's charged shots only applying 1ofwhile Amber's applies 2.
+- Kindling Arrow DMG follows the defaultof2.5seconds/3hits.
+# Constellation Effects
+Charged Attack, Level 1
+Charged Attack, Level 2
+* When a converted attack hits at least one, it generates1.This particle generation has a cooldown of 2 seconds.It can generate a total of4through its whole duration.
+* This particle generation has a cooldown of 2 seconds.
+* It can generate a total of4through its whole duration.
+* The talent scaling number is multiplicative with her Normal Attack damage. It is a separate independent multiplier from, CRIT, reactions, etc. is calculated using the following formula:Outgoing DMG=[(ATK)×(%Normal Attack)×(%Blazing Arrow DMG)+(Additive Base DMG Bonus)]×(1+%DMG Bonus){\displaystyle {\begin{aligned}&{\text{Outgoing DMG}}=\\&\left[\left({\text{ATK}}\right)\times \left(\%{\text{ Normal Attack}}\right)\times \left(\%{\text{ Blazing Arrow DMG}}\right)+\left({\text{Additive Base DMG Bonus}}\right)\right]\\&\times \left(1+\%{\text{ DMG Bonus}}\right)\end{aligned}}}
+* This particle generation has a cooldown of 2 seconds.
+- This particle generation has a cooldown of 2 seconds.
+- It can generate a total of4through its whole duration.
+- The talent scaling number is multiplicative with her Normal Attack damage. It is a separate independent multiplier from, CRIT, reactions, etc. is calculated using the following formula:Outgoing DMG=[(ATK)×(%Normal Attack)×(%Blazing Arrow DMG)+(Additive Base DMG Bonus)]×(1+%DMG Bonus){\displaystyle {\begin{aligned}&{\text{Outgoing DMG}}=\\&\left[\left({\text{ATK}}\right)\times \left(\%{\text{ Normal Attack}}\right)\times \left(\%{\text{ Blazing Arrow DMG}}\right)+\left({\text{Additive Base DMG Bonus}}\right)\right]\\&\times \left(1+\%{\text{ DMG Bonus}}\right)\end{aligned}}}
+- Passive Talent 1,: "During, shots fromwill increase herPyro DMG Bonusby 2% on hit. This effect lasts for 3s and can have a maximum of 10 stacks."
+# Constellation Effects
+* Constellation Level 3,: Increases this talent's level by 3 and raises its maximum level to 15.
+* Constellation Level 4,: "When Yoimiya's own Aurous Blaze triggers an explosion,'s CD is decreased by 1.2."
+- Constellation Level 3,: Increases this talent's level by 3 and raises its maximum level to 15.
+- Constellation Level 4,: "When Yoimiya's own Aurous Blaze triggers an explosion,'s CD is decreased by 1.2."
+Normal Attack In Niwabi Enshou State
+Charged Attack In Niwabi Enshou State
+* In, the Aurous Blaze explosion can also be triggered by attacks from other players.
+- In, the Aurous Blaze explosion can also be triggered by attacks from other players.
+- Passive Talent 2,: Grants a 10% to 20% ATK buff to nearby party members for 15s upon using Ryuukin Saxifrage, based onstacks.
+# Constellation Effects
+* Constellation Level 1,: "The Aurous Blaze created bylasts for an extra 4s. Additionally, when an opponent affected by Aurous Blaze is defeated within its duration, Yoimiya's ATK is increased by 20% for 20s."
+* Constellation Level 4,: "When Yoimiya's own Aurous Blaze triggers an explosion,'s CD is decreased by 1.2."
+- Constellation Level 1,: "The Aurous Blaze created bylasts for an extra 4s. Additionally, when an opponent affected by Aurous Blaze is defeated within its duration, Yoimiya's ATK is increased by 20% for 20s."
+- Constellation Level 4,: "When Yoimiya's own Aurous Blaze triggers an explosion,'s CD is decreased by 1.2."
+Aurous Blaze explosion by a party member
+* Yoimiya's first and fourth Normal Attacks are two-hit attacks and can each grant 2 stacks of Tricks of the Trouble-Maker.
+* Gaining a new stack will refresh the duration of the old ones.
+- Yoimiya's first and fourth Normal Attacks are two-hit attacks and can each grant 2 stacks of Tricks of the Trouble-Maker.
+- Gaining a new stack will refresh the duration of the old ones.
+* Yoimiya refunds 25% of the materials used. On average over time, she refunds 25% of each material used.The 25% is first calculated on the total number of rewards and rounded down. Then the refunded materials are re-distributed among the different materials used according to their original ratios, with decimals randomly rounded without changing the total quantity of refunded materials.‍[verification needed]This means that if the quantity of any material used is not a multiple of 4, then there will be fluctuations in the amount of materials refunded.For example, a furnishing that requires 12 of one material and 6 of another material has two possible distributions of refunded materials: 3 of the first material and 1 of the second material, or 2 of each material.
+* The 25% is first calculated on the total number of rewards and rounded down. Then the refunded materials are re-distributed among the different materials used according to their original ratios, with decimals randomly rounded without changing the total quantity of refunded materials.‍[verification needed]This means that if the quantity of any material used is not a multiple of 4, then there will be fluctuations in the amount of materials refunded.For example, a furnishing that requires 12 of one material and 6 of another material has two possible distributions of refunded materials: 3 of the first material and 1 of the second material, or 2 of each material.
+* The 25% is first calculated on the total number of rewards and rounded down. Then the refunded materials are re-distributed among the different materials used according to their original ratios, with decimals randomly rounded without changing the total quantity of refunded materials.‍[verification needed]This means that if the quantity of any material used is not a multiple of 4, then there will be fluctuations in the amount of materials refunded.For example, a furnishing that requires 12 of one material and 6 of another material has two possible distributions of refunded materials: 3 of the first material and 1 of the second material, or 2 of each material.
+- Thebuff provided by this Constellation does not stack when Yoimiya scores a CRIT Hit multiple times during this effect's duration.
+Effect triggered on Normal Attacks 1-4
+Each Constellation activation requires one.
+Yoimiyawas promoted or featured with a drop-rate boost in4:
+1. Follows Japanese.
+* Updates to character voice-overs:New for All Languages:"About Kirara"
+* Updates to character voice-overs:Removed from all languages:"Disengaging Wind Glider"
+* Removed from all languages:"Disengaging Wind Glider"
+* Removed from all languages:"Disengaging Wind Glider"
+* 10 August 2021— Yoimiya was released as a playable character.
+- 10 August 2021— Yoimiya was released as a playable character.
+1. HoYoverse Chinese News:
+- YouTube:
+### Explore properties
+
+# Yoimiya's Stella Fortuna
+Yoimiya's Stella FortunaItem TypeQualityDescription's Constellation Activation MaterialHow to ObtainSource
+## Yoimiya's Stella Fortuna
+Yoimiya's Stella Fortunais aobtained fromused to level's.
+## Other Languages[]
+### Explore properties
+
+YoimiyaCategoryQualityAdeptal EnergyLoad3001200Adeptal Energy per Load0.25DescriptionCharacter In-ResidenceYoimiyacan be invited as a Companion into the player'safter obtaining her and completing the World Quest.
+### Adeptal Energy per Load
+## Favorite Furnishing Sets
+If a character's favoriteis placed in the same realm as the character for the first time, the character will automatically teleport to the furnishing set. Interacting with the character will initiate a, after which the character will teleport back to their original position.
+Yoimiya has2Favorite Furnishing Sets:
+# Festivals...Let's make some fireworks...Interesting stories...Let's have some fun...Naganohara...
+# Let's make some fireworks...
+# Interesting stories...
+# Let's have some fun...
+# (When the player is nearby)Hi there!Want to kill some time?
+# Want to kill some time?
+# Yoimiya:Hey, it's you, (Traveler)! How are you doing?Yoimiya:If you want to pass the time, you can't go wrong hanging out with me.How do you like it here?Yoimiya:Pretty good! I'm surprised how awesome your place is!Yoimiya:This is an adeptus relic from Liyue, right? It's incredible. I thought you were joking when you asked me to get into this pot.Yoimiya:I had no idea what to say, I didn't know if I should object or just follow along...What was your objection going to be?Yoimiya:Something like, "Are you blind? I can't squeeze into that!"Yoimiya:Haha, Paimon told me that she had the same reaction when she first saw the pot.Yoimiya:If she couldn't get in, there would be no chance for me.What would you have said to humor me?Yoimiya:Like, "Let me send over 'Tarou the Goldfish,' the most trusty fish in my aquarium, to accompany you!"Yoimiya:I'm sure it'll be able to get in. It's a goldfish after all.Yoimiya:Who would have thought that a little push from you, and poof — we're in here!Yoimiya:A wide open view, fresh air... It's such a nice place!I'm glad you like it.Yoimiya:Of course I like it. I could easily live here forever.Yoimiya:*sigh* Maybe I can open a second "Naganohara" here?Yoimiya:You can invite all of your friends to see the fireworks. Consider it a gift from me to you!
+# Yoimiya:Hey, it's you, (Traveler)! How are you doing?
+# Yoimiya:If you want to pass the time, you can't go wrong hanging out with me.
+# How do you like it here?Yoimiya:Pretty good! I'm surprised how awesome your place is!Yoimiya:This is an adeptus relic from Liyue, right? It's incredible. I thought you were joking when you asked me to get into this pot.Yoimiya:I had no idea what to say, I didn't know if I should object or just follow along...What was your objection going to be?Yoimiya:Something like, "Are you blind? I can't squeeze into that!"Yoimiya:Haha, Paimon told me that she had the same reaction when she first saw the pot.Yoimiya:If she couldn't get in, there would be no chance for me.What would you have said to humor me?Yoimiya:Like, "Let me send over 'Tarou the Goldfish,' the most trusty fish in my aquarium, to accompany you!"Yoimiya:I'm sure it'll be able to get in. It's a goldfish after all.Yoimiya:Who would have thought that a little push from you, and poof — we're in here!Yoimiya:A wide open view, fresh air... It's such a nice place!I'm glad you like it.Yoimiya:Of course I like it. I could easily live here forever.Yoimiya:*sigh* Maybe I can open a second "Naganohara" here?Yoimiya:You can invite all of your friends to see the fireworks. Consider it a gift from me to you!
+# Yoimiya:Pretty good! I'm surprised how awesome your place is!Yoimiya:This is an adeptus relic from Liyue, right? It's incredible. I thought you were joking when you asked me to get into this pot.Yoimiya:I had no idea what to say, I didn't know if I should object or just follow along...What was your objection going to be?Yoimiya:Something like, "Are you blind? I can't squeeze into that!"Yoimiya:Haha, Paimon told me that she had the same reaction when she first saw the pot.Yoimiya:If she couldn't get in, there would be no chance for me.What would you have said to humor me?Yoimiya:Like, "Let me send over 'Tarou the Goldfish,' the most trusty fish in my aquarium, to accompany you!"Yoimiya:I'm sure it'll be able to get in. It's a goldfish after all.Yoimiya:Who would have thought that a little push from you, and poof — we're in here!Yoimiya:A wide open view, fresh air... It's such a nice place!I'm glad you like it.Yoimiya:Of course I like it. I could easily live here forever.Yoimiya:*sigh* Maybe I can open a second "Naganohara" here?Yoimiya:You can invite all of your friends to see the fireworks. Consider it a gift from me to you!
+# Yoimiya:Pretty good! I'm surprised how awesome your place is!
+# Yoimiya:This is an adeptus relic from Liyue, right? It's incredible. I thought you were joking when you asked me to get into this pot.
+# Yoimiya:I had no idea what to say, I didn't know if I should object or just follow along...
+# What was your objection going to be?Yoimiya:Something like, "Are you blind? I can't squeeze into that!"Yoimiya:Haha, Paimon told me that she had the same reaction when she first saw the pot.Yoimiya:If she couldn't get in, there would be no chance for me.
+# Yoimiya:Something like, "Are you blind? I can't squeeze into that!"Yoimiya:Haha, Paimon told me that she had the same reaction when she first saw the pot.Yoimiya:If she couldn't get in, there would be no chance for me.
+# Yoimiya:Something like, "Are you blind? I can't squeeze into that!"
+# Yoimiya:Haha, Paimon told me that she had the same reaction when she first saw the pot.
+# Yoimiya:If she couldn't get in, there would be no chance for me.
+# What would you have said to humor me?Yoimiya:Like, "Let me send over 'Tarou the Goldfish,' the most trusty fish in my aquarium, to accompany you!"Yoimiya:I'm sure it'll be able to get in. It's a goldfish after all.
+# Yoimiya:Like, "Let me send over 'Tarou the Goldfish,' the most trusty fish in my aquarium, to accompany you!"Yoimiya:I'm sure it'll be able to get in. It's a goldfish after all.
+# Yoimiya:Like, "Let me send over 'Tarou the Goldfish,' the most trusty fish in my aquarium, to accompany you!"
+# Yoimiya:I'm sure it'll be able to get in. It's a goldfish after all.
+# Yoimiya:Who would have thought that a little push from you, and poof — we're in here!
+# Yoimiya:A wide open view, fresh air... It's such a nice place!
+# I'm glad you like it.
+# Yoimiya:Of course I like it. I could easily live here forever.
+# Yoimiya:*sigh* Maybe I can open a second "Naganohara" here?
+# Yoimiya:You can invite all of your friends to see the fireworks. Consider it a gift from me to you!
+# (Unlocks at Friendship Level 4)Do you want to chat?Yoimiya:Sure, you know I love to talk. Let me think, is there anything interesting going on these days...Yoimiya:Ah, right. You've got such a large piece of paradise here. Do you have any plans for it, you know, besides just living here?Yoimiya:Ever thought about building a parlor or a show room? Or maybe a training ground?I'd love to do some business like you.Yoimiya:Wha—? There might have been a slight misunderstanding, you see, my family's business is not the usual kind of business.Yoimiya:I know merchants in Liyue are really good at making Mora, they're experts at landing deals both big and small.Yoimiya:However, our family's customers are mostly regulars, so we put most of our focus on those relationships.Yoimiya:My pops and I, we mainly do business so that we won't let everyone down.I want to build a garden.Yoimiya:Wow, good idea! That sounds really interesting. I want to help.Yoimiya:If you need anything, just tell me. If it can be found in Inazuma, I can get it for you.Yoimiya:Thanks to the family business, I've got tons of connections. Haha!Yoimiya:Well, I guess I can't get you the stars, or the moon. But pretty much anything else.Yoimiya:Anyway, when it's finished, let me know. I'll set off some fireworks to celebrate.What would you build if you were me?Yoimiya:Me?... Hehe, I'd build a playground!Yoimiya:With toys everywhere! They'd be flashing, moving, and spinning. Also, tasty snacks for whenever I'm hungry!Yoimiya:Living in a world like that would be a dream come true!I'll think about it.Yoimiya:No, no. No need to seriously consider it. It's just a little fantasy of mine.Yoimiya:But... I'm happy to hear you say that.Yoimiya:A playground... Ahh, how wonderful.
+# Do you want to chat?Yoimiya:Sure, you know I love to talk. Let me think, is there anything interesting going on these days...Yoimiya:Ah, right. You've got such a large piece of paradise here. Do you have any plans for it, you know, besides just living here?Yoimiya:Ever thought about building a parlor or a show room? Or maybe a training ground?I'd love to do some business like you.Yoimiya:Wha—? There might have been a slight misunderstanding, you see, my family's business is not the usual kind of business.Yoimiya:I know merchants in Liyue are really good at making Mora, they're experts at landing deals both big and small.Yoimiya:However, our family's customers are mostly regulars, so we put most of our focus on those relationships.Yoimiya:My pops and I, we mainly do business so that we won't let everyone down.I want to build a garden.Yoimiya:Wow, good idea! That sounds really interesting. I want to help.Yoimiya:If you need anything, just tell me. If it can be found in Inazuma, I can get it for you.Yoimiya:Thanks to the family business, I've got tons of connections. Haha!Yoimiya:Well, I guess I can't get you the stars, or the moon. But pretty much anything else.Yoimiya:Anyway, when it's finished, let me know. I'll set off some fireworks to celebrate.What would you build if you were me?Yoimiya:Me?... Hehe, I'd build a playground!Yoimiya:With toys everywhere! They'd be flashing, moving, and spinning. Also, tasty snacks for whenever I'm hungry!Yoimiya:Living in a world like that would be a dream come true!I'll think about it.Yoimiya:No, no. No need to seriously consider it. It's just a little fantasy of mine.Yoimiya:But... I'm happy to hear you say that.Yoimiya:A playground... Ahh, how wonderful.
+# Yoimiya:Sure, you know I love to talk. Let me think, is there anything interesting going on these days...Yoimiya:Ah, right. You've got such a large piece of paradise here. Do you have any plans for it, you know, besides just living here?Yoimiya:Ever thought about building a parlor or a show room? Or maybe a training ground?I'd love to do some business like you.Yoimiya:Wha—? There might have been a slight misunderstanding, you see, my family's business is not the usual kind of business.Yoimiya:I know merchants in Liyue are really good at making Mora, they're experts at landing deals both big and small.Yoimiya:However, our family's customers are mostly regulars, so we put most of our focus on those relationships.Yoimiya:My pops and I, we mainly do business so that we won't let everyone down.I want to build a garden.Yoimiya:Wow, good idea! That sounds really interesting. I want to help.Yoimiya:If you need anything, just tell me. If it can be found in Inazuma, I can get it for you.Yoimiya:Thanks to the family business, I've got tons of connections. Haha!Yoimiya:Well, I guess I can't get you the stars, or the moon. But pretty much anything else.Yoimiya:Anyway, when it's finished, let me know. I'll set off some fireworks to celebrate.What would you build if you were me?Yoimiya:Me?... Hehe, I'd build a playground!Yoimiya:With toys everywhere! They'd be flashing, moving, and spinning. Also, tasty snacks for whenever I'm hungry!Yoimiya:Living in a world like that would be a dream come true!I'll think about it.Yoimiya:No, no. No need to seriously consider it. It's just a little fantasy of mine.Yoimiya:But... I'm happy to hear you say that.Yoimiya:A playground... Ahh, how wonderful.
+# Yoimiya:Sure, you know I love to talk. Let me think, is there anything interesting going on these days...
+# Yoimiya:Ah, right. You've got such a large piece of paradise here. Do you have any plans for it, you know, besides just living here?
+# Yoimiya:Ever thought about building a parlor or a show room? Or maybe a training ground?
+# I'd love to do some business like you.Yoimiya:Wha—? There might have been a slight misunderstanding, you see, my family's business is not the usual kind of business.Yoimiya:I know merchants in Liyue are really good at making Mora, they're experts at landing deals both big and small.Yoimiya:However, our family's customers are mostly regulars, so we put most of our focus on those relationships.Yoimiya:My pops and I, we mainly do business so that we won't let everyone down.
+# Yoimiya:Wha—? There might have been a slight misunderstanding, you see, my family's business is not the usual kind of business.Yoimiya:I know merchants in Liyue are really good at making Mora, they're experts at landing deals both big and small.Yoimiya:However, our family's customers are mostly regulars, so we put most of our focus on those relationships.Yoimiya:My pops and I, we mainly do business so that we won't let everyone down.
+# Yoimiya:Wha—? There might have been a slight misunderstanding, you see, my family's business is not the usual kind of business.
+# Yoimiya:I know merchants in Liyue are really good at making Mora, they're experts at landing deals both big and small.
+# Yoimiya:However, our family's customers are mostly regulars, so we put most of our focus on those relationships.
+# Yoimiya:My pops and I, we mainly do business so that we won't let everyone down.
+# I want to build a garden.Yoimiya:Wow, good idea! That sounds really interesting. I want to help.Yoimiya:If you need anything, just tell me. If it can be found in Inazuma, I can get it for you.Yoimiya:Thanks to the family business, I've got tons of connections. Haha!Yoimiya:Well, I guess I can't get you the stars, or the moon. But pretty much anything else.
+# Yoimiya:Wow, good idea! That sounds really interesting. I want to help.Yoimiya:If you need anything, just tell me. If it can be found in Inazuma, I can get it for you.Yoimiya:Thanks to the family business, I've got tons of connections. Haha!Yoimiya:Well, I guess I can't get you the stars, or the moon. But pretty much anything else.
+# Yoimiya:Wow, good idea! That sounds really interesting. I want to help.
+# Yoimiya:If you need anything, just tell me. If it can be found in Inazuma, I can get it for you.
+# Yoimiya:Thanks to the family business, I've got tons of connections. Haha!
+# Yoimiya:Well, I guess I can't get you the stars, or the moon. But pretty much anything else.
+# Yoimiya:Anyway, when it's finished, let me know. I'll set off some fireworks to celebrate.
+# What would you build if you were me?
+# Yoimiya:Me?... Hehe, I'd build a playground!
+# Yoimiya:With toys everywhere! They'd be flashing, moving, and spinning. Also, tasty snacks for whenever I'm hungry!
+# Yoimiya:Living in a world like that would be a dream come true!
+# I'll think about it.
+# Yoimiya:No, no. No need to seriously consider it. It's just a little fantasy of mine.
+# Yoimiya:But... I'm happy to hear you say that.
+# Yoimiya:A playground... Ahh, how wonderful.
+# (Unlocks at Friendship Level 7)Anything you want to do?Yoimiya:I want to know more about youuuu!Yoimiya:I've heard people everywhere tell tales of your heroics, and I've seen it first-hand adventuring with you.Yoimiya:But the more I learn, the more curious I become — what makes you so special?Yoimiya:There is always a reason for everything. For example, I like to talk because when I was a kid, Pops really seemed to enjoy listening to me.Yoimiya:I like fireworks because creating incredible fireworks makes me feel so proud of my work.Yoimiya:So what's there for you?There is someone I want to see.Yoimiya:So that's what drives you.Yoimiya:And you don't want your reunion to be a disappointing one, do you?Yoimiya:Wow, I'm really impressed. Honestly, I envy you!Yoimiya:I'll help you. No matter where it is, you must be reunited!There are people I want to help.Yoimiya:So that's what motivates you.Yoimiya:You don't want to see anyone suffer.Yoimiya:You are like a storybook hero, so awesome.Yoimiya:Hmm, that means I'm friends with a hero, doesn't it?Yoimiya:I'll support you with all I've got, so go ahead and write the rest of your story!Yoimiya:Hehe, sorry, I'm getting too excited.Yoimiya:But I've decided, I want to retrace your path!Yoimiya:Starting from Mondstadt, to Liyue, and then to Inazuma... I will go see the sights you've seen and meet the people you've come across.Yoimiya:That's what one has to do if they want to get to know someone completely!Isn't that a bit much?Yoimiya:Sorry, I don't mean to put any pressure on you. I was just, well... how should I put it? Simply, I...Yoimiya:I want to know more about youuuu!
+# Anything you want to do?Yoimiya:I want to know more about youuuu!Yoimiya:I've heard people everywhere tell tales of your heroics, and I've seen it first-hand adventuring with you.Yoimiya:But the more I learn, the more curious I become — what makes you so special?Yoimiya:There is always a reason for everything. For example, I like to talk because when I was a kid, Pops really seemed to enjoy listening to me.Yoimiya:I like fireworks because creating incredible fireworks makes me feel so proud of my work.Yoimiya:So what's there for you?There is someone I want to see.Yoimiya:So that's what drives you.Yoimiya:And you don't want your reunion to be a disappointing one, do you?Yoimiya:Wow, I'm really impressed. Honestly, I envy you!Yoimiya:I'll help you. No matter where it is, you must be reunited!There are people I want to help.Yoimiya:So that's what motivates you.Yoimiya:You don't want to see anyone suffer.Yoimiya:You are like a storybook hero, so awesome.Yoimiya:Hmm, that means I'm friends with a hero, doesn't it?Yoimiya:I'll support you with all I've got, so go ahead and write the rest of your story!Yoimiya:Hehe, sorry, I'm getting too excited.Yoimiya:But I've decided, I want to retrace your path!Yoimiya:Starting from Mondstadt, to Liyue, and then to Inazuma... I will go see the sights you've seen and meet the people you've come across.Yoimiya:That's what one has to do if they want to get to know someone completely!Isn't that a bit much?Yoimiya:Sorry, I don't mean to put any pressure on you. I was just, well... how should I put it? Simply, I...Yoimiya:I want to know more about youuuu!
+# Yoimiya:I want to know more about youuuu!Yoimiya:I've heard people everywhere tell tales of your heroics, and I've seen it first-hand adventuring with you.Yoimiya:But the more I learn, the more curious I become — what makes you so special?Yoimiya:There is always a reason for everything. For example, I like to talk because when I was a kid, Pops really seemed to enjoy listening to me.Yoimiya:I like fireworks because creating incredible fireworks makes me feel so proud of my work.Yoimiya:So what's there for you?There is someone I want to see.Yoimiya:So that's what drives you.Yoimiya:And you don't want your reunion to be a disappointing one, do you?Yoimiya:Wow, I'm really impressed. Honestly, I envy you!Yoimiya:I'll help you. No matter where it is, you must be reunited!There are people I want to help.Yoimiya:So that's what motivates you.Yoimiya:You don't want to see anyone suffer.Yoimiya:You are like a storybook hero, so awesome.Yoimiya:Hmm, that means I'm friends with a hero, doesn't it?Yoimiya:I'll support you with all I've got, so go ahead and write the rest of your story!Yoimiya:Hehe, sorry, I'm getting too excited.Yoimiya:But I've decided, I want to retrace your path!Yoimiya:Starting from Mondstadt, to Liyue, and then to Inazuma... I will go see the sights you've seen and meet the people you've come across.Yoimiya:That's what one has to do if they want to get to know someone completely!Isn't that a bit much?Yoimiya:Sorry, I don't mean to put any pressure on you. I was just, well... how should I put it? Simply, I...Yoimiya:I want to know more about youuuu!
+# Yoimiya:I want to know more about youuuu!
+# Yoimiya:I've heard people everywhere tell tales of your heroics, and I've seen it first-hand adventuring with you.
+# Yoimiya:But the more I learn, the more curious I become — what makes you so special?
+# Yoimiya:There is always a reason for everything. For example, I like to talk because when I was a kid, Pops really seemed to enjoy listening to me.
+# Yoimiya:I like fireworks because creating incredible fireworks makes me feel so proud of my work.
+# Yoimiya:So what's there for you?
+# There is someone I want to see.Yoimiya:So that's what drives you.Yoimiya:And you don't want your reunion to be a disappointing one, do you?Yoimiya:Wow, I'm really impressed. Honestly, I envy you!Yoimiya:I'll help you. No matter where it is, you must be reunited!
+# Yoimiya:So that's what drives you.Yoimiya:And you don't want your reunion to be a disappointing one, do you?Yoimiya:Wow, I'm really impressed. Honestly, I envy you!Yoimiya:I'll help you. No matter where it is, you must be reunited!
+# Yoimiya:So that's what drives you.
+# Yoimiya:And you don't want your reunion to be a disappointing one, do you?
+# Yoimiya:Wow, I'm really impressed. Honestly, I envy you!
+# Yoimiya:I'll help you. No matter where it is, you must be reunited!
+# There are people I want to help.Yoimiya:So that's what motivates you.Yoimiya:You don't want to see anyone suffer.Yoimiya:You are like a storybook hero, so awesome.Yoimiya:Hmm, that means I'm friends with a hero, doesn't it?Yoimiya:I'll support you with all I've got, so go ahead and write the rest of your story!
+# Yoimiya:So that's what motivates you.Yoimiya:You don't want to see anyone suffer.Yoimiya:You are like a storybook hero, so awesome.Yoimiya:Hmm, that means I'm friends with a hero, doesn't it?Yoimiya:I'll support you with all I've got, so go ahead and write the rest of your story!
+# Yoimiya:So that's what motivates you.
+# Yoimiya:You don't want to see anyone suffer.
+# Yoimiya:You are like a storybook hero, so awesome.
+# Yoimiya:Hmm, that means I'm friends with a hero, doesn't it?
+# Yoimiya:I'll support you with all I've got, so go ahead and write the rest of your story!
+# Yoimiya:Hehe, sorry, I'm getting too excited.
+# Yoimiya:But I've decided, I want to retrace your path!
+# Yoimiya:Starting from Mondstadt, to Liyue, and then to Inazuma... I will go see the sights you've seen and meet the people you've come across.
+# Yoimiya:That's what one has to do if they want to get to know someone completely!
+# Isn't that a bit much?
+# Yoimiya:Sorry, I don't mean to put any pressure on you. I was just, well... how should I put it? Simply, I...
+# Yoimiya:I want to know more about youuuu!
+# (Between 6:00 and 19:00)Good morning, Yoimiya.Yoimiya:Morning, (Traveler)Yoimiya:What a nice day! Let's go have some fun!
+# Good morning, Yoimiya.Yoimiya:Morning, (Traveler)Yoimiya:What a nice day! Let's go have some fun!
+# Yoimiya:Morning, (Traveler)Yoimiya:What a nice day! Let's go have some fun!
+# Yoimiya:Morning, (Traveler)
+# Yoimiya:What a nice day! Let's go have some fun!
+# (Between 19:00 and 6:00)Good night, Yoimiya.Yoimiya:Hehe, night. Sweet dreams, (Traveler)Yoimiya:I hope you dream about my fireworks.
+# Good night, Yoimiya.Yoimiya:Hehe, night. Sweet dreams, (Traveler)Yoimiya:I hope you dream about my fireworks.
+# Yoimiya:Hehe, night. Sweet dreams, (Traveler)Yoimiya:I hope you dream about my fireworks.
+# Yoimiya:Hehe, night. Sweet dreams, (Traveler)
+# Yoimiya:I hope you dream about my fireworks.
+When a character is invited to or invites themselves to their favorite set for the first time, the character will provide a reward. They will provide a reward for each of their favorite sets.
+Inviting them to the furnishing set again will replay the dialogue, but no further reward will be given.
+### Sakura-Hued Street
+# Yoimiya:Yes! This is the kind of atmosphere I live for, I absolutely love it!Yoimiya:I'm super impressed, it's pretty amazing that you managed to do this place up like a shopping street. Is there a Naganohara Fireworks here, too? I wanna go find it!Yoimiya:Come on, come with me! After all the effort you've put into this place, we should have some fun here!
+# Yoimiya:Yes! This is the kind of atmosphere I live for, I absolutely love it!
+# Yoimiya:I'm super impressed, it's pretty amazing that you managed to do this place up like a shopping street. Is there a Naganohara Fireworks here, too? I wanna go find it!
+# Yoimiya:Come on, come with me! After all the effort you've put into this place, we should have some fun here!
+# Yoimiya:Wow, is that an open-air hot spring I see? Amazing~!Yoimiya:There's no better feeling than jumping into a hot spring when you're done with work for the day!Yoimiya:Do you wanna join me? Relaxing in a hot spring, chatting away, ahh, it's one of the greatest feelings!
+# Yoimiya:Wow, is that an open-air hot spring I see? Amazing~!
+# Yoimiya:There's no better feeling than jumping into a hot spring when you're done with work for the day!
+# Yoimiya:Do you wanna join me? Relaxing in a hot spring, chatting away, ahh, it's one of the greatest feelings!
+### Explore properties
+
+### Genius Invokation TCG
+### Character Screen Animations
+## Character Details
+# Taking Pictures and Recounting Good Times
+### Mysterious Voyage
+### Summer Night Mementos
+### Character Shorts
+### Paimon's Paintings
+### Taking Pictures and Recounting Good Times
+### Explore properties
+
+A talented pyrotechnician. The current owner of Naganohara Fireworks known as the "Queen of the Summer Festival."A girl filled with fiery passion. The uncompromising childish innocence and the obsession with craftsmanship intertwine in her to create a spectacular blaze.
+Owner of Naganohara Fireworks. Known as "Queen of the Summer Festival," she excels in her craft of creating fireworks that symbolize people's hopes and dreams.
+Yoimiya, like the rest of her family, is loved by the people offor the fireworks she creates. She is also loved by children due to her friendly hands-on approach with them, as she wishes to keep them happy so they don't have to deal with the harsh realities of Inazuma for the time being. Having very few worries of her own, she can also read peoples' hearts and can tell whether or not they're hiding something deep down.
+Like her father, Yoimiya is devoted to the family business, stating that her customers' happiness is the first priority above all else. This service has amassed a massive and loyal customer base who are willing to help her out on any problems she have. She is somewhat of a fast speaker, and despite being the primary provider of fireworks, is also known to be quite reckless and unprepared, having been scolded by the city's fire brigade numerous times and noted byto always make last-minute preparations.
+Like many other Vision bearers, Yoimiya enjoys her Pyro Vision, as it helps her out with the business and she couldn't imagine a life without one. While not supportive of the, she still worships.
+Yoimiya uses themodel. She has a fair complexion, golden eyes with orange-red makeup painted at the corners, and shoulder-length light strawberry blonde hair. There is a small flower tattoo near her left shoulder and another similar tattoo patch around her upper left arm containing a red fish, flowers, and purple swirls.
+## Official Introduction
+Fireworks are the highlight of the festival, and Yoimiya is's best pyrotechnician. Every display she planned turns out fabulously. Ah, right, do not worry about the fire hazards. Theand shrine maidens will take care of the necessary precautions so that she can fully express her creativity.
+A talented pyrotechnician. The current owner ofknown as the "Queen of the Summer Festival." She is a household name in Inazuma.
+Various celebrations held inevery year all have elaborate firework displays created by Yoimiya. She possesses an exuberant creativity and passion for firework displays that always leave people pleasantly surprised.
+Yoimiya has a childlike innocence, and is often found playing simple yet timeless games with children or accompanying them to find shiny trinkets and toys. The purity of children brings her unparalleled joy.
+She also enjoys social interaction and seizes every opportunity to talk to others. She appears to have endless anecdotes and ideas to be shared.
+Principle and craftsmanship are Yoimiya's dearest qualities. Even though fireworks are fleeting, their blaze and warmth lives in people's hearts forever.
+Both a moment and an eternity, these fleeting marvels are an expression of "protection" she gives to those around her.
+It is because of everyone's involvement that the firework shows can carry on in such a beautiful manner.
+## Character Stories
+### Character Details
+Yoimiya's name is renowned throughout.
+She is the most skilled pyrotechnician inand is known as the "Queen of the Summer Festival."
+Yoimiya, who has inherited the mantle of "Naganohara", is able to give people an unparalleled experience with her ever-changing and spectacular fireworks.
+In addition to being a craftsperson, she is also the "heroic sister" in the eyes of many children. No matter how big the problem is, Yoimiya always has a solution to save the day.
+Be it the illusions of fear or the shadows of cold reality, they will all dissipate under the starlight magic of Yoimiya's fireworks.
+The children are not the only ones she helps — as long as one is willing to talk to her about their troubles, she will lend a helping hand, and try her best to help them through the crisis.
+Splendid fireworks, warm starlight and passionate lights all join in a swirling dance in Yoimiya's hands. Her bright smile is always able to inspire fellow travelers and light up the way for them.
+### Character Story 1
+To Inazumans, fireworks symbolize summer.
+The various festivals that take place at fixed times feature a rotation of various events, with fireworks being the sole constant.
+Over a century ago, the Yashiro Commission once organized a dazzling fireworks display with "commemoration" as the theme.
+The fireworks then were made by the greatest pyrotechnicians in the land, and this was the origin of the Naganohara Fireworks Show.
+In latter days, fireworks would become more common, and the Naganohara Fireworks Show would slowly become an event in which all people would participate.
+During the Fireworks Show, everyone can light their favorite fireworks, and the owner of the Naganohara Fireworks store will pick an appropriate time to set up a most lavish performance.
+The year Yoimiya took over, her first fiesta was already jaw-droppingly good.
+On the night before that Fireworks Show,enjoined Yoimiya thusly: "will be watching this fireworks display personally. As such, please add Her Excellency's emblem — the Electro Mitsudomoe — into the fireworks repertoire, if you would."
+"Haha, just wait for it!" Yoimiya replied, agreeing with great confidence.
+Before the show could begin, Yoimiya ran all about the city, placing thousands of launch tubes in every nook and cranny. At the festival's finale, the blazing fireworks formed a gigantic picture scroll that depicted the city of Inazuma in the skies.
+Yet Ayaka did not find the critical emblem in any one of these fireworks, and wondered if Yoimiya had made an error in her arrangements.
+It was only after speaking with Yoimiya that Ayaka discovered that the image of Inazuma in the skies had an "angling" trick added to it.
+If viewed from the Tenshukaku, the fireworks would form a huge, clear, and orderly image of the Raiden Shogun's house-crest — with some playfully lacy decorations on the side to boot.
+Of course, how could Yoimiya miss a beat at a fireworks performance? This way, she won the praise of both the people and the Raiden Shogun, and this feast would become a timeless classic deeply rooted in the memories of countless people.
+With Yoimiya around, the Inazuman summer shall not lack any glorious fireworks — thus was her nickname, "Queen of the Summer Festival," coined.
+### Character Story 2
+Naganohara's fireworks are loved by all, and work in the shop is always in full swing. As such, people often feel that coming up to the door without important matters might hinder the work.
+However, it's just the opposite with Yoimiya, for chatting is her other great hobby. In fact, if there's no one to talk to, she might actually find it hard to focus.
+If chatting with the guest is her way of "understanding their mood and way of thinking, such that the best fireworks can be crafted," then going with the flow and sitting down for tea and an idle chat with them after delivering the goods is how Yoimiya rewards herself. Sometimes, if that is not enough, she will make some small-talk with her neighbors on the way, give them some small trinkets, and receive a basket of small treats in return...
+Yoimiya is always able to strike a balance between listening and speaking in such chats.
+She doesn't repeat herself, doesn't cross boundaries, doesn't come off as indifferent or overly invested. After a talk over tea, everyone leaves in a good mood.
+Her neighbors are all ordinary folk, and their lives are not exactly full of extraordinary things. Sometimes, the same news will be told by different people over and over, but Yoimiya does not find this upsetting.
+What she enjoys is the process of talking to others — even if they speak of the same matter, different people will have different viewpoints.
+After taking over the fireworks shop, Yoimiya's relationships with her neighbors became still more harmonious. Many old folks have taken her for an old acquaintance, and often invite her to their place to sit and recount the festivals of yesteryear. Middle-aged parents will ask Yoimiya to mediate the relationship between themselves and their children and will regale her with the little trivialities of daily family life. The young people treat Yoimiya as a sibling of sorts, volunteering to help her cart heavy fireworks-making materials around, hoping that Yoimiya will get off work faster and take the children out to play.
+Yoimiya puts it this way: "I believe in the unique power of language. There's nothing that can't be talked through somehow!"
+### Character Story 3
+Craftsmen seeking perfection are often rigorous and self-disciplined, but Yoimiya is an exception, acting freely and taking unscheduled breaks.
+Sometimes, she even has to work late into the night when she misses her daytime work due to chatting for too long. But when the sun begins to rise, she will climb up to the heights to see the sunrise with a sense of accomplishment at having finished her work in her heart. Looking out at the hazy amber-gold clouds, Yoimiya often gains new inspiration, imagining all manners of new fireworks in her mind, even as sleep draws near...
+Her neighbors have often found her sleeping in places like eaves, tree branches, and stopped waterwheels. Sometimes, she even falls down, before blearily watching her sweet dreams and golden stars fade away into the distance.
+Fortunately, she has never been seriously injured in such incidents, but she has gotten a number of scrapes and cuts, and it was on that account that she learned how to deal with wounds.
+At some other times, Yoimiya will sleep until midnight, settling all matters with gusto before heading out for a stroll.
+Perhaps it may turn out to be an impromptu adventure, or perhaps a test of courage. If a friend is interested, she might call upon them. If she wishes to be alone, she will travel in solitude.
+Living as she pleases gives Yoimiya a sense of freedom. As for others, they may encounter her at any time at all. She enjoys this freedom, often saying that it has made her life very interesting indeed.
+Of course, she will restrain herself on the eve of celebrations. Mistakes shall not be made during these all-important performances — her "official business."
+### Character Story 4
+Apart from selling fireworks, Naganohara Fireworks also sells various intricate knickknacks. This can be said to be Yoimiya's second career.
+All manner of trinkets adorn the shelves, with some of them being exotic imports fromthat were modified and made into highly distinctive handicrafts, and others being practice works created during bursts of Yoimiya's explosive inspiration.
+From the Scatterbloom Marbles that will blossom when they knock against each other, Leaping Tops that chirp like birds as they spin, the Neon Dragonfly that changes hue as it ascends into the air, and the somewhat-failedChariot... All these toys are inspired by the little games that the common people play.
+They are not only popular among the children, but are much-loved by adults as well. Even, the head of the, comes over to buy her specially-made knickknacks, which he then brings to go challenge the one he has declared.
+Yoimiya's knickknacks are not just toys. With some thought, they can be very useful in one's daily life. The most classic example of this is the Katydid Coil, which is a ring that can contain a variety of flammables and spices. When ignited and hung up in the summer, it can be used to repel mosquitoes.
+Many people have come to ask Yoimiya for help on account of her excellent craftsmanship. And though she protests, saying, "Hey now, this is a fireworks shop, not an everything shop. Even I can't possibly do it all," she will still try her best to help, even if her earnings for the whole day are only enough to buy a few snacks. She'll enjoy the whole thing, too — everyone in Hanamizaka is her friend, after all.
+### Character Story 5
+"The rainbows become fireworks, and they my wishes know, my wishes rise into the skies, and through the night they show."
+This nameless folksong has been around for a long time now. In recent years, it was misconstrued by the children to mean that as long as they brought some shiny trinkets, they could exchange them with Yoimiya for fireworks that belong just to them, and that if they lit those fireworks up, their wish will come true at some point in the future.
+As such, the children of Hanamizaka set about searching for beautiful little trinkets with this song on their lips, before bringing them to Yoimiya, with expectation eagarly written on their faces.
+Yoimiya was quite troubled by this at first, but after hearing how the children had interpreted that song, she accepted their requests gladly and even added her own spin to the tale: the "rainbows" in the song not only refer to shiny treasures persay. As long as she found them "sufficiently shiny," whether they were colored rocks from the creeks or shell fragments from the beaches, she would take them and make lovely fireworks as per the agreement.
+Indeed, if they were to bring her expensive things, she might, in turn, say that they are too ordinary, and take the child to look for the owner of those lost goods.
+But it really did not matter if the treasures were shiny or not. The important part was the conviction the children had that "rainbows" could indeed be exchanged for "fireworks."
+Though some might take it for naivete, Yoimiya will give her all to protect the lovely wishes that only children can have.
+"The things we believed in and experienced as children become irreplaceable treasures."
+The legendary picture books of Inazuma are often filled with the following images: the cute and playful Great Mujina Youkai, the majestic Shiba Warrior, the Origami Nue who appears out of nowhere...
+Perhaps those who drew demons in such cute forms also had a similar intention to Yoimiya.
+The children gather around Yoimiya, enjoying a gladsome time even amidst Inazuma's lockdown.
+Yoimiya's own child-like heart and liveliness never dulls, like fireworks and stars that shimmer and shine in the night sky.
+### Yoimiya's Candy Box: "Sweet Pearl"
+Every festival, Yoimiya not only tries snacks from every store, but she also collects all sorts of candies, wraps them up with care, before storing them away inside a small candy box.
+Yoimiya's candy box is a small crimson ball that has been decorated with delicate lanyards and ornate accessories, much like the hair accessories she often wears.
+Each time she encounters a joyous event, she will take one candy out of the box and eat it. If her friends or the children are around, she will share the sweets with them.
+Yoimiya's neighbors often mistake her hair ornaments for the candy box, hence its erroneous nickname "Sweet Pearl."
+The speed at which the box lightens is taken for an important measure of happiness.
+The quicker it empties, the more pleased Yoimiya is.
+Sometimes, when things get busy, she sometimes absently uses the candy box as a hair accessory, realizing her mistake only after the day is done.
+Still, even this error would inspire Yoimiya. From then on, she would wear them interchangeably.
+"Take a guess: does my hair ornament have candy in it today? Free pick of the sweets to anyone who gets it right!"
+Yoimiya is always up for a chat. It is only when the fireworks are ascending into the skies that she quiets down and just watches the lovely scenery.
+People often say that fireworks come and go in a fleeting heartbeat, but if they are memorable enough, they will remain in bloom forever in people's hearts.
+Those who accompanied you and the loveliness of the moment itself, will burrow deep into your mind as a beautiful memory.
+And as you look upon the same fireworks, many years later, that same memory and the feelings that came with it will surely rise again to the forefront of your heart.
+Is this not also "Eternity"?
+The special firework formula slips that belong solely to the Naganohara family exist for precisely this purpose.
+By incorporating goodwill and wishes into the gorgeous fireworks, ephemeral things are etched into eternity. This is the meaning of Yoimiya's line of work.
+On one summer night following her taking over Naganohara Fireworks, Yoimiya could not sleep, and thus she continued in her research till daylight came.
+Suddenly, she heard a tinkling sound, and a burning-red object fell into an unused launching tube.
+At first, Yoimiya used her Vision as a sort of lighter. Fortunately, herdiscovered it and explained a Vision's significance to her.
+So, this tiny gem could grant a person astonishing and mysterious powers. And yet what else could it do other than protect the children or chase some mischievous monsters away?
+"Even if it could have other uses," Yoimiya thought, "it may not ever need to do these things in my hands. I'm just someone who pursues happiness, a fireworks-maker who enjoys living life."
+Time has flown since then, and Yoimiya has grown ever more skilled in the manipulation of "fire," with her skill at making fireworks having likewise increased.
+Sometimes, she stops to ask herself this: "How did someone as ordinary as me receive the acknowledgment of the gods? Do the gods... enjoy fireworks, by any chance?"
+## Quests and Events
+## Character Mentions
+### Character Stories
+- 
+### Character Voice-Overs
+* Yoimiya is one of the few characters to talk about someone outside of their home nation, that person being.
+* Yoimiya is ambidextrous; she is seen shooting her bow in both hands during her Normal Attacks.
+* Yoimiya is seen wielding thein her official art.
+* Yoimiya is the first non-playable character to receive an Act II for their.
+* Yoimiya is capable of viewing and/or communicating with thewhile not being a child.
+* Yoimiya is known by these aliases or titles:Queen of the Summer Festival
+* Queen of the Summer Festival
+- Yoimiya is one of the few characters to talk about someone outside of their home nation, that person being.
+- Yoimiya is ambidextrous; she is seen shooting her bow in both hands during her Normal Attacks.
+- Yoimiya is seen wielding thein her official art.
+- Yoimiya is the first non-playable character to receive an Act II for their.
+- Yoimiya is capable of viewing and/or communicating with thewhile not being a child.
+- Queen of the Summer Festival
+* In Japanese,yomiyaoryoimiya(Japanese:宵宮) (lit. last-evening shrine) refers to the evening festival of a main festival.In traditional Shinto beliefs, gods/spirits were thought to return to their main shrines during this evening.
+* Yoimiya's constellation name, Carassius Auratus, is thefor.
+- In Japanese,yomiyaoryoimiya(Japanese:宵宮) (lit. last-evening shrine) refers to the evening festival of a main festival.In traditional Shinto beliefs, gods/spirits were thought to return to their main shrines during this evening.
+- Yoimiya's constellation name, Carassius Auratus, is thefor.
+### Character Title: Frolicking Flames
+1. ↑Chinese and Japanese:The characterdoes not hold an independent meaning outside of compound words, but it is used in the name of the(琉金) goldfish. Given that the Ryukin is a recurring element in Yoimiya's design, this instance of the character is likely a reference to it as well.
+1. Official Genshin Impact Website:
+### Explore properties
+
+## List of Character Outfits
+### Explore properties
+
+# Yoimiya/Voice-Overs
+### Explore properties
+
+# Yoimiya: Auratus Spark
+Yoimiya: Auratus SparkIconBackgroundBannerItem TypeQualityDescriptionEven momentarily sparks can leave beautiful, unquenchable flames in the hearts of those who watch the night sky.How to ObtainSourceReward for reaching10 with
+## Yoimiya: Auratus Spark
+Yoimiya: Auratus Sparkis aobtained by reaching10 with.
+## Other Languages[]
+### Explore properties
+
+YoimiyaDetailsFeaturesHealth10How to ObtainSource 1Achieve victory inYoimiyais aobtained in.
+## Proficiency Reward[]
+After reaching Proficiency 10, the following Dynamic Skin is obtained:2
+## Stage Appearances[]
+Yoimiya appears in11stages:
+Dynamic Skin Idle Animation
+## Other Languages[]
+* Updated Elemental Burst:Decreased dice cost from4to3.Adjusted effect:Old: Deals4Pyro DMGNew: Deals3Pyro DMG
+* Decreased dice cost from4to3.
+* Adjusted effect:Old: Deals4Pyro DMGNew: Deals3Pyro DMG
+* Old: Deals4Pyro DMG
+* Decreased dice cost from4to3.
+* Adjusted effect:Old: Deals4Pyro DMGNew: Deals3Pyro DMG
+* Old: Deals4Pyro DMG
+- Decreased dice cost from4to3.
+* Old: Deals4Pyro DMG
+- Old: Deals4Pyro DMG
+* Updated Elemental Burst:Increased Energy cost from2to3.Increased dice cost from3to4.Adjusted effect:Old: Deals3Pyro DMGNew: Deals4Pyro DMG
+* Increased Energy cost from2to3.
+* Increased dice cost from3to4.
+* Adjusted effect:Old: Deals3Pyro DMGNew: Deals4Pyro DMG
+* Old: Deals3Pyro DMG
+* Increased Energy cost from2to3.
+* Increased dice cost from3to4.
+* Adjusted effect:Old: Deals3Pyro DMGNew: Deals4Pyro DMG
+* Old: Deals3Pyro DMG
+- Increased Energy cost from2to3.
+- Increased dice cost from3to4.
+* Old: Deals3Pyro DMG
+- Old: Deals3Pyro DMG
+### Explore properties

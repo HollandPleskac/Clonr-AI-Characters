@@ -1,0 +1,94 @@
+Cannot Goodenough唯@WGeneral InformationGenderMaleRaceUnknownFaction(nominally)OccupationWandering merchantStatusAliveRelated Characters
+## Cannot Goodenough
+## General Information
+Cannot Goodenoughis anin.He first appears inand is a supporting character inand.
+Nothing is known about Cannot other than him being a strange man who wanders around's wilderness to trade with anyone regardless of affiliation and allegiance, although he had some relations with the anarchists of. Cannot's goods are funny and unknown, but most of them are "good enough," giving him some reputation among his clients.
+Behind his eccentricity, Cannot is an ambitious man who wanted the Terrans to stop fighting each other so that they could focus on fending off external threats encroaching the land:from the Northlands and Foehn Hotlands,, and those beneath the' underground world. This is also why Cannot maintain a neutral stance with his clients; even if they are hostile towards each other, as is the case withor, he will do business with them so long as they could bring progress to the bleak world of Terra.
+After theandran into thewilderness to avoid the police bribed by, the two met him and asked whether he could lead them to a nearby supply station. He agreed and then led them throughout the journey for three days. But without knowing, their journey was actually supervised by his fellowmen in Rusthammer and the intention remains unknown.
+When reaching the supply station, the Doctor had already noticed something fishy and revealed it in front of Mr. Goodenough. In turn, the Doctor requested him and his "friends" to help Amiya leave the border in safety in exchange for a few documents in their car. The trade was fair and Mr. Goodenough was impressed by the Doctor's character, commenting that Rhodes Island would make the future of the wilderness much more interesting.
+### A Light Spark in Darkness[]
+Mr. Goodenough was the one who sold the VTOL to the resurgent Reunion which would be used during. Using the document sold by the Doctor, he had the Rusthammers ambush for an upcoming truck from Columbia travelling into a canyon and lured an 8-meter-tallto attack the vehicle. Seeing that his action was truly bizzard, hostility almost broke out between the two factions had not Gareth came to stop them.
+After checking the goods,questioned him about his earnest intention in aiding them so that Reunion could win his trust. In turn, Mr. Goodenough replied that he was disappointed by the corruption across many Terran nations, specifically Columbia and, which led to their neglection of the warning of aSnowpriest concerning an upcoming "end of the world." He had been aiding a lot of organizations, even including the Cyclopses of Sami and the occultists of, so that they could accelerate the progress of social advancement. Nine replied that R.I should be be his best answer, but he believed that R.I. alone could never resolve the issue. So, he wished all elite forces across Terra to band together and prepare themselves as a flickering spark for an upcoming darkness.
+### Explore properties
+
+CannotCodeKNTOther NamesChinese坎诺特General InformationClassAttack patternMeleeTargetingGroundRatingsHPATKDEFRES????Cannot Goodenough also acts as ain thegame mode of, featured inas simplyCannot.
+## General Information
+# A mysterious trader who roams the barrenlands, selling anything that exists in civilization.
+# A mysterious trader who roams the barrenlands, selling anything that exists in civilization.
+# Cannot attack. Does not depletewhen it disappears. Periodically releases random chemicals that affect the battlefield.
+# Cannot attack. Does not depletewhen it disappears. Periodically releases random chemicals that affect the battlefield.
+Having had enough from being nagged by players, Cannot Goodenough the rogue trader decides to teach the bull in a china shop a lesson for screwing with his business.
+Despite being a boss, Cannot is more of a hazard; he can neither be attacked nor blocked in any way, but he does not attack and will not deductwhen entering a. Instead, he supports other enemies on the level by using potions that bestow one of the two effects listed below at random:
+1. All enemies will be put to(unless if they are immune) for 10 seconds, during which they restore 4% of their maximum HP every second.
+1. Two random enemies will have their ATKdoubled, ASPD increased by 100, andcannot be defeated(the enemy takes damage as usual, but their HP cannot be reduced below 1) for 12 seconds.
+- All enemies will be put to(unless if they are immune) for 10 seconds, during which they restore 4% of their maximum HP every second.
+- Two random enemies will have their ATKdoubled, ASPD increased by 100, andcannot be defeated(the enemy takes damage as usual, but their HP cannot be reduced below 1) for 12 seconds.
+Cannot will immediately use the potion after spawning and every 23 seconds afterward.
+### Susceptibilities
+### Explore properties
+
+Cannot Goodenough also appears inas theRogue Traderwho runs the eponymous node where the player can exchangefor various items includingandto aid the player.
+The price of the Rogue Trader's wares are:
+* Rare Collectibles
+- Rare Collectibles
+* Super Rare Collectibles
+- Super Rare Collectibles
+- Tier 3 Foldartals (Expeditioner's Joklumarkar)
+Having the/will give a 50% discount to the Rogue Trader's wares. In,also has the same effect (albeit one-time only) and can be stacked with Rusted Iron Hammer for a75%discount.
+- 
+## Prospective Investment[]
+Since Crimson Solitaire, the player may invest their Originium Ingots at the Rogue Trader through theProspective Investment Systemwhich will give them various bonuses at certain thresholds. Keep in mind that the function is independent for each I.S. theme (e.g. the player's investment in Crimson Solitairewill notbe carried over toor vice-versa) and not all Rogue Trader nodes allow the player to make Prospective Investments.
+Each investment deposits1to the Rogue Trader, who can hold up to999. There is a chance when investing that the market will crash, preventing the player from making further investments for the rest of the run.
+The Prospective Investment bonuses are:
+* #2: The Rogue Trader has one additional ware
+* #3: The invested Originium Ingots can be withdrawn (see below)
+- #2: The Rogue Trader has one additional ware
+- #3: The invested Originium Ingots can be withdrawn (see below)
+* #2: The invested Originium Ingots can be withdrawn (see below)
+* #3: The Rogue Trader has one additional ware but will raise the price of a random ware by 50%
+- #2: The invested Originium Ingots can be withdrawn (see below)
+- #3: The Rogue Trader has one additional ware but will raise the price of a random ware by 50%
+* #2: The Rogue Trader has one additional ware
+* #3: The Rogue Trader has one additional ware but willdoublethe price of a random ware
+- #2: The Rogue Trader has one additional ware
+- #3: The Rogue Trader has one additional ware but willdoublethe price of a random ware
+- #4: The Rogue Trader has one additional ware
+After investing200(Crimson Solitaire)/25(since Caerula Arbor), the option to withdraw the invested Originium Ingots are available. Each withdrawal gives1and deducts the invested Ingots by:
+a=2(b−1){\displaystyle a=2^{(b-1)}}
+* a is the final withdrawal cost.
+- a is the final withdrawal cost.
+- b is the withdrawal count, up to 6.
+In Caerula Arbor, the withdrawal also costs1.
+### Can Cannot show you his wares?
+After investing100, a button saying "Touch the goods tentatively" will be present on the Rogue Trader; pressing this button five times will irritate Cannot and gives the player two options:Listen to Cannotand"Bargain" with Cannot.
+* IfListen to Cannotis chosen, he will talk the player down and they can browse or buy Cannot's wares and make Prospective Investments (if available) as usual, and the "Touch the goods tentatively" button is no longer present.
+- IfListen to Cannotis chosen, he will talk the player down and they can browse or buy Cannot's wares and make Prospective Investments (if available) as usual, and the "Touch the goods tentatively" button is no longer present.
+- If"Bargain" with Cannotis chosen, the player will be forced into an ISW-SPfeaturing. Should the player clear said operation, they can loot the Rogue Trader: all of his current waresare freebut Cannot will leave for the rest of the run, meaningall Rogue Trader nodes from this point will have no wares available and will not allow the player to make Prospective Investments!
+### Mizuki & Caerula Arbor[]
+* The player can roll thefor a chance to refresh the Rogue Trader's wares at the cost of 1 dice roll:[Favored by Fortune]Cannot is willing to offer you certain "premium goods":If the die lands on 7 to 12, all of the wares will be refreshed and the Collectible(s) may be those that normally cannot be purchased in the Rogue Trader.[Smooth Sailing]Cannot is willing to show you some new wares:If the die lands on 5 or 6, all of the wares will be refreshed.[Calm Seas]Cannot brings out two new items:If the die lands on 1 to 4, two of the wares will be refreshed.
+* [Favored by Fortune]Cannot is willing to offer you certain "premium goods":If the die lands on 7 to 12, all of the wares will be refreshed and the Collectible(s) may be those that normally cannot be purchased in the Rogue Trader.
+* [Smooth Sailing]Cannot is willing to show you some new wares:If the die lands on 5 or 6, all of the wares will be refreshed.
+* [Calm Seas]Cannot brings out two new items:If the die lands on 1 to 4, two of the wares will be refreshed.
+* After investing200, the Rogue Trader will raise the price of one of his wares, chosen at random, by 50%. The price hike is increased to 100% (i.e.doubled) after the player invested500.
+* [Favored by Fortune]Cannot is willing to offer you certain "premium goods":If the die lands on 7 to 12, all of the wares will be refreshed and the Collectible(s) may be those that normally cannot be purchased in the Rogue Trader.
+* [Smooth Sailing]Cannot is willing to show you some new wares:If the die lands on 5 or 6, all of the wares will be refreshed.
+- [Favored by Fortune]Cannot is willing to offer you certain "premium goods":If the die lands on 7 to 12, all of the wares will be refreshed and the Collectible(s) may be those that normally cannot be purchased in the Rogue Trader.
+- [Smooth Sailing]Cannot is willing to show you some new wares:If the die lands on 5 or 6, all of the wares will be refreshed.
+- [Calm Seas]Cannot brings out two new items:If the die lands on 1 to 4, two of the wares will be refreshed.
+- After investing200, the Rogue Trader will raise the price of one of his wares, chosen at random, by 50%. The price hike is increased to 100% (i.e.doubled) after the player invested500.
+- Unlocking the "Negotiation"nodes give a chance that the Rogue Trader gives a discount to his wares' price after rolling the die (see above).
+### Expeditioner's Joklumarkar[]
+* The Rogue Trader can now perform a maintenance and upgrade to theat the cost of12, increasing the Anti-Interference Index by 1.
+- The Rogue Trader can now perform a maintenance and upgrade to theat the cost of12, increasing the Anti-Interference Index by 1.
+### Explore properties
+
+# Cannot Goodenough's quotes
+- 
+## Integrated Strategies[]
+### Ceobe's Fungimist[]
+### Phantom & Crimson Solitaire[]
+### Mizuki & Caerula Arbor[]
+### Explore properties
+
+# Cannot Goodenough's trivia
+### Explore properties

@@ -1,0 +1,401 @@
+MonaAstral ReflectionCardWishIn-GameQualityBioVoice ActorsReal NameAstrologist Mona Megistus()RegionAffil­i­a­tions(on profile)September 28, 20202 years, 10 months agoEnglishChineseJapaneseKoreanAdditional TitlesCategoriesEnigmatic Astrologer
+## Astral Reflection
+- 
+Astrologist Mona Megistusis a playablein.
+An astrologist of knowledgeable skill and high pride, Mona has settled into avoid suffering the ire ofafter unwittingly reading the latter's diary.
+### Ascensions and Stats
+Toggle Ascension Materials
+1. Does not include weapon ATK value.
+1. Characters gain special stats starting with 2✦.
+- Does not include weapon ATK value.
+- On the 3rd Normal Attack, Mona will perform a short backward or forward teleport depending on whether or not her distance from the enemy is greater than or equal to7.5 m.
+# Constellation Effects
+* Constellation Level 2,: "When ahits, there is a 20% chance that it will be automatically followed by a. This effect can only occur once every 5s."
+- Constellation Level 2,: "When ahits, there is a 20% chance that it will be automatically followed by a. This effect can only occur once every 5s."
+* Continuously taunts nearby opponents, attracting their fire.
+* Continuously dealsHydro DMGto nearby opponents.
+- Continuously taunts nearby opponents, attracting their fire.
+- Continuously dealsHydro DMGto nearby opponents.
+* The Phantom lasts for 5 seconds. It dealsHydro DMGevery second (DoT) for a total of 4 times, followed by a finalAoE Hydro DMGExplosion.
+* When the Phantom Explosion hits at least one, it generates3.33.
+- The Phantom lasts for 5 seconds. It dealsHydro DMGevery second (DoT) for a total of 4 times, followed by a finalAoE Hydro DMGExplosion.
+- When the Phantom Explosion hits at least one, it generates3.33.
+- Passive Talent 2,: "After she has usedfor 2s, if there are any opponents nearby, Mona will automatically create a Phantom. A Phantom created in this manner lasts for 2s, and its explosion DMG is equal to 50% of."
+# Constellation Effects
+Hold Invincibility Frame
+* Applies an Omen to the opponent, which gives a DMG Bonus, also increasing the DMG of the attack that causes it.
+- Applies an Omen to the opponent, which gives a DMG Bonus, also increasing the DMG of the attack that causes it.
+* Illusory Bubble and Omen are both applied upon casting Stellaris Phantasm.
+* When Illusory Bubble is active on an enemy, there is a constellation-like marking on that enemy. When Omen is active on an enemy, there is a starry purple aura around that enemy.
+* Stellaris Phantasm appliesWettwice: once when cast, and once when the Illusory Bubble bursts.
+* Hits that do not dealwill not burst the bubble.
+* If no outside source bursts the bubble, it automatically bursts after 8 seconds.
+* Omen status timer only starts after the bubble bursts. Since Omen is applied from the initial cast of the skill, if the bubble lasts for its whole duration (8s), Omen can have a maximum duration of 13s.
+* Illusory Bubble Explosion DMG doesnotand will be affected by changes in Mona's stats after Stellaris Phantasm is cast.
+* Theis additive to other sources of DMG Bonus, such as Mona'spassive,.
+- Illusory Bubble and Omen are both applied upon casting Stellaris Phantasm.
+- When Illusory Bubble is active on an enemy, there is a constellation-like marking on that enemy. When Omen is active on an enemy, there is a starry purple aura around that enemy.
+- Stellaris Phantasm appliesWettwice: once when cast, and once when the Illusory Bubble bursts.
+- Hits that do not dealwill not burst the bubble.
+- If no outside source bursts the bubble, it automatically bursts after 8 seconds.
+- Omen status timer only starts after the bubble bursts. Since Omen is applied from the initial cast of the skill, if the bubble lasts for its whole duration (8s), Omen can have a maximum duration of 13s.
+- Illusory Bubble Explosion DMG doesnotand will be affected by changes in Mona's stats after Stellaris Phantasm is cast.
+- Theis additive to other sources of DMG Bonus, such as Mona'spassive,.
+- The Illusory Bubble applies astate to enemies whoseis less than or equal to100, preventing them from performing any actions. However, the Struggle state will not be applied to enemies more than 20 levels higher than Mona.
+# Constellation Effects
+* Constellation Level 1,: increases Electro-Charged DMG, Vaporize DMG, Hydro Swirl DMG, and Frozen duration by 15% when any of the player's own party members hits an opponent affected by Omen.
+* Constellation Level 3,: Increases this talent's level by 3 and raises its maximum level to 15.
+- Constellation Level 1,: increases Electro-Charged DMG, Vaporize DMG, Hydro Swirl DMG, and Frozen duration by 15% when any of the player's own party members hits an opponent affected by Omen.
+- Constellation Level 3,: Increases this talent's level by 3 and raises its maximum level to 15.
+* In the, before starting the challenge, Mona will sprint regularly without cloaking herself with water. After starting the challenge, her Alternate Sprint will be enabled again.
+* One can hold the sprint button while stationary to make Mona stay in place while cloaking herself in water. No stamina is consumed while Mona is stationary.
+- In the, before starting the challenge, Mona will sprint regularly without cloaking herself with water. After starting the challenge, her Alternate Sprint will be enabled again.
+- One can hold the sprint button while stationary to make Mona stay in place while cloaking herself in water. No stamina is consumed while Mona is stationary.
+- Passive Talent 1,: "After she has usedfor 2s, if there are any opponents nearby, Mona will automatically create a Phantom. A Phantom created in this manner lasts for 2s, and its explosion DMG is equal to 50% of."
+# Constellation Effects
+* A Phantom can be created even if Mona is not close enough to attack an enemy, as long as Mona is in combat.
+* No Phantom is created near theuntil it is aggravated.
+* Using Illusory Torrent outside of combat counts toward the 2-second timer, although no Phantom will be created until Mona enters combat.
+* Remaining stationary while using Illusory Torrent counts toward the 2-second timer.
+* The 2-second timer resets when Mona stops using Illusory Torrent or when a Phantom is created from "Come 'n' Get Me, Hag!"
+- A Phantom can be created even if Mona is not close enough to attack an enemy, as long as Mona is in combat.
+- No Phantom is created near theuntil it is aggravated.
+- Using Illusory Torrent outside of combat counts toward the 2-second timer, although no Phantom will be created until Mona enters combat.
+- Remaining stationary while using Illusory Torrent counts toward the 2-second timer.
+- The 2-second timer resets when Mona stops using Illusory Torrent or when a Phantom is created from "Come 'n' Get Me, Hag!"
+* At Ascension Phase 4, Mona receives 23.2%Hydro DMG Bonusby default, due to her ascension stat of. An extra 1.6%Hydro DMG Bonusis obtained at Ascension Phases 5 and 6, for a total of 24.8% and 26.4%, respectively.
+* The effects of this passive talent do not show if Mona isor not in the.
+- At Ascension Phase 4, Mona receives 23.2%Hydro DMG Bonusby default, due to her ascension stat of. An extra 1.6%Hydro DMG Bonusis obtained at Ascension Phases 5 and 6, for a total of 24.8% and 26.4%, respectively.
+- The effects of this passive talent do not show if Mona isor not in the.
+* DMG increases by 15%.
+* DMG increases by 15%.
+* HydroDMG increases by 15%.
+- DMG increases by 15%.
+- DMG increases by 15%.
+- HydroDMG increases by 15%.
+* Contrary to the description, this Constellation doesnothave any effect onduration.
+* This bonus does not apply in the triggering attack nor from the resultingHydro DMGdealt by Illusory Bubble inregardless if they were from resulting reactions.
+* The buff will apply to all party members.In, it only applies to the team members of the Mona player.
+* In, it only applies to the team members of the Mona player.
+* In the, it is possible for the buff to transfer to the next team in the other chamber if it has not expired.
+- Contrary to the description, this Constellation doesnothave any effect onduration.
+- This bonus does not apply in the triggering attack nor from the resultingHydro DMGdealt by Illusory Bubble inregardless if they were from resulting reactions.
+- In, it only applies to the team members of the Mona player.
+- In the, it is possible for the buff to transfer to the next team in the other chamber if it has not expired.
+* The automatic Charged Attack does not consume.
+* The Charged Attack created from this constellation does not interrupt the Normal Attack sequence.
+- The automatic Charged Attack does not consume.
+- The Charged Attack created from this constellation does not interrupt the Normal Attack sequence.
+Each Constellation activation requires one.
+* Standard Wish(Indefinite)
+- Standard Wish(Indefinite)
+Monawas not promoted or featured with a drop-rate boost in any.
+1. ↑Mona's real name has been inconsistent in-game, being written asAstrologist Mona Megistus;Mona Megistus, the Astrologist; andMona Megistus the Astrologist. Regardless, "Astrologist" is part of her name as demonstrated by the fact that the Chinese name includes阿斯托洛吉斯Āsītuōluòjísī, the phonetic transcription of "Astrologist" into Chinese instead of the translation占星术士Zhānxīng Shùshì, "astrologist."
+* Updates to character voice-overs:Removed from all languages:"Disengaging Wind Glider"
+* Removed from all languages:"Disengaging Wind Glider"
+* Removed from all languages:"Disengaging Wind Glider"
+* Updates to character voice-overs:Updated audio for Japanese:"About Jean"
+* Updates to character voice-overs:Updated audio for Japanese:"About Jean"
+* Updates to character voice-overs:Updated audio for Chinese:Majority of the Combat voice-overs
+* Updated audio for Chinese:Majority of the Combat voice-overs
+* Majority of the Combat voice-overs
+* Updated audio for Chinese:Majority of the Combat voice-overs
+- Majority of the Combat voice-overs
+* December 28, 2020— Mona's portrait used in official media was silently updated to feature more details.
+* A few lines of Mona'swere revised.Old: "You say that your line has a unique pedigree — but you also say that your hag of a teacher is a stubborn dimwit. Which of your descriptions of your master is accurate?"New: "You speak of your illustrious lineage, yet you also refer to your master as a "hag" and a "stubborn dimwit." Which of these descriptions is accurate?"Old: Albedo could not help but ask this question — and indeed, Mona found that she had never given this question much thought either.New: Albedo could not help but ask this question — and when he did, Mona promptly realized that she had never given it much thought herself.
+* Old: "You say that your line has a unique pedigree — but you also say that your hag of a teacher is a stubborn dimwit. Which of your descriptions of your master is accurate?"New: "You speak of your illustrious lineage, yet you also refer to your master as a "hag" and a "stubborn dimwit." Which of these descriptions is accurate?"
+- December 28, 2020— Mona's portrait used in official media was silently updated to feature more details.
+* Old: "You say that your line has a unique pedigree — but you also say that your hag of a teacher is a stubborn dimwit. Which of your descriptions of your master is accurate?"New: "You speak of your illustrious lineage, yet you also refer to your master as a "hag" and a "stubborn dimwit." Which of these descriptions is accurate?"
+- Old: "You say that your line has a unique pedigree — but you also say that your hag of a teacher is a stubborn dimwit. Which of your descriptions of your master is accurate?"New: "You speak of your illustrious lineage, yet you also refer to your master as a "hag" and a "stubborn dimwit." Which of these descriptions is accurate?"
+1. ↑OfficialGenshin ImpactWebsite:
+1. ↑EventQuest: IV -Immernachtreich Apokalypse, Part 1:
+1. ↑EventQuest,: Part II, Part 2:
+1. Community Document:
+- ↑OfficialGenshin ImpactWebsite:
+- ↑EventQuest: IV -Immernachtreich Apokalypse, Part 1:
+### Explore properties
+
+# Mona's Stella Fortuna
+Mona's Stella FortunaItem TypeQualityDescription's Constellation Activation MaterialHow to ObtainSource
+## Mona's Stella Fortuna
+Mona's Stella Fortunais aobtained fromused to level's.
+## Other Languages[]
+### Explore properties
+
+MonaCategoryQualityAdeptal EnergyLoad3001200Adeptal Energy per Load0.25DescriptionCharacter In-ResidenceMonacan be invited as a Companion into the player'safter obtaining her and completing the World Quest.
+### Adeptal Energy per Load
+## Favorite Furnishing Sets
+If a character's favoriteis placed in the same realm as the character for the first time, the character will automatically teleport to the furnishing set. Interacting with the character will initiate a, after which the character will teleport back to their original position.
+Mona has2Favorite Furnishing Sets:
+# So hungry...The stars...Astrology...My manuscripts...My recent expenditures...
+# My recent expenditures...
+# (When the player is nearby)How do you do...How unexpected...
+# Mona:Huh? Looking for me at this hour of the day... This falls outside of my predictions.Mona:Ahem... Is something the matter?How do you like it here?Mona:Of course! The conditions and facilities are first-class, and it's very comfortable here.Mona:So comfortable that... I'm a bit worried that it might be hard to adjust once I leave.Then... shouldn't you leave before it's too late?Mona:Wh—What? No! Are you serious?There goes the Great Astrologist's pride...You can stay forever.Mona:R—Really?Mona:Being able to live in such a wonderful place without having to pay rent... Am I dreaming?There goes the Great Astrologist's pride...Mona:Huh?Mona:Why you...! Hmph... since you're letting me stay here for free, I'll let that pass...Mona:Hmm... Let me think of a way to repay you somehow.Mona:This way, we won't be indebted to each other.
+# Mona:Huh? Looking for me at this hour of the day... This falls outside of my predictions.
+# Mona:Ahem... Is something the matter?
+# How do you like it here?Mona:Of course! The conditions and facilities are first-class, and it's very comfortable here.Mona:So comfortable that... I'm a bit worried that it might be hard to adjust once I leave.Then... shouldn't you leave before it's too late?Mona:Wh—What? No! Are you serious?There goes the Great Astrologist's pride...You can stay forever.Mona:R—Really?Mona:Being able to live in such a wonderful place without having to pay rent... Am I dreaming?There goes the Great Astrologist's pride...Mona:Huh?Mona:Why you...! Hmph... since you're letting me stay here for free, I'll let that pass...Mona:Hmm... Let me think of a way to repay you somehow.Mona:This way, we won't be indebted to each other.
+# Mona:Of course! The conditions and facilities are first-class, and it's very comfortable here.Mona:So comfortable that... I'm a bit worried that it might be hard to adjust once I leave.Then... shouldn't you leave before it's too late?Mona:Wh—What? No! Are you serious?There goes the Great Astrologist's pride...You can stay forever.Mona:R—Really?Mona:Being able to live in such a wonderful place without having to pay rent... Am I dreaming?There goes the Great Astrologist's pride...Mona:Huh?Mona:Why you...! Hmph... since you're letting me stay here for free, I'll let that pass...Mona:Hmm... Let me think of a way to repay you somehow.Mona:This way, we won't be indebted to each other.
+# Mona:Of course! The conditions and facilities are first-class, and it's very comfortable here.
+# Mona:So comfortable that... I'm a bit worried that it might be hard to adjust once I leave.
+# Then... shouldn't you leave before it's too late?Mona:Wh—What? No! Are you serious?There goes the Great Astrologist's pride...
+# Mona:Wh—What? No! Are you serious?There goes the Great Astrologist's pride...
+# Mona:Wh—What? No! Are you serious?
+# There goes the Great Astrologist's pride...
+# You can stay forever.Mona:R—Really?Mona:Being able to live in such a wonderful place without having to pay rent... Am I dreaming?There goes the Great Astrologist's pride...
+# Mona:R—Really?Mona:Being able to live in such a wonderful place without having to pay rent... Am I dreaming?There goes the Great Astrologist's pride...
+# Mona:Being able to live in such a wonderful place without having to pay rent... Am I dreaming?
+# There goes the Great Astrologist's pride...
+# Mona:Why you...! Hmph... since you're letting me stay here for free, I'll let that pass...
+# Mona:Hmm... Let me think of a way to repay you somehow.
+# Mona:This way, we won't be indebted to each other.
+# (Unlocks at Friendship Level 4)Would you like to have a chat with me?Mona:Alright, I'm in good spirits. Is there anything you wish to know?I want to hear some of your knowledge!Mona:Oh... how studious of you.Mona:I am indisputably an erudite scholar, for my learning encompasses the stars above and earth below.Mona:...But it would consume a considerable amount of time to explain the tenets of astrology...Mona:For now, some practical advice will do!Oh? Like what?You seem to have a lot of life experience...Mona:Well, of course!Mona:Hmm... For instance, ingredients approaching their expiration date can be used to create very cost-effective meals as long as you thoroughly cook them with the appropriate cooking methods.Mona:Many stores have monthly sales. Find an opportune time to stock up on grains and dried foods. As staple foods, they will keep you feeling full for a long time.Mona:Also... Processing your own meat products is much cheaper than buying them ready-made.Your knowledge is all about saving money...Mona:Ah...! Huh!Mona:How impolite of you to generalize it as such!Mona:These techniques are all a crucial element of living a disciplined life. They are the result of refinement of the objective laws of the world.Mona:S—So I'll be stricter with you. You need to be more disciplined if you are to understand this world's truths!Got it!Mona:Heh, you will understand how useful these are once you try.Mona:After you have mastered these, I will impart more of the secret wonders hidden deep within this world.
+# Would you like to have a chat with me?Mona:Alright, I'm in good spirits. Is there anything you wish to know?I want to hear some of your knowledge!Mona:Oh... how studious of you.Mona:I am indisputably an erudite scholar, for my learning encompasses the stars above and earth below.Mona:...But it would consume a considerable amount of time to explain the tenets of astrology...Mona:For now, some practical advice will do!Oh? Like what?You seem to have a lot of life experience...Mona:Well, of course!Mona:Hmm... For instance, ingredients approaching their expiration date can be used to create very cost-effective meals as long as you thoroughly cook them with the appropriate cooking methods.Mona:Many stores have monthly sales. Find an opportune time to stock up on grains and dried foods. As staple foods, they will keep you feeling full for a long time.Mona:Also... Processing your own meat products is much cheaper than buying them ready-made.Your knowledge is all about saving money...Mona:Ah...! Huh!Mona:How impolite of you to generalize it as such!Mona:These techniques are all a crucial element of living a disciplined life. They are the result of refinement of the objective laws of the world.Mona:S—So I'll be stricter with you. You need to be more disciplined if you are to understand this world's truths!Got it!Mona:Heh, you will understand how useful these are once you try.Mona:After you have mastered these, I will impart more of the secret wonders hidden deep within this world.
+# Mona:Alright, I'm in good spirits. Is there anything you wish to know?I want to hear some of your knowledge!Mona:Oh... how studious of you.Mona:I am indisputably an erudite scholar, for my learning encompasses the stars above and earth below.Mona:...But it would consume a considerable amount of time to explain the tenets of astrology...Mona:For now, some practical advice will do!Oh? Like what?You seem to have a lot of life experience...Mona:Well, of course!Mona:Hmm... For instance, ingredients approaching their expiration date can be used to create very cost-effective meals as long as you thoroughly cook them with the appropriate cooking methods.Mona:Many stores have monthly sales. Find an opportune time to stock up on grains and dried foods. As staple foods, they will keep you feeling full for a long time.Mona:Also... Processing your own meat products is much cheaper than buying them ready-made.Your knowledge is all about saving money...Mona:Ah...! Huh!Mona:How impolite of you to generalize it as such!Mona:These techniques are all a crucial element of living a disciplined life. They are the result of refinement of the objective laws of the world.Mona:S—So I'll be stricter with you. You need to be more disciplined if you are to understand this world's truths!Got it!Mona:Heh, you will understand how useful these are once you try.Mona:After you have mastered these, I will impart more of the secret wonders hidden deep within this world.
+# Mona:Alright, I'm in good spirits. Is there anything you wish to know?
+# I want to hear some of your knowledge!
+# Mona:Oh... how studious of you.
+# Mona:I am indisputably an erudite scholar, for my learning encompasses the stars above and earth below.
+# Mona:...But it would consume a considerable amount of time to explain the tenets of astrology...
+# Mona:For now, some practical advice will do!
+# You seem to have a lot of life experience...Mona:Well, of course!
+# Mona:Well, of course!
+# Mona:Well, of course!
+# Mona:Hmm... For instance, ingredients approaching their expiration date can be used to create very cost-effective meals as long as you thoroughly cook them with the appropriate cooking methods.
+# Mona:Many stores have monthly sales. Find an opportune time to stock up on grains and dried foods. As staple foods, they will keep you feeling full for a long time.
+# Mona:Also... Processing your own meat products is much cheaper than buying them ready-made.
+# Your knowledge is all about saving money...Mona:Ah...! Huh!Mona:How impolite of you to generalize it as such!Mona:These techniques are all a crucial element of living a disciplined life. They are the result of refinement of the objective laws of the world.Mona:S—So I'll be stricter with you. You need to be more disciplined if you are to understand this world's truths!
+# Mona:Ah...! Huh!Mona:How impolite of you to generalize it as such!Mona:These techniques are all a crucial element of living a disciplined life. They are the result of refinement of the objective laws of the world.Mona:S—So I'll be stricter with you. You need to be more disciplined if you are to understand this world's truths!
+# Mona:How impolite of you to generalize it as such!
+# Mona:These techniques are all a crucial element of living a disciplined life. They are the result of refinement of the objective laws of the world.
+# Mona:S—So I'll be stricter with you. You need to be more disciplined if you are to understand this world's truths!
+# Got it!Mona:Heh, you will understand how useful these are once you try.Mona:After you have mastered these, I will impart more of the secret wonders hidden deep within this world.
+# Mona:Heh, you will understand how useful these are once you try.Mona:After you have mastered these, I will impart more of the secret wonders hidden deep within this world.
+# Mona:Heh, you will understand how useful these are once you try.
+# Mona:After you have mastered these, I will impart more of the secret wonders hidden deep within this world.
+# (Unlocks at Friendship Level 7)Anything you'd like to do?Mona:Hmm, I want to reserve some of your spare time. Let's go on a vacation together.A... A vacation?Mona:Maybe on an uninhabited island or in a quiet rainforest, just somewhere we can put work aside and relax for a bit.This doesn't sound like you...Mona:Is that so...? Hey, you don't just think of me as some research-obsessed maniac with a one-track mind, do you?Mona:Everything I do is to comprehend the truths of the world... Even a vacation is a way to meet this end.Do you have funds for this...?Mona:Hehe, I've already prepared them, of course.Mona:I started preparing for this a long time ago.Mona:Saving money can be difficult, so I specially prepared a savings jar. Every time I received a payment, I put aside some of it.Mona:During this time, I also resisted buying hardcover copies of research manuscripts... Eventually, I had saved up enough.That must've been hard...Mona:Hehe, it's alright, it was worth it!Then I'll go set aside some time.I can't use your money.Mona:Huh? What do you mean by that?Mona:Thanks for being considerate, but this is something I want to do, so it really is fine.Then I'll go set aside some time.Mona:Okay! I'll await your word.
+# Anything you'd like to do?Mona:Hmm, I want to reserve some of your spare time. Let's go on a vacation together.A... A vacation?Mona:Maybe on an uninhabited island or in a quiet rainforest, just somewhere we can put work aside and relax for a bit.This doesn't sound like you...Mona:Is that so...? Hey, you don't just think of me as some research-obsessed maniac with a one-track mind, do you?Mona:Everything I do is to comprehend the truths of the world... Even a vacation is a way to meet this end.Do you have funds for this...?Mona:Hehe, I've already prepared them, of course.Mona:I started preparing for this a long time ago.Mona:Saving money can be difficult, so I specially prepared a savings jar. Every time I received a payment, I put aside some of it.Mona:During this time, I also resisted buying hardcover copies of research manuscripts... Eventually, I had saved up enough.That must've been hard...Mona:Hehe, it's alright, it was worth it!Then I'll go set aside some time.I can't use your money.Mona:Huh? What do you mean by that?Mona:Thanks for being considerate, but this is something I want to do, so it really is fine.Then I'll go set aside some time.Mona:Okay! I'll await your word.
+# Mona:Hmm, I want to reserve some of your spare time. Let's go on a vacation together.A... A vacation?Mona:Maybe on an uninhabited island or in a quiet rainforest, just somewhere we can put work aside and relax for a bit.This doesn't sound like you...Mona:Is that so...? Hey, you don't just think of me as some research-obsessed maniac with a one-track mind, do you?Mona:Everything I do is to comprehend the truths of the world... Even a vacation is a way to meet this end.Do you have funds for this...?Mona:Hehe, I've already prepared them, of course.Mona:I started preparing for this a long time ago.Mona:Saving money can be difficult, so I specially prepared a savings jar. Every time I received a payment, I put aside some of it.Mona:During this time, I also resisted buying hardcover copies of research manuscripts... Eventually, I had saved up enough.That must've been hard...Mona:Hehe, it's alright, it was worth it!Then I'll go set aside some time.I can't use your money.Mona:Huh? What do you mean by that?Mona:Thanks for being considerate, but this is something I want to do, so it really is fine.Then I'll go set aside some time.Mona:Okay! I'll await your word.
+# Mona:Hmm, I want to reserve some of your spare time. Let's go on a vacation together.
+# Mona:Maybe on an uninhabited island or in a quiet rainforest, just somewhere we can put work aside and relax for a bit.
+# This doesn't sound like you...Mona:Is that so...? Hey, you don't just think of me as some research-obsessed maniac with a one-track mind, do you?Mona:Everything I do is to comprehend the truths of the world... Even a vacation is a way to meet this end.
+# Mona:Is that so...? Hey, you don't just think of me as some research-obsessed maniac with a one-track mind, do you?Mona:Everything I do is to comprehend the truths of the world... Even a vacation is a way to meet this end.
+# Mona:Is that so...? Hey, you don't just think of me as some research-obsessed maniac with a one-track mind, do you?
+# Mona:Everything I do is to comprehend the truths of the world... Even a vacation is a way to meet this end.
+# Do you have funds for this...?Mona:Hehe, I've already prepared them, of course.
+# Mona:Hehe, I've already prepared them, of course.
+# Mona:Hehe, I've already prepared them, of course.
+# Mona:I started preparing for this a long time ago.
+# Mona:Saving money can be difficult, so I specially prepared a savings jar. Every time I received a payment, I put aside some of it.
+# Mona:During this time, I also resisted buying hardcover copies of research manuscripts... Eventually, I had saved up enough.
+# That must've been hard...Mona:Hehe, it's alright, it was worth it!Then I'll go set aside some time.
+# Mona:Hehe, it's alright, it was worth it!Then I'll go set aside some time.
+# Mona:Hehe, it's alright, it was worth it!
+# Then I'll go set aside some time.
+# I can't use your money.Mona:Huh? What do you mean by that?Mona:Thanks for being considerate, but this is something I want to do, so it really is fine.Then I'll go set aside some time.
+# Mona:Huh? What do you mean by that?Mona:Thanks for being considerate, but this is something I want to do, so it really is fine.Then I'll go set aside some time.
+# Mona:Huh? What do you mean by that?
+# Mona:Thanks for being considerate, but this is something I want to do, so it really is fine.
+# Then I'll go set aside some time.
+# Mona:Okay! I'll await your word.
+# (Between 6:00 and 19:00)Good morning, Mona.Mona:Oh, good morning.Mona:If you need anything, I'll make time for you. Call me if there is something you can't resolve.
+# Good morning, Mona.Mona:Oh, good morning.Mona:If you need anything, I'll make time for you. Call me if there is something you can't resolve.
+# Mona:Oh, good morning.Mona:If you need anything, I'll make time for you. Call me if there is something you can't resolve.
+# Mona:Oh, good morning.
+# Mona:If you need anything, I'll make time for you. Call me if there is something you can't resolve.
+# (Between 19:00 and 6:00)Good night, Mona.Mona:It's already time for you to turn in? If you ask me, there's never enough time in a day.Mona:Good night, (Traveler). Yes, go replenish your strength.
+# Good night, Mona.Mona:It's already time for you to turn in? If you ask me, there's never enough time in a day.Mona:Good night, (Traveler). Yes, go replenish your strength.
+# Mona:It's already time for you to turn in? If you ask me, there's never enough time in a day.Mona:Good night, (Traveler). Yes, go replenish your strength.
+# Mona:It's already time for you to turn in? If you ask me, there's never enough time in a day.
+# Mona:Good night, (Traveler). Yes, go replenish your strength.
+When a character is invited to or invites themselves to their favorite set for the first time, the character will provide a reward. They will provide a reward for each of their favorite sets.
+Inviting them to the furnishing set again will replay the dialogue, but no further reward will be given.
+### Amidst Poetic Pondering
+# Mona:...Quite the dignified study. May I use it as well?Mona:In that case, I hope you don't mind if I stack all the star maps I bought over here.Mona:Hmm... I still have those things I bought on sale. If I want to maximize my use of space, I'll need to plan this out more carefully.
+# Mona:...Quite the dignified study. May I use it as well?
+# Mona:In that case, I hope you don't mind if I stack all the star maps I bought over here.
+# Mona:Hmm... I still have those things I bought on sale. If I want to maximize my use of space, I'll need to plan this out more carefully.
+# Mona:Let me quickly inspect the ingredients in the kitchen...Mona:After all, you will most certainly need wisdom to turn limited ingredients into a dish that can keep you full for an entire day.Mona:Oh yes, thank you for preparing these! If you're not averse, you're welcome to try some as well.
+# Mona:Let me quickly inspect the ingredients in the kitchen...
+# Mona:After all, you will most certainly need wisdom to turn limited ingredients into a dish that can keep you full for an entire day.
+# Mona:Oh yes, thank you for preparing these! If you're not averse, you're welcome to try some as well.
+### Explore properties
+
+### Pact of Stars and Moon
+### Genius Invokation TCG
+### Character Screen Animations
+# Pact of Stars and Moon
+# Taking Pictures and Recounting Good Times
+### Wish Upon a Lantern
+### Mesmerizing Dream at Sea
+### Paimon's Paintings
+### Explore properties
+
+A mysterious young astrologer who proclaims herself to be "Astrologist Mona Megistus," and who possesses abilities to match the title. Erudite, but prideful.Though she is often strapped for cash and lives a life of thrift, she is resolved to never use astrology for profit... It is this very resolution that has caused her to constantly fret about money.
+A mysterious young astrologer who proclaims herself to be "Astrologist Mona Megistus," and who possesses abilities to match the title. Erudite, but prideful.
+Mona is an astrologist who takes her passion seriously. She is very knowledgeable in this subject in part and respects, yet also fears, her master, at the same time. She combines her astrology skills with hydromancy, which makes her a well-known, if still growing astrologist. In part due to her astrology, Mona can tell whether or not a person is lying, can sense their intentions from a single glance, being capable of seeing their fate and is able to accurately deduce a person's traits just from knowing what their constellation is.
+Being obsessed with astrology gives Mona a sense of pride, but this also serves as a double-edged sword; anyshe gets her hands on is immediately spent on astrology-related materials, regardless of its cost. She only realizes too late when she has run out of Mora to meet her daily needs, occasionally going without shelter or food for days on end. She is particularly picky when it comes to eating, as she prefers simple dishes when eating out; when she cooks, she makes the most out of whatever she can buy.She does not tolerate those who disrespect her.She also makes a lot of denials when someone is pointing out what she doesn't have.
+Mona uses themodel. She has fair skin, pale sea green eyes, and waist-length dark purple hair that turns slightly red at the ends. Her fringe is uneven.
+## Official Introduction
+Astrologist Mona Megistus's essays are truly fascinating. Not that I really get it, but it's super interesting nonetheless.
+Mona is unique among astrologers — others may speak with great ostentation for money, but Mona has never done so. Nor does she dress up or mince her words, even if her results are unpleasant to hear: "You won't amount to anything even if you join the Adventurers' Guild." "You've got no chance with him. In fact, he will soon leave you" — such is the nature of her rejoinders.
+Her blunt nature has resulted in plummeting numbers of people coming to have their fortunes told. But Mona isn't one to complain, for that just leaves her with more time for her personal research.
+But when one speaks of research, one also speaks of the necessity of purchasing texts and research apparatus. Mona's only income comes from her contributions to The Steambird's "All Things Astrological" column. Every paycheck is spent first on her research. Books from, an astrolabe from... all of these come with a hefty price tag, and by the time Mona regains her senses, there's only enough of her income left for her to scrape by each month.
+"It matters not. Astrologers must rid themselves of material desires. Only by ridding oneself of clutter can one see the true world around them." So says Mona, coughing loudly all the while to cover the sound of her growling stomach.
+Today, too, is another day Mona worries about Mora.
+## Character Stories
+### Character Details
+is a place where people of all sorts go about their business. Merchants move products, knights patrol, and farmers till the land.
+But if one were to ask Mona — the enigmatic and prideful astrologist — what she busies herself with, she will reply by saying that she is servicing a debt known as "life."
+She will, however, vigorously deny being "poor," giving the following explanation:
+"Beautiful veneers may obscure simple truths.
+Exquisite food may mask its nutritional value.
+One lives simply, all the better to expose this world's truths."
+A frugal lifestyle, therefore, is a form of training to access the truth... Or so Mona will insist.
+Teyvat is a place where people of all sorts go about their business, and even an enigmatic astrologist must look to hers.
+—That said, it seems like bards might be the exception to this rule.
+### Character Story 1
+Recently,, an old but highly skilled female astrologist, has entrusted a very important task to her.
+Her teacher has anin, and she wanted Mona to retrieve a highly confidential box from that person's successor.
+"If you dare look inside that books... Well, you'll see."
+That was the warning Mona received before departing.
+To Mona's surprise, this successor was none other than the Spark Knight,.
+The box was still extant, but due to Klee's actions and a series of accidents... Mona unwittingly unraveled the enigma behind the box.
+"I—I'm done for. The thing inside this was the dark history of her youth... she will kill me if I go back like this..."
+Mona was thus forced to stay in Mondstadt, beginning a bitterly frugal but bountifully fulfilling existence.
+### Character Story 2
+Mona's astrology utilizes hydromancy, and she once explained the underlying principles thusly:
+"It is people's fate that shines in the night sky, and though its reflection in water is but an illusion, it reveals the truth nonetheless."
+No one else can quite comprehend this principle, but Mona's ability convinces people to believe in it anyway.
+Albeit, sometimes grudgingly...
+Her astrological readings are exceptionally precise, and she will neither lie nor hold anything back when revealing the results of her readings.
+"Your son says that he's made it. That's a lie."
+"You've got no chance with him. In fact, he will soon leave you."
+The cold, hard truth is laid bare before people's eyes, complete with all the grisly details that they would rather remained buried.
+Mona will make no exceptions to this, and as such she can seem completely lacking in human emotion.
+But sometimes, on a clear night, she can be seen on a high mountain slope.
+There, Mona gazes up at the stars in the sky — so close, she feels, that she could almost reach out and touch them — with gentle eyes, humming an unknown tune to herself.
+### Character Story 3
+Having never studied the art of finance, the astrologist Mona is always hovering around the poverty line.
+In order to save on food expenses, she once ate mushrooms for an entire month straight. If not for some relief funds coming from time to time, she would have had trouble eking out a living.
+Mona does in fact have some money set aside. Even though she must eventually run dry without an income, she can slow the bleeding by scrimping in the food department.
+So where does the rest of the Mora go? Well, if you've ever had a look inside her lab, then know that the big pile of astrology-related apparatus and tools in there didn't come out of thin air.
+In fact, all of them come with a hefty price tag — books from, an astrolabe from... The shipping fees alone are impressive.
+That Mona should be in abject poverty comes, therefore, as no surprise.
+In order to support herself, Mona eventually took up a commercial contract — her contributions to a column about constellation inhave become her most stable income source.
+Now having a monthly income, Mona could have left her life of poverty. But how could an astrologist's pursuit of knowledge end here?
+Whenever she gets paid, Mona will immediately shell out on more astrology-related resources, returning to a state of destitution once more.
+This process plays out every month.
+Today, too, is another day Mona worries over Mora.
+### Character Story 4
+Mona will sometimes meet up with Klee and, her primary reason being to get a free meal.
+Secondary to that is to exchange pointers with Albedo.
+Since they are both people who seek to unveil the principles of the world, and both are accomplished students of famed masters, aligning themselves with one another and working together is perfectly normal.
+Mona staunchly defends her teacher's image in front of Albedo.
+However, she also often complains about "that old hag."
+"You speak of your illustrious lineage, yet you also refer to your master as a "hag" and a "stubborn dimwit." Which of these descriptions is accurate?"
+Albedo could not help but ask this question — and when he did, Mona promptly realized that she had never given it much thought herself.
+Stroking her chin, she pondered this paradox deeply for a moment, before responding:
+"Hmph. The techniques passed down to me are exceptional, of course, but my teacher is not my equal.
+Does she know the market rates for eggs, butter, or wheat? In this regard, I have already far surpassed her."
+### Character Story 5
+During her apprenticeship, Mona found that the subtle abstractions of her master's teachings could explain the laws that governed the existence of all things.
+Human hearts were guided by these laws, and if one had great enough powers of calculation, all the mysteries of the world could be understood.
+Mona once believed this to be true.
+But when she had to strike out on her own and live day-to-day, she found herself doubting.
+Not everyone lived wealthy and comfortable lives. Some neither had food nor warm clothes, living no differently from beggars.
+And it was just such an adventurer who, when meeting Mona while she was out looking for fruits and vegetables to fill her stomach, shared half their food with her.
+"Out here, we've gotta have each other's backs."
+This was not something inscribed on these so-called principles of the world. And many other such things she encountered on her journey — the honesty of a thief, a robber's change of heart, a coward's courage, the good deeds of a wicked person...
+Mona began to have some doubts, but she also felt like she finally had her feet on solid ground.
+When she was again alone with her thoughts under the stars, she marveled that her research had been so full of holes.
+Perhaps she would have to continue researching the world's principles for the rest of her life.
+### All Things Astrological
+The's mainline newspaper, The Steambird, has many a featured section that contains all sorts of news and gossip drawn from every corner of the seven nations.
+The section Mona contributes to is known as "All Things Astrological," and it is a column specifically targeted at hobbyists and professionals. That she had this opportunity at all was pure chance.
+When the previous contributing author was traveling the world, he heard tell of a strange astrologist, and his hobbyist's curiosity compelled him to seek her out.
+Their correspondence left him deeply impressed.
+As it happened, he was also looking to retire, and seeing that Mona was strapped for Mora, reached out to help her by recommending her to the editor-in-chief of The Steambird.
+When Mona released her first column, "An Introduction to Astrology," the column, heretofore known for being easy reading, experienced a massive shift in tone.
+Most of each issue was dedicated to discussing the movement of celestial bodies and other difficult (and obscure) topics. Academic quotations, dense footnotes and even the occasional hand-drawn star maps abounded in these writings.
+The editor-in-chief could not help but feel worried that this approach was too academic. Would it find acceptance with long-time readers? As it turned out, there was no need to fret. The publishing house received a great many letters that read something like this:
+"Wow, this is amazing. I don't really get it, but this is super interesting. Consider me a fan of Astrologist Mona Megistus."
+After getting approval to continue submitting manuscripts, Mona could finally heave a sigh of relief.
+Now, how best to celebrate... Ah yes. Perhaps she should use her first paycheck to purchase that latest-edition planetarium she'd had her eye on for a while now...
+To Mona, that herwas sent to her from the gods doesn't mean a great deal.
+This is not to say that possessing an external focus for elemental power is not useful.
+Having power is always a good thing, but when compared to lofty "truth," "martial prowess" is such a pathetically small concept.
+The gods, too, are bound by the rules of this world. Mona seeks the final truth of the world, hidden amidst the sea of stars.
+As such, she does not have any reverence for her Vision, which the people of this world consider to be a sign of divine favor and the source of all power.
+Nonetheless, this item that serves no practical use in her hands is something that she treasures greatly.
+It was gifted to her by her teacher as a teaching aid, and it is the only evidence of their time together as master and pupil.
+She preserves these distant memories with great care. This exquisitely-made teaching aid thus accompanied her everywhere, like an accessory worn by any other maiden.
+Until one day, when a Vision of her very own would quietly indwell this old teaching aid...
+## Quests and Events
+## Character Mentions
+### Character Voice-Overs
+* Mona is the first 5-star character to use a Catalyst as a weapon.
+* Mona is one of the few currently playable characters who acknowledges (or even seems aware) that the Traveler is from another world. She was able to find this out through her astrology.
+* Mona is one of the characters with ornaments that glow. While wearing her default outfit,, or her alternate outfit,, when Mona's Elemental Burst is ready, the red parts of the ornaments on her hat, leg, and pigtails will glow along with her Vision.
+* Mona is able to use her astrology to ascertain and avoid danger, and she claims it allows her to "see through lies."In her Story Quest, "," she is able to recognize a group of what appears to be traveling merchants looking for travelers to accompany, but actually are a group of bandits looking for tired travelers to rob.In "," she realizesis actually one of theand seeks to kill the Traveler. While Mona says that "even a junior astrologist would have seen through him instantly," Scaramouche himself seems surprised that she uncovered his true identity.
+* In her Story Quest, "," she is able to recognize a group of what appears to be traveling merchants looking for travelers to accompany, but actually are a group of bandits looking for tired travelers to rob.
+* In "," she realizesis actually one of theand seeks to kill the Traveler. While Mona says that "even a junior astrologist would have seen through him instantly," Scaramouche himself seems surprised that she uncovered his true identity.
+* In one of Mona's idle animations, the constellation she views will randomly be Lepus (Amber's), Tempus Fugit (Lisa's), or Leo Minor (Jean's). The constellations she looks at are mirrored from her point of view, which is likely because she uses hydromancy as her method of astrology — looking at the night sky through its reflection in water.What Mona specializes in is catroptromancy (also known as captromancy or enoptromancy), a term derived from the Ancient Greek words:κάτοπτρονkatoptron, "mirror,"andμαντείαmanteia, "divination."This type of divination consists in predicting someone's future or also discovering their past through the use of a mirror, or any surface that may reflect light, like water. This practice was common in Classical Greece and Ancient Rome.
+* What Mona specializes in is catroptromancy (also known as captromancy or enoptromancy), a term derived from the Ancient Greek words:κάτοπτρονkatoptron, "mirror,"andμαντείαmanteia, "divination."This type of divination consists in predicting someone's future or also discovering their past through the use of a mirror, or any surface that may reflect light, like water. This practice was common in Classical Greece and Ancient Rome.
+* There is a running gag when other characters found it hard to pronounce Mona's last name Megistus, fromtoand. To English player, this may be a hard-to-understand gag since Megistus is not hard to pronounce, but in Chinese, it might be hard to pronounce梅姬斯图斯Méijīsītúsī, "Megistus".The Englishalso downplays it since Mona only requires the Traveler to learn her name, when the Chinesehave Mona require the Traveler to "say it all correctly in one go".
+* The Englishalso downplays it since Mona only requires the Traveler to learn her name, when the Chinesehave Mona require the Traveler to "say it all correctly in one go".
+* Lady Megistus (by Fischl and Oz)
+* During theevent, after completing the, the answer to the astral puzzle inside Mona's room is Mona's constellation.
+* Mona, along with, are the only playable characters known to have revivedrather than receiving their own.
+- Mona is the first 5-star character to use a Catalyst as a weapon.
+- Mona is one of the few currently playable characters who acknowledges (or even seems aware) that the Traveler is from another world. She was able to find this out through her astrology.
+- Mona is one of the characters with ornaments that glow. While wearing her default outfit,, or her alternate outfit,, when Mona's Elemental Burst is ready, the red parts of the ornaments on her hat, leg, and pigtails will glow along with her Vision.
+* In her Story Quest, "," she is able to recognize a group of what appears to be traveling merchants looking for travelers to accompany, but actually are a group of bandits looking for tired travelers to rob.
+- In her Story Quest, "," she is able to recognize a group of what appears to be traveling merchants looking for travelers to accompany, but actually are a group of bandits looking for tired travelers to rob.
+- In "," she realizesis actually one of theand seeks to kill the Traveler. While Mona says that "even a junior astrologist would have seen through him instantly," Scaramouche himself seems surprised that she uncovered his true identity.
+- What Mona specializes in is catroptromancy (also known as captromancy or enoptromancy), a term derived from the Ancient Greek words:κάτοπτρονkatoptron, "mirror,"andμαντείαmanteia, "divination."This type of divination consists in predicting someone's future or also discovering their past through the use of a mirror, or any surface that may reflect light, like water. This practice was common in Classical Greece and Ancient Rome.
+- The Englishalso downplays it since Mona only requires the Traveler to learn her name, when the Chinesehave Mona require the Traveler to "say it all correctly in one go".
+* Centennial Genius
+- Centennial Genius
+- Lady Megistus (by Fischl and Oz)
+- During theevent, after completing the, the answer to the astral puzzle inside Mona's room is Mona's constellation.
+- Mona, along with, are the only playable characters known to have revivedrather than receiving their own.
+* Her name has several possible origins:English name "Mona," which is derived from Gaelic "muadh" (noble).Northern European name, an alternative form of "Monica."Old English "mona" (moon), which possibly stemmed from her career as an astrologer.From "Mona Lisa" with the first element derived from Italian "madonna," which means "my lady."
+* English name "Mona," which is derived from Gaelic "muadh" (noble).
+* Northern European name, an alternative form of "Monica."
+* Old English "mona" (moon), which possibly stemmed from her career as an astrologer.
+* From "Mona Lisa" with the first element derived from Italian "madonna," which means "my lady."
+* Her constellation, Astrolabos, is Latin for "The Astrolabe."
+* English name "Mona," which is derived from Gaelic "muadh" (noble).
+* Northern European name, an alternative form of "Monica."
+* Old English "mona" (moon), which possibly stemmed from her career as an astrologer.
+- English name "Mona," which is derived from Gaelic "muadh" (noble).
+- Northern European name, an alternative form of "Monica."
+- Old English "mona" (moon), which possibly stemmed from her career as an astrologer.
+- From "Mona Lisa" with the first element derived from Italian "madonna," which means "my lady."
+- Her constellation, Astrolabos, is Latin for "The Astrolabe."
+### Character Title: Astral Reflection
+1. OfficialGenshin ImpactWebsite:
+1. Serenitea Pot, Companion Dialogue:
+1. EventQuest: Act IV:
+- OfficialGenshin ImpactWebsite:
+- Serenitea Pot, Companion Dialogue:
+### Explore properties
+
+## List of Character Outfits
+### Explore properties
+
+### Explore properties
+
+Mona: Starry SkyIconBackgroundBannerItem TypeQualityDescriptionA girl gazes down at the stars' reflection on the water, pondering the joys and sorrows of life.How to ObtainSourceReward for reaching10 with
+Mona: Starry Skyis aobtained by reaching10 with.
+## Other Languages[]
+### Explore properties
+
+MonaDetailsFeaturesHealth10How to ObtainSource 1Achieve victory inMonais aobtained in.
+## Proficiency Reward[]
+After reaching Proficiency 10, the following Dynamic Skin is obtained:33
+## Stage Appearances[]
+Mona appears in22stages:
+Dynamic Skin Idle Animation
+## Other Languages[]
+### Explore properties
