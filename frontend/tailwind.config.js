@@ -12,7 +12,11 @@ module.exports = {
     'node_modules/preline/dist/*.js'
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        'fabada': ["Fabada", "sans-serif"]
+      }
+    },
   },
   plugins: [
     require("@tailwindcss/forms"),
