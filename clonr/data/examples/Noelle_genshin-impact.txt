@@ -1,0 +1,314 @@
+NoelleChivalric BlossomCardWishIn-GameQualityBioVoice ActorsRegionAffil­i­a­tionPrevious:September 28, 20202 years, 10 months agoEnglishChineseJapaneseKoreanAdditional TitlesCategoriesMaid of Favonius
+## Chivalric Blossom
+- 
+Noelleis a playablein.
+Extremely strong and reliable, Noelle is considered to be "the maid of all maids" in the, with many thinking she has the ability to be everywhere all at once. She is stubborn, however, and willing to unnecessarily endanger her life at any moment to help someone. She has tried many times to join the ranks of the Knights of Favonius to accomplish her dream of becoming a full-fledged knight, but has fallen short every time so far.
+### Ascensions and Stats
+Toggle Ascension Materials
+1. Does not include weapon ATK value.
+1. Characters gain special stats starting with 2✦.
+- Does not include weapon ATK value.
+- Passive Talent 2,: "Every 4hits will decrease the CD ofby 1s. Hitting multiple opponents with a single attack is only counted as 1 hit."
+# Constellation Effects
+* When Noelle's Normal and Charged Attacks hit a target, they have a certain chance to regenerate HP for all characters.
+- When Noelle's Normal and Charged Attacks hit a target, they have a certain chance to regenerate HP for all characters.
+* This skill does not generate any.
+- This skill does not generate any.
+- Passive Talent 2,: "Every 4hits will decrease the CD ofby 1s. Hitting multiple opponents with a single attack is only counted as 1 hit."
+# Constellation Effects
+* Constellation Level 1,: "Whileandare both in effect, the chance of Breastplate's healing effects activating is increased to 100%."
+* Constellation Level 3,: Increases this talent's level by 3 and raises its maximum level to 15.
+- Constellation Level 1,: "Whileandare both in effect, the chance of Breastplate's healing effects activating is increased to 100%."
+- Constellation Level 3,: Increases this talent's level by 3 and raises its maximum level to 15.
+* Larger attack AoE.
+* attack DMG toGeo DMGthat cannot be overridden by any other elemental infusion.
+- Larger attack AoE.
+- attack DMG toGeo DMGthat cannot be overridden by any other elemental infusion.
+* Elemental Burst DMG% and Skill DMG% describe the damage of the initial small explosion (Burst DMG%) and swing (Skill DMG%) when Sweeping Time is activated.
+* Sweeping Time is not deactivated if Noelle is swapped to another character. However, its duration will still continue to tick down while Noelle is off-field.
+- Elemental Burst DMG% and Skill DMG% describe the damage of the initial small explosion (Burst DMG%) and swing (Skill DMG%) when Sweeping Time is activated.
+- Sweeping Time is not deactivated if Noelle is swapped to another character. However, its duration will still continue to tick down while Noelle is off-field.
+- Sweeping Time's ATK Bonus willNoelle's stats on cast and will not be affected by changes in her stats that occur afterwards.
+# Constellation Effects
+* Constellation Level 5,: Increases this talent's level by 3 and raises its maximum level to 15.
+- Constellation Level 5,: Increases this talent's level by 3 and raises its maximum level to 15.
+* The shield has a slight delay before being applied. Thus, the damage triggering the shield is not reduced.If the damage killed the character from above 30% HP, the shield won't be triggered.Possible bug: If the active character HP is already below 30%, the shield cooldown is off, and received damage from certain sources that killed the character, the shield may be triggered and wasted.
+* If the damage killed the character from above 30% HP, the shield won't be triggered.
+* Possible bug: If the active character HP is already below 30%, the shield cooldown is off, and received damage from certain sources that killed the character, the shield may be triggered and wasted.
+* The shield cannot be passed to other characters.
+* The shield persists when switched back to the character if the shield has not yet expired.
+* The shield is separate from other shields and thus takes damage together just like the normal shield stacking rules.
+* If the damage killed the character from above 30% HP, the shield won't be triggered.
+- If the damage killed the character from above 30% HP, the shield won't be triggered.
+- Possible bug: If the active character HP is already below 30%, the shield cooldown is off, and received damage from certain sources that killed the character, the shield may be triggered and wasted.
+- The shield cannot be passed to other characters.
+- The shield persists when switched back to the character if the shield has not yet expired.
+- The shield is separate from other shields and thus takes damage together just like the normal shield stacking rules.
+- To extend the skill's duration, Noelle has to be the one who defeats enemies.
+Each Constellation activation requires one.
+* Standard Wish(Indefinite)
+* (Indefinite until all 20 wishes have been made)On this, Noelle is guaranteed to be obtained on the 8th wishand cannot be obtained more than once.
+- Standard Wish(Indefinite)
+### Paimon's Bargains
+Noellewas available in6Starglitter Exchange:
+Noellewas promoted or featured with a drop-rate boost in10:
+* Updates to character voice-overs:Updated audio for English:"Good Afternoon"Old: Ready for your tea break? Please wait here while I get it ready. Oh yes, I also madeTea Break Pancakes!You simply must try one, it's my specialty.New: Ready for your tea break? Please wait here while I get it ready. Oh yes, I also madeLighter-Than-Air Pancakes!You simply must try one, it's my specialty.
+* Updated audio for English:"Good Afternoon"Old: Ready for your tea break? Please wait here while I get it ready. Oh yes, I also madeTea Break Pancakes!You simply must try one, it's my specialty.New: Ready for your tea break? Please wait here while I get it ready. Oh yes, I also madeLighter-Than-Air Pancakes!You simply must try one, it's my specialty.
+* "Good Afternoon"Old: Ready for your tea break? Please wait here while I get it ready. Oh yes, I also madeTea Break Pancakes!You simply must try one, it's my specialty.New: Ready for your tea break? Please wait here while I get it ready. Oh yes, I also madeLighter-Than-Air Pancakes!You simply must try one, it's my specialty.
+* Old: Ready for your tea break? Please wait here while I get it ready. Oh yes, I also madeTea Break Pancakes!You simply must try one, it's my specialty.
+* Updated audio for English:"Good Afternoon"Old: Ready for your tea break? Please wait here while I get it ready. Oh yes, I also madeTea Break Pancakes!You simply must try one, it's my specialty.New: Ready for your tea break? Please wait here while I get it ready. Oh yes, I also madeLighter-Than-Air Pancakes!You simply must try one, it's my specialty.
+* "Good Afternoon"Old: Ready for your tea break? Please wait here while I get it ready. Oh yes, I also madeTea Break Pancakes!You simply must try one, it's my specialty.New: Ready for your tea break? Please wait here while I get it ready. Oh yes, I also madeLighter-Than-Air Pancakes!You simply must try one, it's my specialty.
+* Old: Ready for your tea break? Please wait here while I get it ready. Oh yes, I also madeTea Break Pancakes!You simply must try one, it's my specialty.
+* "Good Afternoon"Old: Ready for your tea break? Please wait here while I get it ready. Oh yes, I also madeTea Break Pancakes!You simply must try one, it's my specialty.New: Ready for your tea break? Please wait here while I get it ready. Oh yes, I also madeLighter-Than-Air Pancakes!You simply must try one, it's my specialty.
+* Old: Ready for your tea break? Please wait here while I get it ready. Oh yes, I also madeTea Break Pancakes!You simply must try one, it's my specialty.
+* Old: Ready for your tea break? Please wait here while I get it ready. Oh yes, I also madeTea Break Pancakes!You simply must try one, it's my specialty.
+- Old: Ready for your tea break? Please wait here while I get it ready. Oh yes, I also madeTea Break Pancakes!You simply must try one, it's my specialty.
+* Updates to character voice-overs:Removed from all languages:"Disengaging Wind Glider"
+* Removed from all languages:"Disengaging Wind Glider"
+* Removed from all languages:"Disengaging Wind Glider"
+* Updates to character voice-overs:Updated audio for English:"Good Afternoon"
+* Updates to character voice-overs:Updated audio for Chinese:Majority of the Combat voice-overs
+* Updated audio for Chinese:Majority of the Combat voice-overs
+* Updated audio for Chinese:Majority of the Combat voice-overs
+1. Official Genshin Impact Chinese Website:
+- ↑Twitter:
+### Explore properties
+
+- 
+# Noelle's Stella Fortuna
+Noelle's Stella FortunaItem TypeQualityDescription's Constellation Activation MaterialHow to ObtainSource 1Source 2
+## Noelle's Stella Fortuna
+Noelle's Stella Fortunais aobtained fromused to level's.
+## Other Languages[]
+### Explore properties
+
+NoelleCategoryQualityAdeptal EnergyLoad3001200Adeptal Energy per Load0.25DescriptionCharacter In-ResidenceNoellecan be invited as a Companion into the player'safter obtaining her and completing the World Quest.
+### Adeptal Energy per Load
+## Favorite Furnishing Sets
+If a character's favoriteis placed in the same realm as the character for the first time, the character will automatically teleport to the furnishing set. Interacting with the character will initiate a, after which the character will teleport back to their original position.
+Noelle has2Favorite Furnishing Sets:
+# A maid's work...Nice and clean...I'll go wash up...Time to clean up...,My chivalric training...
+# I'll go wash up...
+# Time to clean up...,
+# My chivalric training...
+# (When the player is nearby)I'm at your service!Good to see you again!
+# I'm at your service!
+# Good to see you again!
+# NoelleHello, (Traveler)! I'm so happy to see you again!NoelleCan I do anything for you? I'm at your service.How do you like it here?NoelleI love the atmosphere here, as I'm sure you'd expect.NoelleThe exterior is spacious and very pleasant, and the interior is exquisitely decorated.NoelleI do believe it's the finest estate I've ever seen!NoelleThe only problem is...Problem? What is it?NoelleCompared to Mondstadt, there is far too little here for a maid to do.NoelleIt feels a little too relaxing...
+# NoelleHello, (Traveler)! I'm so happy to see you again!
+# NoelleCan I do anything for you? I'm at your service.
+# How do you like it here?NoelleI love the atmosphere here, as I'm sure you'd expect.NoelleThe exterior is spacious and very pleasant, and the interior is exquisitely decorated.NoelleI do believe it's the finest estate I've ever seen!NoelleThe only problem is...Problem? What is it?NoelleCompared to Mondstadt, there is far too little here for a maid to do.NoelleIt feels a little too relaxing...
+# NoelleI love the atmosphere here, as I'm sure you'd expect.NoelleThe exterior is spacious and very pleasant, and the interior is exquisitely decorated.NoelleI do believe it's the finest estate I've ever seen!NoelleThe only problem is...Problem? What is it?NoelleCompared to Mondstadt, there is far too little here for a maid to do.NoelleIt feels a little too relaxing...
+# NoelleI love the atmosphere here, as I'm sure you'd expect.
+# NoelleThe exterior is spacious and very pleasant, and the interior is exquisitely decorated.
+# NoelleI do believe it's the finest estate I've ever seen!
+# NoelleThe only problem is...
+# Problem? What is it?
+# NoelleCompared to Mondstadt, there is far too little here for a maid to do.
+# NoelleIt feels a little too relaxing...
+# (Unlocks at Friendship Level 4)Would you like to have a chat with me?NoelleIt would be my pleasure!NoelleDo you know something? Ever since I came here, I don't believe I've picked up a single item of lost property.NoelleI'm still not used to it......Huh?NoelleWhat I mean is, I often used to find odds and ends while performing my cleaning duties.Wait, so you go around collecting random lost items?NoelleN—No, they're just items I find while cleaning...NoelleFor example... A faded headband under a cabinet.NoelleOr a ball hidden in a bush by a kitten.NoelleOr a bookmark in a corner of the library, keys dropped at the side of the road, an unsigned letter of confession stuck in the door of the church...Sounds like cleaning is quite exhausting...NoelleNo, no, not at all! It is a great honor to perform my duties.Where do all these things end up?NoelleI always do my utmost to reunite each item with its owner! But the ones that go unclaimed remain at the Knights of Favonius headquarters.NoelleSpeaking of cleaning...NoelleThis place always seems so clean and tidy.In no small part due to your efforts.NoelleThank you...!NoelleIt's always very fulfilling to work here! More so than when I'm cleaning for the Knights or anywhere else.NoelleBecause... this is your home.
+# Would you like to have a chat with me?NoelleIt would be my pleasure!NoelleDo you know something? Ever since I came here, I don't believe I've picked up a single item of lost property.NoelleI'm still not used to it......Huh?NoelleWhat I mean is, I often used to find odds and ends while performing my cleaning duties.Wait, so you go around collecting random lost items?NoelleN—No, they're just items I find while cleaning...NoelleFor example... A faded headband under a cabinet.NoelleOr a ball hidden in a bush by a kitten.NoelleOr a bookmark in a corner of the library, keys dropped at the side of the road, an unsigned letter of confession stuck in the door of the church...Sounds like cleaning is quite exhausting...NoelleNo, no, not at all! It is a great honor to perform my duties.Where do all these things end up?NoelleI always do my utmost to reunite each item with its owner! But the ones that go unclaimed remain at the Knights of Favonius headquarters.NoelleSpeaking of cleaning...NoelleThis place always seems so clean and tidy.In no small part due to your efforts.NoelleThank you...!NoelleIt's always very fulfilling to work here! More so than when I'm cleaning for the Knights or anywhere else.NoelleBecause... this is your home.
+# NoelleIt would be my pleasure!NoelleDo you know something? Ever since I came here, I don't believe I've picked up a single item of lost property.NoelleI'm still not used to it......Huh?NoelleWhat I mean is, I often used to find odds and ends while performing my cleaning duties.Wait, so you go around collecting random lost items?NoelleN—No, they're just items I find while cleaning...NoelleFor example... A faded headband under a cabinet.NoelleOr a ball hidden in a bush by a kitten.NoelleOr a bookmark in a corner of the library, keys dropped at the side of the road, an unsigned letter of confession stuck in the door of the church...Sounds like cleaning is quite exhausting...NoelleNo, no, not at all! It is a great honor to perform my duties.Where do all these things end up?NoelleI always do my utmost to reunite each item with its owner! But the ones that go unclaimed remain at the Knights of Favonius headquarters.NoelleSpeaking of cleaning...NoelleThis place always seems so clean and tidy.In no small part due to your efforts.NoelleThank you...!NoelleIt's always very fulfilling to work here! More so than when I'm cleaning for the Knights or anywhere else.NoelleBecause... this is your home.
+# NoelleIt would be my pleasure!
+# NoelleDo you know something? Ever since I came here, I don't believe I've picked up a single item of lost property.
+# NoelleI'm still not used to it...
+# ...Huh?NoelleWhat I mean is, I often used to find odds and ends while performing my cleaning duties.
+# NoelleWhat I mean is, I often used to find odds and ends while performing my cleaning duties.
+# NoelleWhat I mean is, I often used to find odds and ends while performing my cleaning duties.
+# Wait, so you go around collecting random lost items?NoelleN—No, they're just items I find while cleaning...
+# NoelleN—No, they're just items I find while cleaning...
+# NoelleN—No, they're just items I find while cleaning...
+# NoelleFor example... A faded headband under a cabinet.
+# NoelleOr a ball hidden in a bush by a kitten.
+# NoelleOr a bookmark in a corner of the library, keys dropped at the side of the road, an unsigned letter of confession stuck in the door of the church...
+# Sounds like cleaning is quite exhausting...NoelleNo, no, not at all! It is a great honor to perform my duties.
+# NoelleNo, no, not at all! It is a great honor to perform my duties.
+# NoelleNo, no, not at all! It is a great honor to perform my duties.
+# Where do all these things end up?NoelleI always do my utmost to reunite each item with its owner! But the ones that go unclaimed remain at the Knights of Favonius headquarters.
+# NoelleI always do my utmost to reunite each item with its owner! But the ones that go unclaimed remain at the Knights of Favonius headquarters.
+# NoelleI always do my utmost to reunite each item with its owner! But the ones that go unclaimed remain at the Knights of Favonius headquarters.
+# NoelleSpeaking of cleaning...
+# NoelleThis place always seems so clean and tidy.
+# In no small part due to your efforts.
+# NoelleThank you...!
+# NoelleIt's always very fulfilling to work here! More so than when I'm cleaning for the Knights or anywhere else.
+# NoelleBecause... this is your home.
+# (Unlocks at Friendship Level 7)Anything you'd like to do?NoelleHuh? You're asking me...?NoelleI... I want to take your measurements and make an outfit for you.Where has that idea come from?So you even know how to sew, too?NoelleOh, of course... They... don't call me the, uh, "Wondermaid" for nothing...NoelleIf you wore clothes that I made for you...NoelleIt'd most certainly be a wonderfully momentous occasion...Well, if you insist... Much obliged!I'll be sure to get you something in return.NoelleOkay... Alright then...NoelleExcellent! Time to get busy-busy again!NoelleOnly, this must be the happiest kind of busy in all of Teyvat.
+# Anything you'd like to do?NoelleHuh? You're asking me...?NoelleI... I want to take your measurements and make an outfit for you.Where has that idea come from?So you even know how to sew, too?NoelleOh, of course... They... don't call me the, uh, "Wondermaid" for nothing...NoelleIf you wore clothes that I made for you...NoelleIt'd most certainly be a wonderfully momentous occasion...Well, if you insist... Much obliged!I'll be sure to get you something in return.NoelleOkay... Alright then...NoelleExcellent! Time to get busy-busy again!NoelleOnly, this must be the happiest kind of busy in all of Teyvat.
+# NoelleHuh? You're asking me...?NoelleI... I want to take your measurements and make an outfit for you.Where has that idea come from?So you even know how to sew, too?NoelleOh, of course... They... don't call me the, uh, "Wondermaid" for nothing...NoelleIf you wore clothes that I made for you...NoelleIt'd most certainly be a wonderfully momentous occasion...Well, if you insist... Much obliged!I'll be sure to get you something in return.NoelleOkay... Alright then...NoelleExcellent! Time to get busy-busy again!NoelleOnly, this must be the happiest kind of busy in all of Teyvat.
+# NoelleHuh? You're asking me...?
+# NoelleI... I want to take your measurements and make an outfit for you.
+# Where has that idea come from?
+# So you even know how to sew, too?NoelleOh, of course... They... don't call me the, uh, "Wondermaid" for nothing...
+# NoelleOh, of course... They... don't call me the, uh, "Wondermaid" for nothing...
+# NoelleOh, of course... They... don't call me the, uh, "Wondermaid" for nothing...
+# NoelleIf you wore clothes that I made for you...
+# NoelleIt'd most certainly be a wonderfully momentous occasion...
+# Well, if you insist... Much obliged!
+# I'll be sure to get you something in return.
+# NoelleOkay... Alright then...
+# NoelleExcellent! Time to get busy-busy again!
+# NoelleOnly, this must be the happiest kind of busy in all of Teyvat.
+# (Between 6:00 and 19:00)Good morning, Noelle.NoelleGood morning, (Traveler).NoelleThe temperature has been fluctuating greatly as of late, so please take care to not catch a cold.
+# Good morning, Noelle.NoelleGood morning, (Traveler).NoelleThe temperature has been fluctuating greatly as of late, so please take care to not catch a cold.
+# NoelleGood morning, (Traveler).NoelleThe temperature has been fluctuating greatly as of late, so please take care to not catch a cold.
+# NoelleGood morning, (Traveler).
+# NoelleThe temperature has been fluctuating greatly as of late, so please take care to not catch a cold.
+# (Between 19:00 and 6:00)Good night, Noelle.NoelleGood night, (Traveler).NoelleShould you require a glass of hot milk or a lullaby, I will see to it without delay.
+# Good night, Noelle.NoelleGood night, (Traveler).NoelleShould you require a glass of hot milk or a lullaby, I will see to it without delay.
+# NoelleGood night, (Traveler).NoelleShould you require a glass of hot milk or a lullaby, I will see to it without delay.
+# NoelleGood night, (Traveler).
+# NoelleShould you require a glass of hot milk or a lullaby, I will see to it without delay.
+When a character is invited to or invites themselves to their favorite set for the first time, the character will provide a reward. They will provide a reward for each of their favorite sets.
+Inviting them to the furnishing set again will replay the dialogue, but no further reward will be given.
+### Weapon Forging Station
+# Noelle:These facilities will make it much easier to maintain our weapons.Noelle:After all, I must be ready for battle at any moment if I am to protect everyone.Noelle:Thank you for doing this. You... are also someone I want to protect.
+# Noelle:These facilities will make it much easier to maintain our weapons.
+# Noelle:After all, I must be ready for battle at any moment if I am to protect everyone.
+# Noelle:Thank you for doing this. You... are also someone I want to protect.
+### Amidst Whispering Winds
+# Noelle:Did you arrange all of this yourself?Noelle:To have you do such strenuous work yourself... I should have come to your aid earlier. I have neglected my duty as a maid.Noelle:You must be tired after a hard day's work. I'll brew you some tea and prepare your favorite snacks. Please rest well.
+# Noelle:Did you arrange all of this yourself?
+# Noelle:To have you do such strenuous work yourself... I should have come to your aid earlier. I have neglected my duty as a maid.
+# Noelle:You must be tired after a hard day's work. I'll brew you some tea and prepare your favorite snacks. Please rest well.
+### Explore properties
+
+### Genius Invokation TCG
+### Character Screen Animations
+# Taking Pictures and Recounting Good Times
+### Outland Gastronomy
+### Taking Pictures and Recounting Good Times
+### Explore properties
+
+Like most of Mondstadt's young people, Noelle always dreamed of being a knight of Favonius when she grew up.She may not have what it takes to be a knight just yet, but she is learning. Working as a maid at the Knights' headquarters, she is constantly taking notes on what constitutes knightly speech, knightly conduct, and knightly customs.She holds firm to her belief that one day she will join their ranks — she just needs to keep trying her hardest at everything she does.
+A maid who faithfully serves the Knights of Favonius. She dreams of joining their ranks someday.
+Noelle is a polite young woman and professional maid, helping those in need without hesitation, regardless of how far they are or what they need done, as long as they say her name. She has a very high standard of work ethic, as she always strives to ensure that everyones' needs are satisfied and always makes the effort to go over their expectations. No work is a problem for her;believes that the more work she is given, the happier she is.
+Despite this, she is relatively stubborn and inexperienced; she states that she is useless in an argument and simply does what she believes is best, regardless of the other party's advice. Likewise, her attempts to meet everyone's needs is double-edged; although most people are genuine, others can take advantage of her generosity.also considers her to be eligible for the Knights, but refrains from knighting her because she is worried that she is not ready for what lies outside Mondstadt.
+She looks up to all of the Knights and asks them for advice on how to be a proper member when she officially joins, regardless of how much experience they may have, such as the rambunctious. Her aspiration of joining them means that she will refuse any other invitations offered to her.
+Noelle uses themodel. She has short, neck-length pale gray hair with a straight fringe and lopsided locks of hair framing her face. A section of hair is braided over her bangs and pinned down at the right side of her face with a gold shield clip. Her eyes are olive green.
+## Official Introduction
+'s job is definitely the most stressful. But Noelle's is by far the busiest.
+▌Maid of Favonius · NoelleA Maid's Job Knows No Bounds
+========================
+Many people in Mondstadt think there's something a little bit magical about Noelle: She seems to have the ability to be everywhere at once, and to do absolutely anything she sets her mind to.
+Whether it's a Knights of Favonius dinner party, a winery banquet, or just an ordinary barbecue, Noelle is a whirlwind of helpfulness that will burst through your door at the first sign of a problem and whisk it away for you.
+It's no wonder that people have taken to calling her the "Wondermaid."
+But ask Noelle and she'll tell you there's nothing wondrous about the way she works, let alone magical. She just takes pride in her work and is constantly in pursuit of perfection.
+"Nothing more, nothing less. Just as it should be, and not as it should not be."
+## Character Stories
+### Character Details
+Noelle has much greater dreams and ambitions than other maids in the.
+Like anyone else in this city protected by the Knights of Favonius, she too dreams of donning the honored armor.
+Even if her skills are not enough to pass the rigorous selection trials, she still wishes to observe and learn from them every chance she gets.
+Aside from her training, she enjoys her current life, helping everyone in need.
+"You can leave absolutely anything to me!"
+That's her signature line. If there's anything that you need, Noelle is glad to be of aid.
+### Character Story 1
+Noelle is "the maid of all maids" to many.
+Such people also tend to say this of her: "She's everywhere."
+For example, there was a child who once tried to get a plate during a banquet, but found that there was no way to open the cabinet without all the plates falling out...
+All the child needed to do was scream, and Noelle appeared. She put the cabinet down on its back, took a plate out, and handed it to the child, reminding him not to have cold drinks immediately after having barbecue. Then she righted the cabinet, cleaned up other plates, and then put them back in order.
+Noelle's ability to be everywhere all at once is something miraculous to many.
+However, the job of a maid is no myth or legend. Noelle only does her job to the letter.
+"No more, no less. As it should be, not as it should not be."
+Noelle doesn't think herself special, only that she thinks too much at times.
+### Character Story 2
+Noelle is always eager to help, sometimes excessively so.
+If you were to ask her how to build a campfire as she passed by, she would not only stop and build the campfire for you, she would also put up the grill racks, season the food, cook it for you, taste it herself to make sure it's done, and remind you to put out the fire when you've finished so as not to burn the forest down. Then she would get back to whatever she had been doing beforehand.
+Of course, most people don't mind at all that she regularly goes the extra mile. But it can sometimes produce unexpected results...
+For example, afromonce came to Mondstadt, ostensibly wishing to get into the winery business. In truth, he had an evil plot to ruin the land, destroy the winery business in Mondstadt altogether and then seize the market with wines from Snezhnaya.
+He disguised himself as an honest merchant with his family on a business trip to Mondstadt. Naturally, with them being visitors from afar, Noelle gave them a warm reception.
+Initially, the merchant was delighted with Noelle's hospitality; it was a cut above the crude etiquette he had come to expect from most peasants in Mondstadt. However, after a while he began to feel that something was amiss.
+Noelle seemed to be able to read his mind: She correctly guessed his schedule, cooked his family's favorite Snezhnayan dishes for them each day, and even knew thatliked to go to bed hugging a ragdoll, presenting her with a hand-made doll she had sewn together herself.
+This spooked the merchant, and made him hesitant to execute the next phase of his plan. Noelle's warm smile now chilled the merchant to the bone. What else did she know, and what was she really planning?
+In the end, the merchant fled Mondstadt with his family.
+Noelle was upset for a few days, thinking she had somehow insulted her guests. Little did she know that all of Mondstadt was indebted to her for taking her job so seriously.
+### Character Story 3
+Most of the time, Noelle's reliability provides a comforting presence, but there are always exceptions.
+Once, she learned that an adventurer was trapped on, so she decided to mount a rescue by herself.
+The snowstorm that day was terribly fierce, wiping out any tracks left by humans as soon as they were made. It was impossible to find a safe route to proceed, to say nothing of saving the adventurer amidst the snow.
+However, Noelle persisted on searching for the adventurer and eventually found him inside a cave, suffering from severe hypothermia.
+At the time, her coat was completely soaked, and the water inside her bottle had turned to ice. Thirsty and hungry, Noelle still managed to carry the adventurer down on her back.
+The adventurer was saved, but Noelle, having over-exerted herself, laid in bed for three days straight, suffering from a high fever. Everyone in the Knights of Favonius barely slept out of concern for her during that period. Fortunately, Noelle recovered.
+It was not the first or second time that something similar had happened, and everyone was deeply worried for Noelle.
+In order to prevent Noelle from putting herself in harm's way again,had to invent some safe jobs to keep Noelle busy. If something were to happen, thenwould have to save the day.
+During the Stormterror threat, Noelle was also eager to resolve the threat at its source. However, Kaeya managed to arrange quite a few "urgent matters" for her to attend to inside the city until it was all over.
+### Character Story 4
+Noelle's petite form does a good job of hiding her great strength.
+This does not just refer to her resoluteness or her indomitable spirit, but also her physical strength.
+Once,accidentally dropped her experimental apparatus under her bookshelf and troubled over whether she could remain decent while bending over to retrieve it. Noelle made it over in the nick of time, lifting the full bookshelf with only one hand — and not a single book fell out between her hefting it and putting it down.
+There was another incident in which several cargo-bearing carts were attacked byas they tried to pass through Mondstadt's side gate. As the owners were all in a panic, it was Noelle again who came to the rescue — hurling the carts — cargo and all, into the, before leaping into the water herself and retrieving every last item.
+Rumor has it that when Noelle was studying the blade, she nearly sent— who prided himself in his forging skills — into despairing seclusion.
+In all, he forged over ten different swords with different alloy compositions for Noelle, but all would lose their edge after a few uses.
+At first, Wagner thought Noelle unskilled, but eventually found that the problem was more foundational: the swords just weren't strong enough.
+Putting his reputation on the line, Wagner finally made Noelle a sturdy and heavythat was further reinforced by her affinity for. Only then was her weapon issue (barely) solved.
+But don't worry, Noelle won't use her superhuman strength unless the situation calls for it, as she is a pacifist at heart.
+They say, however, that the very day Noelle received her, she was set upon by a pair of drunkenin, who thought her a harmless lamb...
+Let's just hope that no one else will ever be so unlucky.
+### Character Story 5
+Noelle's greatest enemy, curiously, is not a person, butitself.
+During Ludi Harpastum, long tables arranged in a circular shape and filled with all kinds of food will be set up in the plaza before thefor everyone to enjoy.
+The food is usually prepared by volunteers who can cook. During this time, Noelle, who always holds herself to a high standard, joins the volunteers in continuously cooking and serving food.
+It's not really any additional work; what's difficult is that she insists on tasting every dish to make sure they are up to standard.
+The crispy; the sizzling Mondstadt Pork Chops; the towering— all the fried and barbecued foods, equal parts delicious and fatty, are customary at the festival.
+The smiles on people's faces make Noelle truly happy. What makes her less so is seeing her bulging belly. She can't help but let out a sigh.
+For the entire month following the festival, Noelle will volunteer for the Knights of Favonius' city night patrol.
+The festival may be over, but her battle is only beginning.
+### "Warning of Roses"
+The maids of the Knights have many "red lines" that are not to be crossed, and one of these is that "the personal information of the Knights must be kept in strict confidence."
+This does not only require restricting outsider access to such information — this restriction also applies to other members of the Knights.
+For example, what Jean keeps in her private quarters, the contents of's Baron Bunny, the number of special eye patches that Kaeya owns, the number of's hidden bomb caches... These things are all top secret.
+To avoid leaking such information, Noelle used red cloth to make a great many roses — in Mondstadt, this flower means "my lips are sealed."
+She specially wove one such rose into her gauntlet as an ever-present reminder to herself.
+Revealing secrets would be a major dereliction of duty for a maid, and those who aspire to be knights cannot afford such errors.
+So you can forget about probing Noelle for any secrets. She won't tell.
+Noelle did once wish to fulfill her dream before its time. Some years ago, after failing her seventh selection test, which was really a foregone conclusion, she felt somewhat discouraged.
+The etiquette, swordsmanship, the lines she had memorized... had they all gone to waste? She remembered all the strong points of every official knight, but who would remember the hard work of a failure like her?
+She had never stopped aspiring to become a Knight of Favonius, but her exhausted body wouldn't let her get back on her feet like she normally would. She felt like someone who had spent days and nights traveling through an icy tundra.
+At that moment, the main gate of the Knights Headquarters were flung upon, and out walked Acting Grand Master Jean, who had just been in charge of the selection process.
+Without a thought, Noelle gave a precise knight's salute.
+Immediately, she knew that this was too abrupt a thing to do, and wondered what Jean might think of her.
+But just as she was wishing that there was some hole she might crawl into to flee, Jean stopped in her own tracks and returned the salute.
+After a moment's surprise, Noelle gave a strained smile, clumsy but pure.
+This was a lucky day that she would always remember, for she would receive recognition from two all-important sources this day: once from Jean, and the other from the gods.
+Her hard work had been remembered after all.
+From that day forward,in hand, Noelle reaffirmed her belief that she would one day be able to don that armor. That she would be gentle and reliable — and yes, everywhere at once too.
+## Quests and Events
+* Part IV:(cutscene)
+## Character Mentions
+### Character Voice-Overs
+* Noelle is seen wielding ain her official art.
+- Noelle is seen wielding ain her official art.
+* The name "Noelle" means Christmas, and is typically given to children born around that time of year. Despite this, Noelle's birthday is in March.
+- The name "Noelle" means Christmas, and is typically given to children born around that time of year. Despite this, Noelle's birthday is in March.
+### Character Title: Chivalric Blossom
+1. Official Genshin Impact Website:
+1. Lisa's Voice-Over:
+1. Jean's Voice-Over:
+1. Bennett's Voice-Over:
+- Official Genshin Impact Website:
+- Lisa's Voice-Over:
+- Jean's Voice-Over:
+### Explore properties
+
+## List of Character Outfits
+### Explore properties
+
+- 
+# Noelle/Voice-Overs
+### Explore properties
+
+Noelle: ProtectorIconBackgroundBannerItem TypeQualityDescriptionNoelle is quite special. Noelle won't let any harm come to you.How to ObtainSourceReward for reaching10 with
+## Noelle: Protector
+Noelle: Protectoris aobtained by reaching10 with.
+## Other Languages[]
+### Explore properties
+
+NoelleDetailsFeaturesHealth10How to ObtainSource 1Achieve victory inNoelleis aobtained in.
+## Proficiency Reward[]
+After reaching Proficiency 10, the following Dynamic Skin is obtained:3
+## Stage Appearances[]
+Noelle appears in15stages:
+Dynamic Skin Idle Animation
+## Other Languages[]
+### Explore properties

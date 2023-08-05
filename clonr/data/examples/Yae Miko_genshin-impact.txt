@@ -1,0 +1,463 @@
+Yae MikoAstute AmusementCardWishIn-GameQualityBioFamilyVoice Actors()RegionAffil­i­a­tions(on profile)Previous:February 16, 20221 year, 5 months agoAncestryEnglishChineseJapaneseKoreanAdditional TitlesCategoriesGuuji of the Grand Narukami Shrine
+- 
+Yae Miko(Japanese:八重神子Yae Miko), also known asGuuji Yae(Japanese:宮司Guuji) or theGuuji, is a playablein.
+A kitsune of many facets, Yae Miko oversees the, owns the, and is's servant and friend.
+### Ascensions and Stats
+Toggle Ascension Materials
+1. Does not include weapon ATK value.
+1. Characters gain special stats starting with 2✦.
+- Does not include weapon ATK value.
+* Periodically strikes one nearby opponent with lightning, dealingElectro DMG
+- Periodically strikes one nearby opponent with lightning, dealingElectro DMG
+* When this skill hits at least one, it generates1.This particle generation has a cooldown of2.5s.
+* This particle generation has a cooldown of2.5s.
+* The Sesshou Sakura can strike5times over their 14 seconds duration.
+* The maximum Sesshou Sakura limit of 3 is shared between all players in.
+* The Sesshou Sakura has two targeting groups:(,) and miscellaneous objects (torches, campfires, Cuihua trees,,,,, etc.). When both groups of targets are present within a Sesshou Sakura's range, it will always prioritize living beings over miscellaneous objects. The targeting of different targets within the same group will prioritize the nearest target.
+- This particle generation has a cooldown of2.5s.
+- The Sesshou Sakura can strike5times over their 14 seconds duration.
+- The maximum Sesshou Sakura limit of 3 is shared between all players in.
+- The Sesshou Sakura has two targeting groups:(,) and miscellaneous objects (torches, campfires, Cuihua trees,,,,, etc.). When both groups of targets are present within a Sesshou Sakura's range, it will always prioritize living beings over miscellaneous objects. The targeting of different targets within the same group will prioritize the nearest target.
+* Passive Talent 1,: "When casting, each Sesshou Sakura destroyed resets the cooldown for 1 charge of."
+- Passive Talent 1,: "When casting, each Sesshou Sakura destroyed resets the cooldown for 1 charge of."
+- Passive Talent 2,: "Every point ofYae Miko possesses will increaseDMG by 0.15%."
+# Constellation Effects
+* Constellation Level 2,: "Sesshou Sakura start at Level 2 when created, their max level is increased to 4, and their attack range is increased by 60%."
+* Constellation Level 3,: Increases this talent's level by 3 and raises its maximum level to 15.
+* Constellation Level 4,: "When Sesshou Sakura lightning hits opponents, theElectro DMG Bonusof all nearby party members is increased by 20% for 5s."
+- Constellation Level 2,: "Sesshou Sakura start at Level 2 when created, their max level is increased to 4, and their attack range is increased by 60%."
+- Constellation Level 3,: Increases this talent's level by 3 and raises its maximum level to 15.
+- Constellation Level 4,: "When Sesshou Sakura lightning hits opponents, theElectro DMG Bonusof all nearby party members is increased by 20% for 5s."
+Sesshou Sakura Strikes
+Sesshou Sakura, Level 1 vs Level 3
+Sesshou Sakura's appearance at levels 3, 2, and 1 respectively
+- Passive Talent 1,: "When casting, each Sesshou Sakura destroyed resets the cooldown for 1 charge of."
+# Constellation Effects
+* Constellation Level 1,: "Each timeactivates a Tenko Thunderbolt, Yae Miko will restore 8 Elemental Energy for herself."
+- Constellation Level 1,: "Each timeactivates a Tenko Thunderbolt, Yae Miko will restore 8 Elemental Energy for herself."
+Unsealing nearby Sesshou Sakuras
+* This has a chance to take effect when.For example, when Yae Miko crafts×1using×3, there is a chance to obtain:×1, or×1.
+Sesshou Sakura's appearance at levels 4, 3, and 2 respectively
+- The defense ignored is multiplicative with other forms of defense reduction and decrease. See.
+Each Constellation activation requires one.
+Yae Mikowas promoted or featured with a drop-rate boost in3:
+1. Follows Japanese.
+* Updates to character voice-overs:New for All Languages:"About Kirara"
+* Updates to character voice-overs:Removed from All Languages:"Disengaging Wind Glider"
+* Removed from All Languages:"Disengaging Wind Glider"
+* Removed from All Languages:"Disengaging Wind Glider"
+* Updates to character voice-overs:Updated audio for All Languages:"More About Yae Miko 04" (previously this line did not have audio)Updated text for English:"Chat: Creative Writing":Old:Traveling to other worlds is all that anyone seems be writing about these days. Haha, goodness knows what they find so disappointing about their own world.New:Traveling to other worlds is all that anyone seems be writing about these days. Huh, goodness knows what they find so disappointing about their own world.Updated text for Chinese (Traditional):"Feelings About Ascension: Intro":Old:所謂巫女修行階位，在修習畢業之後，能準確開口念誦祭言即可稱為「直階」。對於人類來說很方便，不過對狐族來說倒是最困難的一步…畢竟是狐狸嘛。New:所謂巫女修行階位，在修習畢業之後，能準確開口唸誦祭言即可稱為「直階」。對於人類來說很方便，不過對狐族來說倒是最困難的一步…畢竟是狐狸嘛。
+* Updated audio for All Languages:"More About Yae Miko 04" (previously this line did not have audio)
+* "More About Yae Miko 04" (previously this line did not have audio)
+* Updated text for English:"Chat: Creative Writing":Old:Traveling to other worlds is all that anyone seems be writing about these days. Haha, goodness knows what they find so disappointing about their own world.New:Traveling to other worlds is all that anyone seems be writing about these days. Huh, goodness knows what they find so disappointing about their own world.
+* "Chat: Creative Writing":Old:Traveling to other worlds is all that anyone seems be writing about these days. Haha, goodness knows what they find so disappointing about their own world.New:Traveling to other worlds is all that anyone seems be writing about these days. Huh, goodness knows what they find so disappointing about their own world.
+* Old:Traveling to other worlds is all that anyone seems be writing about these days. Haha, goodness knows what they find so disappointing about their own world.
+* New:Traveling to other worlds is all that anyone seems be writing about these days. Huh, goodness knows what they find so disappointing about their own world.
+* Updated text for Chinese (Traditional):"Feelings About Ascension: Intro":Old:所謂巫女修行階位，在修習畢業之後，能準確開口念誦祭言即可稱為「直階」。對於人類來說很方便，不過對狐族來說倒是最困難的一步…畢竟是狐狸嘛。New:所謂巫女修行階位，在修習畢業之後，能準確開口唸誦祭言即可稱為「直階」。對於人類來說很方便，不過對狐族來說倒是最困難的一步…畢竟是狐狸嘛。
+* "Feelings About Ascension: Intro":Old:所謂巫女修行階位，在修習畢業之後，能準確開口念誦祭言即可稱為「直階」。對於人類來說很方便，不過對狐族來說倒是最困難的一步…畢竟是狐狸嘛。New:所謂巫女修行階位，在修習畢業之後，能準確開口唸誦祭言即可稱為「直階」。對於人類來說很方便，不過對狐族來說倒是最困難的一步…畢竟是狐狸嘛。
+* Old:所謂巫女修行階位，在修習畢業之後，能準確開口念誦祭言即可稱為「直階」。對於人類來說很方便，不過對狐族來說倒是最困難的一步…畢竟是狐狸嘛。
+* Updated audio for All Languages:"More About Yae Miko 04" (previously this line did not have audio)
+* "More About Yae Miko 04" (previously this line did not have audio)
+* Updated text for English:"Chat: Creative Writing":Old:Traveling to other worlds is all that anyone seems be writing about these days. Haha, goodness knows what they find so disappointing about their own world.New:Traveling to other worlds is all that anyone seems be writing about these days. Huh, goodness knows what they find so disappointing about their own world.
+* "Chat: Creative Writing":Old:Traveling to other worlds is all that anyone seems be writing about these days. Haha, goodness knows what they find so disappointing about their own world.New:Traveling to other worlds is all that anyone seems be writing about these days. Huh, goodness knows what they find so disappointing about their own world.
+* Old:Traveling to other worlds is all that anyone seems be writing about these days. Haha, goodness knows what they find so disappointing about their own world.
+* New:Traveling to other worlds is all that anyone seems be writing about these days. Huh, goodness knows what they find so disappointing about their own world.
+* Updated text for Chinese (Traditional):"Feelings About Ascension: Intro":Old:所謂巫女修行階位，在修習畢業之後，能準確開口念誦祭言即可稱為「直階」。對於人類來說很方便，不過對狐族來說倒是最困難的一步…畢竟是狐狸嘛。New:所謂巫女修行階位，在修習畢業之後，能準確開口唸誦祭言即可稱為「直階」。對於人類來說很方便，不過對狐族來說倒是最困難的一步…畢竟是狐狸嘛。
+* "Feelings About Ascension: Intro":Old:所謂巫女修行階位，在修習畢業之後，能準確開口念誦祭言即可稱為「直階」。對於人類來說很方便，不過對狐族來說倒是最困難的一步…畢竟是狐狸嘛。New:所謂巫女修行階位，在修習畢業之後，能準確開口唸誦祭言即可稱為「直階」。對於人類來說很方便，不過對狐族來說倒是最困難的一步…畢竟是狐狸嘛。
+* Old:所謂巫女修行階位，在修習畢業之後，能準確開口念誦祭言即可稱為「直階」。對於人類來說很方便，不過對狐族來說倒是最困難的一步…畢竟是狐狸嘛。
+- "More About Yae Miko 04" (previously this line did not have audio)
+* "Chat: Creative Writing":Old:Traveling to other worlds is all that anyone seems be writing about these days. Haha, goodness knows what they find so disappointing about their own world.New:Traveling to other worlds is all that anyone seems be writing about these days. Huh, goodness knows what they find so disappointing about their own world.
+* Old:Traveling to other worlds is all that anyone seems be writing about these days. Haha, goodness knows what they find so disappointing about their own world.
+* Old:Traveling to other worlds is all that anyone seems be writing about these days. Haha, goodness knows what they find so disappointing about their own world.
+- Old:Traveling to other worlds is all that anyone seems be writing about these days. Haha, goodness knows what they find so disappointing about their own world.
+- New:Traveling to other worlds is all that anyone seems be writing about these days. Huh, goodness knows what they find so disappointing about their own world.
+* "Feelings About Ascension: Intro":Old:所謂巫女修行階位，在修習畢業之後，能準確開口念誦祭言即可稱為「直階」。對於人類來說很方便，不過對狐族來說倒是最困難的一步…畢竟是狐狸嘛。New:所謂巫女修行階位，在修習畢業之後，能準確開口唸誦祭言即可稱為「直階」。對於人類來說很方便，不過對狐族來說倒是最困難的一步…畢竟是狐狸嘛。
+* Old:所謂巫女修行階位，在修習畢業之後，能準確開口念誦祭言即可稱為「直階」。對於人類來說很方便，不過對狐族來說倒是最困難的一步…畢竟是狐狸嘛。
+* Old:所謂巫女修行階位，在修習畢業之後，能準確開口念誦祭言即可稱為「直階」。對於人類來說很方便，不過對狐族來說倒是最困難的一步…畢竟是狐狸嘛。
+- Old:所謂巫女修行階位，在修習畢業之後，能準確開口念誦祭言即可稱為「直階」。對於人類來說很方便，不過對狐族來說倒是最困難的一步…畢竟是狐狸嘛。
+1. Official Genshin Impact Chinese Website:
+- Twitter:
+### Explore properties
+
+- 
+# Yae Miko's Stella Fortuna
+Yae Miko's Stella FortunaItem TypeQualityDescription's Constellation Activation MaterialHow to ObtainSource
+## Yae Miko's Stella Fortuna
+Yae Miko's Stella Fortunais aobtained fromused to level's.
+## Other Languages[]
+### Explore properties
+
+Yae MikoCategoryQualityAdeptal EnergyLoad3001200Adeptal Energy per Load0.25DescriptionCharacter In-ResidenceYae Mikocan be invited as a Companion into the player'safter obtaining her and completing the World Quest.
+### Adeptal Energy per Load
+## Favorite Furnishing Sets
+If a character's favoriteis placed in the same realm as the character for the first time, the character will automatically teleport to the furnishing set. Interacting with the character will initiate a, after which the character will teleport back to their original position.
+Yae Miko has2Favorite Furnishing Sets:
+# Light novels...Time for some self-care...Stories...Fried Tofu...
+# Time for some self-care...
+# (When the player is nearby)Something on your mind?My little friends...
+# Something on your mind?
+# My little friends...
+# Yae Miko:Oh? Well hello, what brings you to see me today?Yae Miko:If there's anything weighing on your mind, you can always talk to me. I'm always happy to listen to other people's problems... Who knows, I might even try to help you come up with a solution.Hope you're settling in okay.Yae Miko:Thank you for your concern, dear. But, believe me, I am quite comfortable wherever I go.Yae Miko:So, this must be an adepti abode... Hmm, though it's a bit different from what I imagined, it's still most fascinating.Yae Miko:At first glance, the act of containing this vast space inside a tiny little tea pot seems strikingly similar to the art of constructing a space from the imagination. But as it turns out, they work on fundamentally different principles.So you're researching how it works, huh?Yae Miko:As Guuji of the Grand Narukami Shrine, it is my duty to seek out and master all forms of knowledge and power. Only then am I capable of handling whatever phenomena come our way.Yae Miko:Besides, if I can get the hang of this teapot trick, I'll be able to bring an unlimited supply of sake and snacks with me wherever I go...Aha, so that's the real reason for your "research"!Yae Miko:Hehe... regardless, please do look after me while I'm visiting this lovely little teapot of yours.
+# Yae Miko:Oh? Well hello, what brings you to see me today?
+# Yae Miko:If there's anything weighing on your mind, you can always talk to me. I'm always happy to listen to other people's problems... Who knows, I might even try to help you come up with a solution.
+# Hope you're settling in okay.Yae Miko:Thank you for your concern, dear. But, believe me, I am quite comfortable wherever I go.Yae Miko:So, this must be an adepti abode... Hmm, though it's a bit different from what I imagined, it's still most fascinating.Yae Miko:At first glance, the act of containing this vast space inside a tiny little tea pot seems strikingly similar to the art of constructing a space from the imagination. But as it turns out, they work on fundamentally different principles.So you're researching how it works, huh?Yae Miko:As Guuji of the Grand Narukami Shrine, it is my duty to seek out and master all forms of knowledge and power. Only then am I capable of handling whatever phenomena come our way.Yae Miko:Besides, if I can get the hang of this teapot trick, I'll be able to bring an unlimited supply of sake and snacks with me wherever I go...Aha, so that's the real reason for your "research"!Yae Miko:Hehe... regardless, please do look after me while I'm visiting this lovely little teapot of yours.
+# Yae Miko:Thank you for your concern, dear. But, believe me, I am quite comfortable wherever I go.Yae Miko:So, this must be an adepti abode... Hmm, though it's a bit different from what I imagined, it's still most fascinating.Yae Miko:At first glance, the act of containing this vast space inside a tiny little tea pot seems strikingly similar to the art of constructing a space from the imagination. But as it turns out, they work on fundamentally different principles.So you're researching how it works, huh?Yae Miko:As Guuji of the Grand Narukami Shrine, it is my duty to seek out and master all forms of knowledge and power. Only then am I capable of handling whatever phenomena come our way.Yae Miko:Besides, if I can get the hang of this teapot trick, I'll be able to bring an unlimited supply of sake and snacks with me wherever I go...Aha, so that's the real reason for your "research"!Yae Miko:Hehe... regardless, please do look after me while I'm visiting this lovely little teapot of yours.
+# Yae Miko:Thank you for your concern, dear. But, believe me, I am quite comfortable wherever I go.
+# Yae Miko:So, this must be an adepti abode... Hmm, though it's a bit different from what I imagined, it's still most fascinating.
+# Yae Miko:At first glance, the act of containing this vast space inside a tiny little tea pot seems strikingly similar to the art of constructing a space from the imagination. But as it turns out, they work on fundamentally different principles.
+# So you're researching how it works, huh?
+# Yae Miko:As Guuji of the Grand Narukami Shrine, it is my duty to seek out and master all forms of knowledge and power. Only then am I capable of handling whatever phenomena come our way.
+# Yae Miko:Besides, if I can get the hang of this teapot trick, I'll be able to bring an unlimited supply of sake and snacks with me wherever I go...
+# Aha, so that's the real reason for your "research"!
+# Yae Miko:Hehe... regardless, please do look after me while I'm visiting this lovely little teapot of yours.
+# (Unlocks at Friendship Level 4)Would you like to have a chat with me?Yae Miko:Need someone to talk to, hmm? Aw, what's the matter, are you feeling lonely?Yae Miko:Well, as luck would have it, I happen to be in a good mood today. How about I tell you a story from long ago, hmm?Please, that would be great!I'd love to hear it!Yae Miko:Long, long ago, there was a little child who suddenly turned up at the shrine one day.Yae Miko:In her arms she was carrying a little fox on the brink of death. She knelt before Kitsune Saiguu and begged her to save her friend.Yae Miko:The child said the fox had started appearing frequently in the village ever since she had fed it some Fried Tofu.Yae Miko:But it wasn't long before misfortune struck. Now that the fox had let down its guard, a vicious dog from the village seized the chance to attack, delivering a near-fatal bite. Heart-broken and riddled with guilt, the child decided to bring the injured fox to the shrine for help.Yae Miko:Kitsune Saiguu granted her request and agreed to nurse the little fox back to health. Worried that the little girl would be lonely without her companion, Kitsune Saiguu decided to ask another member of her kin to keep the little girl company for a few days. I was the one she asked.What happened after that?Yae Miko:Well, obviously, being the fabulously beautiful fox that I am, it wasn't long before the little girl was crazy about me.Yae Miko:Not only would she buy me all sorts of tasty treats to eat, she would pamper me day in and day out. She always wanted me by her side, even when she was sleeping.Yae Miko:After two days, the little fox had recovered and I accompanied the girl back to the shrine. Upon our arrival, Kitsune Saiguu asked the girl which fox was her favorite — the one she had made friends with originally, or the new one?Yae Miko:She hesitantly looked back and forth between me and her old fox friend.That would be quite a difficult choice...Yae Miko:But when her own fox trotted up and whimpered to her, she finally set me down.Yae Miko:"The fox you gave me is very beautiful, Miss Shrine Maiden, but I still love my old friend the most."Yae Miko:Finally, the child offered some Fried Tofu to thank me for accompanying her, then left with her little fox friend.What an amazing story.Thanks for telling me this story.Yae Miko:Hmm? Wait a moment, child. You're not planning to just leave it at that, are you?Yae Miko:Come on, I've told you my story — now it's your turn. Shouldn't you offer me something in exchange?Alright, let me tell you my story.Yae Miko:Hmm, I suppose that will do.Yae Miko:But could you try to spice it up a bit? Tell it as if it were a best-seller from Yae Publishing House.How about I go buy you some Fried Tofu?Yae Miko:Now you're talking.Yae Miko:Alright, I'll wait for you here. Make it quick, though. I can tell you some other stories when you return.
+# Would you like to have a chat with me?Yae Miko:Need someone to talk to, hmm? Aw, what's the matter, are you feeling lonely?Yae Miko:Well, as luck would have it, I happen to be in a good mood today. How about I tell you a story from long ago, hmm?Please, that would be great!I'd love to hear it!Yae Miko:Long, long ago, there was a little child who suddenly turned up at the shrine one day.Yae Miko:In her arms she was carrying a little fox on the brink of death. She knelt before Kitsune Saiguu and begged her to save her friend.Yae Miko:The child said the fox had started appearing frequently in the village ever since she had fed it some Fried Tofu.Yae Miko:But it wasn't long before misfortune struck. Now that the fox had let down its guard, a vicious dog from the village seized the chance to attack, delivering a near-fatal bite. Heart-broken and riddled with guilt, the child decided to bring the injured fox to the shrine for help.Yae Miko:Kitsune Saiguu granted her request and agreed to nurse the little fox back to health. Worried that the little girl would be lonely without her companion, Kitsune Saiguu decided to ask another member of her kin to keep the little girl company for a few days. I was the one she asked.What happened after that?Yae Miko:Well, obviously, being the fabulously beautiful fox that I am, it wasn't long before the little girl was crazy about me.Yae Miko:Not only would she buy me all sorts of tasty treats to eat, she would pamper me day in and day out. She always wanted me by her side, even when she was sleeping.Yae Miko:After two days, the little fox had recovered and I accompanied the girl back to the shrine. Upon our arrival, Kitsune Saiguu asked the girl which fox was her favorite — the one she had made friends with originally, or the new one?Yae Miko:She hesitantly looked back and forth between me and her old fox friend.That would be quite a difficult choice...Yae Miko:But when her own fox trotted up and whimpered to her, she finally set me down.Yae Miko:"The fox you gave me is very beautiful, Miss Shrine Maiden, but I still love my old friend the most."Yae Miko:Finally, the child offered some Fried Tofu to thank me for accompanying her, then left with her little fox friend.What an amazing story.Thanks for telling me this story.Yae Miko:Hmm? Wait a moment, child. You're not planning to just leave it at that, are you?Yae Miko:Come on, I've told you my story — now it's your turn. Shouldn't you offer me something in exchange?Alright, let me tell you my story.Yae Miko:Hmm, I suppose that will do.Yae Miko:But could you try to spice it up a bit? Tell it as if it were a best-seller from Yae Publishing House.How about I go buy you some Fried Tofu?Yae Miko:Now you're talking.Yae Miko:Alright, I'll wait for you here. Make it quick, though. I can tell you some other stories when you return.
+# Yae Miko:Need someone to talk to, hmm? Aw, what's the matter, are you feeling lonely?Yae Miko:Well, as luck would have it, I happen to be in a good mood today. How about I tell you a story from long ago, hmm?Please, that would be great!I'd love to hear it!Yae Miko:Long, long ago, there was a little child who suddenly turned up at the shrine one day.Yae Miko:In her arms she was carrying a little fox on the brink of death. She knelt before Kitsune Saiguu and begged her to save her friend.Yae Miko:The child said the fox had started appearing frequently in the village ever since she had fed it some Fried Tofu.Yae Miko:But it wasn't long before misfortune struck. Now that the fox had let down its guard, a vicious dog from the village seized the chance to attack, delivering a near-fatal bite. Heart-broken and riddled with guilt, the child decided to bring the injured fox to the shrine for help.Yae Miko:Kitsune Saiguu granted her request and agreed to nurse the little fox back to health. Worried that the little girl would be lonely without her companion, Kitsune Saiguu decided to ask another member of her kin to keep the little girl company for a few days. I was the one she asked.What happened after that?Yae Miko:Well, obviously, being the fabulously beautiful fox that I am, it wasn't long before the little girl was crazy about me.Yae Miko:Not only would she buy me all sorts of tasty treats to eat, she would pamper me day in and day out. She always wanted me by her side, even when she was sleeping.Yae Miko:After two days, the little fox had recovered and I accompanied the girl back to the shrine. Upon our arrival, Kitsune Saiguu asked the girl which fox was her favorite — the one she had made friends with originally, or the new one?Yae Miko:She hesitantly looked back and forth between me and her old fox friend.That would be quite a difficult choice...Yae Miko:But when her own fox trotted up and whimpered to her, she finally set me down.Yae Miko:"The fox you gave me is very beautiful, Miss Shrine Maiden, but I still love my old friend the most."Yae Miko:Finally, the child offered some Fried Tofu to thank me for accompanying her, then left with her little fox friend.What an amazing story.Thanks for telling me this story.Yae Miko:Hmm? Wait a moment, child. You're not planning to just leave it at that, are you?Yae Miko:Come on, I've told you my story — now it's your turn. Shouldn't you offer me something in exchange?Alright, let me tell you my story.Yae Miko:Hmm, I suppose that will do.Yae Miko:But could you try to spice it up a bit? Tell it as if it were a best-seller from Yae Publishing House.How about I go buy you some Fried Tofu?Yae Miko:Now you're talking.Yae Miko:Alright, I'll wait for you here. Make it quick, though. I can tell you some other stories when you return.
+# Yae Miko:Need someone to talk to, hmm? Aw, what's the matter, are you feeling lonely?
+# Yae Miko:Well, as luck would have it, I happen to be in a good mood today. How about I tell you a story from long ago, hmm?
+# Please, that would be great!
+# I'd love to hear it!
+# Yae Miko:Long, long ago, there was a little child who suddenly turned up at the shrine one day.
+# Yae Miko:In her arms she was carrying a little fox on the brink of death. She knelt before Kitsune Saiguu and begged her to save her friend.
+# Yae Miko:The child said the fox had started appearing frequently in the village ever since she had fed it some Fried Tofu.
+# Yae Miko:But it wasn't long before misfortune struck. Now that the fox had let down its guard, a vicious dog from the village seized the chance to attack, delivering a near-fatal bite. Heart-broken and riddled with guilt, the child decided to bring the injured fox to the shrine for help.
+# Yae Miko:Kitsune Saiguu granted her request and agreed to nurse the little fox back to health. Worried that the little girl would be lonely without her companion, Kitsune Saiguu decided to ask another member of her kin to keep the little girl company for a few days. I was the one she asked.
+# What happened after that?
+# Yae Miko:Well, obviously, being the fabulously beautiful fox that I am, it wasn't long before the little girl was crazy about me.
+# Yae Miko:Not only would she buy me all sorts of tasty treats to eat, she would pamper me day in and day out. She always wanted me by her side, even when she was sleeping.
+# Yae Miko:After two days, the little fox had recovered and I accompanied the girl back to the shrine. Upon our arrival, Kitsune Saiguu asked the girl which fox was her favorite — the one she had made friends with originally, or the new one?
+# Yae Miko:She hesitantly looked back and forth between me and her old fox friend.
+# That would be quite a difficult choice...
+# Yae Miko:But when her own fox trotted up and whimpered to her, she finally set me down.
+# Yae Miko:"The fox you gave me is very beautiful, Miss Shrine Maiden, but I still love my old friend the most."
+# Yae Miko:Finally, the child offered some Fried Tofu to thank me for accompanying her, then left with her little fox friend.
+# What an amazing story.
+# Thanks for telling me this story.
+# Yae Miko:Hmm? Wait a moment, child. You're not planning to just leave it at that, are you?
+# Yae Miko:Come on, I've told you my story — now it's your turn. Shouldn't you offer me something in exchange?
+# Alright, let me tell you my story.Yae Miko:Hmm, I suppose that will do.Yae Miko:But could you try to spice it up a bit? Tell it as if it were a best-seller from Yae Publishing House.
+# Yae Miko:Hmm, I suppose that will do.Yae Miko:But could you try to spice it up a bit? Tell it as if it were a best-seller from Yae Publishing House.
+# Yae Miko:Hmm, I suppose that will do.
+# Yae Miko:But could you try to spice it up a bit? Tell it as if it were a best-seller from Yae Publishing House.
+# How about I go buy you some Fried Tofu?Yae Miko:Now you're talking.Yae Miko:Alright, I'll wait for you here. Make it quick, though. I can tell you some other stories when you return.
+# Yae Miko:Now you're talking.Yae Miko:Alright, I'll wait for you here. Make it quick, though. I can tell you some other stories when you return.
+# Yae Miko:Now you're talking.
+# Yae Miko:Alright, I'll wait for you here. Make it quick, though. I can tell you some other stories when you return.
+# (Unlocks at Friendship Level 7)Anything you'd like to do?Yae Miko:Hmm... no.Yae Miko:Hehe, not the answer you were expecting to hear, hmm? Ah, the look of stunned surprise on your face... I think it might be my favorite.So you were just joking...Yae Miko:No, actually I wasn't.Yae Miko:Or to put it another way, seeing your reaction was exactly what I wanted to do.Yae Miko:Observing humans' reactions and reading about their lives are what interest me most in this world.Yae Miko:In principle, I should remain an outside observer. But you are far too much fun for that. I can't help but tease you from time to time.Oh, so it's my fault that you feel the need to tease me!?Yae Miko:But of course.Yae Miko:If you liken human lives to light novels, every one has its highlights, but also inevitably has many aspects that are similar to all the others.Yae Miko:As an observer, I get to see the similarities all the time, which naturally leaves me desiring to see something more unique.Yae Miko:Your story is one that has captivated me. I really do have high hopes for you... Please do your best to live up to them, child.My story? You mean my life story? Umm...I'm not sure I can meet your expectations.Yae Miko:Don't you worry. You still have a long journey ahead of you... Your story has only just begun.Yae Miko:Besides, you will always have me as your trusty "editor," won't you?Yae Miko:Whenever you start going off on a misguided tangent, I'll correct you. And if you're ever stuck in a rut, I'll give you a little nudge towards the next chapter.Yae Miko:That should certainly help you on your journey, don't you agree?
+# Anything you'd like to do?Yae Miko:Hmm... no.Yae Miko:Hehe, not the answer you were expecting to hear, hmm? Ah, the look of stunned surprise on your face... I think it might be my favorite.So you were just joking...Yae Miko:No, actually I wasn't.Yae Miko:Or to put it another way, seeing your reaction was exactly what I wanted to do.Yae Miko:Observing humans' reactions and reading about their lives are what interest me most in this world.Yae Miko:In principle, I should remain an outside observer. But you are far too much fun for that. I can't help but tease you from time to time.Oh, so it's my fault that you feel the need to tease me!?Yae Miko:But of course.Yae Miko:If you liken human lives to light novels, every one has its highlights, but also inevitably has many aspects that are similar to all the others.Yae Miko:As an observer, I get to see the similarities all the time, which naturally leaves me desiring to see something more unique.Yae Miko:Your story is one that has captivated me. I really do have high hopes for you... Please do your best to live up to them, child.My story? You mean my life story? Umm...I'm not sure I can meet your expectations.Yae Miko:Don't you worry. You still have a long journey ahead of you... Your story has only just begun.Yae Miko:Besides, you will always have me as your trusty "editor," won't you?Yae Miko:Whenever you start going off on a misguided tangent, I'll correct you. And if you're ever stuck in a rut, I'll give you a little nudge towards the next chapter.Yae Miko:That should certainly help you on your journey, don't you agree?
+# Yae Miko:Hmm... no.Yae Miko:Hehe, not the answer you were expecting to hear, hmm? Ah, the look of stunned surprise on your face... I think it might be my favorite.So you were just joking...Yae Miko:No, actually I wasn't.Yae Miko:Or to put it another way, seeing your reaction was exactly what I wanted to do.Yae Miko:Observing humans' reactions and reading about their lives are what interest me most in this world.Yae Miko:In principle, I should remain an outside observer. But you are far too much fun for that. I can't help but tease you from time to time.Oh, so it's my fault that you feel the need to tease me!?Yae Miko:But of course.Yae Miko:If you liken human lives to light novels, every one has its highlights, but also inevitably has many aspects that are similar to all the others.Yae Miko:As an observer, I get to see the similarities all the time, which naturally leaves me desiring to see something more unique.Yae Miko:Your story is one that has captivated me. I really do have high hopes for you... Please do your best to live up to them, child.My story? You mean my life story? Umm...I'm not sure I can meet your expectations.Yae Miko:Don't you worry. You still have a long journey ahead of you... Your story has only just begun.Yae Miko:Besides, you will always have me as your trusty "editor," won't you?Yae Miko:Whenever you start going off on a misguided tangent, I'll correct you. And if you're ever stuck in a rut, I'll give you a little nudge towards the next chapter.Yae Miko:That should certainly help you on your journey, don't you agree?
+# Yae Miko:Hmm... no.
+# Yae Miko:Hehe, not the answer you were expecting to hear, hmm? Ah, the look of stunned surprise on your face... I think it might be my favorite.
+# So you were just joking...
+# Yae Miko:No, actually I wasn't.
+# Yae Miko:Or to put it another way, seeing your reaction was exactly what I wanted to do.
+# Yae Miko:Observing humans' reactions and reading about their lives are what interest me most in this world.
+# Yae Miko:In principle, I should remain an outside observer. But you are far too much fun for that. I can't help but tease you from time to time.
+# Oh, so it's my fault that you feel the need to tease me!?
+# Yae Miko:But of course.
+# Yae Miko:If you liken human lives to light novels, every one has its highlights, but also inevitably has many aspects that are similar to all the others.
+# Yae Miko:As an observer, I get to see the similarities all the time, which naturally leaves me desiring to see something more unique.
+# Yae Miko:Your story is one that has captivated me. I really do have high hopes for you... Please do your best to live up to them, child.
+# My story? You mean my life story? Umm...
+# I'm not sure I can meet your expectations.
+# Yae Miko:Don't you worry. You still have a long journey ahead of you... Your story has only just begun.
+# Yae Miko:Besides, you will always have me as your trusty "editor," won't you?
+# Yae Miko:Whenever you start going off on a misguided tangent, I'll correct you. And if you're ever stuck in a rut, I'll give you a little nudge towards the next chapter.
+# Yae Miko:That should certainly help you on your journey, don't you agree?
+# (Between 6:00 and 19:00)Morning, Yae Miko.Yae Miko:Good morning, (Traveler). My, by the looks of you, you must have had a very pleasant dream last night?Yae Miko:Bright eyed and bushy tailed, with fortune swinging your way, no doubt. You should follow your heart today, and fate might just reward you for it.
+# Morning, Yae Miko.Yae Miko:Good morning, (Traveler). My, by the looks of you, you must have had a very pleasant dream last night?Yae Miko:Bright eyed and bushy tailed, with fortune swinging your way, no doubt. You should follow your heart today, and fate might just reward you for it.
+# Yae Miko:Good morning, (Traveler). My, by the looks of you, you must have had a very pleasant dream last night?Yae Miko:Bright eyed and bushy tailed, with fortune swinging your way, no doubt. You should follow your heart today, and fate might just reward you for it.
+# Yae Miko:Good morning, (Traveler). My, by the looks of you, you must have had a very pleasant dream last night?
+# Yae Miko:Bright eyed and bushy tailed, with fortune swinging your way, no doubt. You should follow your heart today, and fate might just reward you for it.
+# (Between 19:00 and 6:00)Good night, Yae Miko.Yae Miko:Alright, off to bed now, (Traveler). Youngsters like you should keep early hours.Yae Miko:What about me? Oh, I'm staying up to have a drink or two, maybe read a couple of interesting light novels...Yae Miko:You... weren't seriously thinking of joining me for the whole night, were you...?
+# Good night, Yae Miko.Yae Miko:Alright, off to bed now, (Traveler). Youngsters like you should keep early hours.Yae Miko:What about me? Oh, I'm staying up to have a drink or two, maybe read a couple of interesting light novels...Yae Miko:You... weren't seriously thinking of joining me for the whole night, were you...?
+# Yae Miko:Alright, off to bed now, (Traveler). Youngsters like you should keep early hours.Yae Miko:What about me? Oh, I'm staying up to have a drink or two, maybe read a couple of interesting light novels...Yae Miko:You... weren't seriously thinking of joining me for the whole night, were you...?
+# Yae Miko:Alright, off to bed now, (Traveler). Youngsters like you should keep early hours.
+# Yae Miko:What about me? Oh, I'm staying up to have a drink or two, maybe read a couple of interesting light novels...
+# Yae Miko:You... weren't seriously thinking of joining me for the whole night, were you...?
+When a character is invited to or invites themselves to their favorite set for the first time, the character will provide a reward. They will provide a reward for each of their favorite sets.
+Inviting them to the furnishing set again will replay the dialogue, but no further reward will be given.
+### Ancient Branch Shrine
+# Yae Miko:My, someone rather discerning fitted out this shrine.Yae Miko:Nothing looks out of place, and everything's spaced out just right.Yae Miko:Yes... I have to hand it to you, you can be rather considerate when it counts.
+# Yae Miko:My, someone rather discerning fitted out this shrine.
+# Yae Miko:Nothing looks out of place, and everything's spaced out just right.
+# Yae Miko:Yes... I have to hand it to you, you can be rather considerate when it counts.
+# Yae Miko:Oh? I didn't expect to find my favorite hot springs here. You wouldn't mind it if I took a soak for a while, would you?Yae Miko:Soaking in the steaming water is a fine way to cleanse and soothe both your mind and body.Yae Miko:Now, if I only had a bottle of sake, that would make it perfect.
+# Yae Miko:Oh? I didn't expect to find my favorite hot springs here. You wouldn't mind it if I took a soak for a while, would you?
+# Yae Miko:Soaking in the steaming water is a fine way to cleanse and soothe both your mind and body.
+# Yae Miko:Now, if I only had a bottle of sake, that would make it perfect.
+### Explore properties
+
+### Genius Invokation TCG
+### Character Screen Animations
+## Character Details
+# Taking Pictures and Recounting Good Times
+### Mysterious Voyage
+### Kitsune's Leisurely Stroll Around Hanamizaka
+### When the Sakura Bloom
+### Taking Pictures and Recounting Good Times
+### GENSHIN CONCERT 2022
+### Paimon's Starlight Expedition
+### Character Shorts
+### Paimon's Paintings
+### Special Program Chibis
+### Taking Pictures and Recounting Good Times
+### Explore properties
+
+The head shrine maiden in charge of Grand Narukami Shrine and a descendant of Kitsune lineage, Eternity's servant and friend, and the intimidating editor-in-chief of Yae Publishing House, a publisher of light novels...
+Lady Guuji of the Grand Narukami Shrine also serves as the editor-in-chief of Yae Publishing House. Unimaginable intelligence and cunning are hidden under her beautiful appearance.
+Miko has a mysterious demeanor around her whenever she assumes her duties as the Guuji of the. When she assumes her duties as the boss of the, she is known to be very kind and enjoys reading books and stories,although she also shows an obsessive side in making profits at the same time. She has an enigmatic air around her, with her friends growing used to it.When speaking with outsiders or close friends, she shows a blunter and more cynical side to her. Miko does not mince words, even towards her friend and master. Being a kitsune, Miko is fond of fried tofu. She despises pickled foods of all sorts.
+As a kitsune and youkai, she's very mischievous, including in her roles as Guuji and owner of Yae Publishing House. She couples this mischievous streak with impressive skills of manipulation and reading people. As such her tricks and pranks are usually elaborate, long-winded affairs towards rather simple ends, which she does out of enjoyment and the fact that she enjoys watching people squirm.This has caused many people, such asandto become easily terrified upon seeing her. If not partaking in such affairs, she shows interest in those who get her attention.
+She is one of Ei's only friends who survived the ravages of time. She tends to call the Shogun by her true name, Ei. Ei herself also calls Miko by her first name, signifying their closeness and friendship.
+Despite her light-hearted, mischievous personality, she showed a more emotional side during the, indicating that she does genuinely care for those in her life and has considered thousands of youkai from across Inazuma to be her friends. Though in typical fashion for her, she quickly turns the Traveler and Paimon's sympathy into opportunity to trick them into paying for an expensive dinner.
+Yae Miko uses themodel. She has fair skin, purple eyes, and thigh-length pink hair.
+In her regular form, Miko has purple eyes and long, muted pink hair that is tied at the bottom. She also has pink fox ears that point downward. While she lacks a tail in this form,they briefly appear as a set of five translucent tails when she uses, or as one tail when she usesor when performing a.
+Being a, Miko also has a fox form, although she refuses to reveal it to the Traveler.
+## Official Introduction
+"I have witnessed the Kitsune's majesty in the moonlit forest. She has a myriad of forms, revealing the unknown and the unseen... just as how fate shines on me and the endless world."
+The's head shrine maiden and a descendant of Kitsune lineage,'s servant and friend... and the intimidating editor-in-chief of, a publisher of light novels.
+There's no need to uncover her every facet, as they are all reflective of Yae Miko. Yet, all the same, they are not revealing of her true nature.
+Like fragments of a mirror, each attitude reflects a different version of her. By being enveloped in many identities, she has become a brilliant diamond surrounded by countless mirrors.
+There are hundreds of facets: solemn or cheerful, sympathetic or aloof.
+No one knows the truth, just as how no one can easily spot a kitsune brushing past passers-by in the mystic woods.
+But if the kitsune watches humans, where will her destiny lead?
+## Character Stories
+### Character Details
+The head shrine maiden of the, descendant of Hakushin's lineage, Eternity's servant and friend, and the intimidating editor-in-chief of Yae Publishing House, a publisher of light novels...
+Come to think of it, Yae Miko's nicknames are as myriad as her changeable moods.
+The number of people who have tried to "figure her out" for various reasons could fill the streets from the Tenryou Commission estate to Yae Publishing House if you were to line them all up, but to this day, very few indeed have succeeded.
+Not that Miko has ever intended to conceal anything, of course. Any capriciousness is but the result of doing as she wills and pleases. A riddle with no solution is no riddle at all, in any case!
+You just need to remember that she will always be none other than the wise and beautiful Yae Miko.
+### Character Story 1
+'s editors once submitted a certain manuscript to the editor-in-chief.
+This work was well-written, clearly thought out, and the themes were romance with a side of comedy — a prime slice of the zeitgeist.
+Such a gem would surely require but a thin coat of polish and a few beautiful illustrations to sell well!
+But unexpectedly, Yae Miko did not seem pleased with this, instead heaving a deep sigh before calling for the various head editors.
+One of them asked hesitantly, "Lady Yae, I... Well, I did ask him to write on this topic, yes, but isn't this the hot genre of the day?"
+Faced with the editor's doubtful gaze, Miko gave her opinion forthrightly: that a book that should have been interesting yet was shackled at every turn by the topic was, simply put, "not free enough."
+Things like "top sellers," "genre fiction," these were naught but fads that would come and go every decade.
+Getting with the times was a shortcut, yes, but if a work had the quality that could surmount this tide, why go with the flow nonetheless?
+"Pass this message to this new author of ours: tell him that there's no need to bother about genre. He just needs to write his story and write it well."
+Upon hearing this, the author stopped writing for a time, as if suddenly having an epiphany. Several months later, a new manuscript was sent to Miko and her editors.
+The latter were stunned, and even Yae Miko, who cared little about taboos, furrowed her brows slightly — a rare sight indeed.
+"Um... What do we do? This isn't good..."
+"Exactly! I mean, there's 'not being concerned about genre, and then there's something like 'Shogun Almighty: Reborn as Raiden'... This is just too much!"
+"Hmm? Genre? No, no, there's no problem with that — it's his pen name I'm worried about. It's too normal for a book like this."
+"Huh, so that was what you were concerned about... No, uh, never mind. As long as you're happy, Lady Yae."
+Not long after, the author of this book would take to the literary stage with the Yae Miko-approved (and overly long) pen name "."
+As to how the editor-in-chief got the idea to start a "Reborn as Guuji Yae" writing submission event, that would be a tale for another day.
+### Character Story 2
+If there was something inconvenient about being the Guuji, it is that she must attend every shrine ceremony, dressed up to the nines and in her proper place in the sanctuary.
+The fireworks paint the night skies as they blossom, and the sounds of human merriment fill the shrine, and yet she must sit within, a solemn smile on her face...
+Such tragedies are even more frightful to Miko than the possible wholesale disappearance of Fried Tofu from Teyvat.
+With the somewhat longer span of years that the Electro Archon's servants have, a hundred years pass in the blink of an eye. As the years fly by, boredom becomes the greatest foe.
+And if even she were, archon-forbid, one day to accept sitting quietly still, obstinate as deadwood, would the world now sorely lack for another clever person adept at discovering fun and grasping opportunity?
+As such, looking for fun things to do in every nook and cranny can only be the most reasonable and necessary course.
+And if she were to, say, utilize her authority as Guuji in making fun things happen — why, some things are unavoidable, are they not?
+On the day of the festival, Guuji Yae would nod in satisfaction as she received a delivery of fireworks from the— ofconstruction and specially-made to boot.
+That night's ceremony was, of course, performed with perfect respect to all etiquette and rites.
+The sight of the "Lady Guuji" kneeling gracefully the whole night through would be the object of awe for all the other shrine maidens.
+In the meantime, she would sit beneath the meteor shower of light adorning the skies, watching the festival-goers as they came and went.
+And the din of the fireworks covered the mumbling that came between teeth chewing on a candy apple.
+"You know, when you asked me to become Guuji, you never mentioned that I'd only ever be able to sneak outside to watch the festivities from then on."
+### Character Story 3
+Pursuing fun and finding happiness is how Miko lives her everyday life.
+For someone who enjoys studying humanity like her, "perspectives" and "virtue" play distant second fiddles to "fun."
+Even aof a different faith or anmight pique her interest.
+...That said, this appreciation can sometimes lead to some innocuous trouble.
+As opposed to those conscientious underlings or worshipful juniors, Miko's favorite person at the shrine is a shrine maiden named.
+Yes, that Kano Nana, the novel enthusiast (just like Miko) who constantly frets over.
+While laying about indoors, Miko would often see Sayu flash past the window, followed not long after by a hurried and angry Kano Nana.
+Like lightning and thunder they were, which caught Miko's attention, to the point where she would even sometimes give wrong directions just to let the ruckus go on for a little longer.
+There was another time when Sayu told Miko that the afternoon sun was the most pleasant after the latter had helped her steal some time for napping.
+Perhaps encouraged by these words, Miko would transform into an ordinary Inazuman lady on a wonderfully sunny afternoon, descend from the mountain and have a day out.
+Thein the city,'s,by the streetside... she did not miss a single store, and every one was an enjoyable experience.
+And in the evening, she was atto tell them of a missing animals case that she had heard about on the way.
+"But you really must help, good detectives. I mean, one can barely stand to watch those owners cry their eyes out as it is..."
+Having done all this, the lady could not help but let slip a pleased smile.
+Taking part in Inazuma's daily life in such an identity really was fun.
+Well, except that part whereshot her a suspicious glance as they passed each other by.
+Right, and also, she probably owed thean apology — the-styled hot springs were indeed very good, but she might have accidentally shed some fox fur during the soak.
+### Character Story 4
+A long, long time ago, humanity did not need to use the phrase "a long, long time ago" to preface tales about youkai.
+Thedominated the skies, theswept across the battlefield, thewere seen along small paths, and thewalked amongst humans.
+Under the banner of Narukami, the incredible powers of the youkai host were used to help humans through an era of strife and poverty.
+Seeking refuge in the mountains, they built a city by the sea, and so began Inazuma.
+Amongst the youkai, thewas the most revered, and it was this great line that left a great many tales amongst humans.
+Whenever the youkai gathered to feast and sup together, a little braggadocio about how their latest exploits had become legend anew was very much a given.
+Of course, considering the amount they would drink, most tales told afterward would diverge a little from the truth. But no one minded, asking only that the tale be interesting. As time passed, this became known as "hyakumonogatari daikai," or "the great meeting of a hundred tales."
+It was no uncommon sight to seeraise his cup and speak, holding all the other youkai spellbound with his story, drawing even smiles from, the organizer of the event.
+Instead it was Miko, who was then in the form of a young kitsune, who would perch on Kitsune Saiguu's shoulder and relentless peck at any loopholes in Urakusai's story.
+Urakusai, being a cool-headed and brilliant gentleman, would explain as he twirled his beard.
+But Miko could always find something new to nitpick, and so they would go, back and forth, until Lady Saiguu would smile and call both parties to a halt: the audience wanted to hear the next part, after all.
+After another three rounds of drink and several more rounds of stories, the company would be hard-pressed to even string a sentence together, let alone a story.
+And so the gathered youkai would dispense with the word-fencing and use their powers to take to the skies to see who could best cover the sky and moon with their powers.
+And thus it was said that "a hundred youkai shall parade upon a moonless night."
+Five hundred years on, that little kitsune has already become a mighty youkai in her own right.
+As for the youkai who drank with them in those days, they disappeared amidst war and history, and their remaining bloodlines grow thinner by the day.
+And thus did their great parade, the, become something that happened "a long, long time ago."
+### Character Story 5
+The swords of Inazuma have always been famous the world over, and the best works of thein particular are national treasures.
+However, only a short time ago, more than half of the five artisan lineages were cut off.
+A great number of powerful people were caught up in that conspiracy, and those responsible were all called to account and banished.
+Even the'swas implicated due to their failure in supervising their subordinates...
+But before thecould give her final judgment, the Lady Guuji, who usually did not meddle in government affairs, suddenly interceded, rescuing the Kamisato Clan in their hour of peril.
+Thus, while they suffered a serious blow, they were spared from dismissal.
+In the years that followed, others would speculate greatly concerning the Guuji's actions.
+Some observed the close relations between the Yashiro Commission and the Grand Narukami Shrine, and guessed that she had intended to foster advocates loyal to her.
+And yet the shrine had always been an entity unto itself, and the Lady Guuji did not usually meddle in governance. Thus this action seemed a sacrifice greater than the reward — hardly a wise decision.
+Some others said that the Guuji suspected something to be wrong with the whole situation, and now that the list of those involved was so extensive, any major shakeup in the Yashiro Commission could destabilize Inazuma itself.
+This thought, too, seemed reasonable on face, yet did not stand up to scrutiny. After all, was not the rise and fall of great houses merely ordinary in the grand scheme of mortal affairs? And even if the Kamisato were to fall from grace, new leadership for the Yashiro Commission would emerge.
+Yet another story said that Miko engaged in secret talks with the Kamisato clan head just after the initial shockwaves had died down.
+But the wounded clan was like a candle in the wind at this point. What power could they have to change the situation?
+To this day, all these speculations have never amounted to anything, nor have any answers emerged concerning Miko's actions and motivations.
+But what none know is how Miko's words that day would become as engraved into the Kamisato Clan as their house's crest.
+"That the Kamisato Clan has survived this incident is only due to the Shogun's mercy. Do not forget this in the days that follow."
+These words would serve as a seed of destiny, foreshadowing the Yashiro Commission's future position.
+In some other time, if a storm were to descend upon Inazuma, and even if they were to come into conflict with the other two commissions, the Yashiro Commission's Kamisato Clan would remember the favor they were shown and abide the Shogun's path to Eternity.
+This was a move that the Guuji played with no regrets whatsoever.
+### Fire-Soothing Festival Committee
+The Fire-Soothing Festival Committee was once an organization chaired by the Tenryou Commission and managed by the Grand Narukami Shrine, whose remit was to pray for a lack of any fires in the coming year.
+In those days, Inazuman houses were mostly made of wood, and any carelessness while handling fire could lead to disaster.
+Thus, thewas charged by the Shogun with setting up fire brigades to conduct rescues and damage control when fires did break out, and they also requested that the Grand Narukami Shrine set the Fire-Soothing Festival Committee up to comfort the frightened people.
+In later years, anti-fire precautions would become second nature and serious cases would no longer occur often, but still the annual festival would remain.
+The shrine maidens would dance elegantly, and the people would give generously... with the proceeds split forty-sixty between the Commission and the Shrine.
+When Yae Miko was faced with financial issues while attempting to start Yae Publishing House, she considered the various services that the shrine ran at the time before locking onto this ancient traditional committee.
+"I mean, the busywork is solely done by the Grand Narukami Shrine, so why do we have to split the proceeds with the Tenryou Commission?"
+"What's more, all that Mora's just going into Kujou Senior's pockets. It's not like the fire brigade has ever gotten a year-end bonus or anything."
+As such, after some preparation, the Fire-Soothing Festival of that year would be changed to no longer feature dancing shrine maidens but a grand, rollicking light novel submission contest.
+The organizing body for this competition and any subsequent publications, the "Yae Publishing House," would also "borrow" the Fire-Soothing Festival Committee's budget.
+As for the profits? Into the shrine's coffers they went.
+"Well, we no longer have many fires, and yet our budget keeps increasing. Thus, this restructuring relieves the financial burden placed upon the people."
+"Also, the study of lore and the writing of literature and poetry is also a way of pleasing our Archon — surely you do not claim to know more of ritual and ceremony than I?"
+That was what Yae Miko said most solemnly towhen he came by unannounced.
+The Tenryou Commissioner was ultimately forced to leave the way he came, stormy-faced, along with his attendants.
+Little did any of them know that the moment they stepped out of the shrine, the somber Lady Miko would pluck a novel manuscript from the nearby offering box and continue annotating it.
+"That was a contest of magic for the ages! The foe split the seas as they strode across the skies, heaven and earth changing hue as they approached!"
+"Gohei in hand, the Lady Guuji was solemn as she strode up."
+"All around her the shrine maidens chanted their mantras as the clouds masked the sun, the thunder waiting within for the moment to strike!"
+"The battle was a grinding, protracted affair. In time, even the Guuji began to falter, and the enemy seized that opening, lashing out with great force!"
+"Just then, a bolt of lightning descended like a falling star before the Guuji — a glimmering Vision!"
+"Grasping it in her hand, the revivified Guuji showed forth her power and..."
+"Now wait just a minute! None of what you just said happened, right?"
+"Hmm? Well, how about this then? It all started the day when I had a most vicious "Ramen Duel" down in Hanamizaka...
+"Oh, come on! Nobody's ever gotten a Vision from eating ramen!"
+"But wouldn't that be interesting? I mean, these are the sorts of stories you like to hear, right?"
+Yae Miko gave a thin, enigmatic smile as she was faced with the traveler's curiosity.
+"After all, would you believe me if I said that 'my Vision is purely ornamental, just for show,' little one? Hardly — not even if it were the truth."
+## Quests and Events
+* 
+* Part IV:
+- 
+- 
+## Character Mentions
+### Character Stories
+- 
+### Character Voice-Overs
+* Yae Miko is one of the characters with ornaments that glow. While wearing her default outfit,, whenis ready, the purple gem in her other earring will glow along with her Vision.
+* In theGenshin Impact2020 New Years tweet, Miko welcomedto her shrine as the first guest of the year.
+* While the Chinese, Japanese, and French official introductions for Zhongli featured a quote fromto Yae Miko, the English equivalent tweet left Miko's name out.
+* Miko is younger than Ganyu. In her debut in the Chinese version of the Version 1.5 Special Program, she refers to Ganyu as甘雨姐姐Gānyǔ-jiějie,wherein姐姐jiějieis a term used that literally means "older sister" but is generally used for any older female, even if they are not blood-related.Based on, Miko was a young girl 500 years ago, which is when theoccurred and thedied. In contrast, Ganyu participated in the Archon War over 2,000 years agoand is also suggested to have lived in the,which fell 3,700 years ago.
+* Based on, Miko was a young girl 500 years ago, which is when theoccurred and thedied. In contrast, Ganyu participated in the Archon War over 2,000 years agoand is also suggested to have lived in the,which fell 3,700 years ago.
+* Miko is afrom theand possesses a fox form. In Japanese mythology,are spiritual fox-like creatures with a reputation for cleverness. Befitting Miko's close ties with the Raiden Shogun, the God of Eternity, mythological kitsune are believed to live for thousands of years and symbolize eternity.While Miko calls herself a Sky Kitsune, or, based on her age and number of tails she has (five), Miko would only be the rank of Kiko in kitsune society with Ashireiko being the lowest and Tenko being the highest according to Japanese folklore.
+* While Miko calls herself a Sky Kitsune, or, based on her age and number of tails she has (five), Miko would only be the rank of Kiko in kitsune society with Ashireiko being the lowest and Tenko being the highest according to Japanese folklore.
+* Yae Miko is inspired byfrom, another game developed by, and shares a number of similarities with her:They share physical characteristics, such as having long pink hair, purple eyes, and fox ears.The two share the surname Yae (八重).Both areassociated with foxes.Yae Sakura is of Japanese origin, while Inazuma is Japanese-themed.They are both voiced by Du Mingya in Chinese and Ayane Sakura in Japanese.
+* They share physical characteristics, such as having long pink hair, purple eyes, and fox ears.
+* The two share the surname Yae (八重).
+* Both areassociated with foxes.
+* Yae Sakura is of Japanese origin, while Inazuma is Japanese-themed.
+* They are both voiced by Du Mingya in Chinese and Ayane Sakura in Japanese.
+* While performing her normal uncharged attacks, Miko does not use her equipped Catalyst, instead using her gohei staff.
+* Yae Miko may have studied under the onmyouji(who was closely acquainted with the Kitsune Saiguu), the inventor of Onmyoudou; the Chinese and Japanese names of hercontain the termshiki("law," "ceremony," or "formula"), which can mean(Onmyoudou familiars) in the context of mystic arts.
+* Fried Tofu with All the Frills (pen name in correspondences with, and name as a competitor during)
+* During, Yae Miko signs a message with the name "Ramen Buddy."
+- Yae Miko is one of the characters with ornaments that glow. While wearing her default outfit,, whenis ready, the purple gem in her other earring will glow along with her Vision.
+- In theGenshin Impact2020 New Years tweet, Miko welcomedto her shrine as the first guest of the year.
+- While the Chinese, Japanese, and French official introductions for Zhongli featured a quote fromto Yae Miko, the English equivalent tweet left Miko's name out.
+- Based on, Miko was a young girl 500 years ago, which is when theoccurred and thedied. In contrast, Ganyu participated in the Archon War over 2,000 years agoand is also suggested to have lived in the,which fell 3,700 years ago.
+- While Miko calls herself a Sky Kitsune, or, based on her age and number of tails she has (five), Miko would only be the rank of Kiko in kitsune society with Ashireiko being the lowest and Tenko being the highest according to Japanese folklore.
+* They share physical characteristics, such as having long pink hair, purple eyes, and fox ears.
+* The two share the surname Yae (八重).
+* Both areassociated with foxes.
+* Yae Sakura is of Japanese origin, while Inazuma is Japanese-themed.
+- They share physical characteristics, such as having long pink hair, purple eyes, and fox ears.
+- The two share the surname Yae (八重).
+- Both areassociated with foxes.
+- Yae Sakura is of Japanese origin, while Inazuma is Japanese-themed.
+- They are both voiced by Du Mingya in Chinese and Ayane Sakura in Japanese.
+- While performing her normal uncharged attacks, Miko does not use her equipped Catalyst, instead using her gohei staff.
+- Yae Miko may have studied under the onmyouji(who was closely acquainted with the Kitsune Saiguu), the inventor of Onmyoudou; the Chinese and Japanese names of hercontain the termshiki("law," "ceremony," or "formula"), which can mean(Onmyoudou familiars) in the context of mystic arts.
+* Fox Lady (byand)
+- Fox Lady (byand)
+- Fried Tofu with All the Frills (pen name in correspondences with, and name as a competitor during)
+- During, Yae Miko signs a message with the name "Ramen Buddy."
+* Yae (八重) literally means "eightfold," but can also be interpreted as "multilayered" or "doubled."
+* Miko (神子lit. "God Child") is an archaic form of, or shrine maidens (巫女lit. "shaman woman").
+* As the current chief priest of Inazuma, Yae Miko's mystic arts are based on various Japanese spellcraft and religious traditions. See each article for details.perhaps refers to the(familiars) of(yin'yang-based divination, astrology, and astronomy).refers to the mantras of役en/eki, which may mean(7th century), the founder of the syncretic religion, or theeki(spellbinding) magic of that religion.refers to the mantras of("Thunderbolt Vehicle"), an esoteric tradition of Buddhism.refers to, or a sacred altar in Shinto.refers to, or liturgical texts or incantations in Shinto.may or may not refer to/Zen schools, one of whose temples,, is a major center of worship for(identified within Shinto, who is known for divine fox spirits).may refer to a face of Eleven-Faced, a notable higher being in Buddhism, who is sometimes associated with Inari and Dakini.refers to Jugon, an ancient Taoist-inspired magic school that employed forbidden arts such as(cursing poisons).
+* perhaps refers to the(familiars) of(yin'yang-based divination, astrology, and astronomy).
+* refers to the mantras of役en/eki, which may mean(7th century), the founder of the syncretic religion, or theeki(spellbinding) magic of that religion.
+* refers to the mantras of("Thunderbolt Vehicle"), an esoteric tradition of Buddhism.
+* refers to, or a sacred altar in Shinto.
+* refers to, or liturgical texts or incantations in Shinto.
+* may or may not refer to/Zen schools, one of whose temples,, is a major center of worship for(identified within Shinto, who is known for divine fox spirits).
+* may refer to a face of Eleven-Faced, a notable higher being in Buddhism, who is sometimes associated with Inari and Dakini.
+* refers to Jugon, an ancient Taoist-inspired magic school that employed forbidden arts such as(cursing poisons).
+* Likewise, her lore makes several references to Japanese legends and literary works about fox spirits.refers to a Zen Buddhist idiomand/or a tale of the legendary kitsune.may refer toKonkai, a play of(comic theater) that features Hakuzousu.may refer to a play of(puppet theater) that features the nine-tail fox.
+* refers to a Zen Buddhist idiomand/or a tale of the legendary kitsune.
+* may refer toKonkai, a play of(comic theater) that features Hakuzousu.
+- Yae (八重) literally means "eightfold," but can also be interpreted as "multilayered" or "doubled."
+- Miko (神子lit. "God Child") is an archaic form of, or shrine maidens (巫女lit. "shaman woman").
+* perhaps refers to the(familiars) of(yin'yang-based divination, astrology, and astronomy).
+* refers to the mantras of役en/eki, which may mean(7th century), the founder of the syncretic religion, or theeki(spellbinding) magic of that religion.
+* refers to the mantras of("Thunderbolt Vehicle"), an esoteric tradition of Buddhism.
+* refers to, or a sacred altar in Shinto.
+* refers to, or liturgical texts or incantations in Shinto.
+* may or may not refer to/Zen schools, one of whose temples,, is a major center of worship for(identified within Shinto, who is known for divine fox spirits).
+* may refer to a face of Eleven-Faced, a notable higher being in Buddhism, who is sometimes associated with Inari and Dakini.
+- perhaps refers to the(familiars) of(yin'yang-based divination, astrology, and astronomy).
+- refers to the mantras of役en/eki, which may mean(7th century), the founder of the syncretic religion, or theeki(spellbinding) magic of that religion.
+- refers to the mantras of("Thunderbolt Vehicle"), an esoteric tradition of Buddhism.
+- refers to, or a sacred altar in Shinto.
+- refers to, or liturgical texts or incantations in Shinto.
+- may or may not refer to/Zen schools, one of whose temples,, is a major center of worship for(identified within Shinto, who is known for divine fox spirits).
+- may refer to a face of Eleven-Faced, a notable higher being in Buddhism, who is sometimes associated with Inari and Dakini.
+- refers to Jugon, an ancient Taoist-inspired magic school that employed forbidden arts such as(cursing poisons).
+* refers to a Zen Buddhist idiomand/or a tale of the legendary kitsune.
+* may refer toKonkai, a play of(comic theater) that features Hakuzousu.
+- refers to a Zen Buddhist idiomand/or a tale of the legendary kitsune.
+- may refer toKonkai, a play of(comic theater) that features Hakuzousu.
+### Character Title: Astute Amusement
+1. OfficialGenshin ImpactWebsite:
+1. Raiden Shogun's Voice-Over:
+1. Yae Miko's Voice-Over:
+1. Hangout Event, Gorou, Act  I -The Canine General's Special Operations:
+1. Ganyu's Character Story:
+1. Ganyu's Character Story:
+- Raiden Shogun's Voice-Over:
+- Yae Miko's Voice-Over:
+- Bilibili:
+- Ganyu's Character Story:
+### Explore properties
+
+## List of Character Outfits
+### Explore properties
+
+- 
+# Yae Miko/Voice-Overs
+### Explore properties
+
+# Yae Miko: Kitsune Dreaming
+Yae Miko: Kitsune DreamingIconBackgroundBannerItem TypeQualityDescriptionWhere can Yae Miko's fox form be found? In your dreams, that's where.How to ObtainSourceReward for reaching10 with
+## Yae Miko: Kitsune Dreaming
+Yae Miko: Kitsune Dreamingis aobtained by reaching10 with.
+## Other Languages[]
+### Explore properties
+
+Yae MikoDetailsFeaturesHealth10How to ObtainSource 1Achieve victory inYae Mikois aobtained in.
+## Proficiency Reward[]
+After reaching Proficiency 10, the following Dynamic Skin is obtained:32
+## Stage Appearances[]
+Yae Miko appears in8stages:
+Dynamic Skin Idle Animation
+## Other Languages[]
+### Explore properties

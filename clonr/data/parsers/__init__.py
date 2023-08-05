@@ -1,8 +1,9 @@
 from .base import Parser, ParserException
-from .fandom import FandomParser, JonnyURLParser
+from .fandom import FandomParser, FullURLParser
 from .web import BasicWebParser
 from .wiki import WikipediaParser
 from .yt_transcript import YoutubeTranscriptParser
+from .wikiquotes import WikiQuotesParser
 
 
 def url_to_doc(url: str):
@@ -11,7 +12,7 @@ def url_to_doc(url: str):
         FandomParser,
         YoutubeTranscriptParser,
         BasicWebParser,
-        JonnyURLParser,
+        FullURLParser,
     ]:
         try:
             return parser().extract(url=url)
