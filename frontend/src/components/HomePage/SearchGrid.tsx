@@ -16,9 +16,13 @@ import { Navigation, Pagination, Scrollbar } from 'swiper'
 
 interface SearchGridProps {
   characters: Character[]
+  doneSearching: boolean
 }
 
-export default function SearchGrid({ characters }: SearchGridProps) {
+export default function SearchGrid({
+  characters,
+  doneSearching,
+}: SearchGridProps) {
   function calcEdgeCard(n: number): 'left' | 'right' | undefined {
     if (n % 6 === 0) {
       return 'left'
@@ -31,19 +35,29 @@ export default function SearchGrid({ characters }: SearchGridProps) {
 
   return (
     <div className=''>
-      <div
-        className='grid grid-cols-6 gap-1 gap-y-10 pt-[100px] pb-[100px] px-[4%]'
-        style={{ minHeight: 'calc(100vh - 72px - 48px)' }}
-      >
-        {characters.map((item, index) => {
-          const edgeCard = calcEdgeCard(index)
-          return (
-            <div className='w-full z-0 hover:z-10' key={index}>
-              <NetflixCard item={item} edgeCard={edgeCard} />
-            </div>
-          )
-        })}
-      </div>
+      {doneSearching && characters.length === 0 && (
+        <div
+          className='text-white grid place-items-center'
+          style={{ minHeight: 'calc(100vh - 72px - 48px)' }}
+        >
+          Your search did not return any matches.
+        </div>
+      )}
+      {doneSearching && characters.length > 0 && (
+        <div
+          className='grid grid-cols-6 gap-1 gap-y-10 pt-[100px] pb-[100px] px-[4%]'
+          style={{ minHeight: 'calc(100vh - 72px - 48px)' }}
+        >
+          {characters.map((item, index) => {
+            const edgeCard = calcEdgeCard(index)
+            return (
+              <div className='w-full z-0 hover:z-10' key={index}>
+                <NetflixCard item={item} edgeCard={edgeCard} />
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
