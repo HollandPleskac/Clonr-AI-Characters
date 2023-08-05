@@ -15,15 +15,12 @@ import SearchGrid from './SearchGrid'
 import StatBar from '../Statistics/StatBar'
 import ScaleFadeIn from '../Transitions/ScaleFadeIn'
 
-
 interface HomeScreenProps {
   topCharacters: Character[]
   continueChatting: Character[]
   trending: Character[]
   anime: Character[]
 }
-
-
 
 export default function HomeScreen({
   topCharacters,
@@ -36,8 +33,12 @@ export default function HomeScreen({
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
     null
   )
-  const [showSearch, setShowSearch] = useState(false);
-  const duration = 500;
+  const [showSearch, setShowSearch] = useState(false)
+  const duration = 500
+  useEffect(() => {
+    // @ts-ignore
+    import('preline')
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -47,16 +48,15 @@ export default function HomeScreen({
 
   useEffect(() => {
     if (searchInput === '') {
-      setShowSearch(false);
-      console.log(searchInput);
-    }
-    else {
+      setShowSearch(false)
+      console.log(searchInput)
+    } else {
       if (!showSearch) {
         const timer = setTimeout(() => {
-          setShowSearch(true);
-          console.log("fuck!!");
-        }, duration);
-        return () => clearTimeout(timer);
+          setShowSearch(true)
+          console.log('fuck!!')
+        }, duration)
+        return () => clearTimeout(timer)
       }
     }
   }, [searchInput])
@@ -86,11 +86,11 @@ export default function HomeScreen({
         onSearchInput={onSearchInput}
         clearSearchInput={clearSearchInput}
       />
-      {showSearch ?
+      {showSearch ? (
         <ScaleFadeIn loaded={showSearch} duration={duration}>
           <SearchGrid characters={searchedCharacters} />
-        </ScaleFadeIn >
-        :
+        </ScaleFadeIn>
+      ) : (
         <ScaleFadeIn loaded={!searchInput} duration={duration}>
           <Carousel
             characters={topCharacters}
@@ -118,8 +118,8 @@ export default function HomeScreen({
             zIndex={10}
           />
         </ScaleFadeIn>
-      }
-    </div >
+      )}
+    </div>
   )
 }
 

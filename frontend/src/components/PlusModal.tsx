@@ -1,11 +1,8 @@
 'use client'
 import { useEffect } from 'react'
 
-export default function UpgradeToPlusBtn() {
-  useEffect(() => {
-    // @ts-ignore
-    import('preline')
-  }, [])
+export default function PlusModal() {
+  
 
   return (
     // <div

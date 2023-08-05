@@ -1,12 +1,13 @@
 'use client'
 
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 import Link from 'next/link'
 import Image from 'next/image'
 
 import SearchIcon from './SearchIcon'
 import XIcon from './XIcon'
+import { usePathname } from 'next/navigation'
 
 interface TopBarProps {
   searchInput: string
@@ -19,6 +20,8 @@ export default function TopBar({
   onSearchInput,
   clearSearchInput,
 }: TopBarProps): React.ReactElement {
+  const pathname = usePathname()
+
   // search state
   const [isInputActive, setInputActive] = useState(false)
   const handleInputFocus = () => setInputActive(true)
@@ -48,36 +51,40 @@ export default function TopBar({
           </h3>
           <p className='text-white font-thin ml-2 align-middle'>users</p>
         </div>
-        {/* <Link
+        <Link
           href='#'
           className={`transition duration-200 ml-4 ${
-            params.pathname === '/'
+            pathname === '/'
               ? 'text-white font-semibold'
               : 'text-[#e5e5e5] hover:text-[#979797]'
           }`}
         >
           Home
-        </Link> */}
-        {/* <Link
-          href='#'
+        </Link>
+
+        <Link
+          href='mailto:email@example.com'
           className={`transition duration-200 ${
-            params.pathname === '/create'
+            pathname === '/create'
               ? 'text-white font-semibold'
-              : 'text-[#e5e5e5] hover:text-[#979797]'
-          }`}
-        >
-          Create
-        </Link> */}
-        {/* <Link
-          href='#'
-          className={`transition duration-200 ${
-            params.pathname === '/contact'
-              ? 'text-white font-semibold'
-              : 'text-[#e5e5e5] hover:text-[#979797]'
+              : 'text-[#e5e5e5]'
           }`}
         >
           Contact
-        </Link> */}
+        </Link>
+
+        <Link
+          href='#'
+          className={`transition duration-200 ${
+            pathname === '/create'
+              ? 'text-white font-semibold'
+              : 'text-[#e5e5e5]'
+          }`}
+        >
+          <span>
+            Create <sup className=''>Coming Soon</sup>
+          </span>
+        </Link>
       </div>
       {/* <div className='flex items-center text-white gap-x-2 text-sm cursor-pointer'>
           <div className='px-2 py-3 bg-black hover:bg-[#1d1e1e] rounded-lg flex items-center gap-x-1'>
