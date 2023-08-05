@@ -63,7 +63,7 @@ export default function HomeScreen({
     return () => {
       clearTimeout(debounceTimeout);
     };
-  }, [searchInput]);
+  }, [searchInput, queryClones]);
 
 
   useEffect(() => {
@@ -78,7 +78,7 @@ export default function HomeScreen({
         return () => clearTimeout(timer)
       }
     }
-  }, [searchInput])
+  }, [searchInput, setShowSearchGrid])
 
 
   return (
