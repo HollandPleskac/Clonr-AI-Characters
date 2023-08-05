@@ -1,0 +1,313 @@
+LisaWitch of Purple RoseCardWishIn-GameQualityBioVoice ActorsReal NameLisa Minci()RegionAffil­i­a­tions(on profile)(Formerly)Complete(Wish)September 28, 20202 years, 10 months agoEnglishChineseJapaneseKoreanAdditional TitlesCategoriesThe Librarian
+## Witch of Purple Rose
+- 
+Lisa Minciis a playablein.
+A powerful mage recognized as's most distinguished graduate in 200 years, Lisa has since returned toto become the humble Librarian of the.
+She can be obtained for free in thein: Act I -.
+### Ascensions and Stats
+Toggle Ascension Materials
+1. Does not include weapon ATK value.
+1. Characters gain special stats starting with 2✦.
+- Does not include weapon ATK value.
+* Holding this skill generates5when it hits at least 1 target. Pressing this skill does not generate any elemental particle.
+* When the skill button is held, Lisa forms a big circle, and a small one that increases in size, both centered around Lisa. When the small one reaches the big one, Violet Arc Hold is ready to be released for full damage.This skill takes roughly1.9seconds to fully charge.Lisa can hold the skill for the maximum of4seconds. The skill is automatically released afterward.
+* This skill takes roughly1.9seconds to fully charge.
+* Lisa can hold the skill for the maximum of4seconds. The skill is automatically released afterward.
+* Holding the skill while there is no target still calls down several lightning bolts randomly, but those bolts do not applyto nearby environment and are purely aesthetic.
+* If the press ability triggersor, it will apply 2 stacks of Conductive to the targets hit by the orb itself and 1 stack of Conductive to other targets hit by the reaction. Multiple reactions will apply stacks multiple times.
+* Targets inflicted with Conductive will apply one stack in a small AoE around them separate from reactions.
+* This ability will not apply any stacks of Conductive if Lisa is not the active character when the ability hits.
+* Stacks remain on enemies for 15 seconds, and each stack applied keeps a separate timer.
+- Holding this skill generates5when it hits at least 1 target. Pressing this skill does not generate any elemental particle.
+* This skill takes roughly1.9seconds to fully charge.
+- This skill takes roughly1.9seconds to fully charge.
+- Lisa can hold the skill for the maximum of4seconds. The skill is automatically released afterward.
+- Holding the skill while there is no target still calls down several lightning bolts randomly, but those bolts do not applyto nearby environment and are purely aesthetic.
+- If the press ability triggersor, it will apply 2 stacks of Conductive to the targets hit by the orb itself and 1 stack of Conductive to other targets hit by the reaction. Multiple reactions will apply stacks multiple times.
+- Targets inflicted with Conductive will apply one stack in a small AoE around them separate from reactions.
+- This ability will not apply any stacks of Conductive if Lisa is not the active character when the ability hits.
+- Stacks remain on enemies for 15 seconds, and each stack applied keeps a separate timer.
+- Passive Talent 1,: "Hits byapply's Conductive status to opponents."
+# Constellation Effects
+* Constellation Level 1,: "Lisa regenerates 2 Energy for every opponent hit while holding. A maximum of 10 Energy can be regenerated in this manner at any one time."
+* Constellation Level 2,: While holding Violet Arc, Lisa's DEF is increased by 25% and her resistance to interruption is also increased.
+- Constellation Level 1,: "Lisa regenerates 2 Energy for every opponent hit while holding. A maximum of 10 Energy can be regenerated in this manner at any one time."
+- Constellation Level 2,: While holding Violet Arc, Lisa's DEF is increased by 25% and her resistance to interruption is also increased.
+* This Elemental Burst drainslater than most others.
+* Lightning Rose has a weak initial hit on cast to enemies within a certain radius, and then arcs another 29 times before disappearing. This initial hit, despite dealingElectro DMG, does not apply an Electro.The initial hit's DMG value is 10% ATK and unaffected by talent level.
+* The initial hit's DMG value is 10% ATK and unaffected by talent level.
+- This Elemental Burst drainslater than most others.
+- The initial hit's DMG value is 10% ATK and unaffected by talent level.
+- Passive Talent 2,: "Opponents hit byhave their DEF decreased by 15% for 10s."
+# Constellation Effects
+* Constellation Level 3,: Increases this talent's level by 3 and raises its maximum level to 15.
+- Constellation Level 3,: Increases this talent's level by 3 and raises its maximum level to 15.
+* If there is only 1 enemy within the radius, Lightning Rose may only produce 1 discharge at a time to the enemy.
+* If there are only 2 enemies within the radius, Lightning Rose may produce 1 or 2 discharges in total at a time. For each instance, there is a ~17.5% chance for it to produce 1 discharge and a ~82.5% chance to produce 2 discharges.
+* If there are 3 or more enemies within the radius, Lightning Rose may produce 1, 2, or 3 discharges in total at a time. This scenario carries two sets of randomizations: One that randomizes between shooting 1 or 2 Discharges, following a 50% and 50% occurrence rate, and the other randomizing between 1, 2, and 3 Discharges, following a 25%, 50%, and 25% occurrence rate, respective to the number of Discharges.The first Arc released from a Lightning Rose will never release 3 Discharges, rather it will either release 1 or 2 Discharges, with a 50:50 rate.After the first Arc, following Arcs will follow either releasing 1 (25%), 2 (50%), or 3 Discharges (25%).However, if an Arc ever releases 3 Discharges, the subsequent Arc will release 1 or 2 Discharges, with the 50:50 ratio as described prior.Overall, the average distribution between all occurrences within 3 or 3+ Entities is around 30% of Arcs releasing 1 Discharge, 50% releasing 2 Discharges, and 20% releasing 3 Discharges.
+* The first Arc released from a Lightning Rose will never release 3 Discharges, rather it will either release 1 or 2 Discharges, with a 50:50 rate.
+* After the first Arc, following Arcs will follow either releasing 1 (25%), 2 (50%), or 3 Discharges (25%).
+* However, if an Arc ever releases 3 Discharges, the subsequent Arc will release 1 or 2 Discharges, with the 50:50 ratio as described prior.
+- If there is only 1 enemy within the radius, Lightning Rose may only produce 1 discharge at a time to the enemy.
+- If there are only 2 enemies within the radius, Lightning Rose may produce 1 or 2 discharges in total at a time. For each instance, there is a ~17.5% chance for it to produce 1 discharge and a ~82.5% chance to produce 2 discharges.
+* The first Arc released from a Lightning Rose will never release 3 Discharges, rather it will either release 1 or 2 Discharges, with a 50:50 rate.
+* After the first Arc, following Arcs will follow either releasing 1 (25%), 2 (50%), or 3 Discharges (25%).
+* However, if an Arc ever releases 3 Discharges, the subsequent Arc will release 1 or 2 Discharges, with the 50:50 ratio as described prior.
+- The first Arc released from a Lightning Rose will never release 3 Discharges, rather it will either release 1 or 2 Discharges, with a 50:50 rate.
+- After the first Arc, following Arcs will follow either releasing 1 (25%), 2 (50%), or 3 Discharges (25%).
+- However, if an Arc ever releases 3 Discharges, the subsequent Arc will release 1 or 2 Discharges, with the 50:50 ratio as described prior.
+- The effect of this constellation has a horizontal radius of5mand unlimited vertical range.
+Each Constellation activation requires one.
+* Complete the Quest
+- Complete the Quest
+- Standard Wish(Indefinite)
+### Paimon's Bargains
+Lisawas available in6Starglitter Exchange:
+Lisais not obtainable from.
+* Updates to character voice-overs:Updated audio & text for Korean:"Least Favorite Food"Old:난호박공포증이있어,매년할로윈데이때마다너무힘들어.아,아예호박을멸종시켜버릴까?New:난호박공포증이있어,매년가을수확제때마다너무힘들어.아,아예호박을멸종시켜버릴까?
+* Updated audio & text for Korean:"Least Favorite Food"Old:난호박공포증이있어,매년할로윈데이때마다너무힘들어.아,아예호박을멸종시켜버릴까?New:난호박공포증이있어,매년가을수확제때마다너무힘들어.아,아예호박을멸종시켜버릴까?
+* "Least Favorite Food"Old:난호박공포증이있어,매년할로윈데이때마다너무힘들어.아,아예호박을멸종시켜버릴까?New:난호박공포증이있어,매년가을수확제때마다너무힘들어.아,아예호박을멸종시켜버릴까?
+* Old:난호박공포증이있어,매년할로윈데이때마다너무힘들어.아,아예호박을멸종시켜버릴까?
+* Updated audio & text for Korean:"Least Favorite Food"Old:난호박공포증이있어,매년할로윈데이때마다너무힘들어.아,아예호박을멸종시켜버릴까?New:난호박공포증이있어,매년가을수확제때마다너무힘들어.아,아예호박을멸종시켜버릴까?
+* "Least Favorite Food"Old:난호박공포증이있어,매년할로윈데이때마다너무힘들어.아,아예호박을멸종시켜버릴까?New:난호박공포증이있어,매년가을수확제때마다너무힘들어.아,아예호박을멸종시켜버릴까?
+* Old:난호박공포증이있어,매년할로윈데이때마다너무힘들어.아,아예호박을멸종시켜버릴까?
+* "Least Favorite Food"Old:난호박공포증이있어,매년할로윈데이때마다너무힘들어.아,아예호박을멸종시켜버릴까?New:난호박공포증이있어,매년가을수확제때마다너무힘들어.아,아예호박을멸종시켜버릴까?
+* Old:난호박공포증이있어,매년할로윈데이때마다너무힘들어.아,아예호박을멸종시켜버릴까?
+* Old:난호박공포증이있어,매년할로윈데이때마다너무힘들어.아,아예호박을멸종시켜버릴까?
+- Old:난호박공포증이있어,매년할로윈데이때마다너무힘들어.아,아예호박을멸종시켜버릴까?
+* Updates to character voice-overs:New story voice-over for All Languages:"About Mika"
+* Updates to character voice-overs:Removed from all languages:"Disengaging Wind Glider"
+* Removed from all languages:"Disengaging Wind Glider"
+* Removed from all languages:"Disengaging Wind Glider"
+* Updates to character voice-overs:New audio for Chinese:"Light Attack 07"
+* Updates to character voice-overs:Updated audio for Chinese:Majority of the Combat voice-overs
+* Updated audio for Chinese:Majority of the Combat voice-overs
+* Updated audio for Chinese:Majority of the Combat voice-overs
+* Lisa's wish artwork was updated.The wish artwork prior to V1.2 was the following:
+1. KeqingMains Theorycrafting Library:
+### Explore properties
+
+# Lisa's Stella Fortuna
+Lisa's Stella FortunaItem TypeQualityDescription's Constellation Activation MaterialHow to ObtainSource 1Source 2
+## Lisa's Stella Fortuna
+Lisa's Stella Fortunais aobtained fromused to level's.
+## Other Languages[]
+### Explore properties
+
+LisaCategoryQualityAdeptal EnergyLoad3001200Adeptal Energy per Load0.25DescriptionCharacter In-ResidenceLisacan be invited as a Companion into the player'safter obtaining her and completing the World Quest.
+### Adeptal Energy per Load
+## Favorite Furnishing Sets
+If a character's favoriteis placed in the same realm as the character for the first time, the character will automatically teleport to the furnishing set. Interacting with the character will initiate a, after which the character will teleport back to their original position.
+Lisa has2Favorite Furnishing Sets:
+# Afternoon Tea...Potions...Maybe I'll read a while...Time for a nap...So sleepy...
+# Maybe I'll read a while...
+# (When the player is nearby)When did you arrive?Hey, cutie~
+# When did you arrive?
+# Lisa:Oh, when did you arrive, (Traveler)?Lisa:I was completely lost in thought.How do you like it here?Lisa:Aw, you're concerned for my well-being. Well, aren't you just the sweetest?Lisa:You really know how to make me feel all warm and fuzzy inside.Lisa:Don't you worry, I love it here.Is there any part you would want to renovate?Do you have any suggestions on how to improve the place?Lisa:Not at all.Lisa:I think what makes this place so special is the fact that it was built personally by you.Lisa:If I were to start nitpicking, it would only ruin your creativity and the unique charm you bring to the place.Lisa:I certainly wouldn't want that to happen.
+# Lisa:Oh, when did you arrive, (Traveler)?
+# Lisa:I was completely lost in thought.
+# How do you like it here?Lisa:Aw, you're concerned for my well-being. Well, aren't you just the sweetest?Lisa:You really know how to make me feel all warm and fuzzy inside.Lisa:Don't you worry, I love it here.Is there any part you would want to renovate?Do you have any suggestions on how to improve the place?Lisa:Not at all.Lisa:I think what makes this place so special is the fact that it was built personally by you.Lisa:If I were to start nitpicking, it would only ruin your creativity and the unique charm you bring to the place.Lisa:I certainly wouldn't want that to happen.
+# Lisa:Aw, you're concerned for my well-being. Well, aren't you just the sweetest?Lisa:You really know how to make me feel all warm and fuzzy inside.Lisa:Don't you worry, I love it here.Is there any part you would want to renovate?Do you have any suggestions on how to improve the place?Lisa:Not at all.Lisa:I think what makes this place so special is the fact that it was built personally by you.Lisa:If I were to start nitpicking, it would only ruin your creativity and the unique charm you bring to the place.Lisa:I certainly wouldn't want that to happen.
+# Lisa:Aw, you're concerned for my well-being. Well, aren't you just the sweetest?
+# Lisa:You really know how to make me feel all warm and fuzzy inside.
+# Lisa:Don't you worry, I love it here.
+# Is there any part you would want to renovate?
+# Do you have any suggestions on how to improve the place?
+# Lisa:I think what makes this place so special is the fact that it was built personally by you.
+# Lisa:If I were to start nitpicking, it would only ruin your creativity and the unique charm you bring to the place.
+# Lisa:I certainly wouldn't want that to happen.
+# (Unlocks at Friendship Level 4)Would you like to have a chat with me?Lisa:When would I ever not?Lisa:If it weren't for my library work and potion-making duties, I'd love nothing more than to spend every day chatting with you like this.Have there been many people borrowing books recently?Lisa:The number of people borrowing books is around the same as always. But lately, more people seem to be returning them on time than ever before.Lisa:It seems that the citizens of the "City of Freedom" have become more conscious of time. Frankly, I'm quite relieved.Lisa:Of course, I can't expect everyone to be as sensible as you, cutie.Lisa, you're making me blush again...Made any special potions recently?Lisa:Special potions? Hmm...Lisa:Oh! As a matter of fact, I concocted one that makes textiles softer to the touch.Lisa:And another that keeps the air fragrant and fresh. I'm quite fond of that one.Lisa:They weren't requested by the Knights of Favonius, though. I just made them out of personal interest.Lisa:Hmm... Is it just me, or have my interests become more domestic in nature since I met you...?Lisa, you're making me blush again...Lisa:Haha...Lisa:You look so adorable with a little more red in your cheeks, (Traveler).
+# Would you like to have a chat with me?Lisa:When would I ever not?Lisa:If it weren't for my library work and potion-making duties, I'd love nothing more than to spend every day chatting with you like this.Have there been many people borrowing books recently?Lisa:The number of people borrowing books is around the same as always. But lately, more people seem to be returning them on time than ever before.Lisa:It seems that the citizens of the "City of Freedom" have become more conscious of time. Frankly, I'm quite relieved.Lisa:Of course, I can't expect everyone to be as sensible as you, cutie.Lisa, you're making me blush again...Made any special potions recently?Lisa:Special potions? Hmm...Lisa:Oh! As a matter of fact, I concocted one that makes textiles softer to the touch.Lisa:And another that keeps the air fragrant and fresh. I'm quite fond of that one.Lisa:They weren't requested by the Knights of Favonius, though. I just made them out of personal interest.Lisa:Hmm... Is it just me, or have my interests become more domestic in nature since I met you...?Lisa, you're making me blush again...Lisa:Haha...Lisa:You look so adorable with a little more red in your cheeks, (Traveler).
+# Lisa:When would I ever not?Lisa:If it weren't for my library work and potion-making duties, I'd love nothing more than to spend every day chatting with you like this.Have there been many people borrowing books recently?Lisa:The number of people borrowing books is around the same as always. But lately, more people seem to be returning them on time than ever before.Lisa:It seems that the citizens of the "City of Freedom" have become more conscious of time. Frankly, I'm quite relieved.Lisa:Of course, I can't expect everyone to be as sensible as you, cutie.Lisa, you're making me blush again...Made any special potions recently?Lisa:Special potions? Hmm...Lisa:Oh! As a matter of fact, I concocted one that makes textiles softer to the touch.Lisa:And another that keeps the air fragrant and fresh. I'm quite fond of that one.Lisa:They weren't requested by the Knights of Favonius, though. I just made them out of personal interest.Lisa:Hmm... Is it just me, or have my interests become more domestic in nature since I met you...?Lisa, you're making me blush again...Lisa:Haha...Lisa:You look so adorable with a little more red in your cheeks, (Traveler).
+# Lisa:When would I ever not?
+# Lisa:If it weren't for my library work and potion-making duties, I'd love nothing more than to spend every day chatting with you like this.
+# Have there been many people borrowing books recently?Lisa:The number of people borrowing books is around the same as always. But lately, more people seem to be returning them on time than ever before.Lisa:It seems that the citizens of the "City of Freedom" have become more conscious of time. Frankly, I'm quite relieved.Lisa:Of course, I can't expect everyone to be as sensible as you, cutie.Lisa, you're making me blush again...
+# Lisa:The number of people borrowing books is around the same as always. But lately, more people seem to be returning them on time than ever before.Lisa:It seems that the citizens of the "City of Freedom" have become more conscious of time. Frankly, I'm quite relieved.Lisa:Of course, I can't expect everyone to be as sensible as you, cutie.Lisa, you're making me blush again...
+# Lisa:The number of people borrowing books is around the same as always. But lately, more people seem to be returning them on time than ever before.
+# Lisa:It seems that the citizens of the "City of Freedom" have become more conscious of time. Frankly, I'm quite relieved.
+# Lisa:Of course, I can't expect everyone to be as sensible as you, cutie.
+# Lisa, you're making me blush again...
+# Made any special potions recently?Lisa:Special potions? Hmm...Lisa:Oh! As a matter of fact, I concocted one that makes textiles softer to the touch.Lisa:And another that keeps the air fragrant and fresh. I'm quite fond of that one.Lisa:They weren't requested by the Knights of Favonius, though. I just made them out of personal interest.Lisa:Hmm... Is it just me, or have my interests become more domestic in nature since I met you...?Lisa, you're making me blush again...
+# Lisa:Special potions? Hmm...Lisa:Oh! As a matter of fact, I concocted one that makes textiles softer to the touch.Lisa:And another that keeps the air fragrant and fresh. I'm quite fond of that one.Lisa:They weren't requested by the Knights of Favonius, though. I just made them out of personal interest.Lisa:Hmm... Is it just me, or have my interests become more domestic in nature since I met you...?Lisa, you're making me blush again...
+# Lisa:Special potions? Hmm...
+# Lisa:Oh! As a matter of fact, I concocted one that makes textiles softer to the touch.
+# Lisa:And another that keeps the air fragrant and fresh. I'm quite fond of that one.
+# Lisa:They weren't requested by the Knights of Favonius, though. I just made them out of personal interest.
+# Lisa:Hmm... Is it just me, or have my interests become more domestic in nature since I met you...?
+# Lisa, you're making me blush again...
+# Lisa:You look so adorable with a little more red in your cheeks, (Traveler).
+# (Unlocks at Friendship Level 7)Is there anything you'd like to do?Lisa:I'd quite like to invite you to afternoon tea.Lisa:I can offer you Sunsettia or Rose Bud Tea... And as for snacks, what kind of cake do you like?Are you going to bake it yourself?Lisa:Haha, you guessed correctly.I'm fine with anything.Lisa:Ah, you're so easygoing. It's so relaxing spending time with you.Lisa:But for once, I do want to take the trouble to make something nice.Lisa:There is nothing I can't create if I put my mind to it.Lisa:It's just that...Lisa:Most of the time, I don't find these sort of things to be worth all the extra effort.Lisa:But you are special to me. I don't think about energy spent if it's for you.Lisa:Hmm, perhaps instead of asking for your preferences...Lisa:...I should let it be a surprise instead.Your kind offer alone was the most delightful surprise I could hope for.Lisa:Oh my! Remind me not to add too much sugar, because you, cutie, are sweet enough already.Lisa:Seriously, though, I need to start getting prepared...Lisa:We can't have you underestimating me.
+# Is there anything you'd like to do?Lisa:I'd quite like to invite you to afternoon tea.Lisa:I can offer you Sunsettia or Rose Bud Tea... And as for snacks, what kind of cake do you like?Are you going to bake it yourself?Lisa:Haha, you guessed correctly.I'm fine with anything.Lisa:Ah, you're so easygoing. It's so relaxing spending time with you.Lisa:But for once, I do want to take the trouble to make something nice.Lisa:There is nothing I can't create if I put my mind to it.Lisa:It's just that...Lisa:Most of the time, I don't find these sort of things to be worth all the extra effort.Lisa:But you are special to me. I don't think about energy spent if it's for you.Lisa:Hmm, perhaps instead of asking for your preferences...Lisa:...I should let it be a surprise instead.Your kind offer alone was the most delightful surprise I could hope for.Lisa:Oh my! Remind me not to add too much sugar, because you, cutie, are sweet enough already.Lisa:Seriously, though, I need to start getting prepared...Lisa:We can't have you underestimating me.
+# Lisa:I'd quite like to invite you to afternoon tea.Lisa:I can offer you Sunsettia or Rose Bud Tea... And as for snacks, what kind of cake do you like?Are you going to bake it yourself?Lisa:Haha, you guessed correctly.I'm fine with anything.Lisa:Ah, you're so easygoing. It's so relaxing spending time with you.Lisa:But for once, I do want to take the trouble to make something nice.Lisa:There is nothing I can't create if I put my mind to it.Lisa:It's just that...Lisa:Most of the time, I don't find these sort of things to be worth all the extra effort.Lisa:But you are special to me. I don't think about energy spent if it's for you.Lisa:Hmm, perhaps instead of asking for your preferences...Lisa:...I should let it be a surprise instead.Your kind offer alone was the most delightful surprise I could hope for.Lisa:Oh my! Remind me not to add too much sugar, because you, cutie, are sweet enough already.Lisa:Seriously, though, I need to start getting prepared...Lisa:We can't have you underestimating me.
+# Lisa:I'd quite like to invite you to afternoon tea.
+# Lisa:I can offer you Sunsettia or Rose Bud Tea... And as for snacks, what kind of cake do you like?
+# Are you going to bake it yourself?Lisa:Haha, you guessed correctly.
+# Lisa:Haha, you guessed correctly.
+# Lisa:Haha, you guessed correctly.
+# I'm fine with anything.Lisa:Ah, you're so easygoing. It's so relaxing spending time with you.Lisa:But for once, I do want to take the trouble to make something nice.
+# Lisa:Ah, you're so easygoing. It's so relaxing spending time with you.Lisa:But for once, I do want to take the trouble to make something nice.
+# Lisa:Ah, you're so easygoing. It's so relaxing spending time with you.
+# Lisa:But for once, I do want to take the trouble to make something nice.
+# Lisa:There is nothing I can't create if I put my mind to it.
+# Lisa:It's just that...
+# Lisa:Most of the time, I don't find these sort of things to be worth all the extra effort.
+# Lisa:But you are special to me. I don't think about energy spent if it's for you.
+# Lisa:Hmm, perhaps instead of asking for your preferences...
+# Lisa:...I should let it be a surprise instead.
+# Your kind offer alone was the most delightful surprise I could hope for.
+# Lisa:Oh my! Remind me not to add too much sugar, because you, cutie, are sweet enough already.
+# Lisa:Seriously, though, I need to start getting prepared...
+# Lisa:We can't have you underestimating me.
+# (Between 6:00 and 19:00)Good morning, Lisa.Lisa:Morning, cutie.Lisa:I'm sure you're keeping on top of everything that needs doing.Lisa:But if you find yourself struggling at any point, you know I'm always available to lend a hand.
+# Good morning, Lisa.Lisa:Morning, cutie.Lisa:I'm sure you're keeping on top of everything that needs doing.Lisa:But if you find yourself struggling at any point, you know I'm always available to lend a hand.
+# Lisa:Morning, cutie.Lisa:I'm sure you're keeping on top of everything that needs doing.Lisa:But if you find yourself struggling at any point, you know I'm always available to lend a hand.
+# Lisa:Morning, cutie.
+# Lisa:I'm sure you're keeping on top of everything that needs doing.
+# Lisa:But if you find yourself struggling at any point, you know I'm always available to lend a hand.
+# (Between 19:00 and 6:00)Good night, Lisa.Lisa:Have a good night, cutie.Lisa:*yawn* I'm so sleepy. I'm a little envious of the way you manage to stay so energetic even at this hour.Lisa:Be sure to get enough sleep...
+# Good night, Lisa.Lisa:Have a good night, cutie.Lisa:*yawn* I'm so sleepy. I'm a little envious of the way you manage to stay so energetic even at this hour.Lisa:Be sure to get enough sleep...
+# Lisa:Have a good night, cutie.Lisa:*yawn* I'm so sleepy. I'm a little envious of the way you manage to stay so energetic even at this hour.Lisa:Be sure to get enough sleep...
+# Lisa:Have a good night, cutie.
+# Lisa:*yawn* I'm so sleepy. I'm a little envious of the way you manage to stay so energetic even at this hour.
+# Lisa:Be sure to get enough sleep...
+When a character is invited to or invites themselves to their favorite set for the first time, the character will provide a reward. They will provide a reward for each of their favorite sets.
+Inviting them to the furnishing set again will replay the dialogue, but no further reward will be given.
+### Amidst Poetic Pondering
+# Lisa:You have good taste in literature.Lisa:Large bookshelves and a fireplace... This would be a most comfy place to put my feet up.Lisa:I must reward you well for making this place so cozy.
+# Lisa:You have good taste in literature.
+# Lisa:Large bookshelves and a fireplace... This would be a most comfy place to put my feet up.
+# Lisa:I must reward you well for making this place so cozy.
+### Secret Research Lab
+# Lisa:Oh? A place suited for quiet research, I see.Lisa:Not only are reference materials readily available, but you can initiate experiments at any time as well. This is truly a mage's ideal workshop.Lisa:You really are a cutie after my own heart.
+# Lisa:Oh? A place suited for quiet research, I see.
+# Lisa:Not only are reference materials readily available, but you can initiate experiments at any time as well. This is truly a mage's ideal workshop.
+# Lisa:You really are a cutie after my own heart.
+### Explore properties
+
+### A Sobriquet Under Shade
+### Character Screen Animations
+# A Sobriquet Under Shade
+# Taking Pictures and Recounting Good Times
+### Genshin Impact 4-Panel Comics
+### Character Shorts
+### Paimon's Paintings
+### Taking Pictures and Recounting Good Times
+### Explore properties
+
+She is an intellectual witch who can never get enough naps. As the Librarian of the Knights of Favonius, Lisa is smart in that she always knows exactly what to do with whatever troubles her.As much as she loves her sleep, she still manages to keep everything under control in a calm, composed manner.
+The languid but knowledgeable Librarian of the Knights of Favonius, deemed by Sumeru Akademiya to be their most distinguished graduate in the past two centuries.
+Lisa is a proficient witch; as such, she enjoys everything related to the elements and items that would help her understand them. Despite her position as Librarian, Lisa takes it somewhat haphazardly as she appears to be relatively bored dealing with normal books, instead preferring those in the restricted section. She still takes the job seriously nonetheless, and will personally go out to collect books that are long overdue, albeit in a way that she can still enjoy the smaller things in life.
+Her haphazard, carefree personality comes from her time in, as while studying there she noticed the types of effects the pursuit of knowledge can have on a person. She studied in the Spantamad school for two years and left Sumeru shortly after graduating,relegating herself to categorization and management of the library and usually refusing to take any other duties unless absolutely necessary. Despite repeated pleas fromto return to the Akademiya, Lisa refuses to give up her life in Mondstadt.
+When Lisa is angered, the surrounding air near her becomes electrified in part due to her Electro Vision. Depending on the severity of what has angered her, she can either be simply irritated or become extremely scary, the latter also causing her to dispense "appropriate" punishment.
+Lisa seems to be fond of the, and sometimes acts flirtatious, referring to them as "cutie" or "darling," and admitting that they're special to her.
+She loves tea and thinks that afternoon tea is the most important part of her day. She sometimes takes tea with vegetable soup as she once used to enjoy this withat therestaurant. She also suffers from cucurbitophobia, a fear of pumpkins.
+Lisa uses themodel. She has fair skin, green eyes, and wavy, shoulder-length light honey-brown hair.
+## Official Introduction
+If you put enough flour into Hydro Slimes, would they turn into Dough Slimes?
+The Librarian · Lisa"There'll be time for this later... Come sit and chat with me."
+===============================
+Lisa, Librarian of the Knights of Favonius, has great wisdom that is unparalleled throughout the city. She always knows what to do with whatever troubles Mondstadt.
+But with so many careless readers and overdue books to deal with, Lisa often gets tired and a bit... drowsy. Never disturb her when she's taking her morning, midday, or evening naps. Otherwise you will come to understand why she is an outstanding knight — in an electrifying way...
+## Character Stories
+### Character Details
+The librarian of the Knights of Favonius. In addition to her elegance and charm, Lisa is also highly educated.
+She is said to have been the most talented sorceress to study at the Sumeru Akademiya in the last two centuries.
+It is known that Lisa chose to return toafter two years of advanced study in Sumeru, but the reason for her decision is not. At present, Lisa's job is to oversee the book collection in the library owned by the Knights.
+### Character Story 1
+Lisa is tasked with managing and maintaining the vast collection of books in the Knights of Favonius library, as well as ensuring that their potions are always fully stocked.
+The only time that the citizens of Mondstadt see Lisa is when lending or returning library books.
+In both scenarios, they tend to encounter Lisa sitting at the counter like a languid cat, yawning as she signs books in and out.
+At times, her behavior causes people to doubt whether she is really up to the task of being librarian for the illustrious Knights of Favonius.
+Nevertheless, it appears that she performs every task flawlessly, as her work consistently stands up to scrutiny.
+### Character Story 2
+The fact thatof the Sumeru Akademiya frequently refers to Lisa as their "best student in two hundred years" is all that needs to be said about Lisa's accomplishments in her studies.
+From outlandish forbidden knowledge, to the handling of elementally infused flora, to the most efficient methods of distilling wine... where there is a body of knowledge, the chances are that Lisa is acquainted with it.
+This, paired with her ability to explain things clearly and concisely, makes Lisa the sensible person to approach for young knights and alchemists with burning questions.
+That is, provided they go and see her at an acceptable hour.
+To visit during unacceptable hours — such as in the morning while Lisa is sleeping in, or in the afternoon while she's enjoying her tea — can spell disaster for unsuspecting visitors.
+### Character Story 3
+When people meet Lisa for the first time, they often find themselves overawed by the famous alumna of the Sumeru Akademiya.
+However, though her attitude to life may appear at first to be one of ruthless efficiency, it is in fact better understood as a product of her incorrigibly lazy nature, which drives her to avoid troublesome issues at all costs.
+By negotiating with, she offloaded the job of restocking and dispensing medication toand, and hadstart sendingover to deliver herbs on a daily basis.
+The only tasks that Lisa handles personally are the categorization and management of books and other documents.
+This is the one area where Lisa feels more comfortable handling the work herself rather than delegating it.
+### Character Story 4
+When Lisa first joined the Knights of Favonius, thesought to appoint her as Captain of the 8th Company.
+This was much to the consternation of the company's Field Officer,, who resented the idea of an academic coming in at such a high-ranking position.
+At Kaeya's suggestion, a practice combat session was arranged in which Lisa and Nymph would both display their magical proficiency.
+Two minutes into the session, Lisa graciously declined the captaincy on the grounds that "Nymph manifestly possesses the requisite ability to fulfill the role."
+For the whole year following, the Grand Master received a constant stream of referral letters from Nymph in relation to the captaincy, and the only person ever named in them was Lisa Minci.
+Eventually, the Grand Master began turning over the referral letters to Lisa directly, but every time, Lisa would come up with an excuse to decline the offer.
+Undoubtedly, the 8th Company would have been far stronger under her lead, but she deemed that such a level of power was not only superfluous to requirements, it would also be risky for her in a way that most people could never appreciate.
+To be clear, Lisa is quite confident that she could handle any situation she came up against. However, additional danger means an additional workload — and that is something that she would never be able to accept.
+### Character Story 5
+Having personally witnessed raving-mad scholars in the forests of Sumeru and powerful sages sitting underutilized on advisory councils, Lisa realized what uninhibited erudition can really do to a person.
+It seemed such a high price to pay... How much did one have to sacrifice to attain the profoundest knowledge of all?
+Put off by this realization, Lisa decided to leave Sumeru.
+Since then, Lisa has always stopped short of taking things too seriously.
+"Before demanding too many miracles from the gods, first consider if you are willing to pay the price they ask."
+These words she has spoken to just three people since arriving in Mondstadt. In each case, it was because she knew it was what they needed to hear.
+### Special Heating Cauldron
+The Special Heating Cauldron is a purpose-built cauldron made to a design that no one in Mondstadt could understand. It features time-delay heating, semi-automated ingredient insertion, and temperature regulation functions.
+Lisa spent an enormous budget and commandeered the alchemy workshop for two full weeks in order to build this extraordinary piece of equipment.
+She boasts that the cauldron is capable of completing any precision heating task to perfection with a maximum of just two pulls of a lever.
+But her most common application for it is to brew tea and keep it at the optimal temperature while she is managing her books.
+After all, a relaxing afternoon tea session is by far the most important part of Lisa's day.
+Ais a sign from the gods: a sign that you are one of those whom they have chosen to change the world.
+Or, maybe it's just one of the many hoops that one has to jump through on the path to unearthing the secrets of magecraft.
+After all, understanding the elements is essential to the study of magic, and practical experience is a far more useful means of acquiring this understanding than trying to assimilate the knowledge contained in dusty old books.
+"Hmm... I suppose I shall need a Vision, then."
+And just like that, as that thought popped into her mind, her Vision popped into her hand.
+With the aid of her Vision, Lisa acquired the knowledge that she sought. But she also sensed the deep secret hidden in the shadows of that knowledge.
+For whatever reason, the gods gave humans the key to changing everything, but they did not explain the cost involved. Lisa grew fearful of the truth.
+The Vision that hung from her neck became to her a bottomless pit filled with sweet delights, lingering at the back of her mind.
+So, from time to time, when somebody whom she finds interesting comes along, Lisa will pass onto them her understanding on all kinds of matters.
+Perhaps she is secretly hoping that by doing so, one day someone will come along who has the ability to understand the ultimate truth behind Visions.
+## Quests and Events
+* 
+- 
+## Character Mentions
+### Character Stories
+### Character Voice-Overs
+* When you have time, we should go see Lisa! Last time I saw her, she was telling me about a story involving a treasure in thearea. But, we got cut off before she could finish. I can't wait to hear the rest of her story!
+- When you have time, we should go see Lisa! Last time I saw her, she was telling me about a story involving a treasure in thearea. But, we got cut off before she could finish. I can't wait to hear the rest of her story!
+* When I ended up in Mondstadt, I said a lot of things to Amber and the others that I shouldn't have. I still feel ashamed whenever I think about it... How could I talk like that to people who were just trying to help me? I shudder to think what they must have thought of me back then... Uhh, sorry, maybe we can leave it there for today? If I go any further than that, I know I'll regret it tomorrow.
+- When I ended up in Mondstadt, I said a lot of things to Amber and the others that I shouldn't have. I still feel ashamed whenever I think about it... How could I talk like that to people who were just trying to help me? I shudder to think what they must have thought of me back then... Uhh, sorry, maybe we can leave it there for today? If I go any further than that, I know I'll regret it tomorrow.
+* If only there was some kind of mysterious potion that could keep me awake forever... I need to have a talk with Lisa tomorrow.
+- If only there was some kind of mysterious potion that could keep me awake forever... I need to have a talk with Lisa tomorrow.
+- Cyno has mentioned her before — an extraordinary genius with a veritable wealth of knowledge and talent. A pity that she returned to Mondstadt so long ago. Perhaps, in the course of her study, she witnessed the horrifying side of knowledge...
+## Other Appearances
+Lisa is a supporting character in the, which takes place roughly a year or less before the Traveler's arrival in Mondstadt.
+She assisted the investigation into the Black Fire Incident by compiling reports for the Knights of Favonius to read through. She also contacted her teacher to request assistance in deciphering the ancient language found on one of the Fatui's files. Due to her request,traveled to Mondstadt and was able to seal the archon residueinside. Lisa also assisted Collei in writing a letter toin which Collei thanked Amber and said she left forwith Cyno.
+1. Due to localization adjustments made after the manga's release, the term "archon residue" is no longer accurate. The original Chinese term refers to gods that predate the rise of.
+* Lisa likes using "cutie" as a term of endearment while referring to the.
+* She taughthow to utilize Electro,as well as how to makeand speak human language.In her Chineseline, she calls him小狼狼Xiǎo-lángláng, which is akin to calling him "Little Wolfie."
+* Lisa andshare the same Korean voice actress, Park Go-woon.
+* The "Purple Rose" found in her character title andis based on the.
+- Lisa likes using "cutie" as a term of endearment while referring to the.
+- She taughthow to utilize Electro,as well as how to makeand speak human language.In her Chineseline, she calls him小狼狼Xiǎo-lángláng, which is akin to calling him "Little Wolfie."
+- Lisa andshare the same Korean voice actress, Park Go-woon.
+- Teacher (by)
+- The "Purple Rose" found in her character title andis based on the.
+### Character Title: Witch of Purple Rose
+1. Serenitea Pot, Companion Dialogue:
+1. Official Genshin Impact Facebook,
+1. Lisa's Voice-Over:
+1. Razor's Character Story:
+- Serenitea Pot, Companion Dialogue:
+- Official Genshin Impact Facebook,
+- Lisa's Voice-Over:
+### Explore properties
+
+## List of Character Outfits
+### Explore properties
+
+### Explore properties
+
+- 
+# Lisa: Tempus Fugit
+Lisa: Tempus FugitIconBackgroundBannerItem TypeQualityDescriptionAn hourglass marks the end of the work day for Lisa. Its sand moves fast.How to ObtainSourceReward for reaching10 with
+## Lisa: Tempus Fugit
+Lisa: Tempus Fugitis aobtained by reaching10 with.
+## Other Languages[]
+### Explore properties
