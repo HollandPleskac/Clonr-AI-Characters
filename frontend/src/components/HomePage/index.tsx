@@ -7,6 +7,8 @@ import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import 'swiper/css/scrollbar'
 
+const axios = require('axios').default;
+
 import Carousel from './Carousel'
 import TopBar from '@/components/TopBar'
 import AlertBar from '@/components/AlertBar'
@@ -14,6 +16,7 @@ import { Character } from '@/types'
 import SearchGrid from './SearchGrid'
 import StatBar from '../Statistics/StatBar'
 import ScaleFadeIn from '../Transitions/ScaleFadeIn'
+
 
 interface HomeScreenProps {
   topCharacters: Character[]
@@ -30,22 +33,38 @@ export default function HomeScreen({
 }: HomeScreenProps) {
   const [searchInput, setSearchInput] = useState('')
   const [searchedCharacters, setSearchedCharacters] = useState<Character[]>([])
-  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
-    null
-  )
   const [doneSearching, setDoneSearching] = useState(false)
   const [showSearchGrid, setShowSearchGrid] = useState(false)
   const duration = 500
-  useEffect(() => {
-    // @ts-ignore
-    import('preline')
-  }, [])
 
   useEffect(() => {
-    return () => {
-      if (typingTimeout) clearTimeout(typingTimeout)
+    require('preline')
+  }, [])
+
+  const queryClones = async () => {
+    try {
+
+      let r = await axios.get(
+        'http://localhost:8000/clones',
+        {
+          params: { name: searchInput, limit: 50 },
+          withCredentials: true
+        }
+      );
+      setSearchedCharacters(r.data);
+    } catch (error) {
+      console.log(error)
     }
-  }, [typingTimeout])
+    setDoneSearching(searchInput !== '');
+  };
+
+  useEffect(() => {
+    const debounceTimeout = setTimeout(queryClones, 500);
+    return () => {
+      clearTimeout(debounceTimeout);
+    };
+  }, [searchInput]);
+
 
   useEffect(() => {
     if (searchInput === '') {
@@ -55,42 +74,20 @@ export default function HomeScreen({
       if (!showSearchGrid) {
         const timer = setTimeout(() => {
           setShowSearchGrid(true)
-          console.log('fuck!!')
         }, duration)
         return () => clearTimeout(timer)
       }
     }
   }, [searchInput])
 
-  function onSearchInput(input: string) {
-    setSearchInput(input)
-
-    if (typingTimeout) clearTimeout(typingTimeout)
-
-    setTypingTimeout(
-      setTimeout(() => {
-        console.log('User stopped typing')
-        // api request to update searchedCharacters
-        if (searchInput !== '') {
-          setDoneSearching(true)
-        } else {
-          setDoneSearching(false)
-        }
-      }, 500)
-    )
-  }
-
-  function clearSearchInput() {
-    setSearchInput('')
-  }
 
   return (
     <div className='pb-[75px]'>
       <AlertBar />
       <TopBar
         searchInput={searchInput}
-        onSearchInput={onSearchInput}
-        clearSearchInput={clearSearchInput}
+        onSearchInput={(x) => setSearchInput(x)}
+        clearSearchInput={() => setSearchInput('')}
       />
       {showSearchGrid ? (
         <ScaleFadeIn loaded={showSearchGrid} duration={duration}>

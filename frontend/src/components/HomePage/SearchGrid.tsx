@@ -13,6 +13,7 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 import NetflixCard from './NetflixCard'
 import { Character } from '@/types'
 import { Navigation, Pagination, Scrollbar } from 'swiper'
+import Image from 'next/image'
 
 interface SearchGridProps {
   characters: Character[]
@@ -40,7 +41,7 @@ export default function SearchGrid({
           className='text-white grid place-items-center'
           style={{ minHeight: 'calc(100vh - 72px - 48px)' }}
         >
-          Your search did not return any matches.
+          <p>Your search did not return any matches.</p>
         </div>
       )}
       {doneSearching && characters.length > 0 && (
