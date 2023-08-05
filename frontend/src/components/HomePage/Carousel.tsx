@@ -74,12 +74,12 @@ export default function Carousel({
                       ? 'left'
                       : index === leftSwiperIndex + slidesPerView - 1 ||
                         index ===
-                          leftSwiperIndex +
-                            slidesPerView -
-                            1 -
-                            characters.length
-                      ? 'right'
-                      : undefined
+                        leftSwiperIndex +
+                        slidesPerView -
+                        1 -
+                        characters.length
+                        ? 'right'
+                        : undefined
                   }
                 />
               </SwiperSlide>

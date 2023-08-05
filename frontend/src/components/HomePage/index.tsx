@@ -12,6 +12,9 @@ import TopBar from '@/components/TopBar'
 import AlertBar from '@/components/AlertBar'
 import { Character } from '@/types'
 import SearchGrid from './SearchGrid'
+import StatBar from '../Statistics/StatBar'
+import ScaleFadeIn from '../Transitions/ScaleFadeIn'
+
 
 interface HomeScreenProps {
   topCharacters: Character[]
@@ -19,6 +22,8 @@ interface HomeScreenProps {
   trending: Character[]
   anime: Character[]
 }
+
+
 
 export default function HomeScreen({
   topCharacters,
@@ -31,12 +36,30 @@ export default function HomeScreen({
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
     null
   )
+  const [showSearch, setShowSearch] = useState(false);
+  const duration = 500;
 
   useEffect(() => {
     return () => {
       if (typingTimeout) clearTimeout(typingTimeout)
     }
   }, [typingTimeout])
+
+  useEffect(() => {
+    if (searchInput === '') {
+      setShowSearch(false);
+      console.log(searchInput);
+    }
+    else {
+      if (!showSearch) {
+        const timer = setTimeout(() => {
+          setShowSearch(true);
+          console.log("fuck!!");
+        }, duration);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [searchInput])
 
   function onSearchInput(input: string) {
     setSearchInput(input)
@@ -47,7 +70,7 @@ export default function HomeScreen({
       setTimeout(() => {
         console.log('User stopped typing')
         // api request to update searchedCharacters
-      }, 1000)
+      }, 100)
     )
   }
 
@@ -63,20 +86,19 @@ export default function HomeScreen({
         onSearchInput={onSearchInput}
         clearSearchInput={clearSearchInput}
       />
-      {searchInput !== '' && <SearchGrid characters={searchedCharacters} />}
-      {searchInput === '' && (
-        <>
-          <div className='h-[100px] w-full px-[4%] flex flex-col items-center cursor-pointer justify-center'>
-            <h1 className='text-5xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-purple-500'>
-              Welcome Back{' '}
-            </h1>
-          </div>
+      {showSearch ?
+        <ScaleFadeIn loaded={showSearch} duration={duration}>
+          <SearchGrid characters={searchedCharacters} />
+        </ScaleFadeIn >
+        :
+        <ScaleFadeIn loaded={!searchInput} duration={duration}>
           <Carousel
             characters={topCharacters}
             name='Top Characters'
-            slidesPerView={6}
+            slidesPerView={3}
             zIndex={40}
           />
+          <StatBar />
           <Carousel
             characters={continueChatting}
             name='Continue Chatting'
@@ -95,9 +117,9 @@ export default function HomeScreen({
             slidesPerView={6}
             zIndex={10}
           />
-        </>
-      )}
-    </div>
+        </ScaleFadeIn>
+      }
+    </div >
   )
 }
 
