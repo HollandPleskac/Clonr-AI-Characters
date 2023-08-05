@@ -5,7 +5,7 @@ import time
 from clonr.tokenizer import Tokenizer
 
 from .callbacks import LLMCallback
-from .openai import OpenAI, OpenAIModelEnum, OpenAIStreamResponse
+from .openai import OpenAI, OpenAIStreamResponse
 from .schemas import FinishReason, GenerationParams, LLMResponse, Message
 
 

@@ -1,7 +1,6 @@
 import json
 import uuid
 
-import redis.asyncio as redis
 from fastapi.encoders import jsonable_encoder
 
 from app import models

@@ -1,12 +1,11 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from fastapi.routing import APIRouter
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models, schemas
-from app.auth.users import current_active_user
 from app.db import get_async_session
 
 router = APIRouter(

@@ -3,8 +3,7 @@ import warnings
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import lru_cache
-from pathlib import Path
-from typing import Callable, Literal, Sequence, TypeVar
+from typing import Literal, Sequence, TypeVar
 
 try:
     from nltk.tokenize import sent_tokenize as _nltk_sent_tokenize

@@ -86,7 +86,10 @@ def creator_headers(
     client: TestClient, creator_data: LoginData, db: Session
 ) -> dict[str, str]:
     # Register user
-    r = client.post("/auth/register", json=creator_data.dict())
+    r = client.post(
+        "/auth/register",
+        json=creator_data.dict(),
+    )
     assert r.status_code == 201, r.status_code
 
     print(client.cookies)

@@ -6,3 +6,8 @@
   overflow-y: visible !important;
   overflow-x: clip !important;
 }
+
+@font-face {
+  font-family: 'Fabada';
+  src: url('/fonts/fabada.regular.ttf') format('truetype');
+}

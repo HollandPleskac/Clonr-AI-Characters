@@ -1,9 +1,9 @@
 import uuid
-from typing import Optional
+from typing import Optional, Union
 
 import redis.asyncio
 from fastapi import Request
-from fastapi_users import BaseUserManager, UUIDIDMixin
+from fastapi_users import BaseUserManager, InvalidPasswordException, UUIDIDMixin
 from fastapi_users.authentication import (
     AuthenticationBackend,
     BearerTransport,
@@ -15,6 +15,7 @@ from httpx_oauth.clients.google import GoogleOAuth2
 from loguru import logger
 
 from app.models import User
+from app.schemas import UserCreate
 from app.settings import settings
 
 SECRET = settings.AUTH_SECRET
@@ -50,6 +51,18 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         logger.info(
             f"Verification requested for user {user.id}. Verification token: {token}"
         )
+
+    async def validate_password(
+        self,
+        password: str,
+        user: Union[UserCreate, User],
+    ) -> None:
+        if len(password) < 8:
+            raise InvalidPasswordException(
+                reason="Password should be at least 8 characters"
+            )
+        if user.email in password:
+            raise InvalidPasswordException(reason="Password should not contain e-mail")
 
     # async def ban_user(self, db: Session, user_id: uuid.UUID):
     #     user = db.query(User).filter(User.id == user_id).first()

@@ -1,12 +1,8 @@
-from typing import Annotated, List
+from typing import Annotated
 
-import sqlalchemy as sa
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, HTTPException, Query, status
 
-from app import models, schemas
-from app.auth.users import current_active_creator, current_active_user
-from app.db import get_async_session
+from app import schemas
 
 router = APIRouter(
     prefix="/documents",

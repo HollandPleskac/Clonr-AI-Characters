@@ -81,6 +81,7 @@ class User(Base, SQLAlchemyBaseUserTableUUID):
         server_default=sa.func.now(),
         onupdate=sa.func.current_timestamp(),
     )
+    private_chat_name: Mapped[str] = mapped_column(default="user")
     is_banned: Mapped[bool] = mapped_column(default=False)
     # (Jonny): Idk why, but select breaks with greenlet spawn error and this doesn't
     oauth_accounts: Mapped[list[OAuthAccount]] = relationship(
@@ -255,6 +256,10 @@ class Conversation(CommonMixin, Base):
     is_active: Mapped[bool] = mapped_column(default=True)
     # Multi-user chat is hard to configure, maybe we have API-key validation
     # only for those, and just charge the api-key per minute
+    user_name: Mapped[str]
+    memory_strategy: Mapped[str]
+    information_strategy: Mapped[str]
+    plasticity: Mapped[int]
     user_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
@@ -291,8 +296,8 @@ class Message(CommonMixin, Base):
     timestamp: Mapped[datetime.datetime] = mapped_column(
         sa.DateTime(timezone=True), server_default=sa.func.now()
     )
-    embedding: Mapped[list[float]]
-    embedding_model: Mapped[str]
+    embedding: Mapped[list[float]] = mapped_column(nullable=True)
+    embedding_model: Mapped[str] = mapped_column(nullable=True)
     clone_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )
