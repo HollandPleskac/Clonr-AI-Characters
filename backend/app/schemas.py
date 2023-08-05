@@ -62,14 +62,17 @@ class TagCreate(BaseModel):
 
 
 class Tag(TagCreate):
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+
     class Config:
         orm_mode = True
 
 
 class CloneCreate(BaseModel):
-    name: str
-    short_description: str
-    long_description: str | None = None
+    name: str = Field(min_length=2)
+    short_description: str = Field(min_length=3)
+    long_description: str | None = Field(min_length=32)
     greeting_message: str | None = None
     avatar_uri: str | None = None
     is_active: bool = True
@@ -98,6 +101,7 @@ class Clone(CommonMixin, CloneCreate):
     creator_id: uuid.UUID
     num_messages: int
     num_conversations: int
+    tags: list[Tag]
 
     class Config:
         orm_mode = True
@@ -110,6 +114,8 @@ class CloneSearchResult(CommonMixin, BaseModel):
     avatar_uri: str | None = (
         None  # TODO (Jonny) make sure we don't throw errors here and un None it
     )
+    num_messages: int
+    num_conversations: int
     tags: list[Tag]
 
     class Config:
