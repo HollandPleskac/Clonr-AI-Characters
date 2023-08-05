@@ -33,7 +33,8 @@ export default function HomeScreen({
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
     null
   )
-  const [showSearch, setShowSearch] = useState(false)
+  const [doneSearching, setDoneSearching] = useState(false)
+  const [showSearchGrid, setShowSearchGrid] = useState(false)
   const duration = 500
   useEffect(() => {
     // @ts-ignore
@@ -48,12 +49,12 @@ export default function HomeScreen({
 
   useEffect(() => {
     if (searchInput === '') {
-      setShowSearch(false)
+      setShowSearchGrid(false)
       console.log(searchInput)
     } else {
-      if (!showSearch) {
+      if (!showSearchGrid) {
         const timer = setTimeout(() => {
-          setShowSearch(true)
+          setShowSearchGrid(true)
           console.log('fuck!!')
         }, duration)
         return () => clearTimeout(timer)
@@ -70,7 +71,12 @@ export default function HomeScreen({
       setTimeout(() => {
         console.log('User stopped typing')
         // api request to update searchedCharacters
-      }, 100)
+        if (searchInput !== '') {
+          setDoneSearching(true)
+        } else {
+          setDoneSearching(false)
+        }
+      }, 500)
     )
   }
 
@@ -86,9 +92,9 @@ export default function HomeScreen({
         onSearchInput={onSearchInput}
         clearSearchInput={clearSearchInput}
       />
-      {showSearch ? (
-        <ScaleFadeIn loaded={showSearch} duration={duration}>
-          <SearchGrid characters={searchedCharacters} />
+      {showSearchGrid ? (
+        <ScaleFadeIn loaded={showSearchGrid} duration={duration}>
+          <SearchGrid characters={searchedCharacters} doneSearching={true} />
         </ScaleFadeIn>
       ) : (
         <ScaleFadeIn loaded={!searchInput} duration={duration}>
