@@ -7,7 +7,7 @@ from tenacity import after_log, before_sleep_log, retry, stop_after_attempt, wai
 
 from clonr import templates
 from clonr.data_structures import Document, Memory, Message, Node
-from clonr.llms import LLM, GenerationParams, LLMResponse, MockLLM, OpenAI
+from clonr.llms import LLM, GenerationParams, LLMResponse, MockLLM
 from clonr.templates.memory import MemoryExample
 from clonr.templates.qa import Excerpt
 from clonr.text_splitters import TokenSplitter

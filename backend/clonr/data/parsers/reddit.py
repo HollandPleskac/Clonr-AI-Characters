@@ -1,6 +1,6 @@
 from typing import List
 
-from clonr.data.parsers.base import Parser, ParserException
+from clonr.data.parsers.base import Parser
 from clonr.data_structures import Document
 
 try:

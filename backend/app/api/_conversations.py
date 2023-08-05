@@ -3,13 +3,11 @@
 from typing import Annotated
 
 import sqlalchemy as sa
-from fastapi import Depends, FastAPI, HTTPException, Request, status
-from fastapi.encoders import jsonable_encoder
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.routing import APIRouter
-from loguru import logger
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from sqlalchemy import delete, func, select, update
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models, schemas

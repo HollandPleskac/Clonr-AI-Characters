@@ -45,7 +45,7 @@ class CloneDB:
         tokenizer: Tokenizer,
         embedding_client: EmbeddingClient,
         clone_id: str | uuid.UUID,
-        conversation_id: str | uuid.UUID | None = None,
+        conversation_id: str | uuid.UUID,
     ):
         self.embedding_client = embedding_client
         self.db = db
@@ -54,24 +54,11 @@ class CloneDB:
         self.clone_id = clone_id
         self.conversation_id = conversation_id
 
-    async def add_and_set_conversation(
-        self, user_id: str | uuid.UUID, name: str | None = None
-    ) -> models.Conversation:
-        convo = models.Conversation(name=name, user_id=user_id, clone_id=self.clone_id)
-        self.db.add(convo)
-        await self.db.commit()
-        await self.db.flush(convo)
-        self.conversation_id = str(convo.id)
-        return convo
-
     async def add_document(self, doc: Document, nodes: list[Node]) -> models.Document:
         # don't re-do work if it's already there?
         if await self.db.scalar(
-            sa.select(models.Document).where(models.Document.hash == doc.hash)
+            sa.select(models.Document.hash).where(models.Document.hash == doc.hash)
         ):
-            from loguru import logger
-
-            logger.info("Document already exists")
             return
 
         # Add embedding stuff. Doc embeddings are just the mean of all node embeddings
@@ -219,12 +206,14 @@ class CloneDB:
         for memory in memories:
             # This is unique to us, memories can be hierarchical (i.e. reflections)
             # and so we must pull all children that they depend on
-            r = await self.db.scalars(
-                sa.select(models.Memory).where(
-                    models.Memory.id.in_(tuple(memory.child_ids))
+            children: list[models.Memory] = []
+            if memory.child_ids:
+                r = await self.db.scalars(
+                    sa.select(models.Memory).where(
+                        models.Memory.id.in_(tuple(memory.child_ids))
+                    )
                 )
-            )
-            children = r.all()
+                children = r.all()
             mem = models.Memory(
                 content=memory.content,
                 embedding=memory.embedding,

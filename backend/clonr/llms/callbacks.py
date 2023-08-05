@@ -1,6 +1,5 @@
 import json
 from abc import ABC, abstractmethod
-from typing import Any
 
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession

@@ -1,17 +1,14 @@
 import datetime
+import enum
 import uuid
-from typing import Dict, List, Optional
 
-import randomname
 from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate
-from pgvector.sqlalchemy import Vector
-from pydantic import BaseModel, Field, validator
-
-from clonr.index import IndexType
+from pydantic import BaseModel, Field
 
 
 class UserRead(BaseUser[uuid.UUID]):
-    pass
+    private_chat_name: str
+    is_banned: bool
 
 
 class UserCreate(BaseUserCreate):
@@ -19,7 +16,12 @@ class UserCreate(BaseUserCreate):
 
 
 class UserUpdate(BaseUserUpdate):
-    pass
+    private_chat_name: str = Field(
+        default=None,
+        min_length=1,
+        max_length=32,
+        regex=r"^[^><|]*$",
+    )
 
 
 class CommonMixin(BaseModel):
@@ -51,6 +53,15 @@ class Creator(CreatorCreate):
     created_at: datetime.datetime
     updated_at: datetime.datetime
 
+    class Config:
+        orm_mode = True
+
+
+class TagCreate(BaseModel):
+    name: str
+
+
+class Tag(TagCreate):
     class Config:
         orm_mode = True
 
@@ -99,6 +110,7 @@ class CloneSearchResult(CommonMixin, BaseModel):
     avatar_uri: str | None = (
         None  # TODO (Jonny) make sure we don't throw errors here and un None it
     )
+    tags: list[Tag]
 
     class Config:
         orm_mode = True
@@ -180,13 +192,35 @@ class Monologue(CommonMixin, MonologueCreate):
         orm_mode = True
 
 
-class TagCreate(BaseModel):
-    name: str
+# class Flags(enum.Enum):
+#     zero_memory: int
+#     conversation_retrieval: int
+#     information_retrieval: int
+#     dynamic_quote_retrieval: int
+#     internal_thought_stream: int
+#     third_party_memory_stream: int
+#     agent_summary_frequency: int
+#     multi_character_chat__api_key_and_entity_context: int = (
+#         "needs websockets, too hard now"
+#     )
+#     streaming_response: int = "no fuck this, too hard and not realistic"
+#     multi_line_user_input: int = "would seem more realistic"
+#     multi_line_clone_output: int = "a bit harder, better to just parse outputs maybe?"
+#     current_event_knowledge: int = "serpAPI call"
+#     NSFW: int = "no content moderation boi"
 
 
-class Tag(TagCreate):
-    class Config:
-        orm_mode = True
+# These are actually ordinal, so this seems like a good data structure
+class MemoryStrategy(str, enum.Enum):
+    none = "none"
+    basic = "basic"
+    advanced = "advanced"
+
+
+class InformationStrategy(str, enum.Enum):
+    none = "none"
+    internal = "internal"
+    external = "external"  # SerpAPI; not enabled until like V4!
 
 
 class ConversationCreate(BaseModel):
@@ -194,22 +228,62 @@ class ConversationCreate(BaseModel):
         default=None,
         description="A name to assign to the conversation to later remember it.",
     )
-    is_active: bool = Field(
-        default=True, description="Wether to archive the conversation or not."
+    user_name: str = Field(
+        default=None,
+        min_length=1,
+        max_length=32,
+        regex=r"^[^><|]*$",
+        description="The display name that the user wants to use for the conversation. This cannot be changed once you start the conversation. If your user name collides with the clone name, then an additional digit will be added",
+    )
+    memory_strategy: MemoryStrategy = Field(
+        default=MemoryStrategy.none,
+        description="Whether to turn off memory (old messages removed at context length limit), use short-term memory, or use the advanced Clonr long-term memory",
+    )
+    information_strategy: InformationStrategy = Field(
+        default=InformationStrategy.internal,
+        description="The level of factual accuracy to give your bot. Internal enables creator knowledge sources. External allows for pulling information on current events.",
+    )
+    plasticity: int = Field(
+        default=5,
+        description="An integer from (0-10) indicating how quickly your clone can change its fundamental beliefs, goals, and personality in response to newly formed memories and observations.",
     )
     clone_id: uuid.UUID = Field(description="The clone that a user will chat with")
 
 
 class ConversationUpdate(BaseModel):
     name: str | None = None
-    is_active: bool | None = None
+    is_active: bool | None = Field(
+        default=None, description="Wether to archive the conversation or not."
+    )
 
 
 class Conversation(CommonMixin, ConversationCreate):
     user_id: uuid.UUID = Field(description="The user that will chat with this clone")
+    is_active: bool
 
     class Config:
         orm_mode = True
+
+
+# class MessageCreate(BaseModel):
+#     content: str
+#     sender_name: str
+#     is_clone: Mapped[bool]
+#     timestamp: Mapped[datetime.datetime] = mapped_column(
+#         sa.DateTime(timezone=True), server_default=sa.func.now()
+#     )
+#     embedding: Mapped[list[float]]
+#     embedding_model: Mapped[str]
+#     clone_id: Mapped[uuid.UUID] = mapped_column(
+#         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
+#     )
+#     clone: Mapped["Clone"] = relationship("Clone", back_populates="messages")
+#     conversation_id: Mapped[uuid.UUID] = mapped_column(
+#         sa.ForeignKey("conversations.id", ondelete="cascade"), nullable=False
+#     )
+#     conversation: Mapped["Conversation"] = relationship(
+#         "Conversation", back_populates="messages"
+#     )
 
 
 # ------------------------------------#

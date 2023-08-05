@@ -1,6 +1,5 @@
 import logging
 
-import redis.asyncio as redis
 from fastapi_users.password import PasswordHelper
 from loguru import logger
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor

@@ -5,8 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models, schemas
-from app.auth.users import get_superuser
-from app.db import get_async_session
+from app.deps import get_async_session, get_superuser
 
 router = APIRouter(
     prefix="/tags",

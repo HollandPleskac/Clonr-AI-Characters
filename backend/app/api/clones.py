@@ -1,12 +1,11 @@
 from datetime import datetime
 from enum import Enum
-from typing import Annotated, Literal
+from typing import Annotated
 
 import sqlalchemy as sa
-from fastapi import Body, Depends, HTTPException, Path, Query, status
+from fastapi import Depends, HTTPException, Path, Query, status
 from fastapi.responses import Response
 from fastapi.routing import APIRouter
-from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import deps, models, schemas
@@ -18,7 +17,6 @@ from clonr.data_structures import Document, Monologue
 # # llm is not needed for the basic list index! We can revisit TreeIndex in the future
 # # but for now, it's too much complexity for a yet to be demonstrated reward
 from clonr.index import IndexType, ListIndex
-from clonr.llms import LLM
 from clonr.tokenizer import Tokenizer
 
 router = APIRouter(
