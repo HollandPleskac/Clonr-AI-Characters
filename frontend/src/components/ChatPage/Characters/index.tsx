@@ -3,8 +3,10 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import SearchIcon from './SearchIcon'
-import Character from './Character'
+import CharacterComponent from './Character'
 import CharacterDropdown from './CharacterDropdown'
+import { PastChat } from '@/types'
+import { formatDate } from '@/utils/formatDate'
 
 interface MessageData {
   name: string
@@ -13,33 +15,21 @@ interface MessageData {
   newMessages: number
   timeLastSeen: string
 }
+interface CharactersProps {
+  initialCharacterChats: PastChat[]
+}
 
-const messages: MessageData[] = [
-  {
-    name: 'Mika-chan',
-    username: '@mikachan',
-    messagePreview: 'Doing well, thank...',
-    newMessages: 3,
-    timeLastSeen: '6h',
-  },
-  {
-    name: 'Mika-chan2',
-    username: '@mikachan2',
-    messagePreview: 'Doing well, thank...',
-    newMessages: 14,
-    timeLastSeen: '22 May',
-  },
-]
-
-export default function Characters() {
+export default function Characters({ initialCharacterChats }: CharactersProps) {
   // active character state
-  const [activeUsername, setActiveUsername] = useState<string>(
-    messages[0].username
-  )
+  const [activeName, setActiveName] = useState<string>('active username')
 
-  const handleUpdateUsername = (username: string) => {
-    setActiveUsername(username)
+  const handleUpdateName = (name: string) => {
+    setActiveName(name)
   }
+
+  const [characterChats, setCharacterChats] = useState<PastChat[]>(
+    initialCharacterChats
+  )
 
   // search state
   const [isInputActive, setInputActive] = useState(false)
@@ -100,16 +90,16 @@ export default function Characters() {
       </div>
 
       <div className='sticky top-[154px] overflow-auto transition-all duration-100 h-full'>
-        {messages.map((message) => (
-          <Character
-            key={message.username}
-            isActive={message.username === activeUsername}
-            name={message.name}
-            username={message.username}
-            messagePreview={message.messagePreview}
-            newMessages={message.newMessages}
-            timeLastSeen={message.timeLastSeen}
-            onClick={handleUpdateUsername}
+        {characterChats.map((charChat) => (
+          <CharacterComponent
+            key={charChat.character.id}
+            isActive={charChat.character.name === activeName}
+            name={charChat.character.name}
+            username='username'
+            messagePreview={charChat.lastMessage}
+            newMessages={3}
+            timeLastSeen={formatDate(charChat.character.updated_at)}
+            onClick={handleUpdateName}
           />
         ))}
       </div>

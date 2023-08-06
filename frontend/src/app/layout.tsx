@@ -22,7 +22,7 @@ export default function RootLayout({
         className='w-full bg-black lg:inline'
       >
         {children}
-        <Footer />
+        {/* <Footer /> */}
       </body>
     </html>
   )

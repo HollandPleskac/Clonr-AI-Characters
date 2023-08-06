@@ -31,26 +31,10 @@ export type DimensionDetail = {
   isDesktop: boolean
 }
 
-export type Tag = {
-  name: string
-}
-
 export enum MediaType {
   MOVIE = 'movie',
   TV = 'tv',
 }
-
-// export type Character = {
-//   id: number
-//   name: string
-//   description: string
-//   poster: string
-//   banner: string
-//   rating: number
-//   tags: Tag[]
-//   messages: number
-// }
-
 export type Character = {
   id: string
   created_at: Date
@@ -61,7 +45,21 @@ export type Character = {
   avatar_uri: string
   num_messages: number
   num_conversations: number
-  tags: Tag[]
+  tags: string[]
+}
+
+export type PastChat = {
+  character: Character
+  lastMessage: string
+}
+
+export type Message = {
+  img: string
+  alt: string
+  name: string
+  content: string
+  timeStamp: Date
+  senderType: 'bot' | 'user'
 }
 
 export type ImageType = 'poster' | 'original'
