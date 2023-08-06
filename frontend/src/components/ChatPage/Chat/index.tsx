@@ -26,18 +26,16 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 interface ChatScreenProps {
   characterId: string
   conversationId: string
-  initialCharacter: Character
+  character: Character
   initialMessages: Message[]
 }
 
 export default function ChatScreen({
   characterId,
   conversationId,
-  initialCharacter,
+  character,
   initialMessages,
 }: ChatScreenProps) {
-  const [character, setCharacter] = useState<Character>(initialCharacter)
-
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState<any[]>(initialMessages) // FixMe (Jonny): workaround for type error in compiler
@@ -217,10 +215,10 @@ export default function ChatScreen({
           />
           <div className='flex flex-col ml-6 gap-y-3'>
             <h3 className='text-3xl font-bold leading-5 text-white'>
-              Craig Ortega
+              {character.name}
             </h3>
-            <p className='text-gray-400 text-sm'>
-              I love buying new things but I hate spending money
+            <p className='text-gray-400 text-sm line-clamp-1'>
+              {character.short_description}
             </p>
           </div>
         </div>
@@ -271,6 +269,7 @@ export default function ChatScreen({
             display: 'flex',
             flexDirection: 'column-reverse',
           }}
+          className='px-6'
         >
           <InfiniteScroll
             dataLength={messages.length}
@@ -280,6 +279,7 @@ export default function ChatScreen({
             hasMore={true}
             loader={<h4>Loading...</h4>}
             scrollableTarget='scrollableDiv'
+            className='pt-4'
           >
             {messages.map((message, index) => (
               <MessageComponent message={message} key={index} />
@@ -295,15 +295,8 @@ export default function ChatScreen({
       >
         <div className='mt-auto'></div>
         <Date date='May, 11 2023' />
-        {messages.map((msg) => (
-          <Message
-            key={msg.id}
-            src={msg.src}
-            alt={msg.alt}
-            time={msg.time}
-            messages={[msg.message]}
-            name={msg.name}
-          />
+        {messages.map((message, index) => (
+          <MessageComponent message={message} key={index} />
         ))}
         <div
           className={`${

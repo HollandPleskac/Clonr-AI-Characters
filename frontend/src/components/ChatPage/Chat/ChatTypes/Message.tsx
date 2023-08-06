@@ -7,7 +7,6 @@ interface MessageProps {
 }
 
 const Message: React.FC<MessageProps> = ({ message }) => {
-  
   function formatTime(date: Date): string {
     let hours = date.getHours()
     const minutes = date.getMinutes().toString().padStart(2, '0') // Pads with 0 if needed to get 2 digits

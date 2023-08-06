@@ -8,28 +8,15 @@ import CharacterDropdown from './CharacterDropdown'
 import { PastChat } from '@/types'
 import { formatDate } from '@/utils/formatDate'
 
-interface MessageData {
-  name: string
-  username: string
-  messagePreview: string
-  newMessages: number
-  timeLastSeen: string
-}
 interface CharactersProps {
-  initialCharacterChats: PastChat[]
+  pastChats: PastChat[]
+  currentCharacterId: string
 }
 
-export default function Characters({ initialCharacterChats }: CharactersProps) {
-  // active character state
-  const [activeName, setActiveName] = useState<string>('active username')
-
-  const handleUpdateName = (name: string) => {
-    setActiveName(name)
-  }
-
-  const [characterChats, setCharacterChats] = useState<PastChat[]>(
-    initialCharacterChats
-  )
+export default function Characters({
+  pastChats,
+  currentCharacterId,
+}: CharactersProps) {
 
   // search state
   const [isInputActive, setInputActive] = useState(false)
@@ -90,16 +77,11 @@ export default function Characters({ initialCharacterChats }: CharactersProps) {
       </div>
 
       <div className='sticky top-[154px] overflow-auto transition-all duration-100 h-full'>
-        {characterChats.map((charChat) => (
+        {pastChats.map((pastChat) => (
           <CharacterComponent
-            key={charChat.character.id}
-            isActive={charChat.character.name === activeName}
-            name={charChat.character.name}
-            username='username'
-            messagePreview={charChat.lastMessage}
-            newMessages={3}
-            timeLastSeen={formatDate(charChat.character.updated_at)}
-            onClick={handleUpdateName}
+            key={pastChat.character.id}
+            pastChat={pastChat}
+            currentCharacterId={currentCharacterId}
           />
         ))}
       </div>

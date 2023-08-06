@@ -2,62 +2,84 @@ import Characters from '@/components/ChatPage/Characters'
 import ChatScreen from '@/components/ChatPage/Chat'
 import { Character } from '@/types'
 
-async function getCharacterDetails() {
-  return {
-    id: 'string',
-    created_at: new Date(),
-    updated_at: new Date(),
-    creator_id: 'string',
-    name: 'string',
-    short_description: 'string',
-    avatar_uri: 'string',
-    num_messages: 234234,
-    num_conversations: 3423,
-    tags: ['tag1', 'tag2'],
+async function getCharacterDetails(
+  characterId: string,
+  conversationId: string
+) {
+  if (characterId === '12345') {
+    return {
+      id: '12345',
+      created_at: new Date(),
+      updated_at: new Date(),
+      creator_id: '0987',
+      name: 'Barack Obama',
+      short_description:
+        'I am Barack Obama, 44th President of the United States. ',
+      avatar_uri: '/dummy-char.png',
+      num_messages: 234234,
+      num_conversations: 3423,
+      tags: ['president', 'politician'],
+    }
+  } else {
+    return {
+      id: '23456',
+      created_at: new Date(),
+      updated_at: new Date(),
+      creator_id: '0987',
+      name: 'Elon Musk',
+      short_description: "You're wasting my time. I literally rule the world.",
+      avatar_uri: '/dummy-char.png',
+      num_messages: 2342343,
+      num_conversations: 34233,
+      tags: ['entrepreneur', 'businessman'],
+    }
   }
 }
 
-async function getInitialCharacterChats() {
+async function getCharacterPastChats() {
   return [
     {
       character: {
-        id: 'string',
+        id: '12345',
         created_at: new Date(),
         updated_at: new Date(),
-        creator_id: 'string',
-        name: 'string',
-        short_description: 'string',
-        avatar_uri: 'string',
+        creator_id: '0987',
+        name: 'Barack Obama',
+        short_description:
+          'I am Barack Obama, 44th President of the United States. ',
+        avatar_uri: '/dummy-char.png',
         num_messages: 234234,
         num_conversations: 3423,
-        tags: ['tag1', 'tag2'],
+        tags: ['president', 'politician'],
       },
-      lastMessage: 'string',
+      lastMessage: "Why can't I just eat my waffle?",
     },
     {
       character: {
-        id: 'string',
+        id: '23456',
         created_at: new Date(),
         updated_at: new Date(),
-        creator_id: 'string',
-        name: 'string',
-        short_description: 'string',
-        avatar_uri: 'string',
-        num_messages: 234234,
-        num_conversations: 3423,
-        tags: ['tag1', 'tag2'],
+        creator_id: '0987',
+        name: 'Elon Musk',
+        short_description:
+          "You're wasting my time. I literally rule the world.",
+        avatar_uri: '/dummy-char.png',
+        num_messages: 2342343,
+        num_conversations: 34233,
+        tags: ['entrepreneur', 'businessman'],
       },
-      lastMessage: 'string',
+      lastMessage: 'Next I’m buying Coca-Cola to put the cocaine back in',
     },
   ]
 }
 
-async function getInitialMessages() {
+async function getInitialMessages(characterId: string, conversationId: string) {
+  console.log('characterID', characterId)
   return [
     {
       img: '/dummy-char.png',
       alt: 'dummy-char',
-      name: 'dummy-char',
+      name: 'dummy-char-first',
       content: 'Hey how are you?',
       timeStamp: new Date(),
       senderType: 'bot' as 'bot' | 'user',
@@ -113,7 +135,7 @@ async function getInitialMessages() {
     {
       img: '/dummy-char.png',
       alt: 'dummy-char',
-      name: 'dummy-char',
+      name: 'dummy-char-last',
       content: 'Hey how are you?',
       timeStamp: new Date(),
       senderType: 'user' as 'bot' | 'user',
@@ -127,9 +149,15 @@ export default async function ChatPage({
   params: { characterId: string; conversationId: string }
 }) {
   // get character for chat screen
-  const initialCharacter = await getCharacterDetails()
-  const initialCharacterChats = await getInitialCharacterChats()
-  const initialMessages = await getInitialMessages()
+  const character = await getCharacterDetails(
+    params.characterId,
+    params.conversationId
+  )
+  const pastChats = await getCharacterPastChats()
+  const initialMessages = await getInitialMessages(
+    params.characterId,
+    params.conversationId
+  )
 
   // fetch previous 20 messages for chat screen
   // fetch 10 previous chats for character screen
@@ -143,10 +171,13 @@ export default async function ChatPage({
         className='bg-gray-900 w-full flex justify-center items-center overflow-hidden'
         style={{ height: 'calc(100vh)' }}
       >
-        <Characters initialCharacterChats={initialCharacterChats} />
+        <Characters
+          pastChats={pastChats}
+          currentCharacterId={params.characterId}
+        />
         <ChatScreen
           characterId={params.characterId}
-          initialCharacter={initialCharacter}
+          character={character}
           // need initial 20 msgs
           // need initial 10 characters
 
