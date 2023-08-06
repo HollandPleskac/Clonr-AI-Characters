@@ -95,6 +95,11 @@ class User(Base, SQLAlchemyBaseUserTableUUID):
     llm_calls: Mapped[list["LLMCall"]] = relationship(
         "LLMCall", back_populates="user", passive_deletes=True
     )
+    # Whether user is subscribed to premium plan, i.e. is paid 
+    is_subscribed: Mapped[bool] = mapped_column(default=False)
+
+    # Number of free msgs sent
+    num_free_messages_sent: Mapped[int] = mapped_column(default=0)
 
     def __repr__(self):
         return f"User(id={self.id})"

@@ -181,6 +181,59 @@ async def query_clones(
     clones = await db.scalars(query)
     return clones.unique().all()
 
+@router.get("/top", response_model=list[schemas.CloneSearchResult])
+async def get_top_clones(
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
+    embedding_client: Annotated[EmbeddingClient, Depends(deps.get_embedding_client)],
+    tags: Annotated[list[str] | None, Query()] = None,
+    name: Annotated[str | None, Query()] = None,
+    similar: Annotated[str | None, Query()] = None,
+    created_after: Annotated[datetime | None, Query()] = None,
+    created_before: Annotated[datetime | None, Query()] = None,
+    offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
+    limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
+):
+    return await query_clones(
+        db=db,
+        user=user,
+        embedding_client=embedding_client,
+        tags=tags,
+        name=name,
+        similar=similar,
+        created_after=created_after,
+        created_before=created_before,
+        sort=CloneSortType.top,
+        offset=offset,
+        limit=limit,
+    )
+
+@router.get("/hot", response_model=list[schemas.CloneSearchResult])
+async def get_hot_clones(
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
+    embedding_client: Annotated[EmbeddingClient, Depends(deps.get_embedding_client)],
+    tags: Annotated[list[str] | None, Query()] = None,
+    name: Annotated[str | None, Query()] = None,
+    similar: Annotated[str | None, Query()] = None,
+    created_after: Annotated[datetime | None, Query()] = None,
+    created_before: Annotated[datetime | None, Query()] = None,
+    offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
+    limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
+):
+    return await query_clones(
+        db=db,
+        user=user,
+        embedding_client=embedding_client,
+        tags=tags,
+        name=name,
+        similar=similar,
+        created_after=created_after,
+        created_before=created_before,
+        sort=CloneSortType.hot,
+        offset=offset,
+        limit=limit,
+    )
 
 # NOTE (Jonny): wild card paths have to come at the end otherwise order of resolution is messed up
 # and you'll get the similar route being viewed as something like below

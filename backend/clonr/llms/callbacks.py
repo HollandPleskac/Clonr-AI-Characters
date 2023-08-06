@@ -1,4 +1,5 @@
 import json
+import requests
 from abc import ABC, abstractmethod
 
 from loguru import logger
@@ -59,6 +60,17 @@ class LLMCallback(ABC):
     async def on_stream_end(self, llm: LLM, **kwargs):
         pass
 
+    async def check_moderation(self, text: str, api_key: str):
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}",
+        }
+        data = {
+            "input": text
+        }
+        response = requests.post("https://api.openai.com/v1/moderations", headers=headers, json=data)
+        return response.json()
+
 
 class LoggingCallback(LLMCallback):
     async def on_generate_start(
@@ -74,6 +86,11 @@ class LoggingCallback(LLMCallback):
         except Exception as e:
             logger.error(e)
             data = ""
+        response = await self.check_moderation(prompt_or_messages, llm.api_key)
+        flagged = response.get('flagged', False)
+        if flagged:
+            raise ValueError("Flagged by moderation endpoint!")
+
         logger.info(f"LLM CALL START: {data}")
 
     async def on_generate_end(self, llm: LLM, llm_response: LLMResponse, **kwargs):
@@ -119,7 +136,11 @@ class AddToPostgresCallback(LLMCallback):
         params: GenerationParams | None,
         **kwargs,
     ):
-        pass
+        response = await self.check_moderation(prompt_or_messages, llm.api_key)
+        flagged = response.get('flagged', False)
+        if flagged:
+            raise ValueError("Flagged by moderation endpoint!")
+
 
     async def on_generate_end(self, llm: LLM, llm_response: LLMResponse, **kwargs):
         r = llm_response
