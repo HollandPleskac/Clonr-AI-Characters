@@ -36,7 +36,7 @@ export default function TopBar({
         {/* <h3 className='text-[22px] font-semibold leading-5 text-white cursor-pointer'>
           Cloner.ai
         </h3> */}
-        <div className='flex items-center cursor-pointer'>
+        <Link href="/" className='flex items-center cursor-pointer'>
           <div className='h-8 w-8 relative'>
             <Image
               src='/clonr-logo.png'
@@ -50,36 +50,33 @@ export default function TopBar({
             clonr
           </h3>
           <p className='text-white font-thin ml-2 align-middle'>users</p>
-        </div>
+        </Link>
         <Link
           href='#'
-          className={`transition duration-200 ml-4 ${
-            pathname === '/'
+          className={`transition duration-200 ml-4 ${pathname === '/'
               ? 'text-white font-semibold'
               : 'text-[#e5e5e5] hover:text-[#979797]'
-          }`}
+            }`}
         >
           Home
         </Link>
 
         <Link
           href='mailto:email@example.com'
-          className={`transition duration-200 ${
-            pathname === '/create'
+          className={`transition duration-200 ${pathname === '/create'
               ? 'text-white font-semibold'
               : 'text-[#e5e5e5]'
-          }`}
+            }`}
         >
           Contact
         </Link>
 
         <Link
           href='#'
-          className={`transition duration-200 ${
-            pathname === '/create'
+          className={`transition duration-200 ${pathname === '/create'
               ? 'text-white font-semibold'
               : 'text-[#e5e5e5]'
-          }`}
+            }`}
         >
           <span>
             Create <sup className=''>Coming Soon</sup>
@@ -115,10 +112,9 @@ export default function TopBar({
         >
           <button className='group absolute peer left-[10px] top-2 peer cursor-default'>
             <SearchIcon
-              strokeClasses={` group-focus:stroke-[#5848BC] ${
-                isInputActive ? 'stroke-[#5848BC]' : 'stroke-[#515151]'
-              } transition duration-100 bg-red-400`}
-              // strokeClasses='stroke-[#515151]'
+              strokeClasses={` group-focus:stroke-[#5848BC] ${isInputActive ? 'stroke-[#5848BC]' : 'stroke-[#515151]'
+                } transition duration-100 bg-red-400`}
+            // strokeClasses='stroke-[#515151]'
             />
           </button>
           <input
@@ -127,19 +123,17 @@ export default function TopBar({
             onChange={(e) => onSearchInput(e.target.value)}
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
-            className={`${
-              isInputActive
+            className={`${isInputActive
                 ? 'w-[300px] cursor-auto'
                 : 'w-[44px] cursor-default'
-            } focus:cursor-auto peer py-auto h-[40px]  transition-all  duration-500 rounded-lg border-none bg-[#1E1E1E] pr-0 pl-[44px] text-[15px] font-light leading-6 text-[#979797] focus:ring-1 focus:ring-transparent`}
+              } focus:cursor-auto peer py-auto h-[40px]  transition-all  duration-500 rounded-lg border-none bg-[#1E1E1E] pr-0 pl-[44px] text-[15px] font-light leading-6 text-[#979797] focus:ring-1 focus:ring-transparent`}
             type='text'
             placeholder='Search'
             style={{ outline: 'none', resize: 'none' }}
           />
           <button
-            className={`absolute right-[10px] top-3 ${
-              searchInput === '' ? 'hidden' : 'flex'
-            }`}
+            className={`absolute right-[10px] top-3 ${searchInput === '' ? 'hidden' : 'flex'
+              }`}
             onClick={clearSearchInput}
           >
             <XIcon />
@@ -149,7 +143,7 @@ export default function TopBar({
           type='button'
           className='px-2 py-2 bg-purple-600 rounded-lg flex items-center gap-x-1 text-white'
           data-hs-overlay='#hs-slide-down-animation-modal'
-          // data-hs-overlay="#hs-basic-modal"
+        // data-hs-overlay="#hs-basic-modal"
         >
           {/* <PlusIcon /> */}
           Upgrade to Plus

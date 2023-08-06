@@ -146,7 +146,7 @@ clones_to_tags = sa.Table(
 )
 
 
-class Tag(CommonMixin, Base):
+class Tag(Base):
     __tablename__ = "tags"
 
     name: Mapped[str] = mapped_column(primary_key=True, unique=True)

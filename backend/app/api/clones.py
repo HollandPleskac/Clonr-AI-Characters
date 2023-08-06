@@ -108,9 +108,23 @@ async def create_clone(
     creator: Annotated[models.Creator, Depends(deps.get_current_active_creator)],
     embedding_client: Annotated[EmbeddingClient, Depends(deps.get_embedding_client)],
 ):
-    clone = models.Clone(**obj.dict(exclude_none=True), creator_id=creator.user_id)
+    data = obj.dict(exclude_none=True)
+    if obj.tags:
+        r = await db.scalars(sa.select(models.Tag).where(models.Tag.name.in_(obj.tags)))
+        tags = r.all()
+        if len(tags) != len(obj.tags):
+            for t in obj.tags:
+                if t not in tags:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="Tag {t} is not a valid tag.",
+                    )
+        data["tags"] = tags
+    from loguru import logger
+
+    clone = models.Clone(**data, creator_id=creator.user_id)
     # NOTE (Jonny): idk some arbitrary length here to prevent zero length string embeddings
-    if clone.long_description and len(clone.long_description) > 16:
+    if clone.long_description:
         clone.embedding = (
             await embedding_client.encode_passage(clone.long_description)
         )[0]
@@ -121,6 +135,7 @@ async def create_clone(
     # if you get a greenlet spawn error, that's why. Could do lazy=joined too
     # or add , ["tags"] to the refresh.
     await db.refresh(clone)
+    logger.info(clone)
     return clone
 
 
