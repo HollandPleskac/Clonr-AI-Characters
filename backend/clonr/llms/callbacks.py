@@ -1,4 +1,6 @@
 import json
+import aiohttp
+from aiohttp import ClientSession
 import requests
 from abc import ABC, abstractmethod
 
@@ -13,6 +15,8 @@ from clonr.llms.schemas import (
     Message,
     OpenAIStreamResponse,
 )
+from backend.app.clone import CloneCache
+from fastapi.exceptions import HTTPException
 
 # NOTE (Jonny): the **kwargs is really bad coding practice, but I could not find another solution
 # I spent nearly a full day with codeblock on this. The issue, is that we want to trigger some event
@@ -161,3 +165,51 @@ class AddToPostgresCallback(LLMCallback):
         )
         self.db.add(mdl)
         await self.db.commit()
+
+
+class ModerationCallback(LLMCallback):
+    def __init__(
+        self,
+        db: AsyncSession,
+        cache: CloneCache,
+        clone_id: str,
+        user_id: str,
+        conversation_id: str | None = None,
+    ):
+        self.db = db
+        self.cache = cache
+        self.clone_id = clone_id
+        self.user_id = user_id
+        self.conversation_id = conversation_id
+
+    async def check_moderation(self, text: str, api_key: str):
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}",
+        }
+        data = {
+            "input": text
+        }
+        async with ClientSession() as session:
+            async with session.post("https://api.openai.com/v1/moderations", headers=headers, json=data) as response:
+                response_data = await response.json()
+                if response.status != 200:
+                    raise HTTPException(response.status, response_data.get("message", "Unknown Error"))
+                return response_data
+
+    async def on_generate_start(
+        self,
+        llm: LLM,
+        prompt_or_messages: str | list[Message],
+        params: GenerationParams | None,
+        **kwargs,
+    ):
+        response = await self.check_moderation(prompt_or_messages, llm.api_key)
+        flagged = response.get('flagged', False)
+        if flagged:
+            await self.increment_flagged_counter()
+            message = response.get('message', 'Content is flagged by moderation.')
+            raise HTTPException(400, message)
+
+    async def increment_flagged_counter(self):
+        await self.cache.add_moderation_violations(self.user_id)
