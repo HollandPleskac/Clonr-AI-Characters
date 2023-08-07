@@ -192,7 +192,7 @@ class CloneDB:
         await self.db.commit()
         return monologue_models
 
-    async def add_memories(self, memories: list[Memory]):
+    async def add_memories(self, memories: list[Memory]) -> list[models.Memory]:
         # batch embed
         embs = await self.embedding_client.encode_passage([x.content for x in memories])
         embedding_model = await self.embedding_client.encoder_name()
@@ -203,6 +203,7 @@ class CloneDB:
             m.embedding_model = embedding_model
 
         # add all of the memories
+        mem_models: list[models.Memory] = []
         for memory in memories:
             # This is unique to us, memories can be hierarchical (i.e. reflections)
             # and so we must pull all children that they depend on
@@ -228,9 +229,12 @@ class CloneDB:
                 clone_id=self.clone_id,
             )
             self.db.add(mem)
+            mem_models.append(mem)
+        # NOTE (Jonny): is it going to be an issue that we don't refresh these?
         await self.db.commit()
+        return mem_models
 
-    async def add_message(self, message: Message):
+    async def add_message(self, message: Message) -> models.Message:
         if self.conversation_id is None:
             raise ValueError("Adding messages requires conversation_id.")
         msg = models.Message(
@@ -244,6 +248,8 @@ class CloneDB:
         )
         self.db.add(msg)
         await self.db.commit()
+        await self.db.refresh(msg)
+        return msg
 
     async def add_entity_context_summary(
         self,

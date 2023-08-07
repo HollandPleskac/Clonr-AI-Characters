@@ -5,7 +5,7 @@ import { MouseEventHandler, useEffect, useRef, KeyboardEvent } from 'react'
 
 import { useState } from 'react'
 import Date from './ChatTypes/Date'
-import Message from './ChatTypes/Message'
+import MessageComponent from './ChatTypes/Message'
 import SpeechRecognition, {
   useSpeechRecognition,
 } from 'react-speech-recognition'
@@ -20,48 +20,25 @@ import TextareaAutosize from 'react-textarea-autosize'
 import MagnifyingGlass from '@/svg/ChatPage/Chat/magnify.svg'
 import Paperclip from '@/svg/ChatPage/Chat/paperclip.svg'
 import ChatDropdown from './ChatDropdown'
-
-const dummy_messages = [
-  {
-    id: 1,
-    src: '/dummy-char.png',
-    alt: 'Character Profile Picture 1',
-    time: '09:22',
-    message: 'hey, how are you? (first msg)',
-    name: 'Holland',
-  },
-  {
-    id: 2,
-    src: '/dummy-char.png',
-    alt: 'Character Profile Picture 2',
-    time: '09:23',
-    message: 'whats up?',
-    name: 'Mika-chan',
-  },
-  {
-    id: 3,
-    src: '/dummy-char.png',
-    alt: 'Character Profile Picture 3',
-    time: '09:24',
-    message: 'hello, how are you?',
-    name: 'Holland',
-  },
-]
+import { Character, Message } from '@/types'
+import InfiniteScroll from 'react-infinite-scroll-component'
 
 interface ChatScreenProps {
   characterId: string
-  chatId: string
-  characterName: string
+  conversationId: string
+  character: Character
+  initialMessages: Message[]
 }
 
 export default function ChatScreen({
   characterId,
-  chatId,
-  characterName,
+  conversationId,
+  character,
+  initialMessages,
 }: ChatScreenProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [message, setMessage] = useState('')
-  const [messages, setMessages] = useState<any[]>([]) // FixMe (Jonny): workaround for type error in compiler
+  const [messages, setMessages] = useState<any[]>(initialMessages) // FixMe (Jonny): workaround for type error in compiler
   const [isFetching, setIsFetching] = useState(false)
   const [convoID, setConvoID] = useState('')
 
@@ -75,7 +52,6 @@ export default function ChatScreen({
   const [speechRecognitionSupported, setSpeechRecognitionSupported] = useState<
     boolean | null
   >(null)
-  const [seconds, setSeconds] = useState(0)
 
   useEffect(() => {
     // @ts-ignore
@@ -103,17 +79,6 @@ export default function ChatScreen({
     setSpeechRecognitionSupported(browserSupportsSpeechRecognition)
   }, [browserSupportsSpeechRecognition])
 
-  useEffect(() => {
-    let intervalId: NodeJS.Timer
-
-    if (listening) {
-      intervalId = setInterval(() => {
-        setSeconds((seconds) => seconds + 1)
-      }, 1000)
-    }
-    return () => clearInterval(intervalId)
-  }, [listening])
-
   const handleStartListening: MouseEventHandler<HTMLButtonElement> = (
     event
   ) => {
@@ -129,38 +94,24 @@ export default function ChatScreen({
     SpeechRecognition.stopListening()
   }
 
-  const handleResetTranscript: MouseEventHandler<HTMLButtonElement> = (
-    event
-  ) => {
-    event.preventDefault()
-    resetTranscript()
-    setSeconds(0) // reset timer to 0 seconds
-  }
-
-  const sendVoiceMessage = () => {
-    console.log(transcript)
-    resetTranscript()
-    setSeconds(0)
-  }
-
   const sendMessage = () => {
     console.log('sending message:', message)
 
     const newMessage = {
-      id: window.Date.now(),
-      src: '/dummy-char.png',
+      id: window.Date.now().toString(),
+      img: '/dummy-char.png',
       alt: 'Character Profile Picture ' + (messages.length + 1),
-      time: '09:25',
-      message: message,
       name: 'Holland',
+      content: message,
+      timeStamp: new window.Date(),
+      senderType: 'user' as 'bot' | 'user',
     }
 
-    let updatedMessages = [...messages, newMessage]
+    let updatedMessages = [newMessage, ...messages]
     setMessages(updatedMessages)
     const message_copy = message
     setMessage('')
     resetTranscript()
-    setSeconds(0)
     fetchMessageFromServer(message_copy)
   }
 
@@ -183,12 +134,13 @@ export default function ChatScreen({
       }
 
       const newServerMessage = {
-        id: window.Date.now(),
+        id: window.Date.now().toString(),
         src: '/dummy-char.png',
         alt: 'Character Profile Picture ' + (messages.length + 1),
-        time: '09:28',
-        message: serverMessage.content,
         name: 'Barack Obama',
+        content: serverMessage.content,
+        timeStamp: new window.Date(),
+        senderType: 'bot' as 'bot' | 'user',
       }
 
       setMessages((messages) => [...messages, newServerMessage])
@@ -223,7 +175,6 @@ export default function ChatScreen({
     const minutes = Math.floor(seconds / 60)
     const remainingSeconds = seconds % 60
 
-    // Use String.prototype.padStart() to pad the start of the string with 0's until it's 2 characters long
     const paddedMinutes = String(minutes).padStart(2, '0')
     const paddedSeconds = String(remainingSeconds).padStart(2, '0')
 
@@ -235,6 +186,22 @@ export default function ChatScreen({
     if (e.key === 'Enter') {
       sendMessage()
     }
+  }
+
+  const fetchMoreData = () => {
+    // Simulate fetching 10 more messages from a server or other data source
+    const newMessages: Message[] = Array.from({ length: 10 }, (_, index) => ({
+      id: '134adlj23',
+      img: '/dummy-char.png',
+      alt: 'dummy-char',
+      name: 'dummy-char',
+      content: `New message ${messages.length + index}`,
+      timeStamp: new window.Date(),
+      senderType: 'bot', // or 'user' depending on your needs
+    }))
+
+    // Add the new messages to the end of the existing messages
+    setMessages((prevMessages) => [...prevMessages, ...newMessages])
   }
 
   return (
@@ -251,10 +218,10 @@ export default function ChatScreen({
           />
           <div className='flex flex-col ml-6 gap-y-3'>
             <h3 className='text-3xl font-bold leading-5 text-white'>
-              Craig Ortega
+              {character.name}
             </h3>
-            <p className='text-gray-400 text-sm'>
-              I love buying new things but I hate spending money
+            <p className='text-gray-400 text-sm line-clamp-1'>
+              {character.short_description}
             </p>
           </div>
         </div>
@@ -291,105 +258,64 @@ export default function ChatScreen({
           <button className='bg-gray-800 hover:bg-gray-700 rounded-full p-2 grid place-items-center transition duration-200'>
             <Paperclip />
           </button>
-          {/* <button className='bg-gray-800 hover:bg-gray-700 rounded-full p-2 grid place-items-center transition duration-200'>
-            <HorizontalDotsBig />
-          </button> */}
+
           <ChatDropdown />
         </div>
-        {/* <button
-          className='rounded-lg bg-[#5848BC] transition duration-100 hover:bg-[#4b3abd] text-white p-4 active:bg-purple-900'
-          onClick={handleConversationCreate}
-        >
-          New Conversation
-        </button> */}
       </div>
-      {/* <div
-        style={{ height: 'calc(100vh - 72px - 92px - 72px)' }}
-        ref={containerRef}
-        className='flex flex-col overflow-y-scroll bg-[#121212] px-6 pt-4'
-      >
-        <div className='flex gap-x-12 h-full pt-[60px]'>
-          <div className='flex flex-col w-1/2'>
-            <div className='ml-auto flex flex-col items-start '>
-              <div className='relative w-[350px] aspect-[1/1] rounded-[14px] mb-4'>
-                <Image
-                  src={'/char.png'}
-                  alt={'character.name'}
-                  layout='fill'
-                  objectFit='cover'
-                  className='absolute rounded-[14px] cursor-pointer'
-                />
-                <div className='flex items-center gap-x-1 absolute top-2 right-2 bg-purple-500 rounded-[14px] text-white px-2 py-[0.5px]'>
-                  2.5m
-                </div>
-              </div>
-              <div className='flex flex-wrap text-white text-sm gap-2 w-[350px] justify-start'>
-                {['Male', 'Bodyguard', 'Tough'].map((tag, index) => (
-                  <div
-                    key={index}
-                    className={`bg-black px-4 py-2 cursor-pointer border-[rgba(255,255,255,0.2)] rounded-lg hover:ring-1 hover:ring-[rgba(255,255,255,0.2)] border-[1px]`}
-                  >
-                    {tag}
-                  </div>
-                ))}
-              </div>
-              <div className='flex'>
-                <button>Copy URL</button>
-                <button>Share</button>
-                <button>Report</button>
-              </div>
-            </div>
-          </div>
-          <div className='flex flex-col w-1/2 text-white items-start'>
-            <h1 className='font-bold text-5xl mb-2'>Marcus</h1>
-            <a className='mr-2 mb-6 cursor-pointer text-lg text-[#9084e0] font-bold hover:text-white hover:underline transition-colors duration-200'>
-              @charname
-            </a>
 
-            <h4 className='text-[#e5e5e5] font-semibold mb-1 text-[18px]'>
-              Short Description
-            </h4>
-            <p className='text-[16px] text-[#b1b1b1] mb-4 w-1/2'>
-              The new bodyguard your father has hired to protect you The new
-              bodyguard your father has hired to protect you
-            </p>
-            <h4 className='text-[#e5e5e5] font-semibold mb-1 text-[18px]'>
-              Long Description
-            </h4>
-            <p className='text-[16px] text-[#b1b1b1] mb-6 w-1/2'>
-              The new bodyguard your father has hired to protect you The new
-              bodyguard your father has hired to protect you The new bodyguard
-              your father has hired to protect you The new bodyguard your father
-              has hired to protect you The new bodyguard your father has hired
-              to protect you The new bodyguard your father has hired to...
-            </p>
-            <div className='flex flex-col gap-y-2 text-white w-1/2 '>
-              <button className='bg-purple-500 px-4 py-2 rounded-[10px] hover:bg-purple-600 transition duration-200'>
-                Long Term Memory Chat
-              </button>
-              <button className='bg-orange-600 px-4 py-2 rounded-[10px] hover:bg-orange-700 transition duration-200'>
-                Short Term Memory Chat
-              </button>
+      <div>
+        <div
+          id='scrollableDiv'
+          style={{
+            height: 'calc(100vh - 122px - 92px)',
+            overflow: 'auto',
+            display: 'flex',
+            flexDirection: 'column-reverse',
+          }}
+          className='px-6'
+        >
+          <InfiniteScroll
+            dataLength={messages.length}
+            next={fetchMoreData}
+            style={{ display: 'flex', flexDirection: 'column-reverse' }} //To put endMessage and loader to the top.
+            inverse={true}
+            hasMore={true}
+            loader={<h4>Loading...</h4>}
+            scrollableTarget='scrollableDiv'
+            className='pt-4'
+          >
+            <div
+              className={`${
+                isFetching ? 'text-white flex' : 'text-transparent hidden'
+              } w-full py-4 h-[56px]`}
+            >
+              <ThreeDots
+                height='25'
+                width='25'
+                radius='4'
+                color='#979797'
+                ariaLabel='three-dots-loading'
+                wrapperStyle={{}}
+                wrapperClass=''
+                visible={isFetching}
+              />
             </div>
-          </div>
+            {messages.map((message, index) => (
+              <MessageComponent message={message} key={index} />
+            ))}
+          </InfiniteScroll>
         </div>
-      </div> */}
-      <div
+      </div>
+
+      {/* <div
         style={{ height: 'calc(100vh - 122px - 92px)' }}
         ref={containerRef}
         className='flex flex-col overflow-y-scroll bg-[#121212] px-6 pt-4'
       >
         <div className='mt-auto'></div>
         <Date date='May, 11 2023' />
-        {messages.map((msg) => (
-          <Message
-            key={msg.id}
-            src={msg.src}
-            alt={msg.alt}
-            time={msg.time}
-            messages={[msg.message]}
-            name={msg.name}
-          />
+        {messages.map((message, index) => (
+          <MessageComponent message={message} key={index} />
         ))}
         <div
           className={`${
@@ -407,7 +333,7 @@ export default function ChatScreen({
             visible={isFetching}
           />
         </div>
-      </div>
+      </div> */}
 
       <div className='flex h-[92px] items-center border-t  border-[#252525] bg-[red-400] px-6'>
         <div className='mr-[10px] grid h-[32px] w-[32px] min-w-[32px] cursor-pointer place-items-center rounded-full bg-[#5848BC] transition duration-100 hover:bg-[#4b3abd]'>

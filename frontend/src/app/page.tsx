@@ -1,7 +1,7 @@
 import HomePage from '@/components/HomePage'
 import PlusModal from '@/components/PlusModal'
 import { carouselData } from '@/data/carouselData'
-
+import Footer from '@/components/Footer'
 
 async function fetchCharacters() {
   return carouselData
@@ -16,14 +16,17 @@ export default async function Home() {
   ])
 
   return (
-    <main className='w-full flex flex-col h-full'>
-      <HomePage
-        topCharacters={topCharacters}
-        continueChatting={continueChatting}
-        trending={trending}
-        anime={anime}
-      />
-      <PlusModal />
-    </main>
+    <>
+      <main className='w-full flex flex-col h-full'>
+        <HomePage
+          topCharacters={topCharacters}
+          continueChatting={continueChatting}
+          trending={trending}
+          anime={anime}
+        />
+        <PlusModal />
+      </main>
+      <Footer />
+    </>
   )
 }

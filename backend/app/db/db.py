@@ -9,11 +9,12 @@ from sqlalchemy.orm import sessionmaker
 from tenacity import after_log, before_log, retry, stop_after_attempt, wait_exponential
 
 from app import models
-from app.db.events import decrement_clone_num_conversations  # noqa
-from app.db.events import decrement_clone_num_messages  # noqa
-from app.db.events import increment_clone_num_conversations  # noqa
-from app.db.events import increment_clone_num_messages  # noqa
 from app.settings import settings
+
+from .events import decrement_clone_num_conversations  # noqa
+from .events import decrement_clone_num_messages  # noqa
+from .events import increment_clone_num_conversations  # noqa
+from .events import increment_clone_num_messages  # noqa
 
 DATABASE_URL = (
     f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}"
