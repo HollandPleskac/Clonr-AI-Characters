@@ -23,6 +23,10 @@ AGENT_SUMMARY_THRESHOLD: int = 120
 ENTITY_CONTEXT_THRESHOLD: int = 140
 
 
+class ControllerException(Exception):
+    pass
+
+
 class Thresholds(BaseModel):
     reflection: int
     entity_context: int
@@ -54,6 +58,10 @@ class Controller:
     @property
     def information_strategy(self) -> schemas.InformationStrategy:
         return self.conversation.information_strategy
+
+    @property
+    def adaptation_strategy(self) -> schemas.AdaptationStrategy:
+        return self.conversation.adaptation_strategy
 
     @property
     def user_name(self) -> str:
@@ -125,47 +133,57 @@ class Controller:
 
         return convo
 
-    async def _add_memory(self, content: str):
-        importance = generate.rate_memory(llm=self.llm, memory=content)
-
-        await self.db.increment_reflection_counter(importance=importance)
-        await self.db.increment_agent_summary_counter(importance=importance)
-        await self.db.increment_entity_context_counter(importance=importance)
-
-        memory = Memory(content=content, importance=importance)
-
-    async def receive_message(self, msg_create: schemas.MessageCreate):
-        data = msg_create.dict(exclude_unset=True)
-        sender_name = self.user_name
-        msg_struct = Message(sender_name=sender_name, is_clone=False, **data)
-        msg = await self.db.add_message(msg_struct)
-
-        if self.memory_strategy == schemas.MemoryStrategy.advanced:
-            f'{self.user_name} messaged me, "{msg.content}"'
-            await self.add_memory(memory)
-
-        # trigger any needed summarizations
-        if await self.db.get_reflection_count() > REFLECTION_THRESHOLD:
-            await self.reflect()
-            await self.db.set_reflection_count(0)
-
-        if await self.db.get_entity_context_count() > ENTITY_CONTEXT_THRESHOLD:
-            # TODO (Jonny): something is missing here, how do we feed the info for entity context summaries?
-            query = "???"
-            statements = self.db.query_memories(
-                query=query, params=GenAgentsSearchParams(max_items=30)
+    async def _add_memory(self, content: str) -> models.Memory:
+        if self.memory_strategy != MemoryStrategy.long_term:
+            raise ControllerException(
+                f"Cannot add memories with memory strategy {self.memory_strategy}"
             )
-            await generate.entity_context_create(
-                llm=self.llm,
-                char=self.clone.name,
-                entity=ENTITY_NAME,
-                statements=statements,
-            )
-            await self.db.set_entity_context_count(0)
 
-        if await self.db.get_agent_summary_count() > AGENT_SUMMARY_THRESHOLD:
-            # TODO (Jonny): something is broken here too, how do we feed the info for agent summaries?
-            await self.db.set_agent_summary_count(0)
+        importance = await generate.rate_memory(llm=self.llm, memory=content)
+
+        await self.clonedb.increment_reflection_counter(importance=importance)
+
+        if self.adaptation_strategy != AdaptationStrategy.static:
+            await self.clonedb.increment_agent_summary_counter(importance=importance)
+            await self.clonedb.increment_entity_context_counter(importance=importance)
+
+        memory_struct = Memory(content=content, importance=importance)
+        memory = await self.clonedb.add_memories([memory_struct])
+
+        return memory[0]
+
+    # async def receive_message(self, msg_create: schemas.MessageCreate):
+    #     data = msg_create.dict(exclude_unset=True)
+    #     sender_name = self.user_name
+    #     msg_struct = Message(sender_name=sender_name, is_clone=False, **data)
+    #     msg = await self.db.add_message(msg_struct)
+
+    #     if self.memory_strategy == schemas.MemoryStrategy.advanced:
+    #         f'{self.user_name} messaged me, "{msg.content}"'
+    #         await self.add_memory(memory)
+
+    #     # trigger any needed summarizations
+    #     if await self.db.get_reflection_count() > REFLECTION_THRESHOLD:
+    #         await self.reflect()
+    #         await self.db.set_reflection_count(0)
+
+    #     if await self.db.get_entity_context_count() > ENTITY_CONTEXT_THRESHOLD:
+    #         # TODO (Jonny): something is missing here, how do we feed the info for entity context summaries?
+    #         query = "???"
+    #         statements = self.db.query_memories(
+    #             query=query, params=GenAgentsSearchParams(max_items=30)
+    #         )
+    #         await generate.entity_context_create(
+    #             llm=self.llm,
+    #             char=self.clone.name,
+    #             entity=ENTITY_NAME,
+    #             statements=statements,
+    #         )
+    #         await self.db.set_entity_context_count(0)
+
+    #     if await self.db.get_agent_summary_count() > AGENT_SUMMARY_THRESHOLD:
+    #         # TODO (Jonny): something is broken here too, how do we feed the info for agent summaries?
+    #         await self.db.set_agent_summary_count(0)
 
 
 # TODO (Jonny): This is the main logic class and still very much a WIP
