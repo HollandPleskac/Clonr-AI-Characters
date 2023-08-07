@@ -32,6 +32,10 @@ class CloneCache:
         clone_id = str(clone_id)
         return f"clone_id::{clone_id}"
 
+    def _user_key(self, user_id: str | uuid.UUID) -> str:
+        user_id = str(user_id)
+        return f"user_id::{user_id}"
+
     def _conversation_key(self, conversation_id: str | uuid.UUID) -> str:
         id = str(conversation_id)
         return f"conversation_id::{id}"
@@ -66,6 +70,16 @@ class CloneCache:
         r = await self.conn.get(key)
         data = json.loads(r.decode("utf-8"))
         return models.Clone(**data)
+
+    def moderation_violations_counter(self, user_id: str | uuid.UUID):
+        return CacheCounter(
+            conn=self.conn,
+            key=f"{self._user_key(user_id)}::moderation_violations_counter",
+        )
+
+    async def add_moderation_violations(self, user_id: str | uuid.UUID, count: int = 1):
+        moderation_counter = self.moderation_violations_counter(user_id)
+        await moderation_counter.increment(count)
 
     # Note (Jonny): Decided against using Redis to retrieve messages. These
     # will grow the cache quickly and could cause problems, and setting a smart eviction

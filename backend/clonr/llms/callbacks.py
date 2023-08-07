@@ -1,10 +1,15 @@
 import json
 from abc import ABC, abstractmethod
 
+import requests
+from fastapi import status
+from fastapi.exceptions import HTTPException
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
+from app.external.moderation import openai_moderation_check
+from backend.app.clone import CloneCache
 from clonr.llms.base import LLM
 from clonr.llms.schemas import (
     GenerationParams,
@@ -59,6 +64,17 @@ class LLMCallback(ABC):
     async def on_stream_end(self, llm: LLM, **kwargs):
         pass
 
+    async def check_moderation(self, text: str, api_key: str):
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}",
+        }
+        data = {"input": text}
+        response = requests.post(
+            "https://api.openai.com/v1/moderations", headers=headers, json=data
+        )
+        return response.json()
+
 
 class LoggingCallback(LLMCallback):
     async def on_generate_start(
@@ -74,6 +90,11 @@ class LoggingCallback(LLMCallback):
         except Exception as e:
             logger.error(e)
             data = ""
+        response = await self.check_moderation(prompt_or_messages, llm.api_key)
+        flagged = response.get("flagged", False)
+        if flagged:
+            raise ValueError("Flagged by moderation endpoint!")
+
         logger.info(f"LLM CALL START: {data}")
 
     async def on_generate_end(self, llm: LLM, llm_response: LLMResponse, **kwargs):
@@ -119,7 +140,10 @@ class AddToPostgresCallback(LLMCallback):
         params: GenerationParams | None,
         **kwargs,
     ):
-        pass
+        response = await self.check_moderation(prompt_or_messages, llm.api_key)
+        flagged = response.get("flagged", False)
+        if flagged:
+            raise ValueError("Flagged by moderation endpoint!")
 
     async def on_generate_end(self, llm: LLM, llm_response: LLMResponse, **kwargs):
         r = llm_response
@@ -140,3 +164,45 @@ class AddToPostgresCallback(LLMCallback):
         )
         self.db.add(mdl)
         await self.db.commit()
+
+
+# TODO (Jonny): This probably should only run when receiving a message through
+# our API. Revist whether we want to call this so frequently. Also, add additional
+# logging (table?) to track what content we received that was flagged per user.
+class ModerationCallback(LLMCallback):
+    def __init__(
+        self,
+        db: AsyncSession,
+        cache: CloneCache,
+        clone_id: str,
+        user_id: str,
+        conversation_id: str | None = None,
+    ):
+        self.db = db
+        self.cache = cache
+        self.clone_id = clone_id
+        self.user_id = user_id
+        self.conversation_id = conversation_id
+
+    async def on_generate_start(
+        self,
+        llm: LLM,
+        prompt_or_messages: str | list[Message],
+        params: GenerationParams | None,
+        **kwargs,
+    ):
+        prompt = prompt_or_messages
+        if not isinstance(prompt_or_messages, str):
+            prompt = [x.to_str() for x in prompt_or_messages]
+        response = await openai_moderation_check(prompt)
+        if response.flagged:
+            await self.increment_flagged_counter()
+            for k, v in response.categories.items():
+                if v:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Received content: ({prompt}) was marked as inappropriate. Reason: ({k})",
+                    )
+
+    async def increment_flagged_counter(self):
+        await self.cache.add_moderation_violations(self.user_id)
