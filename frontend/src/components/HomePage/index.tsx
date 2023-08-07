@@ -35,6 +35,7 @@ export default function HomeScreen({
   const [searchedCharacters, setSearchedCharacters] = useState<Character[]>([])
   const [doneSearching, setDoneSearching] = useState(false)
   const [showSearchGrid, setShowSearchGrid] = useState(false)
+  const [trill, setTrill] = useState(false)
   const duration = 500
 
   useEffect(() => {
@@ -47,7 +48,7 @@ export default function HomeScreen({
       let r = await axios.get(
         'http://localhost:8000/clones',
         {
-          params: { name: searchInput, limit: 50 },
+          params: { similar: searchInput, limit: 50 },
           withCredentials: true
         }
       );
@@ -63,7 +64,7 @@ export default function HomeScreen({
     return () => {
       clearTimeout(debounceTimeout);
     };
-  }, [searchInput, queryClones]);
+  }, [searchInput]);
 
 
   useEffect(() => {
@@ -78,7 +79,7 @@ export default function HomeScreen({
         return () => clearTimeout(timer)
       }
     }
-  }, [searchInput, setShowSearchGrid])
+  }, [searchInput])
 
 
   return (
