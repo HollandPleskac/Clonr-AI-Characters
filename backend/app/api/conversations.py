@@ -69,7 +69,7 @@ async def create_conversation(
             status_code=status.HTTP_409_CONFLICT,
             detail=detail,
         )
-    convo = await Controller.create_and_set_conversation(
+    convo = await Controller.create_conversation(
         obj=obj,
         clone=clone,
         db=db,

@@ -259,7 +259,10 @@ class Conversation(CommonMixin, Base):
     user_name: Mapped[str]
     memory_strategy: Mapped[str]
     information_strategy: Mapped[str]
-    plasticity: Mapped[int]
+    agent_summary_threshold: Mapped[int] = mapped_column(nullable=True)
+    reflection_threshold: Mapped[int] = mapped_column(nullable=True)
+    entity_context_threshold: Mapped[int] = mapped_column(nullable=True)
+    adaptation_strategy: Mapped[str] = mapped_column(nullable=True)
     user_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
@@ -319,7 +322,7 @@ class Message(CommonMixin, Base):
         return CaseInsensitiveComparator(cls.content)
 
     def __repr__(self):
-        return f"Message(content={self.content}, sender={self.sender_name}, is_clone={self.from_clone})"
+        return f"Message(content={self.content}, sender={self.sender_name}, is_clone={self.is_clone})"
 
 
 class IndexType(enum.Enum):

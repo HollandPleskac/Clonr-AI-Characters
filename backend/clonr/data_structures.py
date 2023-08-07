@@ -190,7 +190,8 @@ class Message(BaseModel):
     is_clone: bool
 
     def to_str(self) -> str:
+        # NOTE (Jonny): in the pydantic schema, we do not allow sending <| or |>
+        # so that this remains somewhat unhackable.
         dt_str = DateFormat.human_readable(self.timestamp)
-        name = "me" if self.is_clone else self.speaker
-        name = name.capitalize()
-        return f"[{dt_str}] {name}: {self.content}"
+        name = self.sender_name.capitalize()
+        return f"[{dt_str}] <|{name}|>: {self.content}"

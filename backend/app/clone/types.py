@@ -8,6 +8,24 @@ from pydantic import BaseModel, Field
 INF = int(1e10)
 
 
+class MemoryStrategy(str, enum.Enum):
+    none = "none"
+    short_term = "short_term"
+    long_term = "long_term"
+
+
+class InformationStrategy(str, enum.Enum):
+    none = "none"
+    internal = "internal"
+    external = "external"
+
+
+class AdaptationStrategy(str, enum.Enum):
+    static = "static"
+    dynamic = "dynamic"
+    fluid = "fluid"
+
+
 class VectorSearchProtocol(Protocol):
     embedding: list[float] | np.ndarray
     content: str

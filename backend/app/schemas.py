@@ -1,12 +1,31 @@
 import datetime
-import enum
 import uuid
+from typing import Annotated
 
 from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate
-from pydantic import BaseModel, Field
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationInfo,
+    model_validator,
+)
+
+from app.clone.types import AdaptationStrategy, InformationStrategy, MemoryStrategy
+
+
+def special_char_validator(v: str | None, info: ValidationInfo) -> str | None:
+    if v is None:
+        return v
+    if "<|" in v or "|>" in v:
+        raise ValueError("May not contain special chars <| or |>")
+    return v
 
 
 class UserRead(BaseUser[uuid.UUID]):
+    model_config = ConfigDict(from_attributes=True)
+
     private_chat_name: str
     is_banned: bool
 
@@ -16,11 +35,10 @@ class UserCreate(BaseUserCreate):
 
 
 class UserUpdate(BaseUserUpdate):
-    private_chat_name: str = Field(
+    private_chat_name: Annotated[str, AfterValidator(special_char_validator)] = Field(
         default=None,
         min_length=1,
         max_length=32,
-        regex=r"^[^><|]*$",
     )
 
 
@@ -33,7 +51,7 @@ class CommonMixin(BaseModel):
 class CreatorCreate(BaseModel):
     username: str = Field(
         description="username must be 3 <= len(name) <= 20 characters, start with a letter and only contain hyphens and underscores",
-        regex=r"^[a-zA-Z][a-zA-Z0-9_\-]{2,29}$",
+        pattern=r"^[a-zA-Z][a-zA-Z0-9_\-]{2,29}$",
     )
     is_public: bool = False
 
@@ -41,20 +59,19 @@ class CreatorCreate(BaseModel):
 class CreatorPatch(CreatorCreate):
     username: str | None = Field(
         default=None,
-        regex=r"^[a-zA-Z][a-zA-Z0-9_]{2,29}$",
+        pattern=r"^[a-zA-Z][a-zA-Z0-9_]{2,29}$",
     )
     is_active: bool | None = None
 
 
 class Creator(CreatorCreate):
+    model_config = ConfigDict(from_attributes=True)
+
     user_id: uuid.UUID
     is_active: bool
     is_public: bool
     created_at: datetime.datetime
     updated_at: datetime.datetime
-
-    class Config:
-        orm_mode = True
 
 
 class TagCreate(BaseModel):
@@ -62,17 +79,16 @@ class TagCreate(BaseModel):
 
 
 class Tag(TagCreate):
+    model_config = ConfigDict(from_attributes=True)
+
     created_at: datetime.datetime
     updated_at: datetime.datetime
-
-    class Config:
-        orm_mode = True
 
 
 class CloneCreate(BaseModel):
     name: str = Field(min_length=2)
     short_description: str = Field(min_length=3)
-    long_description: str | None = Field(min_length=32)
+    long_description: str | None = Field(default=None, min_length=32)
     greeting_message: str | None = None
     avatar_uri: str | None = None
     is_active: bool = True
@@ -98,16 +114,17 @@ class CloneUpdate(BaseModel):
 
 
 class Clone(CommonMixin, CloneCreate):
+    model_config = ConfigDict(from_attributes=True)
+
     creator_id: uuid.UUID
     num_messages: int
     num_conversations: int
     tags: list[Tag]
 
-    class Config:
-        orm_mode = True
-
 
 class CloneSearchResult(CommonMixin, BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     creator_id: uuid.UUID
     name: str
     short_description: str
@@ -117,9 +134,6 @@ class CloneSearchResult(CommonMixin, BaseModel):
     num_messages: int
     num_conversations: int
     tags: list[Tag]
-
-    class Config:
-        orm_mode = True
 
 
 # TODO (Jonny): we need to take in more information than just content
@@ -138,7 +152,7 @@ class DocumentCreate(BaseModel):
     )
     type: str | None = Field(
         max_length=32,
-        regex=r"[a-zA-Z0-9_\-]+",
+        pattern=r"[a-zA-Z0-9_\-]+",
         description="One word tag describing the source. Letters, numbers, underscores, and hyphens allowed.",
     )
     url: str | None = Field(
@@ -159,10 +173,9 @@ class DocumentUpdate(BaseModel):
 
 
 class Document(CommonMixin, DocumentCreate):
-    clone_id: uuid.UUID
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        orm_mode = True
+    clone_id: uuid.UUID
 
 
 class DocumentSuggestion(BaseModel):
@@ -192,10 +205,9 @@ class MonologueUpdate(BaseModel):
 
 
 class Monologue(CommonMixin, MonologueCreate):
-    clone_id: uuid.UUID
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:
-        orm_mode = True
+    clone_id: uuid.UUID
 
 
 # class Flags(enum.Enum):
@@ -216,29 +228,15 @@ class Monologue(CommonMixin, MonologueCreate):
 #     NSFW: int = "no content moderation boi"
 
 
-# These are actually ordinal, so this seems like a good data structure
-class MemoryStrategy(str, enum.Enum):
-    none = "none"
-    basic = "basic"
-    advanced = "advanced"
-
-
-class InformationStrategy(str, enum.Enum):
-    none = "none"
-    internal = "internal"
-    external = "external"  # SerpAPI; not enabled until like V4!
-
-
 class ConversationCreate(BaseModel):
-    name: str = Field(
+    name: str | None = Field(
         default=None,
         description="A name to assign to the conversation to later remember it.",
     )
-    user_name: str = Field(
+    user_name: Annotated[str | None, AfterValidator(special_char_validator)] = Field(
         default=None,
         min_length=1,
         max_length=32,
-        regex=r"^[^><|]*$",
         description="The display name that the user wants to use for the conversation. This cannot be changed once you start the conversation. If your user name collides with the clone name, then an additional digit will be added",
     )
     memory_strategy: MemoryStrategy = Field(
@@ -249,11 +247,24 @@ class ConversationCreate(BaseModel):
         default=InformationStrategy.internal,
         description="The level of factual accuracy to give your bot. Internal enables creator knowledge sources. External allows for pulling information on current events.",
     )
-    plasticity: int = Field(
-        default=5,
-        description="An integer from (0-10) indicating how quickly your clone can change its fundamental beliefs, goals, and personality in response to newly formed memories and observations.",
+    adaptation_strategy: AdaptationStrategy | None = Field(
+        default=None,
+        description="How flexible the clone is on changing its long description. Static means never chaning. Fluid means completely adaptive. Dynamic means partial adaption.",
     )
     clone_id: uuid.UUID = Field(description="The clone that a user will chat with")
+
+    @model_validator(mode="after")
+    def check_adaptation_agrees_with_memory(self) -> "ConversationCreate":
+        if self.memory_strategy != MemoryStrategy.long_term:
+            if self.adaptation_strategy is not None:
+                raise ValueError(
+                    "Adaptation strategies are only available with long-term memory"
+                )
+        elif self.adaptation_strategy is None:
+            raise ValueError(
+                "Adaptation strategy must be set when using long-term memory."
+            )
+        return self
 
 
 class ConversationUpdate(BaseModel):
@@ -264,32 +275,21 @@ class ConversationUpdate(BaseModel):
 
 
 class Conversation(CommonMixin, ConversationCreate):
+    model_config = ConfigDict(from_attributes=True)
+
     user_id: uuid.UUID = Field(description="The user that will chat with this clone")
     is_active: bool
 
-    class Config:
-        orm_mode = True
 
-
-# class MessageCreate(BaseModel):
-#     content: str
-#     sender_name: str
-#     is_clone: Mapped[bool]
-#     timestamp: Mapped[datetime.datetime] = mapped_column(
-#         sa.DateTime(timezone=True), server_default=sa.func.now()
-#     )
-#     embedding: Mapped[list[float]]
-#     embedding_model: Mapped[str]
-#     clone_id: Mapped[uuid.UUID] = mapped_column(
-#         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
-#     )
-#     clone: Mapped["Clone"] = relationship("Clone", back_populates="messages")
-#     conversation_id: Mapped[uuid.UUID] = mapped_column(
-#         sa.ForeignKey("conversations.id", ondelete="cascade"), nullable=False
-#     )
-#     conversation: Mapped["Conversation"] = relationship(
-#         "Conversation", back_populates="messages"
-#     )
+# NOTE (Jonny): We don't allow users to change outputs of the clones, so is_clone.
+# is not a provided argument. sender_name, clone_id, and conversation_id can be inferred from the
+class MessageCreate(BaseModel):
+    content: Annotated[str, AfterValidator(special_char_validator)] = Field(
+        description="Message content. Messages may not contain <| or |>.",
+    )
+    timestamp: datetime.datetime | None = Field(
+        default=None, detail="Override the current time for the message timestamp."
+    )
 
 
 # ------------------------------------#
