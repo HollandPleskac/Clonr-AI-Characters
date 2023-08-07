@@ -1,8 +1,11 @@
+from pydantic import BaseModel
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models, schemas
+from app.clone.types import AdaptationStrategy, MemoryStrategy
 from app.embedding import EmbeddingClient
+from clonr import generate
 from clonr.data_structures import Memory, Message
 from clonr.llms import LLM
 from clonr.tokenizer import Tokenizer
@@ -10,12 +13,25 @@ from clonr.tokenizer import Tokenizer
 from .cache import CloneCache
 from .db import CloneDB
 
-# min memory importance is 1 and max is 10, so a score of 30 corresponds to
-# 3 maximally important memories, 30 trivial memories, or 6 moderately important memories
-REFLECTION_THRESHOLD: int = 30
-ENTITY_CONTEXT_THRESHOLD: int = 40
-AGENT_SUMMARY_THRESHOLD: int = 50
+# the Gen Agents paper uses a threshold of 150 (that's what he said during the talk)
+# min memory importance is 1 and max is 10, so a score of 100 ~ 20 memories on avg.
+# reflections peak at the last 100 memories so this is actually quite short
+# stagger the values so that they don't trigger on the same received_message
 SEED_IMPORTANCE: int = 4
+REFLECTION_THRESHOLD: int = 100
+AGENT_SUMMARY_THRESHOLD: int = 120
+ENTITY_CONTEXT_THRESHOLD: int = 140
+
+
+class Thresholds(BaseModel):
+    reflection: int
+    entity_context: int
+    agent_summary: int
+
+    @classmethod
+    def from_plasticity(cls, plasticity: int):
+        if plasticity < 0 or plasticity > 10:
+            raise ValueError(f"Plasticity must be between 0-10. Received {plasticity}")
 
 
 class Controller:
@@ -31,8 +47,32 @@ class Controller:
         self.clone = clone
         self.conversation = conversation
 
+    @property
+    def memory_strategy(self) -> schemas.MemoryStrategy:
+        return self.conversation.memory_strategy
+
+    @property
+    def information_strategy(self) -> schemas.InformationStrategy:
+        return self.conversation.information_strategy
+
+    @property
+    def user_name(self) -> str:
+        return self.conversation.user_name
+
+    @property
+    def agent_summary_threshold(self) -> int:
+        return self.conversation.agent_summary_threshold
+
+    @property
+    def reflection_threshold(self) -> int:
+        return self.conversation.reflection_threshold
+
+    @property
+    def entity_context_threshold(self) -> int:
+        return self.conversation.entity_context_threshold
+
     @classmethod
-    async def create_and_set_conversation(
+    async def create_conversation(
         cls,
         obj: schemas.ConversationCreate,
         clone: models.Clone,
@@ -42,7 +82,12 @@ class Controller:
         tokenizer: Tokenizer,
         embedding_client: EmbeddingClient,
     ) -> models.Conversation:
-        convo = models.Conversation(**obj.dict(exclude_none=True), user_id=user.id)
+        data = obj.model_dump(exclude_none=True)
+        convo = models.Conversation(**data, user_id=user.id)
+        if obj.adaptation_strategy != AdaptationStrategy.static:
+            convo.agent_summary_threshold = AGENT_SUMMARY_THRESHOLD
+            convo.entity_context_threshold = ENTITY_CONTEXT_THRESHOLD
+            convo.reflection_threshold = REFLECTION_THRESHOLD
         db.add(convo)
         await db.commit()
         await db.refresh(convo)
@@ -57,11 +102,13 @@ class Controller:
             conversation_id=convo.id,
         )
 
-        if convo.memory_strategy == schemas.MemoryStrategy.advanced:
-            # Initialize counters
+        if convo.memory_strategy == MemoryStrategy.long_term:
+            # counters for different strategies
             await clonedb.set_reflection_count(0)
-            await clonedb.set_agent_summary_count(0)
-            await clonedb.set_entity_context_count(0)
+
+            if convo.adaptation_strategy != AdaptationStrategy.static:
+                await clonedb.set_agent_summary_count(0)
+                await clonedb.set_entity_context_count(0)
 
             # add seed memories
             content = f"I started a conversation with {convo.user_name}"
@@ -77,6 +124,48 @@ class Controller:
         await clonedb.add_message(greeting_message)
 
         return convo
+
+    async def _add_memory(self, content: str):
+        importance = generate.rate_memory(llm=self.llm, memory=content)
+
+        await self.db.increment_reflection_counter(importance=importance)
+        await self.db.increment_agent_summary_counter(importance=importance)
+        await self.db.increment_entity_context_counter(importance=importance)
+
+        memory = Memory(content=content, importance=importance)
+
+    async def receive_message(self, msg_create: schemas.MessageCreate):
+        data = msg_create.dict(exclude_unset=True)
+        sender_name = self.user_name
+        msg_struct = Message(sender_name=sender_name, is_clone=False, **data)
+        msg = await self.db.add_message(msg_struct)
+
+        if self.memory_strategy == schemas.MemoryStrategy.advanced:
+            f'{self.user_name} messaged me, "{msg.content}"'
+            await self.add_memory(memory)
+
+        # trigger any needed summarizations
+        if await self.db.get_reflection_count() > REFLECTION_THRESHOLD:
+            await self.reflect()
+            await self.db.set_reflection_count(0)
+
+        if await self.db.get_entity_context_count() > ENTITY_CONTEXT_THRESHOLD:
+            # TODO (Jonny): something is missing here, how do we feed the info for entity context summaries?
+            query = "???"
+            statements = self.db.query_memories(
+                query=query, params=GenAgentsSearchParams(max_items=30)
+            )
+            await generate.entity_context_create(
+                llm=self.llm,
+                char=self.clone.name,
+                entity=ENTITY_NAME,
+                statements=statements,
+            )
+            await self.db.set_entity_context_count(0)
+
+        if await self.db.get_agent_summary_count() > AGENT_SUMMARY_THRESHOLD:
+            # TODO (Jonny): something is broken here too, how do we feed the info for agent summaries?
+            await self.db.set_agent_summary_count(0)
 
 
 # TODO (Jonny): This is the main logic class and still very much a WIP

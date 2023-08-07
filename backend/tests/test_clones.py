@@ -71,9 +71,9 @@ def test_clones(
     for name, desc in zip(
         ["badass penguin", "bar", "dangerous pencil"],
         [
-            "a penguin with a mean streak",
+            "a penguin with a mean streak. He recently escaped from the zoo!",
             "This creator is a grammy award winning hip hop artist with years of experience",
-            "a radioactive pencil eraser",
+            "a radioactive pencil eraser. Will he be pencil man? Time will tell.",
         ],
     ):
         r = client.post(

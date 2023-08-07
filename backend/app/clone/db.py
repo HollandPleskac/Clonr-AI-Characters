@@ -230,7 +230,7 @@ class CloneDB:
             self.db.add(mem)
         await self.db.commit()
 
-    async def add_message(self, message: Message):
+    async def add_message(self, message: Message) -> models.Message:
         if self.conversation_id is None:
             raise ValueError("Adding messages requires conversation_id.")
         msg = models.Message(
@@ -244,6 +244,8 @@ class CloneDB:
         )
         self.db.add(msg)
         await self.db.commit()
+        await self.db.refresh(msg)
+        return msg
 
     async def add_entity_context_summary(
         self,

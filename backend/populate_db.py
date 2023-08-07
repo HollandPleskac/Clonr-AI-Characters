@@ -1,10 +1,12 @@
-import json
 import asyncio
+import json
+
 import aiohttp
 import requests
 import tqdm.asyncio
-from app.settings import settings
+
 from app.schemas import CloneCreate
+from app.settings import settings
 
 
 async def main():
