@@ -286,7 +286,7 @@ export default function ChatScreen({
           >
             <div
               className={`${
-                isFetching ? 'text-white' : 'text-transparent'
+                isFetching ? 'text-white flex' : 'text-transparent hidden'
               } w-full py-4 h-[56px]`}
             >
               <ThreeDots
