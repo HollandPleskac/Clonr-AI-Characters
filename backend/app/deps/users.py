@@ -43,6 +43,7 @@ async def get_current_active_creator(
         detail="Current user is not signed up as a creator or is not active.",
     )
 
+
 async def get_paying_user(
     user: Annotated[models.User, Depends(get_current_active_user)],
     db: Annotated[AsyncSession, Depends(get_async_session)],
@@ -54,10 +55,11 @@ async def get_paying_user(
         detail="Current user is not subscribed to a payment plan.",
     )
 
+
 async def get_free_limit_user(
     user: Annotated[models.User, Depends(get_current_active_user)],
     db: Annotated[AsyncSession, Depends(get_async_session)],
-    max_free_messages: int = 10, 
+    max_free_messages: int = 10,
 ) -> models.User:
     if user.is_subscribed or user.num_free_messages_sent <= max_free_messages:
         return user

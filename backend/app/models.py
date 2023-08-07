@@ -95,7 +95,7 @@ class User(Base, SQLAlchemyBaseUserTableUUID):
     llm_calls: Mapped[list["LLMCall"]] = relationship(
         "LLMCall", back_populates="user", passive_deletes=True
     )
-    # Whether user is subscribed to premium plan, i.e. is paid 
+    # Whether user is subscribed to premium plan, i.e. is paid
     is_subscribed: Mapped[bool] = mapped_column(default=False)
 
     # Number of free msgs sent

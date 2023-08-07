@@ -21,7 +21,7 @@ class CacheCounter:
     async def increment(self, importance: int) -> int:
         r = await self.conn.incrby(self.key, amount=importance)
         return int(r)
-    
+
 
 class CloneCache:
     # TODO (Jonny): Should this be instantiated with `clone_id`?
@@ -31,7 +31,7 @@ class CloneCache:
     def _clone_key(self, clone_id: str | uuid.UUID) -> str:
         clone_id = str(clone_id)
         return f"clone_id::{clone_id}"
-    
+
     def _user_key(self, user_id: str | uuid.UUID) -> str:
         user_id = str(user_id)
         return f"user_id::{user_id}"
@@ -70,10 +70,11 @@ class CloneCache:
         r = await self.conn.get(key)
         data = json.loads(r.decode("utf-8"))
         return models.Clone(**data)
-    
+
     def moderation_violations_counter(self, user_id: str | uuid.UUID):
         return CacheCounter(
-            conn=self.conn, key=f"{self._user_key(user_id)}::moderation_violations_counter"
+            conn=self.conn,
+            key=f"{self._user_key(user_id)}::moderation_violations_counter",
         )
 
     async def add_moderation_violations(self, user_id: str | uuid.UUID, count: int = 1):

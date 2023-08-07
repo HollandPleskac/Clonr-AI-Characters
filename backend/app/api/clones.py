@@ -181,6 +181,7 @@ async def query_clones(
     clones = await db.scalars(query)
     return clones.unique().all()
 
+
 # NOTE (Jonny): wild card paths have to come at the end otherwise order of resolution is messed up
 # and you'll get the similar route being viewed as something like below
 @router.get("/{clone_id}", response_model=schemas.Clone)
