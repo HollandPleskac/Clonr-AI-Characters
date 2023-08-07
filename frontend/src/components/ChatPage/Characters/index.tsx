@@ -3,43 +3,20 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import SearchIcon from './SearchIcon'
-import Character from './Character'
+import CharacterComponent from './Character'
 import CharacterDropdown from './CharacterDropdown'
+import { PastChat } from '@/types'
+import { formatDate } from '@/utils/formatDate'
 
-interface MessageData {
-  name: string
-  username: string
-  messagePreview: string
-  newMessages: number
-  timeLastSeen: string
+interface CharactersProps {
+  pastChats: PastChat[]
+  currentCharacterId: string
 }
 
-const messages: MessageData[] = [
-  {
-    name: 'Mika-chan',
-    username: '@mikachan',
-    messagePreview: 'Doing well, thank...',
-    newMessages: 3,
-    timeLastSeen: '6h',
-  },
-  {
-    name: 'Mika-chan2',
-    username: '@mikachan2',
-    messagePreview: 'Doing well, thank...',
-    newMessages: 14,
-    timeLastSeen: '22 May',
-  },
-]
-
-export default function Characters() {
-  // active character state
-  const [activeUsername, setActiveUsername] = useState<string>(
-    messages[0].username
-  )
-
-  const handleUpdateUsername = (username: string) => {
-    setActiveUsername(username)
-  }
+export default function Characters({
+  pastChats,
+  currentCharacterId,
+}: CharactersProps) {
 
   // search state
   const [isInputActive, setInputActive] = useState(false)
@@ -100,16 +77,11 @@ export default function Characters() {
       </div>
 
       <div className='sticky top-[154px] overflow-auto transition-all duration-100 h-full'>
-        {messages.map((message) => (
-          <Character
-            key={message.username}
-            isActive={message.username === activeUsername}
-            name={message.name}
-            username={message.username}
-            messagePreview={message.messagePreview}
-            newMessages={message.newMessages}
-            timeLastSeen={message.timeLastSeen}
-            onClick={handleUpdateUsername}
+        {pastChats.map((pastChat) => (
+          <CharacterComponent
+            key={pastChat.character.id}
+            pastChat={pastChat}
+            currentCharacterId={currentCharacterId}
           />
         ))}
       </div>

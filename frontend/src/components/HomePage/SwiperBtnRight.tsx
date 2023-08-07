@@ -1,7 +1,7 @@
 'use client'
 
 import React, { Ref } from 'react'
-import ArrowRightWhite from '@/icons/HomePage/arrow-right-white.svg'
+import ArrowRightWhite from '@/svg/HomePage/arrow-right-white.svg'
 
 interface SwiperBtnRightProps {
   setRef: Ref<HTMLButtonElement>
