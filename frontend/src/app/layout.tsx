@@ -3,7 +3,6 @@ import 'regenerator-runtime/runtime'
 import type { Metadata } from 'next'
 // import { Inter } from 'next/font/google'
 // const inter = Inter({ subsets: ['latin'] })
-import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
   title: 'Clonr',
@@ -22,7 +21,6 @@ export default function RootLayout({
         className='w-full bg-black lg:inline'
       >
         {children}
-        {/* <Footer /> */}
       </body>
     </html>
   )

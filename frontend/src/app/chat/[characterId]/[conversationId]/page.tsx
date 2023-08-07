@@ -77,6 +77,7 @@ async function getInitialMessages(characterId: string, conversationId: string) {
   console.log('characterID', characterId)
   return [
     {
+      id: '123532234',
       img: '/dummy-char.png',
       alt: 'dummy-char',
       name: 'dummy-char-first',
@@ -85,6 +86,7 @@ async function getInitialMessages(characterId: string, conversationId: string) {
       senderType: 'bot' as 'bot' | 'user',
     },
     {
+      id: 'adsklfjkj23',
       img: '/dummy-char.png',
       alt: 'dummy-char',
       name: 'dummy-char',
@@ -93,6 +95,7 @@ async function getInitialMessages(characterId: string, conversationId: string) {
       senderType: 'user' as 'bot' | 'user',
     },
     {
+      id: 'asdfhi34',
       img: '/dummy-char.png',
       alt: 'dummy-char',
       name: 'dummy-char',
@@ -101,6 +104,7 @@ async function getInitialMessages(characterId: string, conversationId: string) {
       senderType: 'bot' as 'bot' | 'user',
     },
     {
+      id: '325teqwjaf',
       img: '/dummy-char.png',
       alt: 'dummy-char',
       name: 'dummy-char',
@@ -109,6 +113,7 @@ async function getInitialMessages(characterId: string, conversationId: string) {
       senderType: 'user' as 'bot' | 'user',
     },
     {
+      id: 'asdfhi34',
       img: '/dummy-char.png',
       alt: 'dummy-char',
       name: 'dummy-char',
@@ -117,6 +122,7 @@ async function getInitialMessages(characterId: string, conversationId: string) {
       senderType: 'bot' as 'bot' | 'user',
     },
     {
+      id: '325teqwjaf',
       img: '/dummy-char.png',
       alt: 'dummy-char',
       name: 'dummy-char',
@@ -125,6 +131,7 @@ async function getInitialMessages(characterId: string, conversationId: string) {
       senderType: 'user' as 'bot' | 'user',
     },
     {
+      id: 'asdfhi34',
       img: '/dummy-char.png',
       alt: 'dummy-char',
       name: 'dummy-char',
@@ -133,6 +140,7 @@ async function getInitialMessages(characterId: string, conversationId: string) {
       senderType: 'bot' as 'bot' | 'user',
     },
     {
+      id: '325teqwjaf',
       img: '/dummy-char.png',
       alt: 'dummy-char',
       name: 'dummy-char-last',

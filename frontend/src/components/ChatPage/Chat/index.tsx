@@ -98,15 +98,16 @@ export default function ChatScreen({
     console.log('sending message:', message)
 
     const newMessage = {
-      id: window.Date.now(),
-      src: '/dummy-char.png',
+      id: window.Date.now().toString(),
+      img: '/dummy-char.png',
       alt: 'Character Profile Picture ' + (messages.length + 1),
-      time: '09:25',
-      message: message,
       name: 'Holland',
+      content: message,
+      timeStamp: new window.Date(),
+      senderType: 'user' as 'bot' | 'user',
     }
 
-    let updatedMessages = [...messages, newMessage]
+    let updatedMessages = [newMessage, ...messages]
     setMessages(updatedMessages)
     const message_copy = message
     setMessage('')
@@ -133,12 +134,13 @@ export default function ChatScreen({
       }
 
       const newServerMessage = {
-        id: window.Date.now(),
+        id: window.Date.now().toString(),
         src: '/dummy-char.png',
         alt: 'Character Profile Picture ' + (messages.length + 1),
-        time: '09:28',
-        message: serverMessage.content,
         name: 'Barack Obama',
+        content: serverMessage.content,
+        timeStamp: new window.Date(),
+        senderType: 'bot' as 'bot' | 'user',
       }
 
       setMessages((messages) => [...messages, newServerMessage])
@@ -189,6 +191,7 @@ export default function ChatScreen({
   const fetchMoreData = () => {
     // Simulate fetching 10 more messages from a server or other data source
     const newMessages: Message[] = Array.from({ length: 10 }, (_, index) => ({
+      id: '134adlj23',
       img: '/dummy-char.png',
       alt: 'dummy-char',
       name: 'dummy-char',
@@ -281,6 +284,22 @@ export default function ChatScreen({
             scrollableTarget='scrollableDiv'
             className='pt-4'
           >
+            <div
+              className={`${
+                isFetching ? 'text-white' : 'text-transparent'
+              } w-full py-4 h-[56px]`}
+            >
+              <ThreeDots
+                height='25'
+                width='25'
+                radius='4'
+                color='#979797'
+                ariaLabel='three-dots-loading'
+                wrapperStyle={{}}
+                wrapperClass=''
+                visible={isFetching}
+              />
+            </div>
             {messages.map((message, index) => (
               <MessageComponent message={message} key={index} />
             ))}

@@ -54,6 +54,7 @@ export type PastChat = {
 }
 
 export type Message = {
+  id: string
   img: string
   alt: string
   name: string
