@@ -17,12 +17,14 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+FREE_MESSAGE_LIMIT = 10
+
 
 # TODO (Jonny): put a paywall behind this dependency
 async def get_conversation(
     conversation_id: Annotated[str, Path(min_length=36, max_length=36)],
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
-    user: Annotated[models.Creator, Depends(deps.get_current_active_user)],
+    user: Annotated[models.Creator, Depends(deps.get_paying_user)],
 ) -> models.Conversation:
     convo = await db.get(models.Conversation, conversation_id)
     if not convo or not convo.is_active:
@@ -42,7 +44,7 @@ async def get_conversation(
 async def create_conversation(
     obj: schemas.ConversationCreate,
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
-    user: Annotated[models.User, Depends(deps.get_current_active_user)],
+    user: Annotated[models.User, Depends(deps.get_free_limit_user)],
     conn: Annotated[Redis, Depends(deps.get_async_redis)],
     tokenizer: Annotated[Tokenizer, Depends(deps.get_tokenizer)],
     embedding_client: Annotated[EmbeddingClient, Depends(deps.get_embedding_client)],
@@ -53,6 +55,9 @@ async def create_conversation(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Clone ({obj.clone_id}) not found.",
         )
+    if not user.is_subscribed:
+        user.num_free_messages_sent += 1
+
     # NOTE (Jonny): not sure if this is a security risk. Indirectly exposing the
     # UUID of a private clone, by getting a different status code.
     # you can chat with your own clone, but you can't chat with private clones.
