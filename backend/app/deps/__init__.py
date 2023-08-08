@@ -11,4 +11,6 @@ from .users import (
     get_superuser,
     get_user_db,
     get_user_manager,
+    get_paying_user,
+    get_free_limit_user
 )

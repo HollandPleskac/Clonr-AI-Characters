@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
 from app.external.moderation import openai_moderation_check
-from backend.app.clone import CloneCache
+from app.clone.cache import CloneCache
 from clonr.llms.base import LLM
 from clonr.llms.schemas import (
     GenerationParams,

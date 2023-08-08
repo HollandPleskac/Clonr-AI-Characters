@@ -16,6 +16,7 @@ import { Character } from '@/types'
 import SearchGrid from './SearchGrid'
 import StatBar from '../Statistics/StatBar'
 import ScaleFadeIn from '../Transitions/ScaleFadeIn'
+import useClones from '@/hooks/useClones'
 
 
 interface HomeScreenProps {
@@ -36,31 +37,32 @@ export default function HomeScreen({
   const [doneSearching, setDoneSearching] = useState(false)
   const [showSearchGrid, setShowSearchGrid] = useState(false)
   const [trill, setTrill] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
   const duration = 500
+  const { queryClones } = useClones();
 
   useEffect(() => {
     require('preline')
   }, [])
 
-  const queryClones = async () => {
-    try {
+  const handleCloneSearch = async () => {
+    setLoading(true);
+    setError(null);
 
-      let r = await axios.get(
-        'http://localhost:8000/clones',
-        {
-          params: { similar: searchInput, limit: 50 },
-          withCredentials: true
-        }
-      );
-      setSearchedCharacters(r.data);
-    } catch (error) {
-      console.log(error)
+    try {
+      const data = await queryClones(searchInput);
+      setSearchedCharacters(data);
+      setDoneSearching(searchInput !== '');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-    setDoneSearching(searchInput !== '');
   };
 
   useEffect(() => {
-    const debounceTimeout = setTimeout(queryClones, 500);
+    const debounceTimeout = setTimeout(handleCloneSearch, 500);
     return () => {
       clearTimeout(debounceTimeout);
     };
