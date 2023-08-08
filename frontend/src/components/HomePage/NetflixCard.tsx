@@ -29,7 +29,10 @@ export default function Cards({
   }
 
   return (
-    <div className={`${style} ${edgeClass}`}>
+    <div
+      className={`${style} ${edgeClass}`}
+      data-hs-overlay='#hs-slide-down-animation-modal'
+    >
       <div className={styles.cardPoster}>
         <img
           src={avatar_uri}
@@ -65,7 +68,7 @@ export default function Cards({
 import React from 'react'
 
 type GenreProps = {
-  tags: { name: string }[]
+  tags: string[]
 }
 
 const GenreComponent: React.FC<GenreProps> = ({ tags }) => {
@@ -75,7 +78,7 @@ const GenreComponent: React.FC<GenreProps> = ({ tags }) => {
         const isLast = index === tags.length - 1
         return (
           <div key={index} className={styles.row}>
-            <span className={styles.regularText}>{tag.name}</span>
+            <span className={styles.regularText}>{tag}</span>
             {!isLast && <div className={styles.dot}>&bull;</div>}
           </div>
         )

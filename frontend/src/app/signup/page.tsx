@@ -1,6 +1,6 @@
 import React from 'react'
 import FireflyBackground from '@/components/Auth/FireflyBackground'
-import SignupModal from '@/components/Auth/SignupModal'
+import SignupModal from '@/components/Auth/Signup'
 
 export default function Login() {
   return (
