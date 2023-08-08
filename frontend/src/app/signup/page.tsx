@@ -1,11 +1,11 @@
 import React from 'react'
 import FireflyBackground from '@/components/Auth/FireflyBackground'
-import LoginModal from '@/components/Auth/LoginModal'
+import SignupModal from '@/components/Auth/SignupModal'
 
 export default function Login() {
   return (
     <FireflyBackground>
-      <LoginModal />
+      <SignupModal />
     </FireflyBackground>
   )
 }

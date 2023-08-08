@@ -100,6 +100,8 @@ export default function Carousel({
                 {/* Left Index if index === leftSwiperIndex */}
                 {/* Right Index if index === leftSwiperIndex + 6 -1   because indexes start at 0 */}
                 {/* RightIndex if index === (traditionalRightIndex - listLen)  card Index carousel overflows to on last scroll 0->5 6->11 12 -> 1 17-16 == 1*/}
+                {/* <h1 className='text-white'>{index}</h1>
+                <h1 className='text-green-400'>{leftSwiperIndex}</h1> */}
                 <NetflixCard
                   item={item}
                   edgeCard={
