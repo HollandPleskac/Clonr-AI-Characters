@@ -17,14 +17,14 @@ import { Navigation, Pagination, Scrollbar } from 'swiper'
 interface CarouselProps {
   characters: Character[]
   name: String
-  isBigCarousel: boolean
+  slidesPerView: number
   zIndex: number
 }
 
 export default function Carousel({
   characters,
   name,
-  isBigCarousel = false,
+  slidesPerView,
   zIndex,
 }: CarouselProps) {
   // carousel state
@@ -33,40 +33,7 @@ export default function Carousel({
   const [prevEl, setPrevEl] = useState<HTMLElement | null>(null)
   const [nextEl, setNextEl] = useState<HTMLElement | null>(null)
 
-  const [slidesPerView, setSlidesPerView] = useState(6)
-
-  const updateSlidesPerView = () => {
-    if (isBigCarousel) {
-      if (window.matchMedia('(min-width: 1096px)').matches) {
-        setSlidesPerView(3)
-      } else if (window.matchMedia('(min-width: 800px)').matches) {
-        setSlidesPerView(2)
-      } else {
-        setSlidesPerView(1)
-      }
-    } else {
-      if (window.matchMedia('(min-width: 1400px)').matches) {
-        setSlidesPerView(6)
-      } else if (window.matchMedia('(min-width: 1096px)').matches) {
-        setSlidesPerView(5)
-      } else if (window.matchMedia('(min-width: 800px)').matches) {
-        setSlidesPerView(4)
-      } else if (window.matchMedia('(min-width: 500px)').matches) {
-        setSlidesPerView(3)
-      } else {
-        setSlidesPerView(2)
-      }
-    }
-  }
-
-  useEffect(() => {
-    updateSlidesPerView() // Call on mount to set the initial value
-    window.addEventListener('resize', updateSlidesPerView) // Call on resize
-
-    return () => {
-      window.removeEventListener('resize', updateSlidesPerView)
-    }
-  }, [])
+  // manipulate swiper css to remove overflow style
 
   return (
     <div className='pt-4 mb-4 text-white'>
@@ -96,10 +63,6 @@ export default function Carousel({
                 key={index}
                 className='w-1/6 cursor-pointer z-0 hover:z-10'
               >
-                {/* lets say we have 6 cards per view and 15 cards*/}
-                {/* Left Index if index === leftSwiperIndex */}
-                {/* Right Index if index === leftSwiperIndex + 6 -1   because indexes start at 0 */}
-                {/* RightIndex if index === (traditionalRightIndex - listLen)  card Index carousel overflows to on last scroll 0->5 6->11 12 -> 1 17-16 == 1*/}
                 <NetflixCard
                   item={item}
                   edgeCard={
