@@ -160,6 +160,10 @@ class Memory(BaseModel):
         ge=0,
         le=9,
     )
+    is_shared: bool = Field(
+        default=False,
+        detail="Whether this memory is shared across all conversations or not.",
+    )
     embedding: list[float] = Field(default=None, repr=False)
     embedding_model: str | None = Field(default=None, repr=False)
     depth: int = Field(
@@ -178,8 +182,10 @@ class Memory(BaseModel):
         dt_str = DateFormat.human_readable(self.timestamp)
         return f"[{dt_str}] {self.content}"
 
-    # TODO (Jonny): Need a way to prevent this from returning messages
-    # that are already displayed. Mostly an issue early in the conversation.
+    @property
+    def time_str(self) -> str:
+        # return DateFormat.relative(self.timestamp, n_largest_times=2)
+        return DateFormat.human_readable(self.timestamp)
 
 
 class Message(BaseModel):
@@ -188,10 +194,17 @@ class Message(BaseModel):
     content: str
     timestamp: datetime.datetime = Field(default_factory=get_current_datetime)
     is_clone: bool
+    parent_id: uuid.UUID | None = Field(detail="ID of the parent message")
 
     def to_str(self) -> str:
         # NOTE (Jonny): in the pydantic schema, we do not allow sending <| or |>
         # so that this remains somewhat unhackable.
-        dt_str = DateFormat.human_readable(self.timestamp)
         name = self.sender_name.capitalize()
-        return f"[{dt_str}] <|{name}|>: {self.content}"
+        # should be safe since the tags are <|im_start|>assistant etc.
+        # and this has a colon at the end.
+        return f"[{self.time_str}] <|{name}|>: {self.content}"
+
+    @property
+    def time_str(self) -> str:
+        # return DateFormat.relative(self.timestamp, n_largest_times=2)
+        return DateFormat.human_readable(self.timestamp)

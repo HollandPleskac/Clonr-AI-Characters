@@ -20,7 +20,7 @@ and observations, answer the question that follows.
 {{loop.index}}. {{memory}}
 {%- endfor %} 
 ---
-Given only the information above, what are the 3 most salient high-level \
+Given only the information above, what are the {{num_questions}} most salient high-level \
 questions that we can answer about the subjects in the above statements? \
 Return your response as a JSON list.
 {{- llm.user_end }}
@@ -45,7 +45,7 @@ and observations, answer the question that follows.
 {%- endfor %} 
 ---
 
-Given only the information above, what are the 3 most salient high-level \
+Given only the information above, what are the {{num_questions}} most salient high-level \
 questions that we can answer about the subjects in the above statements? \
 Return your response as a JSON list.
 
@@ -59,22 +59,29 @@ Return your response as a JSON list.
         cls,
         llm: LLM,
         memories: list[str] | list[Memory],
+        num_questions: int = 3,
         system_prompt: str | None = None,
     ):
         if system_prompt is None:
             system_prompt = llm.default_system_prompt
         memories_ = [m if isinstance(m, str) else m.to_str() for m in memories]
         return cls.chat_template.render(
-            llm=llm, system_prompt=system_prompt, memories=memories_
+            llm=llm,
+            system_prompt=system_prompt,
+            memories=memories_,
+            num_questions=num_questions,
         )
 
     @classmethod
     def render_instruct(
         cls,
         memories: str,
+        num_questions: int = 3,
     ):
         memories_ = [m if isinstance(m, str) else m.to_str() for m in memories]
-        return cls.instruct_template.render(memories=memories_)
+        return cls.instruct_template.render(
+            memories=memories_, num_questions=num_questions
+        )
 
 
 # Generate actual reflections / insights based on retrieved salient memories
@@ -96,7 +103,7 @@ and observations, answer the question that follows.
 {%- endfor %} 
 ---
 
-What 5 high-level insights can you infer from the above \
+What {{num_reflections}} high-level insights can you infer from the above \
 statements of relevant memories, thoughts, and observations? \
 For each insight, provide a list of memories that were used to form the insight. \
 Return your answer as a list of JSON objects. For example, if the insight "foo bar" \
@@ -126,7 +133,7 @@ and observations, answer the question that follows.
 {%- endfor %} 
 ---
 
-What 5 high-level insights can you infer from the above \
+What {{num_reflections}} high-level insights can you infer from the above \
 statements of relevant memories, thoughts, and observations? \
 For each insight, provide a list of memories that were used to form the insight. \
 Return your answer as a list of JSON objects. For example, if the insight "foo bar" \
@@ -143,19 +150,26 @@ depends on memories 2, 4, and 5, then the correct JSON format would be:
         cls,
         llm: LLM,
         statements: list[str] | list[Memory],
+        num_reflections: int = 5,
         system_prompt: str | None = None,
     ):
         if system_prompt is None:
             system_prompt = llm.default_system_prompt
         statements = [s if isinstance(s, str) else s.content for s in statements]
         return cls.template.render(
-            llm=llm, system_prompt=system_prompt, statements=statements
+            llm=llm,
+            system_prompt=system_prompt,
+            statements=statements,
+            num_reflections=num_reflections,
         )
 
     @classmethod
     def render_instruct(
         cls,
         statements: list[str] | list[Memory],
+        num_reflections: int = 5,
     ):
         statements = [s if isinstance(s, str) else s.content for s in statements]
-        return cls.instruct_template.render(statements=statements)
+        return cls.instruct_template.render(
+            statements=statements, num_reflections=num_reflections
+        )

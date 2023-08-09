@@ -46,8 +46,8 @@ async def get_current_active_creator(
 
 async def get_paying_user(
     user: Annotated[models.User, Depends(get_current_active_user)],
-    db: Annotated[AsyncSession, Depends(get_async_session)],
 ) -> bool:
+    return user
     if user.is_subscribed:
         return user
     raise HTTPException(
@@ -58,9 +58,9 @@ async def get_paying_user(
 
 async def get_free_limit_user(
     user: Annotated[models.User, Depends(get_current_active_user)],
-    db: Annotated[AsyncSession, Depends(get_async_session)],
     max_free_messages: int = 10,
 ) -> models.User:
+    return user
     if user.is_subscribed or user.num_free_messages_sent <= max_free_messages:
         return user
     raise HTTPException(

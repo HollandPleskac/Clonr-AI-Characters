@@ -10,11 +10,11 @@ def test_monologues(client: TestClient, makima: tuple[dict[str, str], str]):
     m1_create = schemas.MonologueCreate(
         content="foo bar baz.",
         source="manual",
-    ).dict()
+    ).model_dump()
     m2_create = schemas.MonologueCreate(
         content="nickelback is the greatest band ever.",
         name="nickelback",
-    ).dict()
+    ).model_dump()
     for d in [m1_create, m2_create]:
         r = client.post(
             f"/clones/{clone_id}/monologues", json=d, headers=makima_headers

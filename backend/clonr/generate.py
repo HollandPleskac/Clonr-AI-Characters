@@ -1,12 +1,13 @@
 import inspect
 import json
 import logging
+import re
 
 from loguru import logger
 from tenacity import after_log, before_sleep_log, retry, stop_after_attempt, wait_random
 
 from clonr import templates
-from clonr.data_structures import Document, Memory, Message, Node
+from clonr.data_structures import Document, Memory, Message, Monologue, Node
 from clonr.llms import LLM, GenerationParams, LLMResponse, MockLLM
 from clonr.templates.memory import MemoryExample
 from clonr.templates.qa import Excerpt
@@ -25,13 +26,13 @@ class OutputParserError(Exception):
 
 class Params:
     agent_summary = GenerationParams(
-        max_tokens=768, top_p=0.95, presence_penalty=0.3, temperature=0.6
+        max_tokens=512, top_p=0.95, presence_penalty=0.3, temperature=0.6
     )
     long_description = GenerationParams(max_tokens=512, top_p=0.95, temperature=0.5)
     entity_context_create = GenerationParams(
         max_tokens=512, top_p=0.95, temperature=0.5
     )
-    rate_memory = None  # these are LLM specific and determined dynamically to make sure we get ints out!
+    rate_memory = None  # (Jonny) these are LLM specific and determined dynamically to make sure we get ints out!
     message_queries_create = GenerationParams(
         max_tokens=256, top_p=0.95, presence_penalty=0.2, temperature=0.3
     )
@@ -45,6 +46,12 @@ class Params:
     )
     online_summarize = GenerationParams(
         max_tokens=512, temperature=0.3, presence_penalty=0.2, top_p=0.95
+    )
+    generate_zero_memory_message = GenerationParams(
+        max_tokens=512, temperature=0.7, top_p=0.95
+    )
+    generate_long_term_memory_message = GenerationParams(
+        max_tokens=512, temperature=0.7, top_p=0.95
     )
 
 
@@ -140,7 +147,12 @@ async def agent_summary(
     r = await llm.agenerate(
         prompt_or_messages=prompt, params=Params.agent_summary, **kwargs
     )
-    return r.content.lstrip()
+    # (Jonny) the agent summary answers each of the questions, and actually returns
+    # a numbered list as output. Parse this. We use \b since it's still fine
+    # to split on numbered things inside the text. Just pray we don't have a sentence
+    # ending with \d.
+    summary = "".join(re.split(r"\b\d\.\s*", r.content))
+    return summary.strip()
 
 
 async def long_description_create(
@@ -205,7 +217,12 @@ async def entity_context_create(
     r = await llm.agenerate(
         prompt_or_messages=prompt, params=Params.entity_context_create, **kwargs
     )
-    return r.content.strip()
+    # the questions 1. What is {entity}'s relationship to {char}
+    # and 2. How does {char} feel about {entity}? Are baked into the template.
+    # the output is not numbered, but commercial LLMs tend to produce numbered outputs
+    # so we're being defensive here.
+    summary = "".join(re.split(r"\b\d\.\s*", r.content))
+    return summary.strip()
 
 
 @retry(
@@ -263,6 +280,7 @@ async def message_queries_create(
     entity_context_summary: str,
     entity_name: str,
     messages: list[str] | list[Message],
+    num_results: int = 3,
     system_prompt: str | None = None,
     **kwargs,
 ) -> list[str]:
@@ -277,16 +295,10 @@ async def message_queries_create(
             entity_name=entity_name,
             messages=messages,
             system_prompt=system_prompt,
+            num_results=num_results,
         )
     else:
-        prompt = templates.MessageQuery.render_instruct(
-            char=char,
-            short_description=short_description,
-            agent_summary=agent_summary,
-            entity_context_summary=entity_context_summary,
-            entity_name=entity_name,
-            messages=messages,
-        )
+        raise NotImplementedError("Instruct not implemented for MessageQuery template")
     kwargs["template"] = templates.MessageQuery.__name__
     kwargs["subroutine"] = kwargs.get(
         "subroutine", inspect.currentframe().f_code.co_name
@@ -501,3 +513,81 @@ async def online_summarize(
         node.context = prev_summary = r.content.strip()
         calls.append(r)
     return calls
+
+
+async def generate_zero_memory_message(
+    llm: LLM,
+    char: str,
+    user_name: str,
+    short_description: str,
+    long_description: str,
+    messages: list[Message],
+    monologues: list[Monologue] | None = None,
+    facts: list[str] | None = None,
+    use_timestamps: bool = False,
+    **kwargs,
+) -> str:
+    if not llm.is_chat_model:
+        raise NotImplementedError("Instruct for message gen not supported yet.")
+    prompt = templates.ZeroMemoryMessage.render(
+        llm=llm,
+        char=char,
+        user_name=user_name,
+        short_description=short_description,
+        long_description=long_description,
+        messages=messages,
+        monologues=monologues,
+        facts=facts,
+        use_timestamps=use_timestamps,
+    )
+    kwargs["template"] = templates.ZeroMemoryMessage.__name__
+    kwargs["subroutine"] = kwargs.get(
+        "subroutine", inspect.currentframe().f_code.co_name
+    )
+    r = await llm.agenerate(
+        prompt_or_messages=prompt, params=Params.generate_zero_memory_message, **kwargs
+    )
+    return r.content.strip()
+
+
+async def generate_long_term_memory_message(
+    llm: LLM,
+    char: str,
+    user_name: str,
+    short_description: str,
+    long_description: str,
+    messages: list[Message],
+    monologues: list[Monologue] | None = None,
+    facts: list[str] | None = None,
+    memories: list[Memory] | None = None,
+    agent_summary: str | None = None,
+    entity_context_summary: str | None = None,
+    use_timestamps: bool = True,
+    **kwargs,
+) -> str:
+    if not llm.is_chat_model:
+        raise NotImplementedError("Instruct for message gen not supported yet.")
+    prompt = templates.ZeroMemoryMessage.render(
+        llm=llm,
+        char=char,
+        user_name=user_name,
+        short_description=short_description,
+        long_description=long_description,
+        messages=messages,
+        monologues=monologues,
+        facts=facts,
+        memories=memories,
+        agent_summary=agent_summary,
+        entity_context_summary=entity_context_summary,
+        use_timestamps=use_timestamps,
+    )
+    kwargs["template"] = templates.ZeroMemoryMessage.__name__
+    kwargs["subroutine"] = kwargs.get(
+        "subroutine", inspect.currentframe().f_code.co_name
+    )
+    r = await llm.agenerate(
+        prompt_or_messages=prompt,
+        params=Params.generate_long_term_memory_message,
+        **kwargs,
+    )
+    return r.content.strip()

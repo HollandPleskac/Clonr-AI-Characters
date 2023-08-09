@@ -14,6 +14,8 @@ from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.ext.hybrid import Comparator, hybrid_property
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
+from clonr.utils.formatting import DateFormat
+
 
 class CaseInsensitiveComparator(Comparator[str]):
     # taken from https://docs.sqlalchemy.org/en/20/orm/extensions/hybrid.html#building-custom-comparators
@@ -83,6 +85,11 @@ class User(Base, SQLAlchemyBaseUserTableUUID):
     )
     private_chat_name: Mapped[str] = mapped_column(default="user")
     is_banned: Mapped[bool] = mapped_column(default=False)
+    # Whether user is subscribed to premium plan, i.e. is paid
+    is_subscribed: Mapped[bool] = mapped_column(default=False)
+    nsfw_enabled: Mapped[bool] = mapped_column(default=False)
+    # Number of free msgs sent
+    num_free_messages_sent: Mapped[int] = mapped_column(default=0)
     # (Jonny): Idk why, but select breaks with greenlet spawn error and this doesn't
     oauth_accounts: Mapped[list[OAuthAccount]] = relationship(
         "OAuthAccount", lazy="joined"
@@ -95,11 +102,6 @@ class User(Base, SQLAlchemyBaseUserTableUUID):
     llm_calls: Mapped[list["LLMCall"]] = relationship(
         "LLMCall", back_populates="user", passive_deletes=True
     )
-    # Whether user is subscribed to premium plan, i.e. is paid
-    is_subscribed: Mapped[bool] = mapped_column(default=False)
-
-    # Number of free msgs sent
-    num_free_messages_sent: Mapped[int] = mapped_column(default=0)
 
     def __repr__(self):
         return f"User(id={self.id})"
@@ -146,23 +148,16 @@ class Creator(Base):
 clones_to_tags = sa.Table(
     "clones_to_tags",
     Base.metadata,
-    sa.Column("tag", sa.Text, sa.ForeignKey("tags.name"), primary_key=True),
+    sa.Column("tag", sa.Uuid, sa.ForeignKey("tags.id"), primary_key=True),
     sa.Column("clone_id", sa.Uuid, sa.ForeignKey("clones.id"), primary_key=True),
 )
 
 
-class Tag(Base):
+class Tag(CommonMixin, Base):
     __tablename__ = "tags"
 
-    name: Mapped[str] = mapped_column(primary_key=True, unique=True)
-    created_at: Mapped[datetime.datetime] = mapped_column(
-        sa.DateTime(timezone=True), server_default=sa.func.now()
-    )
-    updated_at: Mapped[datetime.datetime] = mapped_column(
-        sa.DateTime(timezone=True),
-        server_default=sa.func.now(),
-        onupdate=sa.func.current_timestamp(),
-    )
+    name: Mapped[str] = mapped_column(unique=True)
+    color_code: Mapped[str]
     clones: Mapped[list["Clone"]] = relationship(
         secondary=clones_to_tags, back_populates="tags"
     )
@@ -224,6 +219,9 @@ class Clone(CommonMixin, Base):
     )
     llm_calls: Mapped[list["LLMCall"]] = relationship(
         "LLMCall", back_populates="clone", passive_deletes=True
+    )
+    generated_long_descriptions: Mapped[list["LongDescription"]] = relationship(
+        "LongDescription", back_populates="clone"
     )
 
     # taken from https://docs.sqlalchemy.org/en/20/orm/extensions/hybrid.html#building-custom-comparators
@@ -295,17 +293,42 @@ class Conversation(CommonMixin, Base):
         return f"Conversation(name={self.name}, user_id={self.user_id} clone_id={self.clone_id})"
 
 
+class Temp(Base):
+    __tablename__ = "temp"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str]
+    is_main: Mapped[bool] = mapped_column(default=True)
+    parent_id: Mapped[int] = mapped_column(sa.ForeignKey("temp.id"), nullable=True)
+    parent: Mapped["Temp"] = relationship(
+        "Temp", back_populates="children", remote_side="Temp.id"
+    )
+    children: Mapped[list["Temp"]] = relationship("Temp", back_populates="parent")
+
+    def __repr__(self):
+        return f"Temp(name={self.name}, id={self.id}, parent)"
+
+
 class Message(CommonMixin, Base):
     __tablename__ = "messages"
 
     content: Mapped[str]
     sender_name: Mapped[str]
     is_clone: Mapped[bool]
+    is_main: Mapped[bool] = mapped_column(default=True)
+    is_active: Mapped[bool] = mapped_column(default=True)
     timestamp: Mapped[datetime.datetime] = mapped_column(
         sa.DateTime(timezone=True), server_default=sa.func.now()
     )
     embedding: Mapped[list[float]] = mapped_column(nullable=True)
     embedding_model: Mapped[str] = mapped_column(nullable=True)
+    parent_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("messages.id"), nullable=True
+    )
+    parent: Mapped["Message"] = relationship(
+        "Message", back_populates="children", remote_side="Message.id"
+    )
+    children: Mapped[list["Message"]] = relationship("Message", back_populates="parent")
     clone_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )
@@ -326,8 +349,23 @@ class Message(CommonMixin, Base):
     def _case_insensitive_comparator(cls) -> CaseInsensitiveComparator:
         return CaseInsensitiveComparator(cls.content)
 
+    @property
+    def time_str(self) -> str:
+        # return DateFormat.relative(self.timestamp, n_largest_times=2)
+        return DateFormat.human_readable(self.timestamp)
+
     def __repr__(self):
         return f"Message(content={self.content}, sender={self.sender_name}, is_clone={self.is_clone})"
+
+
+long_descs_to_docs = sa.Table(
+    "long_descs_to_docs",
+    Base.metadata,
+    sa.Column("document_id", sa.ForeignKey("documents.id"), primary_key=True),
+    sa.Column(
+        "long_description_id", sa.ForeignKey("long_descriptions.id"), primary_key=True
+    ),
+)
 
 
 class IndexType(enum.Enum):
@@ -354,6 +392,9 @@ class Document(CommonMixin, Base):
     clone: Mapped["Clone"] = relationship("Clone", back_populates="documents")
     nodes: Mapped[list["Node"]] = relationship(
         "Node", back_populates="document", cascade="all, delete"
+    )
+    generated_long_descriptions: Mapped[list["LongDescription"]] = relationship(
+        secondary=long_descs_to_docs, back_populates="documents"
     )
 
     def __eq__(self, other):
@@ -534,6 +575,11 @@ class Memory(CommonMixin, Base):
     )
     clone: Mapped["Clone"] = relationship("Clone", back_populates="memories")
 
+    @property
+    def time_str(self) -> str:
+        # return DateFormat.relative(self.timestamp, n_largest_times=2)
+        return DateFormat.human_readable(self.timestamp)
+
     def __repr__(self):
         name = "Memory" if self.depth <= 0 else "Reflection"
         return (
@@ -631,8 +677,10 @@ class LLMCall(CommonMixin, Base):
         server_default=None,
     )
     # Track usage and costs incurred by any particular user
+    # TODO (Jonny): if we don't allow users to delete themselves,
+    # this is probably safe to make cascade-delete.
     user_id: Mapped[uuid.UUID] = mapped_column(
-        sa.ForeignKey("users.id", ondelete="SET NULL"),
+        sa.ForeignKey("users.id", ondelete="cascade"),
         nullable=False,
         server_default=None,
     )
@@ -646,6 +694,36 @@ class LLMCall(CommonMixin, Base):
     user: Mapped["User"] = relationship("User", back_populates="llm_calls")
     conversation: Mapped["Conversation"] = relationship(
         "Conversation", back_populates="llm_calls"
+    )
+
+
+class ContentViolation(CommonMixin, Base):
+    __tablename__ = "content_violations"
+
+    content: Mapped[str]
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
+    clone_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("clones.id", ondelete="SET NULL")
+    )
+    conversation_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("conversations.id", ondelete="SET NULL")
+    )
+
+
+class LongDescription(CommonMixin, Base):
+    __tablename__ = "long_descriptions"
+
+    content: Mapped[str]
+    documents: Mapped[list["Document"]] = relationship(
+        secondary=long_descs_to_docs, back_populates="generated_long_descriptions"
+    )
+    clone_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("clones.id", ondelete="cascade")
+    )
+    clone: Mapped["Clone"] = relationship(
+        "Clone", back_populates="generated_long_descriptions"
     )
 
 
@@ -678,17 +756,6 @@ class LLMCall(CommonMixin, Base):
 #     stripe_current_period_end: Mapped[datetime.datetime]
 #     stripe_cancel_at_period_end: Mapped[bool]
 #     stripe_canceled_at: Mapped[datetime.datetime]
-
-
-# ### Moderation
-# class ModerationRecord(CommonMixin, Base):
-#     __tablename__ = "moderation_records"
-
-#     user_id: Mapped[uuid.UUID] = mapped_column(
-#         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
-#     )
-#     violation_content: Mapped[str] = mapped_column(nullable=False)
-#     is_banned: Mapped[bool] = mapped_column(nullable=False)
 
 
 # ### Signups

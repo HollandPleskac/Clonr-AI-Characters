@@ -59,7 +59,7 @@ async def verify_email(token: str = Query(...)):
         raise HTTPException(
             status_code=400, detail="Invalid or expired verification token."
         )
-
+    print(email)
     # Your email verification logic goes here
     # For example, mark the email as verified in the database or update the user record.
 

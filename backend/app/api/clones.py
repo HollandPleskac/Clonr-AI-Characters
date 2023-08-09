@@ -9,6 +9,7 @@ from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import deps, models, schemas
+from app.clone.controller import Controller
 from app.clone.db import CloneDB
 from app.clone.shared import DynamicTextSplitter
 from app.embedding import EmbeddingClient
@@ -17,6 +18,7 @@ from clonr.data_structures import Document, Monologue
 # # llm is not needed for the basic list index! We can revisit TreeIndex in the future
 # # but for now, it's too much complexity for a yet to be demonstrated reward
 from clonr.index import IndexType, ListIndex
+from clonr.llms import LLM
 from clonr.tokenizer import Tokenizer
 
 router = APIRouter(
@@ -254,16 +256,38 @@ async def delete(
 
 
 # # ------------ Long Description ------------ #
-# @router.post(
-#     "/{clone_id}/generate_long_description",
-#     response_model=schemas.Document,
-#     dependencies=[Depends(deps.get_superuser)],
-# )
-# async def create_document(
-#     clonedb: Annotated[CloneDB, Depends(get_clonedb)],
-#     llm: Annotated[LLM, Depends(get_llm)],
-# ):
-#     pass
+# Lol the similarity of an expensive route vs a cheap route low-key scares me.
+@router.post(
+    "/{clone_id}/generate_long_description",
+    response_model=schemas.Clone,
+    dependencies=[Depends(deps.get_superuser)],
+)
+async def generate_long_desc(
+    llm: Annotated[LLM, Depends(deps.get_llm)],
+    clone: Annotated[models.Clone, Depends(get_clone)],
+    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
+):
+    updated_clone = await Controller.generate_long_description(
+        llm=llm, clone=clone, clonedb=clonedb
+    )
+    return updated_clone
+
+
+@router.get(
+    "/{clone_id}/generate_long_description",
+    response_model=list[schemas.LongDescription],
+)
+async def view_generated_long_descs(
+    clone: Annotated[models.Clone, Depends(get_clone)],
+    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
+):
+    r = await clonedb.db.scalars(
+        sa.select(models.LongDescription)
+        .where(models.LongDescription.clone_id == clone.id)
+        .order_by(models.LongDescription.updated_at.desc())
+    )
+    long_descs = r.all()
+    return long_descs
 
 
 # ------------ Documents ------------ #
@@ -275,7 +299,7 @@ async def update_document(
         CloneDB, Depends(deps.get_clonedb)
     ],  # used only for auth, to make sure that user has access to edit this clone
 ):
-    data = doc_update.dict(exclude_unset=True)
+    data = doc_update.model_dump(exclude_unset=True)
     not_modified = True
     for k, v in data.items():
         if getattr(doc, k) == v:

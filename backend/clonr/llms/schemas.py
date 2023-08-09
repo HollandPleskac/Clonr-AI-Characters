@@ -1,18 +1,19 @@
 import textwrap
 from enum import Enum
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, ConfigDict, Field, validator
 
 
 class OpenAIModelEnum(str, Enum):
     chatgpt: str = "gpt-3.5-turbo"
-    chatgpt_0301: str = "gpt-3.5-turbo-0301"
-    chatgpt_0613: str = "gpt-3.5-turbo-0613"
     chatgpt_16k: str = "gpt-3.5-turbo-16k"
     gpt4: str = "gpt-4"
     gpt4_32k: str = "gpt-4-32k"
-    gpt4_0314: str = "gpt-4-0314"
-    gpt4_32k_0314: str = "gpt-4-32k-0314"
+    # openai is not guaranteeing that these stick around
+    # chatgpt_0301: str = "gpt-3.5-turbo-0301"
+    # chatgpt_0613: str = "gpt-3.5-turbo-0613"
+    # gpt4_0314: str = "gpt-4-0314"
+    # gpt4_32k_0314: str = "gpt-4-32k-0314"
 
 
 class FinishReason(str, Enum):
@@ -132,6 +133,9 @@ class NotebookStreamResponse(BaseModel):
 
 
 class LLMResponse(BaseModel):
+    # pydantic 2.0 uses model_name as a protected attribute
+    model_config = ConfigDict(protected_namespaces=("namespace_",))
+
     content: str
     model_type: str
     model_name: str

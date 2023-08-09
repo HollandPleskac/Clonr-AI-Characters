@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app import schemas
 from app.main import app as main_app
+from app.settings import settings
 from tests.types import LoginData
 
 
@@ -39,7 +40,7 @@ def creator_data() -> LoginData:
 @pytest.fixture(name="user_headers", scope="session")
 def user_headers(client: TestClient, user_data: LoginData) -> dict[str, str]:
     input_data = {
-        **user_data.dict(),
+        **user_data.model_dump(),
         "is_active": False,
         "is_superuser": True,
         "is_verified": True,
@@ -88,7 +89,7 @@ def creator_headers(
     # Register user
     r = client.post(
         "/auth/register",
-        json=creator_data.dict(),
+        json=creator_data.model_dump(),
     )
     assert r.status_code == 201, r.status_code
 
@@ -127,7 +128,7 @@ def makima_fixture(client: TestClient, creator_headers: dict[str, str], db: Sess
         is_public=True,
         greeting_message=greeting_message,
     )
-    data = inp.dict()
+    data = inp.model_dump()
     r = client.post("/clones/", headers=creator_headers, json=data)
     data = r.json()
     clone_id = str(data["id"])
@@ -136,20 +137,27 @@ def makima_fixture(client: TestClient, creator_headers: dict[str, str], db: Sess
     yield creator_headers, clone_id
 
 
-# @pytest.fixture
-# def makima_create(
-#     client: TestClient, creator_headers: dict[str, str]
-# ):
-#     p = Path(__file__).parent / "makima.json"
-#     with open(p, 'r') as f:
-#         payload = schemas.CloneCreate(
-#             **json.load(f),
-#             is_public=True,
-#             # tags=['anime']
-#         )
+@pytest.fixture(name="superuser_headers", scope="session")
+def superuser_headers(client: TestClient) -> dict[str, str]:
+    # Login user
+    r = client.post(
+        "/auth/cookies/login",
+        data=dict(
+            username=settings.SUPERUSER_EMAIL, password=settings.SUPERUSER_PASSWORD
+        ),
+    )
+    assert r.status_code == 204, r.json()
+    assert r.cookies
+    # idk I just hacked this because fuck, this is annoying
+    headers = {
+        "Cookie": "; ".join(
+            [f"{name}={value}" for name, value in client.cookies.items()][-1:]
+        )
+    }
 
-#     r = client.post("/clones/create", headers=creator_headers, json=payload.dict(exclude_none=True))
-#     data = r.json()
-#     id = str(data["id"])
-#     assert r.status_code == 201, data
-#     assert data["greeting_message"] is None
+    yield headers
+
+    # Logout user
+    r = client.post("/auth/cookies/logout", json={}, headers=headers)
+    assert r.status_code == 204, r.json()
+    assert not r.cookies

@@ -59,11 +59,18 @@ class DateFormat:
                 dt (datetime): datetime with timezone info.
         """
         arr: list[str] = []
-        delta = datetime.now(tz=dt.tzinfo or ZoneInfo("utc")) - dt
-        if use_today_and_yesterday and delta.days <= 0:
-            arr.append("Today")
-        elif use_today_and_yesterday and delta.days == 1:
-            arr.append("Yesterday")
+        now = datetime.now(tz=dt.tzinfo or ZoneInfo("utc"))
+        delta = now - dt
+        if use_today_and_yesterday and delta.days < 2:
+            now_weekday = now.weekday()
+            dt_weekday = dt.weekday()
+            if now_weekday < dt_weekday:
+                now_weekday += 7
+            diff = now_weekday - dt_weekday
+            if diff == 0:
+                arr.append("Today")
+            elif diff == 1:
+                arr.append("Yesterday")
         else:
             if add_weekday:
                 arr.append(calendar.day_name[dt.weekday()] + ",")

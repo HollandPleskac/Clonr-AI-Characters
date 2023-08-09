@@ -35,7 +35,7 @@ class OpenAI(LLM):
 
     def __init__(
         self,
-        model: OpenAIModelEnum = OpenAIModelEnum.chatgpt_0613,
+        model: OpenAIModelEnum = OpenAIModelEnum.chatgpt,
         api_key: str = "",
         api_base: str | None = None,
         tokenizer: Tokenizer | None = None,
@@ -77,15 +77,17 @@ class OpenAI(LLM):
 
     @property
     def context_length(self) -> int:
-        if "16k" in self.model.value:
-            return 16_000
-        elif "32k" in self.model.value:
-            return 32_000
-        elif "gpt-4" in self.model.value:
-            return 8_000
-        elif self.model.value in ["gpt-3.5-turbo-0613"]:
-            return 8_000
-        return 4_000
+        match self.model:
+            case OpenAIModelEnum.chatgpt:
+                return 4096
+            case OpenAIModelEnum.chatgpt_16k:
+                return 16_384
+            case OpenAIModelEnum.gpt4:
+                return 8192
+            case OpenAIModelEnum.gpt4_32k:
+                return 32_768
+            case _:
+                raise TypeError(self.model)
 
     def _num_tokens_from_messages(self, messages: list[Message]) -> int:
         """Taken from: https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
@@ -122,7 +124,8 @@ class OpenAI(LLM):
             return self._num_tokens_from_string(inp)
         return self._num_tokens_from_messages(inp)
 
-    def prompt_to_messages(self, prompt: str):
+    @classmethod
+    def prompt_to_messages(cls, prompt: str):
         messages = []
 
         pattern = r"<\|im_start\|>(\w+)(.*?)(?=<\|im_end\|>|$)"
@@ -148,7 +151,8 @@ class OpenAI(LLM):
 
         return messages
 
-    def messages_to_prompt(self, messages: list[Message]) -> str:
+    @classmethod
+    def messages_to_prompt(cls, messages: list[Message]) -> str:
         return "\n".join(m.to_prompt() for m in messages)
 
     @retry(

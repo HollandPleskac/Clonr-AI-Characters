@@ -1,4 +1,5 @@
 import datetime
+import random
 import uuid
 from typing import Annotated
 
@@ -13,6 +14,7 @@ from pydantic import (
 )
 
 from app.clone.types import AdaptationStrategy, InformationStrategy, MemoryStrategy
+from clonr.utils import get_current_datetime
 
 
 def special_char_validator(v: str | None, info: ValidationInfo) -> str | None:
@@ -23,11 +25,25 @@ def special_char_validator(v: str | None, info: ValidationInfo) -> str | None:
     return v
 
 
+def generate_hex_code():
+    s = "1234567890ABCDEF"
+    return "".join(random.choice(s) for _ in range(6))
+
+
+def is_valid_hex_code(s: str | None):
+    if s is None:
+        return True
+    return all(x in "1234567890ABCDEF" for x in s)
+
+
 class UserRead(BaseUser[uuid.UUID]):
     model_config = ConfigDict(from_attributes=True)
 
     private_chat_name: str
     is_banned: bool
+    nsfw_enabled: bool
+    num_free_messages_sent: int
+    is_subscribed: bool
 
 
 class UserCreate(BaseUserCreate):
@@ -76,13 +92,23 @@ class Creator(CreatorCreate):
 
 class TagCreate(BaseModel):
     name: str
+    color_code: Annotated[str, AfterValidator(is_valid_hex_code)] = Field(
+        default=generate_hex_code,
+        detail="Color hex code for displaying tag on the frontend",
+    )
 
 
-class Tag(TagCreate):
-    model_config = ConfigDict(from_attributes=True)
+class TagUpdate(TagCreate):
+    name: str | None = None
+    color_code: Annotated[str | None, AfterValidator(is_valid_hex_code)] = Field(
+        default=None,
+        detail="Color hex code for displaying tag on the frontend",
+    )
 
-    created_at: datetime.datetime
-    updated_at: datetime.datetime
+
+class Tag(CommonMixin, BaseModel):
+    name: str
+    color_code: str
 
 
 class CloneCreate(BaseModel):
@@ -290,6 +316,36 @@ class MessageCreate(BaseModel):
     timestamp: datetime.datetime | None = Field(
         default=None, detail="Override the current time for the message timestamp."
     )
+    parent_id: uuid.UUID = Field(
+        detail="The ID of the previous message in this conversation."
+    )
+
+
+# user_id is taken from auth, and clone_id is taken from the route.
+class SharedMemoryCreate(BaseModel):
+    content: str = Field(
+        detail="The memory that your clone will record. In general, the format should be stuff like: 'I felt angry' or 'I saw a duck'"
+    )
+    timestamp: datetime.datetime = Field(
+        default_factory=get_current_datetime,
+        detail="The timestamp at which this memory occurred. Defaults to current time.",
+    )
+    importance: int | None = Field(
+        default=None,
+        detail="The importance to assign to this memory. If none is set, one will be computed automatically.",
+    )
+
+
+class RevisionUpdate(BaseModel):
+    message_id: uuid.UUID = Field(
+        detail="The message being set as the chosen revision."
+    )
+
+
+class LongDescription(CommonMixin, BaseModel):
+    content: str
+    clone_id: uuid.UUID
+    documents: list[Document]
 
 
 # ------------------------------------#
