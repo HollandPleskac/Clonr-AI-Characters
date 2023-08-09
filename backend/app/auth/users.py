@@ -11,7 +11,10 @@ from fastapi_users.authentication import (
     JWTStrategy,
     RedisStrategy,
 )
+from httpx_oauth.clients.discord import DiscordOAuth2
+from httpx_oauth.clients.facebook import FacebookOAuth2
 from httpx_oauth.clients.google import GoogleOAuth2
+from httpx_oauth.clients.reddit import RedditOAuth2
 from loguru import logger
 
 from app.models import User
@@ -30,6 +33,18 @@ redis = redis.asyncio.Redis(
 
 google_oauth_client = GoogleOAuth2(
     settings.GOOGLE_CLIENT_ID, settings.GOOGLE_CLIENT_SECRET
+)
+
+facebook_oauth_client = FacebookOAuth2(
+    settings.FACEBOOK_CLIENT_ID, settings.FACEBOOK_CLIENT_SECRET
+)
+
+reddit_oauth_client = RedditOAuth2(
+    settings.REDDIT_CLIENT_ID, settings.REDDIT_CLIENT_SECRET
+)
+
+discord_oauth_client = DiscordOAuth2(
+    settings.DISCORD_CLIENT_ID, settings.DISCORD_CLIENT_SECRET
 )
 
 

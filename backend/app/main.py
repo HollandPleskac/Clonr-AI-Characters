@@ -10,7 +10,13 @@ from loguru import logger
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 from app import api, deps, models, schemas
-from app.auth.users import auth_backend, google_oauth_client
+from app.auth.users import (
+    auth_backend,
+    discord_oauth_client,
+    facebook_oauth_client,
+    google_oauth_client,
+    reddit_oauth_client,
+)
 from app.db import (
     clear_db,
     clear_redis,
@@ -129,6 +135,27 @@ app.include_router(
         google_oauth_client, auth_backend, settings.AUTH_SECRET
     ),
     prefix="/auth/google",
+    tags=["auth"],
+)
+app.include_router(
+    fastapi_users.get_oauth_router(
+        facebook_oauth_client, auth_backend, settings.AUTH_SECRET
+    ),
+    prefix="/auth/facebook",
+    tags=["auth"],
+)
+app.include_router(
+    fastapi_users.get_oauth_router(
+        reddit_oauth_client, auth_backend, settings.AUTH_SECRET
+    ),
+    prefix="/auth/reddit",
+    tags=["auth"],
+)
+app.include_router(
+    fastapi_users.get_oauth_router(
+        discord_oauth_client, auth_backend, settings.AUTH_SECRET
+    ),
+    prefix="/auth/discord",
     tags=["auth"],
 )
 

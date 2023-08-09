@@ -13,6 +13,12 @@ class Settings(BaseSettings):
     AUTH_SECRET: str
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
+    FACEBOOK_CLIENT_ID: str
+    FACEBOOK_CLIENT_SECRET: str
+    REDDIT_CLIENT_ID: str
+    REDDIT_CLIENT_SECRET: str
+    DISCORD_CLIENT_ID: str
+    DISCORD_CLIENT_SECRET: str
     PORT: int = 8000
     REDIS_PASSWORD: str
     REDIS_PORT: str

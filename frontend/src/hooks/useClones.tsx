@@ -18,5 +18,20 @@ export default function useClones() {
     }
   };
 
-  return { queryClones };
+  const fetchCloneById = async (cloneId: string): Promise<Clone | null> => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/clones/${cloneId}`,
+        {
+          withCredentials: true
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching clone by ID:', error);
+      return null;
+    }
+  };
+
+  return { queryClones, fetchCloneById };
 };
