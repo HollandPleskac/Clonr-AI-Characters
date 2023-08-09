@@ -16,6 +16,7 @@ import { Character } from '@/types'
 import SearchGrid from './SearchGrid'
 import StatBar from '../Statistics/StatBar'
 import ScaleFadeIn from '../Transitions/ScaleFadeIn'
+import AuthModal from '../AuthModal'
 
 interface HomeScreenProps {
   topCharacters: Character[]
@@ -117,6 +118,7 @@ export default function HomeScreen({
           />
         </ScaleFadeIn>
       )}
+      <AuthModal />
     </div>
   )
 }

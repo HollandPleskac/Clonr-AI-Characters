@@ -25,7 +25,7 @@ export default async function Home() {
           trending={trending}
           anime={anime}
         />
-        <AuthModal />
+        
       </main>
       <Footer />
     </>

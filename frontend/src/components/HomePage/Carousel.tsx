@@ -12,7 +12,7 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 
 import NetflixCard from './NetflixCard'
 import { Character } from '@/types'
-import { Navigation, Pagination, Scrollbar } from 'swiper'
+import { Navigation, Pagination, Scrollbar } from 'swiper/modules'
 
 interface CarouselProps {
   characters: Character[]

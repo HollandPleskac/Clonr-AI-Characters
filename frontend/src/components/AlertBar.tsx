@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import React from 'react'
 
 export default function AlertBar() {
@@ -41,12 +42,12 @@ export default function AlertBar() {
           </svg>
           Register now to reserve your spot inline for early access to Clonr+.
         </p>
-        <a
-          href='#'
+        <Link
+          href='/pricing'
           className='flex-none rounded-full bg-gray-900 px-3.5 py-1 text-sm font-semibold text-white shadow-sm hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900'
         >
           Register now <span aria-hidden='true'>&rarr;</span>
-        </a>
+        </Link>
       </div>
       <div className='flex flex-1 justify-end'>
         <button

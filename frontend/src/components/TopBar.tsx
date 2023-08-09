@@ -8,7 +8,7 @@ import Image from 'next/image'
 import SearchIcon from './SearchIcon'
 import XIcon from './XIcon'
 import { usePathname } from 'next/navigation'
-
+import AccountDropdown from './AccountDropdown'
 interface TopBarProps {
   searchInput: string
   onSearchInput: (input: string) => void
@@ -33,7 +33,7 @@ export default function TopBar({
 
   return (
     <>
-      <header className='sticky top-0 flex flex-wrap lg:justify-start lg:flex-nowrap w-full bg-black text-sm py-[19.2px] border-b border-[#1d1e1e] px-[4%] z-[100]'>
+      <header className='sticky top-0 flex flex-wrap lg:justify-start lg:flex-nowrap w-full bg-black text-sm py-[19.2px] border-b border-[#1d1e1e] px-[4%] z-[50]'>
         <nav
           className=' w-full mx-auto px-4 lg:flex lg:items-center lg:justify-between'
           aria-label='Global'
@@ -144,11 +144,11 @@ export default function TopBar({
                 </Link>
 
                 <Link
-                  href='mailto:email@example.com'
+                  href='/pricing'
                   className={`transition duration-200 ${
                     pathname === '/create'
                       ? 'text-white font-semibold'
-                      : 'text-[#e5e5e5]'
+                      : 'text-[#e5e5e5] hover:text-[#979797]'
                   }`}
                 >
                   Pricing
@@ -209,9 +209,7 @@ export default function TopBar({
                   </button>
                 </div>
 
-                <button className='cursor-pointer text-white h-[40px] w-[40px] bg-[#979797] rounded-full grid place-items-center hover:ring-1 hover:ring-[rgba(255,255,255,0.2)] '>
-                  J
-                </button>
+                <AccountDropdown />
               </div>
             </div>
           </div>

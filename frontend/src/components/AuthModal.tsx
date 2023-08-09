@@ -7,10 +7,10 @@ export default function AuthModal() {
   return (
     <div
       id='hs-slide-down-animation-modal'
-      className='hs-overlay hidden w-full h-full fixed top-0 left-0 z-[60] overflow-x-hidden overflow-y-auto flex items-center justify-center'
+      className='hs-overlay hidden w-full h-full fixed top-0 left-0 z-[200] overflow-x-hidden overflow-y-auto flex items-center justify-center'
     >
       <div className='hs-overlay-open:mt-7 hs-overlay-open:mb-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-[366px] sm:w-full m-3 sm:mx-auto'>
-        <div className='flex flex-col bg-white border shadow-sm rounded-xl dark:bg-gray-800 dark:border-gray-700 dark:shadow-slate-700/[.7]'>
+        <div className='flex flex-col border shadow-sm rounded-xl bg-gray-800 border-gray-700 shadow-slate-700/[.7]'>
           {/* <div className='flex justify-end items-center py-3 px-4 border-b dark:border-gray-700'>
            
           </div> */}
