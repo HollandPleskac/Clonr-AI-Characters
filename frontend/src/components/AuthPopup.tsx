@@ -16,6 +16,34 @@ const AuthPopup = () => {
       </div>
 
       <div className='mt-5 flex flex-col gap-y-4 '>
+        {!isSignIn && (
+          <div className='flex items-start'>
+            <div className='flex items-center h-5'>
+              <input
+                id='remember'
+                aria-describedby='remember'
+                type='checkbox'
+                className='w-4 h-4 border focus:ring-transparent border-gray-300 rounded bg-gray-50  dark:bg-gray-700 dark:border-gray-600  checked:text-purple-500'
+                required={false}
+                style={{ boxShadow: 'none' }}
+              />
+            </div>
+            <div className='ml-3 text-sm'>
+              <label
+                htmlFor='terms'
+                className='font-light text-gray-500 dark:text-gray-300'
+              >
+                I accept the{' '}
+                <a
+                  className='font-medium text-purple-600 hover:underline dark:text-purple-500'
+                  href='#'
+                >
+                  Terms and Conditions
+                </a>
+              </label>
+            </div>
+          </div>
+        )}
         <button
           type='button'
           className='w-full py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-600 transition-all text-sm bg-gray-800 hover:bg-slate-800 dark:border-gray-700 text-gray-400 hover:text-white focus:ring-offset-gray-800'
