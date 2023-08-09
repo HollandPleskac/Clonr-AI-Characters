@@ -36,22 +36,18 @@ export default function ChatScreen({
   character,
   initialMessages,
 }: ChatScreenProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null)
   const [message, setMessage] = useState('')
-  const [messages, setMessages] = useState<any[]>(initialMessages) // FixMe (Jonny): workaround for type error in compiler
+  const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [isFetching, setIsFetching] = useState(false)
   const [convoID, setConvoID] = useState('')
+  const [scrollToNewMessage, setScrollToNewMessage] = useState<boolean>(false);
 
   // search state
   const [isInputActive, setInputActive] = useState(false)
   const handleInputFocus = () => setInputActive(true)
   const handleInputBlur = () => setInputActive(false)
   const inputRef = useRef<HTMLInputElement>(null)
-
-  // speech recognition
-  const [speechRecognitionSupported, setSpeechRecognitionSupported] = useState<
-    boolean | null
-  >(null)
+  const divRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     // @ts-ignore
@@ -59,43 +55,24 @@ export default function ChatScreen({
   }, [])
 
   // scrolling
+  // useEffect(() => {
+  //   if (containerRef.current) {
+  //     const { scrollHeight, clientHeight } = containerRef.current
+  //     const maxScrollTop = scrollHeight - clientHeight
+  //     containerRef.current.scrollTop = maxScrollTop > 0 ? maxScrollTop : 0
+  //   }
+  // }, [messages])
+
   useEffect(() => {
-    if (containerRef.current) {
-      const { scrollHeight, clientHeight } = containerRef.current
-      const maxScrollTop = scrollHeight - clientHeight
-      containerRef.current.scrollTop = maxScrollTop > 0 ? maxScrollTop : 0
+    if (scrollToNewMessage && divRef.current) {
+      divRef.current.scrollTop = divRef.current.scrollHeight
+      setScrollToNewMessage(false);
     }
-  }, [messages])
-
-  // speech recognition
-  const {
-    transcript,
-    listening,
-    resetTranscript,
-    browserSupportsSpeechRecognition,
-  } = useSpeechRecognition()
-
-  useEffect(() => {
-    setSpeechRecognitionSupported(browserSupportsSpeechRecognition)
-  }, [browserSupportsSpeechRecognition])
-
-  const handleStartListening: MouseEventHandler<HTMLButtonElement> = (
-    event
-  ) => {
-    event.preventDefault()
-    SpeechRecognition.startListening()
-  }
-
-  // can be used to pause user voice input
-  const handleStopListening: MouseEventHandler<HTMLButtonElement> = (event) => {
-    event.preventDefault()
-    console.log(transcript)
-    setMessage(transcript)
-    SpeechRecognition.stopListening()
-  }
+  }, [messages, scrollToNewMessage])
 
   const sendMessage = () => {
     console.log('sending message:', message)
+    setScrollToNewMessage(true)
 
     const newMessage = {
       id: window.Date.now().toString(),
@@ -111,7 +88,6 @@ export default function ChatScreen({
     setMessages(updatedMessages)
     const message_copy = message
     setMessage('')
-    resetTranscript()
     fetchMessageFromServer(message_copy)
   }
 
@@ -135,7 +111,7 @@ export default function ChatScreen({
 
       const newServerMessage = {
         id: window.Date.now().toString(),
-        src: '/dummy-char.png',
+        img: '/dummy-char.png',
         alt: 'Character Profile Picture ' + (messages.length + 1),
         name: 'Barack Obama',
         content: serverMessage.content,
@@ -197,7 +173,7 @@ export default function ChatScreen({
       name: 'dummy-char',
       content: `New message ${messages.length + index}`,
       timeStamp: new window.Date(),
-      senderType: 'bot', // or 'user' depending on your needs
+      senderType: 'bot',
     }))
 
     // Add the new messages to the end of the existing messages
@@ -210,8 +186,8 @@ export default function ChatScreen({
         <div className='flex items-center'>
           <Image
             key={0}
-            src='/dummy-char.png' // Change to your image path
-            alt={`Character Profile Picture ${0 + 1}`} // Change to your alt text
+            src='/dummy-char.png'
+            alt={`Character Profile Picture ${0 + 1}`}
             width={55}
             height={55}
             className='rounded-full'
@@ -242,7 +218,6 @@ export default function ChatScreen({
                 strokeClasses={` group-focus:stroke-[#5848BC] ${
                   isInputActive ? 'stroke-[#5848BC]' : 'stroke-[#515151]'
                 } transition duration-100 bg-red-400`}
-                // strokeClasses='stroke-[#515151]'
               />
             </button>
             <input
@@ -271,8 +246,10 @@ export default function ChatScreen({
             overflow: 'auto',
             display: 'flex',
             flexDirection: 'column-reverse',
+            scrollBehavior: 'smooth',
           }}
           className='px-6'
+          ref={divRef}
         >
           <InfiniteScroll
             dataLength={messages.length}
@@ -307,34 +284,6 @@ export default function ChatScreen({
         </div>
       </div>
 
-      {/* <div
-        style={{ height: 'calc(100vh - 122px - 92px)' }}
-        ref={containerRef}
-        className='flex flex-col overflow-y-scroll bg-[#121212] px-6 pt-4'
-      >
-        <div className='mt-auto'></div>
-        <Date date='May, 11 2023' />
-        {messages.map((message, index) => (
-          <MessageComponent message={message} key={index} />
-        ))}
-        <div
-          className={`${
-            isFetching ? 'text-white' : 'text-transparent'
-          } w-full py-4 h-[56px]`}
-        >
-          <ThreeDots
-            height='25'
-            width='25'
-            radius='4'
-            color='#979797'
-            ariaLabel='three-dots-loading'
-            wrapperStyle={{}}
-            wrapperClass=''
-            visible={isFetching}
-          />
-        </div>
-      </div> */}
-
       <div className='flex h-[92px] items-center border-t  border-[#252525] bg-[red-400] px-6'>
         <div className='mr-[10px] grid h-[32px] w-[32px] min-w-[32px] cursor-pointer place-items-center rounded-full bg-[#5848BC] transition duration-100 hover:bg-[#4b3abd]'>
           <PlusIcon strokeClasses='stroke-[#ffffff]' />
@@ -353,7 +302,7 @@ export default function ChatScreen({
             onKeyDown={handleOnKeyDown}
           />
         </div>
-        <div className='ml-[10px] transition-all duration-100'>
+        <div className='ml-[10px] transition-all duration-100 '>
           <button
             onClick={async () => {
               !isFetching && sendMessage()
@@ -365,25 +314,6 @@ export default function ChatScreen({
                 isFetching ? 'stroke-[#515151] fill-[#515151]' : ''
               }
             />
-          </button>
-        </div>
-        <div className='ml-[10px] transition-all duration-100'>
-          <button
-            onClick={async (event) => {
-              if (!isFetching) {
-                !listening && handleStartListening(event)
-                listening && handleStopListening(event)
-              }
-            }}
-            disabled={isFetching}
-          >
-            {listening && <MicrophoneActiveIcon />}
-            {!listening && <MicrophoneOffIcon />}
-            {/* <VoiceIcon
-              strokeClasses={
-                isFetching ? 'stroke-[#515151] fill-[#515151]' : ''
-              }
-            /> */}
           </button>
         </div>
       </div>
