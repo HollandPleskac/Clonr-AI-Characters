@@ -128,23 +128,6 @@ class Creator(Base):
     clones: Mapped[list["Clone"]] = relationship("Clone", back_populates="creator")
 
 
-# class APIKey(CommonMixin, Base):
-#     __tablename__ = "api_keys"
-
-#     hashed_key: Mapped[str] = mapped_column(unique=True)
-#     name: Mapped[str] = mapped_column(default=randomname.get_name)
-#     user_id: Mapped[uuid.UUID] = mapped_column(
-#         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
-#     )
-#     clone_id: Mapped[uuid.UUID] = mapped_column(
-#         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
-#     )
-#     clone: Mapped["Clone"] = relationship("Clone", back_populates="api_keys")
-
-#     def __repr__(self):
-#         return f"APIKey(hashed_key={self.hashed_key}, clone_id={self.clone_id})"
-
-
 clones_to_tags = sa.Table(
     "clones_to_tags",
     Base.metadata,
@@ -659,9 +642,9 @@ class LLMCall(CommonMixin, Base):
     # number of retries for calls that require output parsing
     retry_attempt: Mapped[int] = mapped_column(nullable=True)
     # Metadata from LongDescription generation
-    document_id: Mapped[uuid.UUID] = mapped_column(
+    document_id: Mapped[uuid.UUID | None] = mapped_column(
         sa.ForeignKey("documents.id", ondelete="SET NULL"),
-        nullable=False,
+        nullable=True,
         server_default=None,
     )
     # Metadata from Indexing
@@ -685,9 +668,9 @@ class LLMCall(CommonMixin, Base):
         server_default=None,
     )
     # Track usage and costs within a conversation
-    conversation_id: Mapped[uuid.UUID] = mapped_column(
+    conversation_id: Mapped[uuid.UUID | None] = mapped_column(
         sa.ForeignKey("conversations.id", ondelete="SET NULL"),
-        nullable=False,
+        nullable=True,
         server_default=None,
     )
     clone: Mapped["Clone"] = relationship("Clone", back_populates="llm_calls")
@@ -796,3 +779,21 @@ class LongDescription(CommonMixin, Base):
 
 #     def __repr__(self):
 #         return f"NSFWSignup(id={self.id}, user_id={self.user_id}, name='{self.name}', email='{self.email}')"
+
+
+# ------------- API Keys ------------- #
+# class APIKey(CommonMixin, Base):
+#     __tablename__ = "api_keys"
+
+#     hashed_key: Mapped[str] = mapped_column(unique=True)
+#     name: Mapped[str] = mapped_column(default=randomname.get_name)
+#     user_id: Mapped[uuid.UUID] = mapped_column(
+#         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+#     )
+#     clone_id: Mapped[uuid.UUID] = mapped_column(
+#         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
+#     )
+#     clone: Mapped["Clone"] = relationship("Clone", back_populates="api_keys")
+
+#     def __repr__(self):
+#         return f"APIKey(hashed_key={self.hashed_key}, clone_id={self.clone_id})"

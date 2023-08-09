@@ -305,6 +305,7 @@ class Conversation(CommonMixin, ConversationCreate):
 
     user_id: uuid.UUID = Field(description="The user that will chat with this clone")
     is_active: bool
+    clone_id: uuid.UUID
 
 
 # NOTE (Jonny): We don't allow users to change outputs of the clones, so is_clone.

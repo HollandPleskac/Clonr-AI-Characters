@@ -94,13 +94,13 @@ async def get_conversation_by_id(
     return conversation
 
 
-@router.patch("/{conversation_id}")
+@router.patch("/{conversation_id}", response_model=schemas.Conversation)
 async def patch_conversation(
     obj: schemas.ConversationUpdate,
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
     conversation: Annotated[models.Conversation, Depends(get_conversation)],
 ):
-    data = obj.dict(exclude_unset=True)
+    data = obj.model_dump(exclude_unset=True)
     if not data:
         raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
     for k, v in data.items():
@@ -112,8 +112,7 @@ async def patch_conversation(
     from fastapi.encoders import jsonable_encoder
 
     convo = schemas.Conversation(**jsonable_encoder(conversation))
-    return convo.json()
-    # return conversation
+    return convo
 
 
 @router.delete("/{conversation_id}", response_class=Response)
@@ -128,3 +127,22 @@ async def delete_conversation(
     await db.delete(convo)
     await db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# ----------- Messages ----------- #
+
+
+async def get_messages(
+    conversation_id: Annotated[str, Path(min_length=36, max_length=36)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    user: Annotated[models.Creator, Depends(deps.get_paying_user)],
+) -> models.Conversation:
+    convo = await db.get(models.Conversation, conversation_id)
+    if not convo or not convo.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Conversation ({conversation_id}) not found.",
+        )
+    if not user.is_superuser and not convo.user_id == user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    return convo

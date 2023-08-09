@@ -47,7 +47,7 @@ async def init_db():
     async with engine.begin() as conn:
         await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector;"))
         await conn.execute(text("CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;"))
-        # await conn.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trm;"))
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS pg_trgm;"))
         # for hybrid search, see: https://github.com/pgvector/pgvector-python/blob/master/examples/hybrid_search.py
         # an example usage is:
         # await cur.execute("SELECT id, content FROM document, plainto_tsquery('english', %s) query WHERE
