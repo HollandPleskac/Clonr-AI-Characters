@@ -2,6 +2,7 @@ import HomePage from '@/components/HomePage'
 import PlusModal from '@/components/PlusModal'
 import { carouselData } from '@/data/carouselData'
 import Footer from '@/components/Footer'
+import AuthModal from '@/components/AuthModal'
 
 async function fetchCharacters() {
   return carouselData
@@ -24,7 +25,7 @@ export default async function Home() {
           trending={trending}
           anime={anime}
         />
-        <PlusModal />
+        
       </main>
       <Footer />
     </>

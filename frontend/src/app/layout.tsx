@@ -1,6 +1,7 @@
 import './globals.css'
 import 'regenerator-runtime/runtime'
 import type { Metadata } from 'next'
+import AuthModal from '@/components/AuthModal'
 // import { Inter } from 'next/font/google'
 // const inter = Inter({ subsets: ['latin'] })
 
@@ -21,6 +22,7 @@ export default function RootLayout({
         className='w-full bg-black lg:inline'
       >
         {children}
+        
       </body>
     </html>
   )

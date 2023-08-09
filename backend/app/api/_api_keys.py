@@ -85,7 +85,7 @@ async def get(
 
 
 @router.delete("/{id}", response_model=schemas.APIKey)
-async def get(
+async def get_by_id(
     id: str,
     db: Annotated[AsyncSession, Depends(get_async_session)],
     user: Annotated[models.User, Depends(current_active_user)],

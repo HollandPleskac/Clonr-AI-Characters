@@ -22,8 +22,8 @@ and observations, answer the question that follows.
 {%- endfor %} 
 ---
 
-What is {{char}}'s relationship to {{entity}}, how does {{char}} feel about {{entity}}, \
-and what is {{entity}}'s current status? Use only the statements provided above and not prior knowledge. \
+What is {{char}}'s relationship to {{entity}} and how does {{char}} feel about {{entity}}? \
+Use only the statements provided above and not prior knowledge. \
 Your answer should be concise yet contain all of the necessary information to provide a full answer.
 {{- llm.user_end }}
 
@@ -48,8 +48,8 @@ and observations, answer the question that follows.
 {%- endfor %} 
 ---
 
-What is {{char}}'s relationship to {{entity}}, how does {{char}} feel about {{entity}}, \
-and what is {{entity}}'s current status? Use only the statements provided above and not prior knowledge. \
+What is {{char}}'s relationship to {{entity}} and how does {{char}} feel about {{entity}}? \
+Use only the statements provided above and not prior knowledge. \
 Your answer should be concise yet contain all of the necessary information to provide a full answer.
 
 ### Response:

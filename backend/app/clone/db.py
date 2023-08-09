@@ -222,7 +222,7 @@ class CloneDB:
                 timestamp=memory.timestamp,
                 last_accessed_at=memory.last_accessed_at,
                 importance=memory.importance,
-                is_shared=self.conversation_id is None,
+                is_shared=memory.is_shared,
                 depth=memory.depth,
                 children=children,
                 conversation_id=self.conversation_id,
@@ -239,10 +239,13 @@ class CloneDB:
             raise ValueError("Adding messages requires conversation_id.")
         msg = models.Message(
             id=message.id,
-            content=message.content,
             sender_name=message.sender_name,
+            content=message.content,
             timestamp=message.timestamp,
             is_clone=message.is_clone,
+            is_main=True,  # always true when 1st adding a message
+            is_active=True,  # always true when 1st adding a message
+            parent_id=message.parent_id,
             clone_id=self.clone_id,
             conversation_id=self.conversation_id,
         )
@@ -256,7 +259,7 @@ class CloneDB:
         content: str,
         entity_name: str,
         timestamp: datetime = get_current_datetime(),
-    ):
+    ) -> models.EntityContextSummary:
         if self.conversation_id is None:
             raise ValueError(
                 "Adding entity context summaries requires conversation_id."
@@ -270,10 +273,12 @@ class CloneDB:
         )
         self.db.add(obj)
         await self.db.commit()
+        await self.db.refresh(obj)
+        return obj
 
     async def add_agent_summary(
         self, content: str, timestamp: datetime = get_current_datetime()
-    ):
+    ) -> models.AgentSummary:
         if self.conversation_id is None:
             raise ValueError(
                 "Adding entity context summaries requires conversation_id."
@@ -286,6 +291,8 @@ class CloneDB:
         )
         self.db.add(obj)
         await self.db.commit()
+        await self.db.refresh(obj)
+        return obj
 
     async def query_nodes(
         self, query: str, params: retrieval.VectorSearchParams
@@ -380,17 +387,21 @@ class CloneDB:
         return memory_results
 
     # get operations
-    # should we use caching? this would grow without bound and be expensive af
     async def get_messages(
         self, num_messages: int | None = None, num_tokens: int | None = None
     ) -> list[models.Message]:
+        """Returns the recent messages in chronological order, i.e.
+        [newest, ..., oldest]"""
         if self.conversation_id is None:
             raise ValueError("Retrieving memories requires conversation_id.")
         if num_messages is None or num_messages < 1:
             num_messages = INF
+        if num_tokens is None or num_tokens < 1:
+            num_tokens = INF
         q = (
             sa.select(models.Message)
             .where(models.Message.conversation_id == self.conversation_id)
+            .where(models.Message.is_main)
             .order_by(models.Message.timestamp.desc())
             .limit(num_messages)
         )
@@ -401,7 +412,10 @@ class CloneDB:
 
         messages: list[models.Message] = []
         for msg in msg_itr:
-            num_tokens -= self.tokenizer.length(msg.content)
+            # TODO (Jonny): find a way to make sure this is in sync with the templates
+            # this should hopefully be an upper bound on how bad it can be. (if we omit timestamps)
+            formatted_content = f"[{msg.time_str}] {msg.content}"
+            num_tokens -= self.tokenizer.length(formatted_content)
             if num_tokens < 0:
                 break
             messages.append(msg)
@@ -416,6 +430,8 @@ class CloneDB:
             raise ValueError("Retrieving memories requires conversation_id.")
         if num_messages is None or num_messages < 1:
             num_messages = INF
+        if num_tokens is None or num_tokens < 1:
+            num_tokens = INF
         q = (
             sa.select(models.Memory)
             .where(models.Memory.conversation_id == self.conversation_id)
@@ -434,6 +450,32 @@ class CloneDB:
                 break
             memories.append(mem)
         return memories
+
+    async def get_monologues(
+        self, num_messages: int | None = None, num_tokens: int | None = None
+    ) -> list[models.Message]:
+        if num_messages is None or num_messages < 1:
+            num_messages = INF
+        if num_tokens is None or num_tokens < 1:
+            num_tokens = INF
+        q = (
+            sa.select(models.Monologue)
+            .where(models.Monologue.clone_id == self.clone_id)
+            .order_by(models.Message.created_at.desc())
+            .limit(num_messages)
+        )
+        msg_itr = await self.db.scalars(q)
+
+        if num_tokens >= INF:
+            return msg_itr.all()
+
+        messages: list[models.Message] = []
+        for msg in msg_itr:
+            num_tokens -= self.tokenizer.length(msg.content)
+            if num_tokens < 0:
+                break
+            messages.append(msg)
+        return messages
 
     async def get_entity_context_summary(
         self, entity_name: str, n: int = 1
@@ -465,43 +507,61 @@ class CloneDB:
         return summaries.all()
 
     async def increment_reflection_counter(self, importance: int) -> int:
-        return await self.cache.reflection_counter(clone_id=self.clone_id).increment(
-            importance=importance
-        )
+        if self.conversation_id is None:
+            raise ValueError(
+                "Cannot increment counter without setting conversation id."
+            )
+        return await self.cache.reflection_counter(
+            conversation_id=self.conversation_id
+        ).increment(importance=importance)
 
     async def increment_entity_context_counter(self, importance: int) -> int:
+        if self.conversation_id is None:
+            raise ValueError(
+                "Cannot increment counter without setting conversation id."
+            )
         return await self.cache.entity_context_counter(
-            clone_id=self.clone_id
+            conversation_id=self.conversation_id
         ).increment(importance=importance)
 
     async def increment_agent_summary_counter(self, importance: int) -> int:
-        return await self.cache.agent_summary_counter(clone_id=self.clone_id).increment(
-            importance=importance
-        )
+        if self.conversation_id is None:
+            raise ValueError(
+                "Cannot increment counter without setting conversation id."
+            )
+        return await self.cache.agent_summary_counter(
+            conversation_id=self.conversation_id
+        ).increment(importance=importance)
 
     async def get_reflection_count(self) -> int:
-        return await self.cache.reflection_counter(clone_id=self.clone_id).get()
+        return await self.cache.reflection_counter(
+            conversation_id=self.conversation_id
+        ).get()
 
     async def get_entity_context_count(self) -> int:
-        return await self.cache.entity_context_counter(clone_id=self.clone_id).get()
+        return await self.cache.entity_context_counter(
+            conversation_id=self.conversation_id
+        ).get()
 
     async def get_agent_summary_count(self) -> int:
-        return await self.cache.agent_summary_counter(clone_id=self.clone_id).get()
+        return await self.cache.agent_summary_counter(
+            conversation_id=self.conversation_id
+        ).get()
 
     async def set_reflection_count(self, value: int) -> None:
-        return await self.cache.reflection_counter(clone_id=self.clone_id).set(
-            value=value
-        )
+        return await self.cache.reflection_counter(
+            conversation_id=self.conversation_id
+        ).set(value=value)
 
     async def set_entity_context_count(self, value: int) -> None:
-        return await self.cache.entity_context_counter(clone_id=self.clone_id).set(
-            value=value
-        )
+        return await self.cache.entity_context_counter(
+            conversation_id=self.conversation_id
+        ).set(value=value)
 
     async def set_agent_summary_count(self, value: int) -> None:
-        return await self.cache.agent_summary_counter(clone_id=self.clone_id).set(
-            value=value
-        )
+        return await self.cache.agent_summary_counter(
+            conversation_id=self.conversation_id
+        ).set(value=value)
 
     async def delete_document(self, doc: models.Document) -> None:
         await self.db.delete(doc)
@@ -512,3 +572,43 @@ class CloneDB:
         await self.db.delete(monologue)
         await self.db.commit()
         return None
+
+    async def get_message_ancestors(
+        self, message_id: uuid.UUID
+    ) -> list[models.Message]:
+        getter = (
+            sa.select(models.Message)
+            .where(models.Message.id == message_id)
+            .cte(name="parent_for", recursive=True)
+        )
+        recursive_part = sa.select(models.Message).where(
+            models.Message.id == getter.c.parent_id
+        )
+        with_recursive = getter.union_all(recursive_part)
+        join_condition = models.Message.id == with_recursive.c.id
+        final_query = sa.select(models.Message).select_from(
+            with_recursive.join(models.Message, join_condition)
+        )
+        r = await self.db.scalars(final_query)
+        return r.all()
+
+    # (Jonny): is a flat list the best data structure to return here?
+    # maybe like a hierarchical dict would be better?
+    async def get_message_descendants(
+        self, message_id: uuid.UUID
+    ) -> list[models.Message]:
+        getter = (
+            sa.select(models.Message)
+            .where(models.Message.id == message_id)
+            .cte(name="children_for", recursive=True)
+        )
+        recursive_part = sa.select(models.Message).where(
+            models.Message.parent_id == getter.c.id
+        )
+        with_recursive = getter.union_all(recursive_part)
+        join_condition = models.Message.id == with_recursive.c.id
+        final_query = sa.select(models.Message).select_from(
+            with_recursive.join(models.Message, join_condition)
+        )
+        r = await self.db.scalars(final_query)
+        return r.all()

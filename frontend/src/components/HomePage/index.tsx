@@ -7,7 +7,7 @@ import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import 'swiper/css/scrollbar'
 
-const axios = require('axios').default;
+const axios = require('axios').default
 
 import Carousel from './Carousel'
 import TopBar from '@/components/TopBar'
@@ -17,7 +17,7 @@ import SearchGrid from './SearchGrid'
 import StatBar from '../Statistics/StatBar'
 import ScaleFadeIn from '../Transitions/ScaleFadeIn'
 import useClones from '@/hooks/useClones'
-
+import AuthModal from '../AuthModal'
 
 interface HomeScreenProps {
   topCharacters: Character[]
@@ -64,10 +64,9 @@ export default function HomeScreen({
   useEffect(() => {
     const debounceTimeout = setTimeout(handleCloneSearch, 500);
     return () => {
-      clearTimeout(debounceTimeout);
-    };
-  }, [searchInput]);
-
+      clearTimeout(debounceTimeout)
+    }
+  }, [searchInput])
 
   useEffect(() => {
     if (searchInput === '') {
@@ -83,10 +82,10 @@ export default function HomeScreen({
     }
   }, [searchInput])
 
-
   return (
     <div className='pb-[75px]'>
       <AlertBar />
+
       <TopBar
         searchInput={searchInput}
         onSearchInput={(x) => setSearchInput(x)}
@@ -101,30 +100,31 @@ export default function HomeScreen({
           <Carousel
             characters={topCharacters}
             name='Top Characters'
-            slidesPerView={3}
+            isBigCarousel={true}
             zIndex={40}
           />
-          <StatBar />
+          {/* <StatBar /> */}
           <Carousel
             characters={continueChatting}
             name='Continue Chatting'
-            slidesPerView={6}
+            isBigCarousel={false}
             zIndex={30}
           />
           <Carousel
             characters={trending}
             name='Trending'
-            slidesPerView={6}
+            isBigCarousel={false}
             zIndex={20}
           />
           <Carousel
             characters={anime}
             name='Anime'
-            slidesPerView={6}
+            isBigCarousel={false}
             zIndex={10}
           />
         </ScaleFadeIn>
       )}
+      <AuthModal />
     </div>
   )
 }

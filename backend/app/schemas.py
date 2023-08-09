@@ -13,6 +13,7 @@ from pydantic import (
 )
 
 from app.clone.types import AdaptationStrategy, InformationStrategy, MemoryStrategy
+from clonr.utils import get_current_datetime
 
 
 def special_char_validator(v: str | None, info: ValidationInfo) -> str | None:
@@ -289,6 +290,30 @@ class MessageCreate(BaseModel):
     )
     timestamp: datetime.datetime | None = Field(
         default=None, detail="Override the current time for the message timestamp."
+    )
+    parent_id: uuid.UUID = Field(
+        detail="The ID of the previous message in this conversation."
+    )
+
+
+# user_id is taken from auth, and clone_id is taken from the route.
+class SharedMemoryCreate(BaseModel):
+    content: str = Field(
+        detail="The memory that your clone will record. In general, the format should be stuff like: 'I felt angry' or 'I saw a duck'"
+    )
+    timestamp: datetime.datetime = Field(
+        default_factory=get_current_datetime,
+        detail="The timestamp at which this memory occurred. Defaults to current time.",
+    )
+    importance: int | None = Field(
+        default=None,
+        detail="The importance to assign to this memory. If none is set, one will be computed automatically.",
+    )
+
+
+class RevisionUpdate(BaseModel):
+    message_id: uuid.UUID = Field(
+        detail="The message being set as the chosen revision."
     )
 
 

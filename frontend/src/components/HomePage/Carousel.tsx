@@ -12,19 +12,19 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 
 import NetflixCard from './NetflixCard'
 import { Character } from '@/types'
-import { Navigation, Pagination, Scrollbar } from 'swiper'
+import { Navigation, Pagination, Scrollbar } from 'swiper/modules'
 
 interface CarouselProps {
   characters: Character[]
   name: String
-  slidesPerView: number
+  isBigCarousel: boolean
   zIndex: number
 }
 
 export default function Carousel({
   characters,
   name,
-  slidesPerView,
+  isBigCarousel = false,
   zIndex,
 }: CarouselProps) {
   // carousel state
@@ -33,7 +33,40 @@ export default function Carousel({
   const [prevEl, setPrevEl] = useState<HTMLElement | null>(null)
   const [nextEl, setNextEl] = useState<HTMLElement | null>(null)
 
-  // manipulate swiper css to remove overflow style
+  const [slidesPerView, setSlidesPerView] = useState(6)
+
+  const updateSlidesPerView = () => {
+    if (isBigCarousel) {
+      if (window.matchMedia('(min-width: 1096px)').matches) {
+        setSlidesPerView(3)
+      } else if (window.matchMedia('(min-width: 800px)').matches) {
+        setSlidesPerView(2)
+      } else {
+        setSlidesPerView(1)
+      }
+    } else {
+      if (window.matchMedia('(min-width: 1400px)').matches) {
+        setSlidesPerView(6)
+      } else if (window.matchMedia('(min-width: 1096px)').matches) {
+        setSlidesPerView(5)
+      } else if (window.matchMedia('(min-width: 800px)').matches) {
+        setSlidesPerView(4)
+      } else if (window.matchMedia('(min-width: 500px)').matches) {
+        setSlidesPerView(3)
+      } else {
+        setSlidesPerView(2)
+      }
+    }
+  }
+
+  useEffect(() => {
+    updateSlidesPerView() // Call on mount to set the initial value
+    window.addEventListener('resize', updateSlidesPerView) // Call on resize
+
+    return () => {
+      window.removeEventListener('resize', updateSlidesPerView)
+    }
+  }, [])
 
   return (
     <div className='pt-4 mb-4 text-white'>
@@ -47,7 +80,7 @@ export default function Carousel({
           navigation={{ prevEl, nextEl }}
           spaceBetween={4}
           slidesPerView={slidesPerView}
-          slidesPerGroup={6}
+          slidesPerGroup={slidesPerView}
           loop={true}
           speed={1100}
           onSlideChange={(swiper) => setLeftSwiperIndex(swiper.realIndex)}
@@ -67,6 +100,8 @@ export default function Carousel({
                 {/* Left Index if index === leftSwiperIndex */}
                 {/* Right Index if index === leftSwiperIndex + 6 -1   because indexes start at 0 */}
                 {/* RightIndex if index === (traditionalRightIndex - listLen)  card Index carousel overflows to on last scroll 0->5 6->11 12 -> 1 17-16 == 1*/}
+                {/* <h1 className='text-white'>{index}</h1>
+                <h1 className='text-green-400'>{leftSwiperIndex}</h1> */}
                 <NetflixCard
                   item={item}
                   edgeCard={
@@ -74,12 +109,12 @@ export default function Carousel({
                       ? 'left'
                       : index === leftSwiperIndex + slidesPerView - 1 ||
                         index ===
-                        leftSwiperIndex +
-                        slidesPerView -
-                        1 -
-                        characters.length
-                        ? 'right'
-                        : undefined
+                          leftSwiperIndex +
+                            slidesPerView -
+                            1 -
+                            characters.length
+                      ? 'right'
+                      : undefined
                   }
                 />
               </SwiperSlide>
