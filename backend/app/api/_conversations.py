@@ -194,7 +194,7 @@ async def get_response(
     user: Annotated[models.User, Depends(current_active_user)],
     cache: Annotated[RedisCache, Depends(get_async_redis_cache)],
 ):
-    ## TODO: modify later, this is a stub
+    # TODO: modify later, this is a stub
     response = {"response": "hello world"}
     # add to cache
     await cache.conversation_add(convo_id, response)
@@ -238,15 +238,13 @@ async def get_total_messages(
 
     num_msgs_sent = await db.scalar(
         select(func.count(models.Message.id)).where(
-            sa.and_(
-                models.Message.clone_id == user.id, models.Message.is_clone == False
-            )
+            sa.and_(models.Message.clone_id == user.id, not models.Message.is_clone)
         )
     )
 
     num_msgs_received = await db.scalar(
         select(func.count(models.Message.id)).where(
-            sa.and_(models.Message.clone_id != user.id, models.Message.is_clone == True)
+            sa.and_(models.Message.clone_id != user.id, models.Message.is_clone)
         )
     )
 

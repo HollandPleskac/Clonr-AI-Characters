@@ -3,7 +3,7 @@ from .base import Template
 from .entity_relationship import EntityContextCreate
 from .long_description import LongDescription
 from .memory import MemoryRating, MemoryRatingWithContext
-from .message import Message, MessageQuery
+from .message import LongTermMemoryMessage, MessageQuery, ZeroMemoryMessage
 from .qa import QuestionAndAnswer
 from .reflection import ReflectionInsights, ReflectionQuestions
 from .summarize import (

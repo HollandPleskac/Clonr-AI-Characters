@@ -40,21 +40,37 @@ class CloneCache:
         id = str(conversation_id)
         return f"conversation_id::{id}"
 
-    def reflection_counter(self, clone_id: str | uuid.UUID):
+    def reflection_counter(self, conversation_id: str | uuid.UUID):
         """Example usage:  await cache.reflection_counter(clone_model.id).increment(10) to add 10 to the counter."""
         return CacheCounter(
-            conn=self.conn, key=f"{self._clone_key(clone_id)}::reflection_counter"
+            conn=self.conn,
+            key=f"{self._conversation_key(conversation_id)}::reflection_counter",
         )
 
-    def agent_summary_counter(self, clone_id: str | uuid.UUID):
+    def agent_summary_counter(self, conversation_id: str | uuid.UUID):
         return CacheCounter(
-            conn=self.conn, key=f"{self._clone_key(clone_id)}::agent_summary_counter"
+            conn=self.conn,
+            key=f"{self._conversation_key(conversation_id)}::agent_summary_counter",
         )
 
-    def entity_context_counter(self, clone_id: str | uuid.UUID):
+    def entity_context_counter(self, conversation_id: str | uuid.UUID):
         return CacheCounter(
-            conn=self.conn, key=f"{self._clone_key(clone_id)}::entity_context_counter"
+            conn=self.conn,
+            key=f"{self._conversation_key(conversation_id)}::entity_context_counter",
         )
+
+    async def increment_all_counters(
+        self, conversation_ids: list[str | uuid.UUID], importance: int
+    ):
+        if isinstance(conversation_ids, (str, uuid.UUID)):
+            conversation_ids = [conversation_ids]
+        async with self.conn.pipeline() as p:
+            for conversation_id in conversation_ids:
+                k = self._conversation_key(conversation_id=str(conversation_id))
+                p.incrby(f"{k}::reflection_counter", importance)
+                p.incrby(f"{k}::agent_summary_counter", importance)
+                p.incrby(f"{k}::entity_context_counter", importance)
+            await p.execute()
 
     async def add_clone(self, clone: models.Clone) -> bool:
         key = self._clone_key(clone.id)
