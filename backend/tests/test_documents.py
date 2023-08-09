@@ -5,7 +5,12 @@ from sqlalchemy.orm import Session
 from app import models, schemas
 
 
-def test_documents(client: TestClient, makima: tuple[dict[str, str], str], db: Session):
+def test_documents(
+    client: TestClient,
+    makima: tuple[dict[str, str], str],
+    db: Session,
+    superuser_headers: dict[str, str],
+):
     makima_headers, clone_id = makima
 
     # Create some documents
@@ -15,14 +20,14 @@ def test_documents(client: TestClient, makima: tuple[dict[str, str], str], db: S
         description="a bunch of nonsense",
         type="manual",
         url=None,
-    ).dict()
+    ).model_dump()
     doc2_create = schemas.DocumentCreate(
         content="nickelback is the greatest band ever. " * 120,
         name="nickelback",
         description="only the truth",
         type="wiki",
         url="https://nickelback.the.one.true.god.com",
-    ).dict()
+    ).model_dump()
     for d in [doc1_create, doc2_create]:
         r = client.post(f"/clones/{clone_id}/documents", json=d, headers=makima_headers)
         data = r.json()
@@ -59,6 +64,24 @@ def test_documents(client: TestClient, makima: tuple[dict[str, str], str], db: S
     assert r.status_code == 200, data
     assert len(data) == 2
     assert data[0]["id"] == doc_id
+
+    # test generate long description
+    r = client.post(
+        f"/clones/{clone_id}/generate_long_description",
+        params=dict(name="nickel"),
+        headers=superuser_headers,
+    )
+    data = r.json()
+    assert r.status_code == 201, data
+
+    # retrieve long descriptions
+    r = client.get(
+        f"/clones/{clone_id}/generate_long_description",
+        headers=superuser_headers,
+    )
+    data = r.json()
+    assert r.status_code == 200, data
+    assert len(data) == 1
 
     # test delete document
     r = client.delete(f"/clones/{clone_id}/documents/{doc_id}", headers=makima_headers)

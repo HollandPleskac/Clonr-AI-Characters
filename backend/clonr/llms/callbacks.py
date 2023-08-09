@@ -90,11 +90,6 @@ class LoggingCallback(LLMCallback):
         except Exception as e:
             logger.error(e)
             data = ""
-        response = await self.check_moderation(prompt_or_messages, llm.api_key)
-        flagged = response.get("flagged", False)
-        if flagged:
-            raise ValueError("Flagged by moderation endpoint!")
-
         logger.info(f"LLM CALL START: {data}")
 
     async def on_generate_end(self, llm: LLM, llm_response: LLMResponse, **kwargs):
@@ -105,8 +100,8 @@ class LoggingCallback(LLMCallback):
             info = ""
         logger.info(
             (
-                f"LLM CALL FINISH: Usage: {llm_response.usage.json()}. "
-                f"Time: {llm_response.time:.02f}, {llm_response.tokens_per_second:.02f} tok/s. "
+                f"LLM CALL FINISH: Usage: {llm_response.usage.model_dump_json()}. "
+                f"Duration: {llm_response.duration:.02f}, {llm_response.tokens_per_second:.02f} tok/s. "
                 f"Info: {info}"
             )
         )
@@ -140,14 +135,12 @@ class AddToPostgresCallback(LLMCallback):
         params: GenerationParams | None,
         **kwargs,
     ):
-        response = await self.check_moderation(prompt_or_messages, llm.api_key)
-        flagged = response.get("flagged", False)
-        if flagged:
-            raise ValueError("Flagged by moderation endpoint!")
+        pass
 
     async def on_generate_end(self, llm: LLM, llm_response: LLMResponse, **kwargs):
         r = llm_response
         mdl = models.LLMCall(
+            content=r.content,
             model_type=r.model_type,
             model_name=r.model_name,
             prompt_tokens=r.usage.prompt_tokens,

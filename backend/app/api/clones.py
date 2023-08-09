@@ -7,6 +7,7 @@ from fastapi import Depends, HTTPException, Path, Query, status
 from fastapi.responses import Response
 from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from app import deps, models, schemas
 from app.clone.controller import Controller
@@ -259,18 +260,19 @@ async def delete(
 # Lol the similarity of an expensive route vs a cheap route low-key scares me.
 @router.post(
     "/{clone_id}/generate_long_description",
-    response_model=schemas.Clone,
+    response_model=schemas.LongDescription,
     dependencies=[Depends(deps.get_superuser)],
+    status_code=201,
 )
 async def generate_long_desc(
     llm: Annotated[LLM, Depends(deps.get_llm)],
     clone: Annotated[models.Clone, Depends(get_clone)],
     clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
 ):
-    updated_clone = await Controller.generate_long_description(
+    long_desc = await Controller.generate_long_description(
         llm=llm, clone=clone, clonedb=clonedb
     )
-    return updated_clone
+    return long_desc
 
 
 @router.get(
@@ -284,9 +286,10 @@ async def view_generated_long_descs(
     r = await clonedb.db.scalars(
         sa.select(models.LongDescription)
         .where(models.LongDescription.clone_id == clone.id)
+        .options(joinedload(models.LongDescription.documents))
         .order_by(models.LongDescription.updated_at.desc())
     )
-    long_descs = r.all()
+    long_descs = r.unique().all()
     return long_descs
 
 

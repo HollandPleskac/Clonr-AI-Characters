@@ -680,23 +680,26 @@ class Controller:
                     f"Invalid memory strategy: {self.memory_strategy}"
                 )
 
-    async def generate_long_description(self) -> models.Clone:
+    @classmethod
+    async def generate_long_description(
+        cls, llm: LLM, clone: models.Clone, clonedb: CloneDB
+    ) -> models.LongDescription:
         # This can be an expensive computation as it will cost roughly
         # the number of tokens in all documents combined, plus some
         # factor like 2 * 512 * (tot_tokens / llm.context_length)
-        r = await self.clonedb.db.scalars(
+        r = await clonedb.db.scalars(
             sa.select(models.Document).order_by(models.Document.type)
         )
         docs = r.all()
         long_desc = await generate.long_description_create(
-            llm=self.llm, short_description=self.clone.short_description, docs=docs
+            llm=llm, short_description=clone.short_description, docs=docs
         )
-        self.clone.long_description = long_desc
-        long_desc_model = models.LongDescriptions(
-            content=long_desc, documents=docs, clone=self.clone
+        clone.long_description = long_desc
+        long_desc_model = models.LongDescription(
+            content=long_desc, documents=docs, clone=clone
         )
-        self.clonedb.db.add(self.clone)
-        self.clonedb.db.add(long_desc_model)
-        await self.clonedb.db.commit()
-        await self.clonedb.db.refresh(self.clone)
-        return self.clone
+        clonedb.db.add(clone)
+        clonedb.db.add(long_desc_model)
+        await clonedb.db.commit()
+        await clonedb.db.refresh(long_desc_model, ["documents"])
+        return long_desc_model
