@@ -51,6 +51,10 @@ class ControllerException(Exception):
     pass
 
 
+class UnsupportedStrategy(Exception):
+    pass
+
+
 class Controller:
     def __init__(
         self,
@@ -306,7 +310,7 @@ class Controller:
                 long_description = None
             case _:
                 # not sure if this is a good idea, might want to break earlier in this function.
-                raise ControllerException(
+                raise UnsupportedStrategy(
                     f"Adaptation strategy ({self.adaptation_strategy}) is not compatible with agent summaries."
                 )
 
@@ -323,7 +327,7 @@ class Controller:
 
     async def _entity_context_compute(self):
         if self.adaptation_strategy == AdaptationStrategy.static:
-            raise ControllerException(
+            raise UnsupportedStrategy(
                 f"Adaptation strategy ({self.adaptation_strategy}) is not compatible with agent summaries."
             )
         # We adapt the in-template questions from clonr/templates/entity_relationship
@@ -480,7 +484,6 @@ class Controller:
         messages = list(reversed(recent_msgs))
 
         new_msg_content = await generate.generate_zero_memory_message(
-            llm=self.llm,
             char=self.clone.name,
             user_name=self.user_name,
             short_description=self.clone.short_description,
@@ -538,7 +541,7 @@ class Controller:
                         # replace the long description, so the bot can change quickly!
                         long_description = a_summ[0] if a_summ else None
                 case _:
-                    raise TypeError(
+                    raise UnsupportedStrategy(
                         f"Invalid adaptation strategy: {self.adaptation_strategy}"
                     )
 
@@ -614,6 +617,8 @@ class Controller:
             llm=self.llm,
             messages=[],
         )
+        # we will prune overlapping memories with messages later, so this is a conservative
+        # overcount
         tokens_remaining -= self.llm.num_tokens(cur_prompt)
         tokens_remaining -= generate.Params.generate_long_term_memory_message.max_tokens
 
@@ -624,9 +629,16 @@ class Controller:
         recent_msgs = await self.clonedb.get_messages(num_tokens=tokens_remaining)
         parent_id = recent_msgs[0].id if recent_msgs else None
         messages = list(reversed(recent_msgs))
+        oldest_msg_timestamp = messages[0].timestamp
+
+        # NOTE (Jonny): Since only shared memories can be non-messages at the moment,
+        # we can just remove any memory that is more recent than the oldest message
+        # and that is not shared. Pretty simple fix to prevent overlap
+        memories = [
+            m for m in memories if m.is_shared or m.timestamp < oldest_msg_timestamp
+        ]
 
         new_msg_content = await generate.generate_long_term_memory_message(
-            llm=self.llm,
             char=self.clone.name,
             user_name=self.user_name,
             short_description=self.clone.short_description,
@@ -654,6 +666,8 @@ class Controller:
         """This method is the entire IP of this whole entire application, the goddamn GOAT.
         Calls all of the subroutines and returns the next message response for the clone.
         """
+        # TODO (Jonny): Add a telemetry packet here with things like prompt size, n_msgs,
+        # n_memories, n_pruned_memories, n_facts, fact_chars, mem_chars, etc.
         match self.memory_strategy:
             case MemoryStrategy.none:
                 return await self._generate_zero_memory_message()
@@ -662,13 +676,14 @@ class Controller:
                 # all just handled in the same function
                 return self._generate_long_term_memory_message()
             case _:
-                raise TypeError(f"Invalid memory strategy: {self.memory_strategy}")
+                raise UnsupportedStrategy(
+                    f"Invalid memory strategy: {self.memory_strategy}"
+                )
 
     async def generate_long_description(self) -> models.Clone:
-        # TODO (Jonny): We should likely persist the results of this, instead of
-        # just patching the clone class, because this can be an expensive computation
-        # as it will cost roughly the number of tokens in all documents combined, plus
-        # some factor like 2 * 512 * (tot_tokens / llm.context_length)
+        # This can be an expensive computation as it will cost roughly
+        # the number of tokens in all documents combined, plus some
+        # factor like 2 * 512 * (tot_tokens / llm.context_length)
         r = await self.clonedb.db.scalars(
             sa.select(models.Document).order_by(models.Document.type)
         )

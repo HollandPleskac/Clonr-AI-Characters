@@ -562,7 +562,7 @@ async def generate_long_term_memory_message(
     memories: list[Memory] | None = None,
     agent_summary: str | None = None,
     entity_context_summary: str | None = None,
-    use_timestamps: bool = False,
+    use_timestamps: bool = True,
     **kwargs,
 ) -> str:
     if not llm.is_chat_model:

@@ -1,4 +1,5 @@
 import datetime
+import random
 import uuid
 from typing import Annotated
 
@@ -24,11 +25,25 @@ def special_char_validator(v: str | None, info: ValidationInfo) -> str | None:
     return v
 
 
+def generate_hex_code():
+    s = "1234567890ABCDEF"
+    return "".join(random.choice(s) for _ in range(6))
+
+
+def is_valid_hex_code(s: str | None):
+    if s is None:
+        return True
+    return all(x in "1234567890ABCDEF" for x in s)
+
+
 class UserRead(BaseUser[uuid.UUID]):
     model_config = ConfigDict(from_attributes=True)
 
     private_chat_name: str
     is_banned: bool
+    nsfw_enabled: bool
+    num_free_messages_sent: int
+    is_subscribed: bool
 
 
 class UserCreate(BaseUserCreate):
@@ -77,13 +92,23 @@ class Creator(CreatorCreate):
 
 class TagCreate(BaseModel):
     name: str
+    color_code: Annotated[str, AfterValidator(is_valid_hex_code)] = Field(
+        default=generate_hex_code,
+        detail="Color hex code for displaying tag on the frontend",
+    )
 
 
-class Tag(TagCreate):
-    model_config = ConfigDict(from_attributes=True)
+class TagUpdate(TagCreate):
+    name: str | None = None
+    color_code: Annotated[str | None, AfterValidator(is_valid_hex_code)] = Field(
+        default=None,
+        detail="Color hex code for displaying tag on the frontend",
+    )
 
-    created_at: datetime.datetime
-    updated_at: datetime.datetime
+
+class Tag(CommonMixin, BaseModel):
+    name: str
+    color_code: str
 
 
 class CloneCreate(BaseModel):

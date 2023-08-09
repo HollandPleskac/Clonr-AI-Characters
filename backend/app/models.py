@@ -148,23 +148,16 @@ class Creator(Base):
 clones_to_tags = sa.Table(
     "clones_to_tags",
     Base.metadata,
-    sa.Column("tag", sa.Text, sa.ForeignKey("tags.name"), primary_key=True),
+    sa.Column("tag", sa.Text, sa.ForeignKey("tags.id"), primary_key=True),
     sa.Column("clone_id", sa.Uuid, sa.ForeignKey("clones.id"), primary_key=True),
 )
 
 
-class Tag(Base):
+class Tag(CommonMixin, Base):
     __tablename__ = "tags"
 
-    name: Mapped[str] = mapped_column(primary_key=True, unique=True)
-    created_at: Mapped[datetime.datetime] = mapped_column(
-        sa.DateTime(timezone=True), server_default=sa.func.now()
-    )
-    updated_at: Mapped[datetime.datetime] = mapped_column(
-        sa.DateTime(timezone=True),
-        server_default=sa.func.now(),
-        onupdate=sa.func.current_timestamp(),
-    )
+    name: Mapped[str] = mapped_column(unique=True)
+    color_code: Mapped[str]
     clones: Mapped[list["Clone"]] = relationship(
         secondary=clones_to_tags, back_populates="tags"
     )
@@ -400,7 +393,7 @@ class Document(CommonMixin, Base):
     nodes: Mapped[list["Node"]] = relationship(
         "Node", back_populates="document", cascade="all, delete"
     )
-    documents: Mapped[list["LongDescription"]] = relationship(
+    generated_long_descriptions: Mapped[list["LongDescription"]] = relationship(
         secondary=long_descs_to_docs, back_populates="documents"
     )
 
