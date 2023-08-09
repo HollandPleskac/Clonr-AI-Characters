@@ -148,7 +148,7 @@ class Creator(Base):
 clones_to_tags = sa.Table(
     "clones_to_tags",
     Base.metadata,
-    sa.Column("tag", sa.Text, sa.ForeignKey("tags.id"), primary_key=True),
+    sa.Column("tag", sa.Uuid, sa.ForeignKey("tags.id"), primary_key=True),
     sa.Column("clone_id", sa.Uuid, sa.ForeignKey("clones.id"), primary_key=True),
 )
 

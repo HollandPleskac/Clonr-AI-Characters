@@ -342,6 +342,12 @@ class RevisionUpdate(BaseModel):
     )
 
 
+class LongDescription(CommonMixin, BaseModel):
+    content: str
+    clone_id: uuid.UUID
+    documents: list[Document]
+
+
 # ------------------------------------#
 
 
