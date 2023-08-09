@@ -401,6 +401,7 @@ class CloneDB:
         q = (
             sa.select(models.Message)
             .where(models.Message.conversation_id == self.conversation_id)
+            .where(models.Message.is_main)
             .order_by(models.Message.timestamp.desc())
             .limit(num_messages)
         )
