@@ -34,7 +34,7 @@ export default function TopBarStatic(): React.ReactElement {
           <p className='text-white font-thin ml-2 align-middle'>users</p>
         </Link>
         <Link
-          href='#'
+          href='/'
           className={`transition duration-200 ml-4 ${
             pathname === '/'
               ? 'text-white font-semibold'

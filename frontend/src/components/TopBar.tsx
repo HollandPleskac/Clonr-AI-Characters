@@ -133,7 +133,7 @@ export default function TopBar({
             <div className='flex mt-5 lg:items-center lg:justify-between lg:mt-0 lg:pl-5'>
               <div className='flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-start'>
                 <Link
-                  href='#'
+                  href='/'
                   className={`transition duration-200 lg:ml-4 ${
                     pathname === '/'
                       ? 'text-white font-semibold'

@@ -205,13 +205,78 @@ export default function Login() {
             {activeTab === 'billing' && (
               <div>
                 <h2 className='text-lg sm:text-xl font-semibold mb-4 text-white'>
-                  Current Plan
+                  Current Plan: Startup
                 </h2>
-                <div className='bg-purple-500 rounded-lg px-4 py-2 inline-flex items-center justify-center text-white'>
-                  Clonr Pro
+                <div className='inline-flex flex-col text-start shadow-xl rounded-xl'>
+                  <span className='font-bold text-2xl text-gray-800 dark:text-gray-200'>
+                    <span className='font-bold text-lg mr-1'>$</span>
+                    39
+                  </span>
+                  <p className='mt-2 text-sm text-gray-500'>
+                    All the basics for starting a new business
+                  </p>
+
+                  <ul className='mt-2 space-y-2.5 text-sm'>
+                    <li className='flex space-x-2'>
+                      <svg
+                        className='flex-shrink-0 h-5 w-5 text-purple-600'
+                        width='16'
+                        height='16'
+                        viewBox='0 0 16 16'
+                        fill='none'
+                        xmlns='http:www.w3.org/2000/svg'
+                      >
+                        <path
+                          d='M11.5219 4.0949C11.7604 3.81436 12.181 3.78025 12.4617 4.01871C12.7422 4.25717 12.7763 4.6779 12.5378 4.95844L6.87116 11.6251C6.62896 11.91 6.1998 11.94 5.9203 11.6916L2.9203 9.02494C2.64511 8.78033 2.62032 8.35894 2.86493 8.08375C3.10955 7.80856 3.53092 7.78378 3.80611 8.02839L6.29667 10.2423L11.5219 4.0949Z'
+                          fill='currentColor'
+                        />
+                      </svg>
+                      <span className='text-gray-800 dark:text-gray-400'>
+                        2 users
+                      </span>
+                    </li>
+
+                    <li className='flex space-x-2'>
+                      <svg
+                        className='flex-shrink-0 h-5 w-5 text-purple-600'
+                        width='16'
+                        height='16'
+                        viewBox='0 0 16 16'
+                        fill='none'
+                        xmlns='http:www.w3.org/2000/svg'
+                      >
+                        <path
+                          d='M11.5219 4.0949C11.7604 3.81436 12.181 3.78025 12.4617 4.01871C12.7422 4.25717 12.7763 4.6779 12.5378 4.95844L6.87116 11.6251C6.62896 11.91 6.1998 11.94 5.9203 11.6916L2.9203 9.02494C2.64511 8.78033 2.62032 8.35894 2.86493 8.08375C3.10955 7.80856 3.53092 7.78378 3.80611 8.02839L6.29667 10.2423L11.5219 4.0949Z'
+                          fill='currentColor'
+                        />
+                      </svg>
+                      <span className='text-gray-800 dark:text-gray-400'>
+                        Plan features
+                      </span>
+                    </li>
+
+                    <li className='flex space-x-2'>
+                      <svg
+                        className='flex-shrink-0 h-5 w-5 text-purple-600'
+                        width='16'
+                        height='16'
+                        viewBox='0 0 16 16'
+                        fill='none'
+                        xmlns='http:www.w3.org/2000/svg'
+                      >
+                        <path
+                          d='M11.5219 4.0949C11.7604 3.81436 12.181 3.78025 12.4617 4.01871C12.7422 4.25717 12.7763 4.6779 12.5378 4.95844L6.87116 11.6251C6.62896 11.91 6.1998 11.94 5.9203 11.6916L2.9203 9.02494C2.64511 8.78033 2.62032 8.35894 2.86493 8.08375C3.10955 7.80856 3.53092 7.78378 3.80611 8.02839L6.29667 10.2423L11.5219 4.0949Z'
+                          fill='currentColor'
+                        />
+                      </svg>
+                      <span className='text-gray-800 dark:text-gray-400'>
+                        Product support
+                      </span>
+                    </li>
+                  </ul>
                 </div>
                 <Link
-                  className='text-lg sm:text-xl font-semibold mb-4 text-purple-600  mt-6 hover:underline '
+                  className='block text-lg sm:text-xl font-semibold mb-4 text-purple-600  mt-6 hover:underline '
                   href='/pricing'
                 >
                   Switch Plans Here
@@ -226,7 +291,7 @@ export default function Login() {
                 </h2>
                 <div className='flex w-[50%] h-4 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-700'>
                   <div
-                    className='flex flex-col justify-center overflow-hidden bg-blue-500 text-xs text-white text-center'
+                    className='flex flex-col justify-center overflow-hidden bg-purple-500 text-xs text-white text-center'
                     role='progressbar'
                     style={{ width: '57%' }}
                     aria-valuenow='57'
@@ -236,6 +301,37 @@ export default function Login() {
                     57%
                   </div>
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'settings' && (
+              <div>
+                <h2 className='text-lg sm:text-xl font-semibold mb-4 text-white'>
+                  Change private chat name
+                </h2>
+                <label htmlFor='hs-trailing-button-add-on' className='sr-only'>
+                  Label
+                </label>
+                <div className='inline-flex rounded-md shadow-sm mb-6'>
+                  <input
+                    type='text'
+                    id='hs-trailing-button-add-on'
+                    name='hs-trailing-button-add-on'
+                    className='py-3 px-4 block w-full shadow-sm rounded-l-md text-sm focus:z-10 focus:border-purple-500 focus:ring-purple-500 bg-slate-900 border-gray-700 text-gray-400'
+                  />
+                  <button
+                    type='button'
+                    className='py-3 px-4 inline-flex flex-shrink-0 justify-center items-center gap-2 rounded-r-md border border-transparent font-semibold bg-purple-500 text-white hover:bg-purple-600 focus:z-10 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm'
+                  >
+                    Update
+                  </button>
+                </div>
+                <button
+                  type='button'
+                  className='block py-3 px-4 justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-red-500 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800'
+                >
+                  Deactivate Account
+                </button>
               </div>
             )}
           </div>
