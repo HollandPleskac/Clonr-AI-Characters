@@ -111,7 +111,7 @@ async def create_clone(
     creator: Annotated[models.Creator, Depends(deps.get_current_active_creator)],
     embedding_client: Annotated[EmbeddingClient, Depends(deps.get_embedding_client)],
 ):
-    data = obj.dict(exclude_none=True)
+    data = obj.model_dump(exclude_none=True)
     if obj.tags:
         r = await db.scalars(sa.select(models.Tag).where(models.Tag.name.in_(obj.tags)))
         tags = r.all()

@@ -46,6 +46,7 @@ class CloneDB:
         embedding_client: EmbeddingClient,
         clone_id: str | uuid.UUID,
         conversation_id: str | uuid.UUID,
+        user_id: str | uuid.UUID,
     ):
         self.embedding_client = embedding_client
         self.db = db
@@ -53,6 +54,7 @@ class CloneDB:
         self.tokenizer = tokenizer
         self.clone_id = clone_id
         self.conversation_id = conversation_id
+        self.user_id = user_id
 
     async def add_document(self, doc: Document, nodes: list[Node]) -> models.Document:
         # don't re-do work if it's already there?
@@ -234,9 +236,13 @@ class CloneDB:
         await self.db.commit()
         return mem_models
 
-    async def add_message(self, message: Message) -> models.Message:
+    async def add_message(
+        self, message: Message, msg_to_unset: models.Message | None = None
+    ) -> models.Message:
         if self.conversation_id is None:
             raise ValueError("Adding messages requires conversation_id.")
+        if self.user_id is None:
+            raise ValueError("Adding messages requires user_id.")
         msg = models.Message(
             id=message.id,
             sender_name=message.sender_name,
@@ -248,8 +254,11 @@ class CloneDB:
             parent_id=message.parent_id,
             clone_id=self.clone_id,
             conversation_id=self.conversation_id,
+            user_id=self.user_id,
         )
         self.db.add(msg)
+        if msg_to_unset is not None:
+            msg_to_unset.is_main = False
         await self.db.commit()
         await self.db.refresh(msg)
         return msg
@@ -402,6 +411,7 @@ class CloneDB:
             sa.select(models.Message)
             .where(models.Message.conversation_id == self.conversation_id)
             .where(models.Message.is_main)
+            .where(models.Message.is_active)
             .order_by(models.Message.timestamp.desc())
             .limit(num_messages)
         )

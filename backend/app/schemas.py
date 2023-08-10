@@ -236,19 +236,21 @@ class Monologue(CommonMixin, MonologueCreate):
     clone_id: uuid.UUID
 
 
-# class Flags(enum.Enum):
+# NOTE (Jonny): Which features are covered now
 #     zero_memory: int
 #     conversation_retrieval: int
 #     information_retrieval: int
 #     dynamic_quote_retrieval: int
 #     internal_thought_stream: int
-#     third_party_memory_stream: int
 #     agent_summary_frequency: int
+#     multi_line_user_input: int
+
+# Which features are not yet covered
+#     third_party_memory_stream: int
 #     multi_character_chat__api_key_and_entity_context: int = (
 #         "needs websockets, too hard now"
 #     )
 #     streaming_response: int = "no fuck this, too hard and not realistic"
-#     multi_line_user_input: int = "would seem more realistic"
 #     multi_line_clone_output: int = "a bit harder, better to just parse outputs maybe?"
 #     current_event_knowledge: int = "serpAPI call"
 #     NSFW: int = "no content moderation boi"
@@ -309,16 +311,34 @@ class Conversation(CommonMixin, ConversationCreate):
 
 
 # NOTE (Jonny): We don't allow users to change outputs of the clones, so is_clone.
-# is not a provided argument. sender_name, clone_id, and conversation_id can be inferred from the
+# is not a provided argument. sender_name, clone_id, and conversation_id can be inferred
+# from the user, convo, and path respectively
 class MessageCreate(BaseModel):
     content: Annotated[str, AfterValidator(special_char_validator)] = Field(
         description="Message content. Messages may not contain <| or |>.",
     )
-    timestamp: datetime.datetime | None = Field(
-        default=None, detail="Override the current time for the message timestamp."
-    )
-    parent_id: uuid.UUID = Field(
-        detail="The ID of the previous message in this conversation."
+
+
+class MessageUpdate(BaseModel):
+    is_active: bool
+
+
+class Message(CommonMixin, MessageCreate):
+    sender_name: str
+    timestamp: datetime.datetime
+    is_clone: bool
+    is_main: bool
+    is_active: bool
+    parent_id: uuid.UUID
+    clone_id: uuid.UUID
+    user_id: uuid.UUID
+    conversation_id: uuid.UUID
+
+
+class MessageGenerate(BaseModel):
+    is_revision: bool = Field(
+        default=False,
+        description="Whether the current request is to revise a previous generation, or create a new one.",
     )
 
 
@@ -337,20 +357,13 @@ class SharedMemoryCreate(BaseModel):
     )
 
 
-class RevisionUpdate(BaseModel):
-    message_id: uuid.UUID = Field(
-        detail="The message being set as the chosen revision."
-    )
-
-
 class LongDescription(CommonMixin, BaseModel):
     content: str
     clone_id: uuid.UUID
     documents: list[Document]
 
 
-# ------------------------------------#
-
+# ------------ Below here is unused ------------ #
 
 # class APIKeyCreate(BaseModel):
 #     user_id: uuid.UUID
@@ -368,80 +381,6 @@ class LongDescription(CommonMixin, BaseModel):
 
 # class APIKeyOnce(APIKey):
 #     key: str
-
-
-# class MessageCreate(BaseModel):
-#     content: str
-#     sender_name: str
-
-
-# class Message(CommonMixin, MessageCreate):
-#     from_clone: bool
-#     conversation_id: uuid.UUID
-
-#     class Config:
-#         orm_mode = True
-
-
-# class ConversationCreate(BaseModel):
-#     clone_id: uuid.UUID
-#     user_id: uuid.UUID = None
-#     name: Optional[str] = None
-
-
-# class Conversation(CommonMixin, ConversationCreate):
-#     # This raises an error when fastapi tries to convert
-#     # sqlalchemy.exc.MissingGreenlet: greenlet_spawn has not been called
-#     # messages: Optional[list[Message]] = None
-
-#     class Config:
-#         orm_mode = True
-
-
-# class ExampleDialogueCreate(BaseModel):
-#     content: str
-#     content_embedding: List[float]
-#     num_tokens: int
-#     summary: str
-#     summary_embedding: List[float]
-#     chunk_index: int
-#     is_shared: bool = True
-#     conversation_id: uuid.UUID
-
-
-# class ExampleDialogueUpdate(ExampleDialogueCreate):
-#     pass
-
-
-# class ExampleDialogue(ExampleDialogueCreate):
-#     class Config:
-#         orm_mode = True
-
-
-# class MemoryCreate(BaseModel):
-#     memory: str
-#     memory_embedding: List[float]
-#     timestamp: datetime.datetime = datetime.datetime.utcnow()
-#     last_accessed_at: datetime.datetime = datetime.datetime.utcnow()
-#     importance: float = 0.0
-#     is_shared: bool = False
-#     is_reflection: bool = False
-#     conversation_id: uuid.UUID
-#     clone_id: uuid.UUID
-
-
-# class MemoryUpdate(BaseModel):
-#     memory: str
-#     memory_embedding: List[float]
-#     last_accessed_at: datetime.datetime
-#     importance: float
-#     is_shared: bool
-#     is_reflection: bool
-
-
-# class Memory(CommonMixin, MemoryCreate):
-#     class Config:
-#         orm_mode = True
 
 
 # class CreatorPartnerProgramSignupBase(BaseModel):

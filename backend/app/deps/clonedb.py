@@ -36,6 +36,18 @@ async def get_clonedb(
     )
     if not user.is_superuser and not exists.all():
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    user_id = user.id
+    if user.is_superuser:
+        user_id = await db.scalar(
+            sa.select(models.Conversation.user_id).where(
+                models.Conversation.id == conversation_id
+            )
+        )
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Conversation {conversation_id} not found",
+            )
     cache = CloneCache(conn=conn)
     clonedb = CloneDB(
         db=db,
@@ -44,5 +56,6 @@ async def get_clonedb(
         embedding_client=embedding_client,
         clone_id=clone_id,
         conversation_id=conversation_id,
+        user_id=user_id,
     )
     yield clonedb

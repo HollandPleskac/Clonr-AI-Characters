@@ -46,7 +46,7 @@ async def get_current_active_creator(
 
 async def get_paying_user(
     user: Annotated[models.User, Depends(get_current_active_user)],
-) -> bool:
+) -> models.User:
     return user
     if user.is_subscribed:
         return user

@@ -1,7 +1,6 @@
 import json
 from abc import ABC, abstractmethod
 
-import requests
 from fastapi import status
 from fastapi.exceptions import HTTPException
 from loguru import logger
@@ -63,17 +62,6 @@ class LLMCallback(ABC):
 
     async def on_stream_end(self, llm: LLM, **kwargs):
         pass
-
-    async def check_moderation(self, text: str, api_key: str):
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}",
-        }
-        data = {"input": text}
-        response = requests.post(
-            "https://api.openai.com/v1/moderations", headers=headers, json=data
-        )
-        return response.json()
 
 
 class LoggingCallback(LLMCallback):

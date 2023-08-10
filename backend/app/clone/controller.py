@@ -1,5 +1,7 @@
+import uuid
+
 import sqlalchemy as sa
-from fastapi import BackgroundTasks
+from fastapi import BackgroundTasks, HTTPException, status
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -127,6 +129,7 @@ class Controller:
             embedding_client=embedding_client,
             clone_id=obj.clone_id,
             conversation_id=convo.id,
+            user_id=user.id,
         )
 
         if convo.memory_strategy == MemoryStrategy.long_term:
@@ -155,8 +158,9 @@ class Controller:
 
     async def _add_private_memory(self, content: str) -> models.Memory:
         if self.memory_strategy != MemoryStrategy.long_term:
-            raise ControllerException(
-                f"Cannot add memories with memory strategy {self.memory_strategy}"
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot add memories with memory strategy {self.memory_strategy}",
             )
 
         importance = await generate.rate_memory(llm=self.llm, memory=content)
@@ -195,7 +199,18 @@ class Controller:
         self, msg_create: schemas.MessageCreate
     ) -> models.Message:
         data = msg_create.model_dump(exclude_unset=True)
-        msg_struct = Message(sender_name=self.user_name, is_clone=True, **data)
+
+        # NOTE (Jonny): we aren't letting users upload parent_id, that shit is too
+        # risky, one bad user that sees our API could fuck up their own chat history
+        # and we would also need to put an auth guard to prevent sending a parent_id
+        # without the proper auth.
+        latest_messages = await self.clonedb.get_messages(num_messages=1)
+        if latest_messages:
+            parent_id = latest_messages[0].id
+
+        msg_struct = Message(
+            sender_name=self.user_name, is_clone=True, parent_id=parent_id, **data
+        )
         msg = await self.clonedb.add_message(msg_struct)
 
         if self.memory_strategy == MemoryStrategy.long_term:
@@ -229,6 +244,7 @@ class Controller:
             embedding_client=embedding_client,
             clone_id=clone.clone_id,
             conversation_id=None,
+            user_id=None,
         )
         # add to the database
         if mem_create.importance is None:
@@ -310,8 +326,9 @@ class Controller:
                 long_description = None
             case _:
                 # not sure if this is a good idea, might want to break earlier in this function.
-                raise UnsupportedStrategy(
-                    f"Adaptation strategy ({self.adaptation_strategy}) is not compatible with agent summaries."
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Adaptation strategy ({self.adaptation_strategy}) is not compatible with agent summaries.",
                 )
 
         content = await generate.agent_summary(
@@ -327,8 +344,9 @@ class Controller:
 
     async def _entity_context_compute(self):
         if self.adaptation_strategy == AdaptationStrategy.static:
-            raise UnsupportedStrategy(
-                f"Adaptation strategy ({self.adaptation_strategy}) is not compatible with agent summaries."
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Adaptation strategy ({self.adaptation_strategy}) is not compatible with agent summaries.",
             )
         # We adapt the in-template questions from clonr/templates/entity_relationship
         queries = [
@@ -357,33 +375,45 @@ class Controller:
 
         return entity_summary
 
-    async def set_revision_as_main(
-        self, rev_update: schemas.RevisionUpdate
-    ) -> models.Message:
+    async def set_revision_as_main(self, message_id: uuid.UUID) -> models.Message:
         """Given a list of current revisions, this sets the given one as part of the main
         message thread. This should trigger whenever users click the revision arrows."""
-        parent = await self.clonedb.db.get(models.Message, rev_update.message_id)
-        msg = None
-        if len(parent.children) < 2:
-            raise ControllerException(
-                f"Message {rev_update.message_id} is not part of a revision group."
+        if not (last_messages := await self.clonedb.get_messages(num_messages=1)):
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="There are no current messages in the conversation.",
             )
-        for c in parent.children:
-            c.is_main = rev_update.message_id == c.id
-            if c.children:
-                raise ControllerException(
-                    "Revisions can only be set for the most recent regeneration."
-                )
-            if rev_update.message_id == c.id:
-                msg = c
-                self.clonedb.db.add(msg)
+        last_msg = last_messages[0]
+        if not last_msg.is_clone:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Can only set a revision if the last message was from the Clone.",
+            )
+        if last_msg.parent_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Revisions on the greeting message are not allowed.",
+            )
+        revisions = last_msg.parent.children
+        if len(revisions) < 2:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="There is only one current generation, and so there are no revisions to set as main.",
+            )
+        msg: models.Message | None = None
+        for rev in revisions:
+            if rev.id == message_id:
+                rev.is_main = True
+                msg = rev
             else:
-                self.clonedb.db.add(c)
+                rev.is_main = False
         if msg is None:
-            raise ControllerException(
-                "Internal error. Connection between revision and messages not found."
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Message {message_id} is not an eligible revision to select.",
             )
         await self.clonedb.db.commit()
+        await self.clonedb.db.refresh(msg)
         return msg
 
     async def _generate_msg_queries(
@@ -419,7 +449,27 @@ class Controller:
 
         return queries
 
-    async def _generate_zero_memory_message(self) -> models.Message:
+    async def _generate_zero_memory_message(
+        self, msg_gen: schemas.MessageGenerate
+    ) -> models.Message:
+        msg_to_unset: models.Message | None = None
+        if msg_gen.is_revision:
+            if not (last_messages := await self.clonedb.get_messages(num_messages=1)):
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="There are no current messages in the conversation.",
+                )
+            msg_to_unset = last_messages[0]
+            if not msg_to_unset.is_clone:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Can only create a revision if the previous message was from the Clone.",
+                )
+            if msg_to_unset.parent_id is None:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Revisions on the greeting message are not allowed.",
+                )
         if self.information_strategy == InformationStrategy.internal:
             queries = await self._generate_msg_queries(
                 num_messges=NUM_RECENT_MSGS_FOR_QUERY
@@ -500,11 +550,31 @@ class Controller:
             is_clone=True,
             parent_id=parent_id,
         )
-        new_msg = await self.clonedb.add_message(new_msg_struct)
+        new_msg = await self.clonedb.add_message(new_msg_struct, msg_to_unset)
 
         return new_msg
 
-    async def _generate_long_term_memory_message(self):
+    async def _generate_long_term_memory_message(
+        self, msg_gen: schemas.MessageGenerate
+    ) -> models.Message:
+        msg_to_unset: models.Message | None = None
+        if msg_gen.is_revision:
+            if not (last_messages := await self.clonedb.get_messages(num_messages=1)):
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="There are no current messages in the conversation.",
+                )
+            msg_to_unset = last_messages[0]
+            if not msg_to_unset.is_clone:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Can only create a revision if the previous message was from the Clone.",
+                )
+            if msg_to_unset.parent_id is None:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Revisions on the greeting message are not allowed.",
+                )
         # short and long descriptions (max ~540 tokens)
         # (check generate.Params for more details)
         char = self.clone.name
@@ -541,8 +611,9 @@ class Controller:
                         # replace the long description, so the bot can change quickly!
                         long_description = a_summ[0] if a_summ else None
                 case _:
-                    raise UnsupportedStrategy(
-                        f"Invalid adaptation strategy: {self.adaptation_strategy}"
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Invalid adaptation strategy: {self.adaptation_strategy}",
                     )
 
         # fact and memory get 3x multiplier. Memory gets another penalty for having to
@@ -658,11 +729,13 @@ class Controller:
             is_clone=True,
             parent_id=parent_id,
         )
-        new_msg = await self.clonedb.add_message(new_msg_struct)
+        new_msg = await self.clonedb.add_message(new_msg_struct, msg_to_unset)
 
         return new_msg
 
-    async def generate_message(self):
+    async def generate_message(
+        self, msg_gen: schemas.MessageGenerate
+    ) -> models.Message:
         """This method is the entire IP of this whole entire application, the goddamn GOAT.
         Calls all of the subroutines and returns the next message response for the clone.
         """
@@ -676,8 +749,9 @@ class Controller:
                 # all just handled in the same function
                 return self._generate_long_term_memory_message()
             case _:
-                raise UnsupportedStrategy(
-                    f"Invalid memory strategy: {self.memory_strategy}"
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Invalid memory strategy: {self.memory_strategy}",
                 )
 
     @classmethod

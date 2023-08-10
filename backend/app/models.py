@@ -28,10 +28,24 @@ class CaseInsensitiveComparator(Comparator[str]):
     def like(self, other: Any, **kwargs) -> sa.ColumnElement[bool]:
         return sa.func.lower(self.__clause_element__()).like(other.lower(), **kwargs)
 
-    # (Jonny): dunno if this works
     def levenshtein(self, other: Any, **kwargs) -> sa.ColumnElement[int]:
         return sa.func.levenshtein(
             sa.func.lower(self.__clause_element__()), other.lower()
+        )
+
+    def similarity(self, other: Any, **kwargs) -> sa.ColumnElement[float]:
+        return sa.func.similarity(
+            sa.func.lower(self.__clause_element__()), other.lower(), **kwargs
+        )
+
+    def word_similarity(self, other: Any, **kwargs) -> sa.ColumnElement[float]:
+        return sa.func.word_similarity(
+            other.lower(), sa.func.lower(self.__clause_element__()), **kwargs
+        )
+
+    def strict_word_similarity(self, other: Any, **kwargs) -> sa.ColumnElement[float]:
+        return sa.func.strict_word_similarity(
+            other.lower(), sa.func.lower(self.__clause_element__()), **kwargs
         )
 
 
@@ -98,6 +112,10 @@ class User(Base, SQLAlchemyBaseUserTableUUID):
     # (Jonny): probably never a situation where you don't need clones when grabbing a user.
     clones: Mapped[list["Clone"]] = relationship(
         secondary=users_to_clones, back_populates="users"
+    )
+    messages: Mapped[list["Message"]] = relationship("Message", back_populates="users")
+    conversations: Mapped[list["Conversation"]] = relationship(
+        "Conversation", back_populates="users"
     )
     creator: Mapped["Creator"] = relationship("Creator", back_populates="user")
     llm_calls: Mapped[list["LLMCall"]] = relationship(
@@ -223,16 +241,14 @@ class Clone(CommonMixin, Base):
         return f"Clone(clone_id={self.id}, active={self.is_active}, public={self.is_public})"
 
 
-_ = sa.Index("ix_clones_case_insensitive_name", Clone.case_insensitive_name)
-
-
-# I need to rewrite the dockerfile to install the pg_trm extension. Don't wanna do that.
-# clone_trigram_index = sa.Index(
-#     "idx_clones_case_insensitive_name_trigram",
-#     Clone.case_insensitive_name,
-#     postgresql_using="gin",
-#     postgresql_ops={"case_insensitive_name": "gin_trgm_ops"},
-# )
+# Use gin since we have fewer elements and fewer fluctuations
+# this will also speed up LIKE and ILIKE statements
+ix_clones_case_insensitive_name = sa.Index(
+    "ix_clones_case_insensitive_name",
+    Clone.case_insensitive_content,
+    postgresql_using="gin",
+    postgresql_ops={"name": "gin_trgm_ops"},
+)
 
 
 class Conversation(CommonMixin, Base):
@@ -253,6 +269,7 @@ class Conversation(CommonMixin, Base):
     user_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
+    user: Mapped["User"] = relationship("User", back_populates="conversations")
     clone_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )
@@ -277,20 +294,45 @@ class Conversation(CommonMixin, Base):
         return f"Conversation(name={self.name}, user_id={self.user_id} clone_id={self.clone_id})"
 
 
-class Temp(Base):
-    __tablename__ = "temp"
+# class Temp(Base):
+#     __tablename__ = "temp"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    name: Mapped[str]
-    is_main: Mapped[bool] = mapped_column(default=True)
-    parent_id: Mapped[int] = mapped_column(sa.ForeignKey("temp.id"), nullable=True)
-    parent: Mapped["Temp"] = relationship(
-        "Temp", back_populates="children", remote_side="Temp.id"
-    )
-    children: Mapped[list["Temp"]] = relationship("Temp", back_populates="parent")
+#     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+#     name: Mapped[str]
+#     name2: Mapped[str]
 
-    def __repr__(self):
-        return f"Temp(name={self.name}, id={self.id}, parent)"
+#     # is_main: Mapped[bool] = mapped_column(default=True)
+#     # parent_id: Mapped[int] = mapped_column(sa.ForeignKey("temp.id"), nullable=True)
+#     # parent: Mapped["Temp"] = relationship(
+#     #     "Temp", back_populates="children", remote_side="Temp.id"
+#     # )
+#     # children: Mapped[list["Temp"]] = relationship("Temp", back_populates="parent")
+#     @hybrid_property
+#     def case_insensitive_name(self) -> str:
+#         return self.name.lower()
+
+#     @case_insensitive_name.inplace.comparator
+#     @classmethod
+#     def _case_insensitive_comparator(cls) -> CaseInsensitiveComparator:
+#         return CaseInsensitiveComparator(cls.name)
+
+#     def __repr__(self):
+#         return f"Temp(name={self.name}, id={self.id})"
+
+
+# temp_trgm_index = sa.Index(
+#     "temp_trgm_idx",
+#     Temp.case_insensitive_name,
+#     postgresql_using="gist",
+#     postgresql_ops={"name": "gist_trgm_ops"},
+# )
+
+# temp_trgm_index2 = sa.Index(
+#     "temp_trgm_idx2",
+#     Temp.case_insensitive_name,
+#     postgresql_using="gin",
+#     postgresql_ops={"name": "gin_trgm_ops"},
+# )
 
 
 class Message(CommonMixin, Base):
@@ -316,7 +358,11 @@ class Message(CommonMixin, Base):
     clone_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )
-    clone: Mapped["Clone"] = relationship("Clone", back_populates="messages")
+    clone: Mapped["Clone"] = relationship("User", back_populates="messages")
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
+    user: Mapped["User"] = relationship("User", back_populates="messages")
     conversation_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("conversations.id", ondelete="cascade"), nullable=False
     )
@@ -340,6 +386,15 @@ class Message(CommonMixin, Base):
 
     def __repr__(self):
         return f"Message(content={self.content}, sender={self.sender_name}, is_clone={self.is_clone})"
+
+
+# (Jonny) gist has faster updates than gin, which is what we want for messages!
+msg_case_insensitive_content_trgm_index = sa.Index(
+    "msg_case_insensitive_content_trgm_index",
+    Message.case_insensitive_content,
+    postgresql_using="gist",
+    postgresql_ops={"name": "gist_trgm_ops"},
+)
 
 
 long_descs_to_docs = sa.Table(

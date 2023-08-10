@@ -4,7 +4,7 @@ from fastapi import Depends, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.settings import settings
-from clonr.llms import LLM, MockLLM, OpenAI
+from clonr.llms import LLM, LlamaCpp, MockLLM, OpenAI
 from clonr.llms.callbacks import AddToPostgresCallback, LLMCallback, LoggingCallback
 from clonr.tokenizer import Tokenizer
 
@@ -29,6 +29,8 @@ async def get_llm(
     ]
     if settings.LLM == "mock":
         llm = MockLLM(callbacks=callbacks)
+    elif settings.LLM == "llamacpp":
+        llm = LlamaCpp(chat_mode=True)
     else:
         llm = OpenAI(
             model=settings.LLM,
