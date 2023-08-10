@@ -86,6 +86,7 @@ class User(Base, SQLAlchemyBaseUserTableUUID):
     private_chat_name: Mapped[str] = mapped_column(default="user")
     is_banned: Mapped[bool] = mapped_column(default=False)
     # Whether user is subscribed to premium plan, i.e. is paid
+    stripe_customer_id: Mapped[str] = mapped_column(nullable=True)
     is_subscribed: Mapped[bool] = mapped_column(default=False)
     nsfw_enabled: Mapped[bool] = mapped_column(default=False)
     # Number of free msgs sent
@@ -724,6 +725,7 @@ class LongDescription(CommonMixin, Base):
 #     timestamp: Mapped[datetime.datetime] = mapped_column(nullable=True)
 
 
+## TODO: edit
 # class Subscription(CommonMixin, Base):
 #     __tablename__ = "subscriptions"
 

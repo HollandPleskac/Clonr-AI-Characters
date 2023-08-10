@@ -1,35 +1,34 @@
-# from datetime import datetime, timedelta
-# from typing import Annotated, Any, Dict, List, Optional
+from datetime import datetime, timedelta
+from typing import Annotated, Any, Dict, List, Optional
 
-# import sqlalchemy as sa
-# import stripe
-# from fastapi import (
-#     Depends,
-#     Header,
-#     HTTPException,
-#     JSONResponse,
-#     Request,
-#     Response,
-#     status,
-# )
-# from fastapi.responses import RedirectResponse
-# from fastapi.routing import APIRouter
-# from pydantic import BaseModel
-# from sqlalchemy import select, update
-# from sqlalchemy.ext.asyncio import AsyncSession
-# from stripe.error import StripeError
+import sqlalchemy as sa
+import stripe
+from fastapi import (
+    Depends,
+    Header,
+    HTTPException,
+    Request,
+    Response,
+    status,
+)
+from fastapi.responses import RedirectResponse
+from fastapi.routing import APIRouter
+from pydantic import BaseModel
+from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession
+from stripe.error import StripeError
 
-# from app import models, schemas
-# from app.auth.users import current_active_user
-# from app.db import get_async_session
-# from app.models import Subscription, SubscriptionItem, UsageRecord
-# from app.settings import settings
+from app import models, schemas
+from app.deps.users import get_current_active_user
+from app.deps.db import get_async_session
+#from app.models import Subscription 
+from app.settings import settings
 
-# router = APIRouter(
-#     prefix="/stripe",
-#     tags=["stripe"],
-#     responses={404: {"description": "Not found"}},
-# )
+router = APIRouter(
+    prefix="/stripe",
+    tags=["stripe"],
+    responses={404: {"description": "Not found"}},
+)
 
 
 # class WebHookData(BaseModel):
@@ -136,55 +135,70 @@
 #         return {"status_code": status.HTTP_403_FORBIDDEN, "detail": str(e)}
 
 
-# @router.post("/create-checkout-session")
-# async def create_checkout_session(
-#     request: Request,
-#     db: Annotated[AsyncSession, Depends(get_async_session)],
-#     user: Annotated[models.User, Depends(current_active_user)],
-# ):
-#     content_type = request.headers.get("Content-Type")
-#     if content_type is None:
-#         return "No Content-Type provided."
-#     elif content_type == "application/json":
-#         try:
-#             product_info = await request.json()
-#             print(product_info)
-#             # items = make_line_items(product_info)
+## TODO:
+## stripe edge cases - double pay, upgrading plans, changing cards
+## email not there if discord auth 
+@router.post("/create-checkout-session")
+async def create_checkout_session(
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_async_session)],
+    user: Annotated[models.User, Depends(get_current_active_user)],
+):
+    
+    stripe_customer_id = user.stripe_customer_id
+    stripe.api_key = settings.STRIPE_API_KEY
 
-#         except Exception as e:
-#             print("Invalid JSON data: " + str(e))
-#     else:
-#         print("Content-Type not supported.")
-#     try:
-#         subscription_id = product_info["subscription"]
-#         checkout_session = stripe.checkout.Session.create(
-#             api_key=settings.STRIPE_KEY,
-#             payment_method_types=["card"],
-#             # line_items=product_info["items"],
-#             subbscription=subscription_id,
-#             mode="payment",
-#             success_url=settings.STRIPE_SUCCESS_URL,
-#             cancel_url=settings.STRIPE_CANCEL_URL,
-#         )
-#         print("success")
-#         # add subscription to db
-#         subscription = models.Subscription(
-#             customer_id=checkout_session["customer"],
-#             subscription_id=subscription_id,
-#             user_id=user.id,
-#             stripe_status=checkout_session.subscription.status,
-#             stripe_created=checkout_session.subscription.created,
-#             stripe_current_period_start=checkout_session.subscription.current_period_start,
-#             stripe_current_period_end=checkout_session.subscription.current_period_end,
-#             stripe_cancel_at_period_end=checkout_session.subscription.cancel_at_period_end,
-#             stripe_canceled_at=checkout_session.subscription.canceled_at,
-#         )
-#         await db.add(subscription)
-#         await db.commit()
+    if stripe_customer_id is None:
+        customer = stripe.Customer.create(email=user.email)
+        stripe_customer_id = customer.id
+        user.stripe_customer_id = stripe_customer_id
+        await db.commit()
+    else:
+        stripe_customer_id = user.stripe_customer_id
+    
+    content_type = request.headers.get("Content-Type")
+    if content_type is None:
+        return "No Content-Type provided."
+    elif content_type == "application/json":
+        try:
+            product_info = await request.json()
+        except Exception as e:
+            print("Invalid JSON data: " + str(e))
+    else:
+        print("Content-Type not supported.")
+    try:
+        price_id = product_info["priceId"]
+        checkout_session = stripe.checkout.Session.create(
+            api_key=settings.STRIPE_API_KEY,
+            customer=stripe_customer_id,
+            payment_method_types=["card"],
+            mode="subscription",
+            line_items = [{
+                "price": price_id,
+                "quantity": 1,
+            }],
+            success_url=settings.STRIPE_SUCCESS_URL,
+            cancel_url=settings.STRIPE_CANCEL_URL,
+        )
+        
+        # TODO: edit - add subscription to db
+        # subscription = models.Subscription(
+        #     customer_id=checkout_session["customer"],
+        #     subscription_id=checkout_session.id,
+        #     user_id=user.id,
+        #     stripe_status=checkout_session.status,
+        #     stripe_created=checkout_session.created,
+        #     stripe_current_period_start=checkout_session.subscription.current_period_start,
+        #     stripe_current_period_end=checkout_session.subscription.current_period_end,
+        #     stripe_cancel_at_period_end=checkout_session.subscription.cancel_at_period_end,
+        #     stripe_canceled_at=checkout_session.subscription.canceled_at,
+        # )
+        # await db.add(subscription)
+        # await db.commit()
 
-#         return {"status_code": status.HTTP_200_OK, "detail": checkout_session}
-#     except Exception as e:
-#         return {"status_code": status.HTTP_403_FORBIDDEN, "detail": str(e)}
+        return {"status_code": status.HTTP_200_OK, "detail": checkout_session}
+    except Exception as e:
+        return {"status_code": status.HTTP_403_FORBIDDEN, "detail": str(e)}
 
 
 # @router.post("/create-subscription")

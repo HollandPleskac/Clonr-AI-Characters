@@ -18,6 +18,7 @@ import StatBar from '../Statistics/StatBar'
 import ScaleFadeIn from '../Transitions/ScaleFadeIn'
 import useClones from '@/hooks/useClones'
 import AuthModal from '../AuthModal'
+import StripeCheckoutButton from '@/components/Stripe/StripeCheckoutButton';
 
 interface HomeScreenProps {
   topCharacters: Character[]
@@ -97,6 +98,7 @@ export default function HomeScreen({
         </ScaleFadeIn>
       ) : (
         <ScaleFadeIn loaded={!searchInput} duration={duration}>
+          <StripeCheckoutButton />
           <Carousel
             characters={topCharacters}
             name='Top Characters'
