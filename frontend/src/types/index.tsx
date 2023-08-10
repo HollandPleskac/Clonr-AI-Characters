@@ -48,9 +48,18 @@ export type Character = {
   tags: string[]
 }
 
-export type PastChat = {
+export type CharacterChat = {
   character: Character
   lastMessage: string
+}
+
+export type Conversation = {
+  id: string
+  character: Character
+  lastBotMessage: string
+  lastUserMessage: string
+  lastChatTime: Date
+  memoryType: 'long' | 'short'
 }
 
 export type Message = {

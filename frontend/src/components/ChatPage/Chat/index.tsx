@@ -232,7 +232,6 @@ export default function ChatScreen({
                         color='#979797'
                         ariaLabel='three-dots-loading'
                         wrapperStyle={{}}
-                        wrapperclassName=''
                         visible={isFetching}
                       />
                     </div>

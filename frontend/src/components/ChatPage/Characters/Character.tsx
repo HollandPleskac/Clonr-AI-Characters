@@ -1,11 +1,11 @@
 import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { PastChat } from '@/types'
+import { CharacterChat } from '@/types'
 import { formatDate } from '@/utils/formatDate'
 
 interface MyComponentProps {
-  pastChat: PastChat
+  pastChat: CharacterChat
   currentCharacterId: string
 }
 const Character: React.FC<MyComponentProps> = ({

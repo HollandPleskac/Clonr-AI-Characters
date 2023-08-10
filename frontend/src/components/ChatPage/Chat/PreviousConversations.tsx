@@ -1,69 +1,92 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import ChevronRightPurple600 from '@/svg/ChatPage/Chat/chevron-right-purple-600.svg'
 import ChevronRightPurple500 from '@/svg/ChatPage/Chat/chevron-right-purple-500.svg'
+import PreviousConversation from './PreviousConversation'
+import { Conversation } from '@/types'
+import InfiniteScroll from 'react-infinite-scroll-component'
+import { ThreeDots } from 'react-loader-spinner'
+
+const dummyConversation: Conversation = {
+  id: '12345',
+
+  character: {
+    id: '12345',
+    created_at: new Date(),
+    updated_at: new Date(),
+    creator_id: '0987',
+    name: 'Barack Obama',
+    short_description:
+      'I am Barack Obama, 44th President of the United States. ',
+    avatar_uri: '/dummy-char.png',
+    num_messages: 234234,
+    num_conversations: 3423,
+    tags: ['president', 'politician'],
+  },
+  lastUserMessage: "Hey I've got 10 questions for you",
+  lastBotMessage: "Why can't I just eat my waffle?",
+  lastChatTime: new Date(),
+  memoryType: 'long',
+}
 
 const PreviousConversations = () => {
+  const [conversations, setConversations] = React.useState<Conversation[]>([])
+
+  useEffect(() => {
+    setConversations([
+      dummyConversation,
+      dummyConversation,
+      dummyConversation,
+      dummyConversation,
+      dummyConversation,
+      dummyConversation,
+    ])
+  }, [])
+
+  const fetchMoreData = () => {
+    // Simulate fetching 10 more conversations from a server or other data source
+    const newConversations: Conversation[] = Array.from(
+      { length: 20 },
+      (_, index) => dummyConversation
+    )
+
+    // Add the new conversations to the end of the existing conversations
+    setConversations((prevConversations) => [
+      ...prevConversations,
+      ...newConversations,
+    ])
+  }
+
   return (
-    <div
-      style={{
-        height: 'calc(100vh - 122px)',
-      }}
-      className='p-8 flex flex-col items-center px-[4%] gap-y-4'
-    >
-      <button className='group rounded-lg flex justify-between items-center bg-black hover:bg-gray-800 transition duration-200 w-full rounded-lg p-4 '>
-        <div className='flex flex-col items-start '>
-          <h3 className='text-white text-xl font-semibold mb-2'>23 Days Ago</h3>
-          <h4 className='text-gray-400 mb-1 text-[14px]'>
-            You: <span className='italic'>hey whats up?</span>
-          </h4>
-          <h4 className='text-gray-400 text-[14px]'>
-            Barack Obama:{' '}
-            <span className='italic'>nothing much how about you?</span>
-          </h4>
-        </div>
-        <div className=' text-purple-600 font-semibold flex items-center '>
-          <p className=''>Long Term Memory</p>
-          <div className='flex h-[24px] w-[24px] items-center justify-center ml-2'>
-            <ChevronRightPurple600 />
-          </div>
-        </div>
-      </button>
-      <button className='group rounded-lg flex justify-between items-center bg-black hover:bg-gray-800 transition duration-200 w-full rounded-lg p-4 '>
-        <div className='flex flex-col items-start '>
-          <h3 className='text-white text-xl font-semibold mb-2'>23 Days Ago</h3>
-          <h4 className='text-gray-400 mb-1 text-[14px]'>
-            You: <span className='italic'>hey whats up?</span>
-          </h4>
-          <h4 className='text-gray-400 text-[14px]'>
-            Barack Obama:{' '}
-            <span className='italic'>nothing much how about you?</span>
-          </h4>
-        </div>
-        <div className=' text-purple-500 font-semibold flex items-center '>
-          <p className=''>Short Term Memory</p>
-          <div className='flex h-[24px] w-[24px] items-center justify-center ml-2'>
-            <ChevronRightPurple500 />
-          </div>
-        </div>
-      </button>
-      <button className='group rounded-lg flex justify-between items-center bg-black hover:bg-gray-800 transition duration-200 w-full rounded-lg p-4 '>
-        <div className='flex flex-col items-start '>
-          <h3 className='text-white text-xl font-semibold mb-2'>23 Days Ago</h3>
-          <h4 className='text-gray-400 mb-1 text-[14px]'>
-            You: <span className='italic'>hey whats up?</span>
-          </h4>
-          <h4 className='text-gray-400 text-[14px]'>
-            Barack Obama:{' '}
-            <span className='italic'>nothing much how about you?</span>
-          </h4>
-        </div>
-        <div className=' text-purple-500 font-semibold flex items-center '>
-          <p className=''>Short Term Memory</p>
-          <div className='flex h-[24px] w-[24px] items-center justify-center ml-2'>
-            <ChevronRightPurple500 />
-          </div>
-        </div>
-      </button>
+    <div>
+      <div
+        id='scrollableDiv'
+        style={{
+          height: 'calc(100vh - 122px)',
+          overflow: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          scrollBehavior: 'smooth',
+        }}
+        className='px-6'
+      >
+        <InfiniteScroll
+          dataLength={conversations.length}
+          next={fetchMoreData}
+          style={{ display: 'flex', flexDirection: 'column' }} //To put endMessage and loader to the top.
+          inverse={false}
+          hasMore={true}
+          loader={<h4>Loading...</h4>}
+          scrollableTarget='scrollableDiv'
+          className='pt-4 gap-y-4'
+        >
+          {conversations.map((message, index) => (
+              <PreviousConversation
+                conversation={conversations[0]}
+                key={index}
+              />
+          ))}
+        </InfiniteScroll>
+      </div>
     </div>
   )
 }

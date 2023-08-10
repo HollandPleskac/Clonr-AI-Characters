@@ -5,11 +5,11 @@ import Image from 'next/image'
 import SearchIcon from './SearchIcon'
 import CharacterComponent from './Character'
 import CharacterDropdown from './CharacterDropdown'
-import { PastChat } from '@/types'
+import { CharacterChat } from '@/types'
 import { formatDate } from '@/utils/formatDate'
 
 interface CharactersProps {
-  pastChats: PastChat[]
+  pastChats: CharacterChat[]
   currentCharacterId: string
 }
 
