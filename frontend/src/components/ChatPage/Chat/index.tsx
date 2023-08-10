@@ -38,6 +38,7 @@ export default function ChatScreen({
   const [conversationState, setConversationState] = useState(
     initialConversationState
   )
+  const [showPreviousMessages, setShowPreviousMessages] = useState(false)
   const [scrollToNewMessage, setScrollToNewMessage] = useState<boolean>(false)
 
   // search state
@@ -180,16 +181,17 @@ export default function ChatScreen({
             How do you want to chat?
           </h1> */}
           <div className='flex gap-x-8 justify-center'>
-            <div className='w-[200px] flex flex-col'>
-              <Image
-                key={0}
-                src='/dummy-char.png'
-                alt={`Character Profile Picture ${0 + 1}`}
-                width={200}
-                height={200}
-                className='rounded-lg bg-blackdfg mb-5'
-              />
-              <h2 className='text-xl text-center  font-semibold mb-2 text-gray-500'>
+            <div className='w-[280px] flex flex-col'>
+              <div className='h-[280px] w-[280px] relative'>
+                <Image
+                  src='/barack2.jpeg'
+                  alt='logo'
+                  layout='fill'
+                  objectFit='cover'
+                  className='rounded-lg mb-5'
+                />
+              </div>
+              <h2 className='text-xl text-left my-4 font-semibold text-gray-500'>
                 22.3k Chats
               </h2>
               <div className='flex flex-wrap gap-2'>
@@ -205,14 +207,10 @@ export default function ChatScreen({
               </div>
             </div>
             <div className='w-1/3 flex flex-col justify-start'>
-              <h2 className='text-lg sm:text-xl font-semibold mb-2 text-white'>
-                Name
+              <h2 className='text-lg sm:text-4xl font-semibold mb-4 text-white'>
+                Barack Obama
               </h2>
-              <p className='mb-5 text-gray-400'>Barack Obama</p>
-              <h2 className='text-lg sm:text-xl font-semibold mb-2 text-white'>
-                Short Description
-              </h2>
-              <p className='mb-5 text-gray-400'>
+              <p className='mb-5 text-lg text-gray-400'>
                 I am Barack Obama, 44th President of the United States.{' '}
               </p>
               <h2 className='text-lg sm:text-xl font-semibold mb-2 text-white'>
@@ -242,6 +240,7 @@ export default function ChatScreen({
                 <div>i</div>
               </button>
             </div>
+            
           </div>
 
           {/* <h1 className='text-2xl font-bold md:text-4xl text-white mb-8'>
@@ -301,88 +300,122 @@ export default function ChatScreen({
                 <Paperclip />
               </button>
 
-              <ChatDropdown />
-            </div>
-          </div>
-          <div>
-            <div
-              id='scrollableDiv'
-              style={{
-                height: 'calc(100vh - 122px - 92px)',
-                overflow: 'auto',
-                display: 'flex',
-                flexDirection: 'column-reverse',
-                scrollBehavior: 'smooth',
-              }}
-              className='px-6'
-              ref={divRef}
-            >
-              <InfiniteScroll
-                dataLength={messages.length}
-                next={fetchMoreData}
-                style={{ display: 'flex', flexDirection: 'column-reverse' }} //To put endMessage and loader to the top.
-                inverse={true}
-                hasMore={true}
-                loader={<h4>Loading...</h4>}
-                scrollableTarget='scrollableDiv'
-                className='pt-4'
-              >
-                <div
-                  className={`${
-                    isFetching ? 'text-white flex' : 'text-transparent hidden'
-                  } w-full py-4 h-[56px]`}
-                >
-                  <ThreeDots
-                    height='25'
-                    width='25'
-                    radius='4'
-                    color='#979797'
-                    ariaLabel='three-dots-loading'
-                    wrapperStyle={{}}
-                    wrapperclassName=''
-                    visible={isFetching}
-                  />
-                </div>
-                {messages.map((message, index) => (
-                  <MessageComponent message={message} key={index} />
-                ))}
-              </InfiniteScroll>
-            </div>
-          </div>
-
-          <div className='flex h-[92px] items-center border-t  border-[#252525] bg-[red-400] px-6'>
-            {/* <div className='mr-[10px] grid h-[32px] w-[32px] min-w-[32px] cursor-pointer place-items-center rounded-full bg-[#5848BC] transition duration-100 hover:bg-[#4b3abd]'>
-          <PlusIcon strokeClasses='stroke-[#ffffff]' />
-        </div> */}
-            <div className='relative w-full'>
-              <div className='absolute right-4 top-3'>
-                <SmileIcon />
-              </div>
-              <input
-                className='h-[48px] w-full rounded-[14px] border-none bg-[#1E1E1E] py-4 pl-4 pr-[50px] text-[15px] font-light leading-6 text-[#979797] transition-all duration-100 focus:ring-1 focus:ring-transparent'
-                type='text'
-                placeholder='Type a message'
-                value={message}
-                onChange={(event: any) => setMessage(event.target.value)}
-                style={{ outline: 'none', resize: 'none' }}
-                onKeyDown={handleOnKeyDown}
+              <ChatDropdown
+                togglePreviousConversations={() => {
+                  setShowPreviousMessages((prevState) => !prevState)
+                }}
               />
             </div>
-            <div className='ml-[10px] transition-all duration-100 '>
-              <button
-                onClick={async () => {
-                  !isFetching && sendMessage()
-                }}
-                disabled={isFetching}
-              >
-                <SendIcon
-                  strokeClasses={
-                    isFetching ? 'stroke-[#515151] fill-[#515151]' : ''
-                  }
-                />
+          </div>
+          {showPreviousMessages && (
+            <div
+              style={{
+                height: 'calc(100vh - 122px)',
+              }}
+              className='p-8'
+            >
+              <button className='rounded-lg flex justify-between items-center bg-black hover:bg-gray-800 transition duration-200 w-[80%] rounded-lg p-4 '>
+                <div className='flex flex-col items-start '>
+                  <h3 className='text-white text-xl font-semibold mb-2'>
+                    23 Days Ago
+                  </h3>
+                  <h4 className='text-gray-400 mb-1 text-[14px]'>
+                    You: <span className='italic'>hey whats up?</span>
+                  </h4>
+                  <h4 className='text-gray-400 text-[14px]'>
+                    Barack Obama:{' '}
+                    <span className='italic'>nothing much how about you?</span>
+                  </h4>
+                </div>
+                <div className='text-purple-600 font-semibold'>
+                  Long Term Memory
+                </div>
               </button>
             </div>
-          </div>
+          )}
+
+          {!showPreviousMessages && (
+            <>
+              <div>
+                <div
+                  id='scrollableDiv'
+                  style={{
+                    height: 'calc(100vh - 122px - 92px)',
+                    overflow: 'auto',
+                    display: 'flex',
+                    flexDirection: 'column-reverse',
+                    scrollBehavior: 'smooth',
+                  }}
+                  className='px-6'
+                  ref={divRef}
+                >
+                  <InfiniteScroll
+                    dataLength={messages.length}
+                    next={fetchMoreData}
+                    style={{ display: 'flex', flexDirection: 'column-reverse' }} //To put endMessage and loader to the top.
+                    inverse={true}
+                    hasMore={true}
+                    loader={<h4>Loading...</h4>}
+                    scrollableTarget='scrollableDiv'
+                    className='pt-4'
+                  >
+                    <div
+                      className={`${
+                        isFetching
+                          ? 'text-white flex'
+                          : 'text-transparent hidden'
+                      } w-full py-4 h-[56px]`}
+                    >
+                      <ThreeDots
+                        height='25'
+                        width='25'
+                        radius='4'
+                        color='#979797'
+                        ariaLabel='three-dots-loading'
+                        wrapperStyle={{}}
+                        wrapperclassName=''
+                        visible={isFetching}
+                      />
+                    </div>
+                    {messages.map((message, index) => (
+                      <MessageComponent message={message} key={index} />
+                    ))}
+                  </InfiniteScroll>
+                </div>
+              </div>
+
+              <div className='flex h-[92px] items-center border-t  border-[#252525] bg-[red-400] px-6'>
+                <div className='relative w-full'>
+                  <div className='absolute right-4 top-3'>
+                    <SmileIcon />
+                  </div>
+                  <input
+                    className='h-[48px] w-full rounded-[14px] border-none bg-[#1E1E1E] py-4 pl-4 pr-[50px] text-[15px] font-light leading-6 text-[#979797] transition-all duration-100 focus:ring-1 focus:ring-transparent'
+                    type='text'
+                    placeholder='Type a message'
+                    value={message}
+                    onChange={(event: any) => setMessage(event.target.value)}
+                    style={{ outline: 'none', resize: 'none' }}
+                    onKeyDown={handleOnKeyDown}
+                  />
+                </div>
+                <div className='ml-[10px] transition-all duration-100 '>
+                  <button
+                    onClick={async () => {
+                      !isFetching && sendMessage()
+                    }}
+                    disabled={isFetching}
+                  >
+                    <SendIcon
+                      strokeClasses={
+                        isFetching ? 'stroke-[#515151] fill-[#515151]' : ''
+                      }
+                    />
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </>
       )}
     </div>
