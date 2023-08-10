@@ -1,7 +1,38 @@
+'use client';
+
 import Footer from '@/components/Footer'
 import TopBarStatic from '@/components/TopBarStatic'
+import { loadStripe } from '@stripe/stripe-js';
+const axios = require('axios').default;
+
+const stripePromise = loadStripe('pk_test_51MY0UYDg33BD1sq0OqYKxSAfdPZL4JvwavVzIuz3bIK8ndNUXO2MRaxM8eEMIWJLC2qD5XdPzXGYsgYQO3A4C6Hb008obmGHyR');
+const productId = 'price_1NdOE4Dg33BD1sq00t441T8D'
 
 export default async function PrivacyPage() {
+  const handleStripeSignUp = async () => {
+    const stripe = await stripePromise;
+
+    try {
+      const response = await axios.post(
+        'http://localhost:8000/stripe/create-checkout-session',
+        {
+          'priceId': productId,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          withCredentials: true,
+        }
+      );
+
+      const session = response.data;
+      window.location.href = session.detail.url;
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+    }
+  };
+
   return (
     <>
       <main className='w-full flex flex-col h-full'>
@@ -209,10 +240,14 @@ export default async function PrivacyPage() {
 
               <a
                 className='mt-5 inline-flex justify-center items-center gap-x-3 text-center bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 focus:ring-offset-white transition py-3 px-4 dark:focus:ring-offset-gray-800'
-                href='https:github.com/htmlstreamofficial/preline/tree/main/examples/html'
+                //href='https:github.com/htmlstreamofficial/preline/tree/main/examples/html'
+                onClick={handleStripeSignUp}
+                href="#"
               >
                 Sign up
+                
               </a>
+              
             </div>
 
             <div className='flex flex-col border border-gray-200 text-center rounded-xl p-8 dark:border-gray-700'>

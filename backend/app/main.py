@@ -99,6 +99,7 @@ app.include_router(router=api.creator_router)
 app.include_router(router=api.clones_router)
 app.include_router(router=api.conversations_router)
 app.include_router(router=api.tags_router)
+app.include_router(router=api.stripe_router)
 # app.middleware("http")(moderation_middleware)
 # app.include_router(api.voice_router)
 # app.include_router(api.apikeys_router)
@@ -159,6 +160,9 @@ app.include_router(
     tags=["auth"],
 )
 
+# origins = [
+#     "http://localhost:3000"
+# ]
 
 app.add_middleware(
     CORSMiddleware,
