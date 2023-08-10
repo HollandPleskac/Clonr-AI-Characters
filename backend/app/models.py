@@ -113,9 +113,9 @@ class User(Base, SQLAlchemyBaseUserTableUUID):
     clones: Mapped[list["Clone"]] = relationship(
         secondary=users_to_clones, back_populates="users"
     )
-    messages: Mapped[list["Message"]] = relationship("Message", back_populates="users")
+    messages: Mapped[list["Message"]] = relationship("Message", back_populates="user")
     conversations: Mapped[list["Conversation"]] = relationship(
-        "Conversation", back_populates="users"
+        "Conversation", back_populates="user"
     )
     creator: Mapped["Creator"] = relationship("Creator", back_populates="user")
     llm_calls: Mapped[list["LLMCall"]] = relationship(
@@ -245,7 +245,7 @@ class Clone(CommonMixin, Base):
 # this will also speed up LIKE and ILIKE statements
 ix_clones_case_insensitive_name = sa.Index(
     "ix_clones_case_insensitive_name",
-    Clone.case_insensitive_content,
+    sa.text("lower(clones.name) gin_trgm_ops"),
     postgresql_using="gin",
     postgresql_ops={"name": "gin_trgm_ops"},
 )
@@ -358,7 +358,7 @@ class Message(CommonMixin, Base):
     clone_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )
-    clone: Mapped["Clone"] = relationship("User", back_populates="messages")
+    clone: Mapped["Clone"] = relationship("Clone", back_populates="messages")
     user_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
@@ -391,7 +391,7 @@ class Message(CommonMixin, Base):
 # (Jonny) gist has faster updates than gin, which is what we want for messages!
 msg_case_insensitive_content_trgm_index = sa.Index(
     "msg_case_insensitive_content_trgm_index",
-    Message.case_insensitive_content,
+    sa.text("lower(messages.name) gist_trgm_ops"),
     postgresql_using="gist",
     postgresql_ops={"name": "gist_trgm_ops"},
 )

@@ -37,7 +37,10 @@ async def get_clonedb(
     if not user.is_superuser and not exists.all():
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     user_id = user.id
-    if user.is_superuser:
+    # TODO (Jonny): we should probably have a creator clonedb
+    # and a user clonedb. We don't want None floating around for
+    if user.is_superuser and conversation_id:
+        # conversation ID
         user_id = await db.scalar(
             sa.select(models.Conversation.user_id).where(
                 models.Conversation.id == conversation_id
