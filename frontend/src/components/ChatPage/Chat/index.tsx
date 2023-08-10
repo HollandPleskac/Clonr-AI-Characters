@@ -10,12 +10,12 @@ import SmileIcon from '@/svg/ChatPage/Chat/smile-icon.svg'
 import SendIcon from '@/svg/ChatPage/Chat/SendIcon'
 import axios from 'axios'
 import { ThreeDots } from 'react-loader-spinner'
-import MagnifyingGlass from '@/svg/ChatPage/Chat/magnify.svg'
-import Paperclip from '@/svg/ChatPage/Chat/paperclip.svg'
-import ChatDropdown from './ChatDropdown'
+
 import { Character, Message } from '@/types'
 import InfiniteScroll from 'react-infinite-scroll-component'
-
+import ChooseChatExperience from './ChooseChatExperience'
+import PreviousConversations from './PreviousConversations'
+import ChatTopBar from './ChatTopBar'
 interface ChatScreenProps {
   characterId: string
   conversationId: string
@@ -38,7 +38,7 @@ export default function ChatScreen({
   const [conversationState, setConversationState] = useState(
     initialConversationState
   )
-  const [showPreviousMessages, setShowPreviousMessages] = useState(false)
+  const [showChat, setShowChat] = useState(true)
   const [scrollToNewMessage, setScrollToNewMessage] = useState<boolean>(false)
 
   // search state
@@ -170,171 +170,30 @@ export default function ChatScreen({
     setMessages((prevMessages) => [...prevMessages, ...newMessages])
   }
 
+  const handleSetConversationState = (newState: string) => {
+    setConversationState(newState)
+  }
+
   return (
     <div className='w-[100%] border-r-[2px] border-[#252525] bg-[#121212] lg:inline'>
       {conversationState === 'undecided' && (
-        <div
-          className='h-full px-8 flex flex-col gap-x-8 justify-center items-start pt-8'
-          style={{ height: 'calc(100vh)' }}
-        >
-          {/* <h1 className='text-2xl font-bold md:text-4xl text-white mb-8'>
-            How do you want to chat?
-          </h1> */}
-          <div className='flex gap-x-8 justify-center'>
-            <div className='w-[280px] flex flex-col'>
-              <div className='h-[280px] w-[280px] relative'>
-                <Image
-                  src='/barack2.jpeg'
-                  alt='logo'
-                  layout='fill'
-                  objectFit='cover'
-                  className='rounded-lg mb-5'
-                />
-              </div>
-              <h2 className='text-xl text-left my-4 font-semibold text-gray-500'>
-                22.3k Chats
-              </h2>
-              <div className='flex flex-wrap gap-2'>
-                <button className='px-2 py-1 text-sm text-gray-600 border-2 border-gray-700 rounded-lg rounder-gray-800 hover:border-gray-700 hover:text-gray-600'>
-                  President
-                </button>
-                <button className='px-2 py-1 text-sm text-gray-600 border-2 border-gray-700 rounded-lg rounder-gray-800 hover:border-gray-700 hover:text-gray-600'>
-                  Male
-                </button>
-                <button className='px-2 py-1 text-sm text-gray-600 border-2 border-gray-700 rounded-lg rounder-gray-800 hover:border-gray-700 hover:text-gray-600'>
-                  Politician
-                </button>
-              </div>
-            </div>
-            <div className='w-1/3 flex flex-col justify-start'>
-              <h2 className='text-lg sm:text-4xl font-semibold mb-4 text-white'>
-                Barack Obama
-              </h2>
-              <p className='mb-5 text-lg text-gray-400'>
-                I am Barack Obama, 44th President of the United States.{' '}
-              </p>
-              <h2 className='text-lg sm:text-xl font-semibold mb-2 text-white'>
-                Long Description
-              </h2>
-              <p className='mb-5 text-gray-400 lime-clamp-3'>
-                I am Barack Obama, 44th President of the United States. I am
-                Barack Obama, 44th President of the United States. I am Barack
-                Obama, 44th Presid...
-              </p>
-              <button
-                onClick={() => {
-                  setConversationState('short_term')
-                }}
-                className='flex items-center justify-between w-full py-2 px-4 inline-flex bg-purple-500 rounded-lg hover:bg-purple-600 text-white'
-              >
-                Start Short Term Memory Chat
-                <div>i</div>
-              </button>
-              <button
-                onClick={() => {
-                  setConversationState('long term')
-                }}
-                className='mt-2 flex items-center justify-between w-full py-2 px-4 inline-flex bg-purple-500 rounded-lg hover:bg-purple-600 text-white'
-              >
-                Start Long Term Memory Chat
-                <div>i</div>
-              </button>
-            </div>
-            
-          </div>
-
-          {/* <h1 className='text-2xl font-bold md:text-4xl text-white mb-8'>
-            Character Information
-          </h1> */}
-        </div>
+        <ChooseChatExperience
+          setConversationState={handleSetConversationState}
+        />
       )}
 
       {conversationState !== 'undecided' && (
         <>
-          <div className='flex h-[122px] w-full items-center justify-between border-b border-[#252525] px-10'>
-            <div className='flex items-center'>
-              <Image
-                key={0}
-                src='/dummy-char.png'
-                alt={`Character Profile Picture ${0 + 1}`}
-                width={55}
-                height={55}
-                className='rounded-full'
-              />
-              <div className='flex flex-col ml-6 gap-y-3'>
-                <h3 className='text-3xl font-bold leading-5 text-white'>
-                  {character.name}
-                </h3>
-                <p className='text-gray-400 text-sm line-clamp-1'>
-                  {character.short_description}
-                </p>
-              </div>
-            </div>
-            <div className='flex items-center gap-x-4'>
-              <div className='relative group'>
-                <button
-                  onClick={() => {
-                    if (inputRef.current) {
-                      inputRef.current.focus()
-                    }
-                  }}
-                  className='group absolute peer left-[10px] top-2 peer cursor-default'
-                >
-                  <MagnifyingGlass
-                    strokeClasses={` group-focus:stroke-[#5848BC] ${
-                      isInputActive ? 'stroke-[#5848BC]' : 'stroke-[#515151]'
-                    } transition duration-100 bg-red-400`}
-                  />
-                </button>
-                <input
-                  ref={inputRef}
-                  onFocus={handleInputFocus}
-                  onBlur={handleInputBlur}
-                  className={`cursor-default peer-focus:cursor-auto focus:cursor-auto peer py-auto h-[40px] w-[44px] peer-focus:w-[300px] focus:w-[300px] transition-all  duration-500 rounded-full border-none bg-gray-800 peer-focus:bg-gray-700 focus:bg-gray-700 pr-0 pl-[44px] text-[15px] font-light leading-6 text-[#979797] focus:ring-1 focus:ring-transparent`}
-                  type='text'
-                  placeholder='Search'
-                  style={{ outline: 'none', resize: 'none' }}
-                />
-              </div>
-              <button className='bg-gray-800 hover:bg-gray-700 rounded-full p-2 grid place-items-center transition duration-200'>
-                <Paperclip />
-              </button>
-
-              <ChatDropdown
-                togglePreviousConversations={() => {
-                  setShowPreviousMessages((prevState) => !prevState)
-                }}
-              />
-            </div>
-          </div>
-          {showPreviousMessages && (
-            <div
-              style={{
-                height: 'calc(100vh - 122px)',
-              }}
-              className='p-8'
-            >
-              <button className='rounded-lg flex justify-between items-center bg-black hover:bg-gray-800 transition duration-200 w-[80%] rounded-lg p-4 '>
-                <div className='flex flex-col items-start '>
-                  <h3 className='text-white text-xl font-semibold mb-2'>
-                    23 Days Ago
-                  </h3>
-                  <h4 className='text-gray-400 mb-1 text-[14px]'>
-                    You: <span className='italic'>hey whats up?</span>
-                  </h4>
-                  <h4 className='text-gray-400 text-[14px]'>
-                    Barack Obama:{' '}
-                    <span className='italic'>nothing much how about you?</span>
-                  </h4>
-                </div>
-                <div className='text-purple-600 font-semibold'>
-                  Long Term Memory
-                </div>
-              </button>
-            </div>
-          )}
-
-          {!showPreviousMessages && (
+          <ChatTopBar
+            character={character}
+            isInputActive={isInputActive}
+            handleInputFocus={handleInputFocus}
+            handleInputBlur={handleInputBlur}
+            inputRef={inputRef}
+            toggleChatState={() => setShowChat((prevState) => !prevState)}
+          />
+          {!showChat && <PreviousConversations />}
+          {showChat && (
             <>
               <div>
                 <div

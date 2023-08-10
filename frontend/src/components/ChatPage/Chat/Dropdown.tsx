@@ -4,10 +4,10 @@ import React from 'react'
 import HorizontalDotsBig from '@/svg/ChatPage/Chat/horizontal-dots-big.svg'
 
 type ChatDropdownProps = {
-  togglePreviousConversations: () => void
+  toggleChatState: () => void
 }
 
-const ChatDropdown = ({ togglePreviousConversations }: ChatDropdownProps) => {
+const ChatDropdown = ({ toggleChatState }: ChatDropdownProps) => {
   return (
     <div className='hs-dropdown relative inline-flex justify-center items-center'>
       <button
@@ -27,7 +27,7 @@ const ChatDropdown = ({ togglePreviousConversations }: ChatDropdownProps) => {
             Settings
           </span>
           <button
-            onClick={togglePreviousConversations}
+            onClick={toggleChatState}
             className='w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300'
           >
             <svg
