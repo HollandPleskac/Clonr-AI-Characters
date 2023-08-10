@@ -153,6 +153,9 @@ async def vector_search(
 
     r = await db.execute(stmt)
 
+    r = list(r)
+    print("VECTOR SEARCH:", r)
+
     res: list[VectorSearchResult] = []
 
     max_tokens = params.max_tokens  # copy so we don't mess up when using shared params.
@@ -200,6 +203,9 @@ async def rerank_search(
         tokenizer=tokenizer,
         filters=filters,
     )
+
+    if not vsearch_results:
+        return []
 
     # batch compute the rerank scores
     rerank_scores = await embedding_client.rerank_score(

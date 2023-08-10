@@ -1,27 +1,15 @@
-from datetime import datetime, timedelta
-from typing import Annotated, Any, Dict, List, Optional
+from typing import Annotated
 
-import sqlalchemy as sa
 import stripe
-from fastapi import (
-    Depends,
-    Header,
-    HTTPException,
-    Request,
-    Response,
-    status,
-)
-from fastapi.responses import RedirectResponse
+from fastapi import Depends, Request, status
 from fastapi.routing import APIRouter
-from pydantic import BaseModel
-from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from stripe.error import StripeError
 
-from app import models, schemas
-from app.deps.users import get_current_active_user
+from app import models
 from app.deps.db import get_async_session
-#from app.models import Subscription 
+from app.deps.users import get_current_active_user
+
+# from app.models import Subscription
 from app.settings import settings
 
 router = APIRouter(
@@ -135,16 +123,15 @@ router = APIRouter(
 #         return {"status_code": status.HTTP_403_FORBIDDEN, "detail": str(e)}
 
 
-## TODO:
-## stripe edge cases - double pay, upgrading plans, changing cards
-## email not there if discord auth 
+# TODO:
+# stripe edge cases - double pay, upgrading plans, changing cards
+# email not there if discord auth
 @router.post("/create-checkout-session")
 async def create_checkout_session(
     request: Request,
     db: Annotated[AsyncSession, Depends(get_async_session)],
     user: Annotated[models.User, Depends(get_current_active_user)],
 ):
-    
     stripe_customer_id = user.stripe_customer_id
     stripe.api_key = settings.STRIPE_API_KEY
 
@@ -155,7 +142,7 @@ async def create_checkout_session(
         await db.commit()
     else:
         stripe_customer_id = user.stripe_customer_id
-    
+
     content_type = request.headers.get("Content-Type")
     if content_type is None:
         return "No Content-Type provided."
@@ -173,14 +160,16 @@ async def create_checkout_session(
             customer=stripe_customer_id,
             payment_method_types=["card"],
             mode="subscription",
-            line_items = [{
-                "price": price_id,
-                "quantity": 1,
-            }],
+            line_items=[
+                {
+                    "price": price_id,
+                    "quantity": 1,
+                }
+            ],
             success_url=settings.STRIPE_SUCCESS_URL,
             cancel_url=settings.STRIPE_CANCEL_URL,
         )
-        
+
         # TODO: edit - add subscription to db
         # subscription = models.Subscription(
         #     customer_id=checkout_session["customer"],
@@ -268,7 +257,7 @@ async def create_checkout_session(
 #         return {"status_code": status.HTTP_403_FORBIDDEN, "detail": str(e)}
 
 
-# ## Usage based
+# Usage based
 
 
 # @router.post("/create-usage-record")

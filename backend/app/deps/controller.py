@@ -1,3 +1,4 @@
+import uuid
 from typing import Annotated
 
 from fastapi import BackgroundTasks, Depends, Path, status
@@ -23,7 +24,7 @@ from .users import get_current_active_user
 
 # Requires either the clone_id or conversation_id
 async def get_controller(
-    conversation_id: Annotated[str, Path(min_length=36, max_length=36)],
+    conversation_id: Annotated[uuid.UUID, Path()],
     db: Annotated[AsyncSession, Depends(get_async_session)],
     user: Annotated[models.Creator, Depends(get_current_active_user)],
     embedding_client: Annotated[EmbeddingClient, Depends(get_embedding_client)],
@@ -32,11 +33,12 @@ async def get_controller(
     tokenizer: Annotated[Tokenizer, Depends(get_tokenizer)],
 ):
     # Auth, convo, and clone
-    if not (conversation := await db.get(models.Conversation, id)):
+    if not (conversation := await db.get(models.Conversation, conversation_id)):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Conversation {conversation_id} not found.",
         )
+    user_id = conversation.user_id
     if not user.is_superuser and conversation.user_id != user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -75,6 +77,7 @@ async def get_controller(
         embedding_client=embedding_client,
         clone_id=clone.id,
         conversation_id=conversation_id,
+        user_id=user_id,
     )
 
     controller = Controller(

@@ -316,6 +316,7 @@ class Conversation(CommonMixin, ConversationCreate):
 class MessageCreate(BaseModel):
     content: Annotated[str, AfterValidator(special_char_validator)] = Field(
         description="Message content. Messages may not contain <| or |>.",
+        max_length=1600,
     )
 
 
@@ -324,12 +325,14 @@ class MessageUpdate(BaseModel):
 
 
 class Message(CommonMixin, MessageCreate):
+    model_config = ConfigDict(from_attributes=True)
+
     sender_name: str
     timestamp: datetime.datetime
     is_clone: bool
     is_main: bool
     is_active: bool
-    parent_id: uuid.UUID
+    parent_id: uuid.UUID | None
     clone_id: uuid.UUID
     user_id: uuid.UUID
     conversation_id: uuid.UUID

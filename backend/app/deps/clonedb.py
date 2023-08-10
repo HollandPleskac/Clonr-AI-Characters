@@ -1,3 +1,4 @@
+import uuid
 from typing import Annotated
 
 import sqlalchemy as sa
@@ -19,7 +20,7 @@ from .users import get_current_active_user
 
 
 async def get_clonedb(
-    clone_id: Annotated[str, Path()],
+    clone_id: Annotated[uuid.UUID, Path()],
     user: Annotated[models.User, Depends(get_current_active_user)],
     db: Annotated[AsyncSession, Depends(get_async_session)],
     conn: Annotated[Redis, Depends(get_async_redis)],

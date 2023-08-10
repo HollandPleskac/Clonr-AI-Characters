@@ -1,5 +1,6 @@
 import datetime
 import enum
+import uuid
 from typing import Annotated
 
 import sqlalchemy as sa
@@ -27,7 +28,7 @@ class MsgSortType(str, enum.Enum):
 async def get_message(
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
     user: Annotated[models.Creator, Depends(deps.get_current_active_user)],
-    message_id: Annotated[str, Path(min_length=36, max_length=36)] = None,
+    message_id: Annotated[uuid.UUID, Path()] = None,
 ) -> models.Message:
     msg = await db.get(models.Message, message_id)
     if not msg or (not msg.is_active and not user.is_superuser):
@@ -79,9 +80,10 @@ async def get_messages(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Unauthorized user ID.",
         )
+    # filtering by Message.user_id = user_id is really important!
     query = (
         sa.select(models.Message)
-        .where(models.Message.user == user_id)
+        .where(models.Message.user_id == user_id)
         .where(models.Message.is_main == is_main)
         .where(models.Message.is_active == is_active)
         .offset(offset)
@@ -113,7 +115,9 @@ async def get_messages(
             )
         case MsgSortType.similarity:
             # full similarity is easy here, just op('%')
-            query = query.where(models.Message.op("%>")(q)).order_by(sml.desc())
+            query = query.where(
+                models.Message.case_insensitive_content.op("%>")(q)
+            ).order_by(sml.desc())
         case MsgSortType.newest:
             query = query.order_by(models.Message.timestamp.desc())
         case MsgSortType.oldest:

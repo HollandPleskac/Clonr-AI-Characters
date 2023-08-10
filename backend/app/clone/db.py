@@ -3,6 +3,8 @@ from datetime import datetime
 
 import numpy as np
 import sqlalchemy as sa
+from fastapi import status
+from fastapi.exceptions import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
@@ -61,7 +63,10 @@ class CloneDB:
         if await self.db.scalar(
             sa.select(models.Document.hash).where(models.Document.hash == doc.hash)
         ):
-            return
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Document with the provided content already exists!",
+            )
 
         # Add embedding stuff. Doc embeddings are just the mean of all node embeddings
         embs = await self.embedding_client.encode_passage([x.content for x in nodes])
@@ -243,6 +248,8 @@ class CloneDB:
             raise ValueError("Adding messages requires conversation_id.")
         if self.user_id is None:
             raise ValueError("Adding messages requires user_id.")
+        embedding = await self.embedding_client.encode_passage(message.content)
+        embedding_model = await self.embedding_client.encoder_name()
         msg = models.Message(
             id=message.id,
             sender_name=message.sender_name,
@@ -255,6 +262,8 @@ class CloneDB:
             clone_id=self.clone_id,
             conversation_id=self.conversation_id,
             user_id=self.user_id,
+            embedding=embedding[0],
+            embedding_model=embedding_model,
         )
         self.db.add(msg)
         if msg_to_unset is not None:

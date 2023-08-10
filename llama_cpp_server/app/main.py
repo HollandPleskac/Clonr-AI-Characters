@@ -22,7 +22,8 @@ from fastapi.concurrency import iterate_in_threadpool
 from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
-from pydantic import BaseModel, BaseSettings, Field
+from pydantic import BaseModel, Field
+from pydantic_settings import BaseSettings
 from sse_starlette import EventSourceResponse
 from starlette.concurrency import run_in_threadpool
 from transformers import LlamaTokenizer

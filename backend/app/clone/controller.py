@@ -204,18 +204,16 @@ class Controller:
         # risky, one bad user that sees our API could fuck up their own chat history
         # and we would also need to put an auth guard to prevent sending a parent_id
         # without the proper auth.
-        latest_messages = await self.clonedb.get_messages(num_messages=1)
-        if latest_messages:
-            parent_id = latest_messages[0].id
+        parent_id = (await self.clonedb.get_messages(num_messages=1))[0].id
 
         msg_struct = Message(
-            sender_name=self.user_name, is_clone=True, parent_id=parent_id, **data
+            sender_name=self.user_name, is_clone=False, parent_id=parent_id, **data
         )
         msg = await self.clonedb.add_message(msg_struct)
 
         if self.memory_strategy == MemoryStrategy.long_term:
             mem_content = f'{msg.sender_name} messaged me, "{msg.content}"'
-            self._add_private_memory(content=mem_content)
+            await self._add_private_memory(content=mem_content)
 
         return msg
 
@@ -394,7 +392,13 @@ class Controller:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Revisions on the greeting message are not allowed.",
             )
-        revisions = last_msg.parent.children
+        revisions = (
+            await self.clonedb.db.scalars(
+                sa.select(models.Message).where(
+                    models.Message.parent_id == last_msg.parent_id
+                )
+            )
+        ).all()
         if len(revisions) < 2:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -408,10 +412,11 @@ class Controller:
             else:
                 rev.is_main = False
         if msg is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Message {message_id} is not an eligible revision to select.",
+            detail = (
+                f"Message {message_id} is not an eligible revision to select. "
+                f"Eligible revisions are: {revisions}",
             )
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)
         await self.clonedb.db.commit()
         await self.clonedb.db.refresh(msg)
         return msg
@@ -472,7 +477,8 @@ class Controller:
                 )
         if self.information_strategy == InformationStrategy.internal:
             queries = await self._generate_msg_queries(
-                num_messges=NUM_RECENT_MSGS_FOR_QUERY
+                num_messges=NUM_RECENT_MSGS_FOR_QUERY,
+                num_tokens=int(0.66 * self.llm.context_length),
             )
             # NOTE (Jonny): we don't want duplicate monologues, so make one query.
             mashed_query = " ".join(queries)
@@ -530,7 +536,11 @@ class Controller:
         tokens_remaining -= generate.Params.generate_zero_memory_message.max_tokens
 
         recent_msgs = await self.clonedb.get_messages(num_tokens=tokens_remaining)
-        parent_id = recent_msgs[0].id if recent_msgs else None
+        if msg_to_unset:
+            parent_id = msg_to_unset.parent_id
+        else:
+            parent_id = recent_msgs[0].id if recent_msgs else None
+
         messages = list(reversed(recent_msgs))
 
         new_msg_content = await generate.generate_zero_memory_message(
@@ -582,8 +592,10 @@ class Controller:
         long_description = self.clone.long_description
 
         # generate the queries used for retrieval ops
+        # since we don't have a user_message length cap, cutoff here
         queries = await self._generate_msg_queries(
-            num_messges=NUM_RECENT_MSGS_FOR_QUERY
+            num_messges=NUM_RECENT_MSGS_FOR_QUERY,
+            num_tokens=int(0.66 * self.llm.context_length),
         )
         mashed_query = " ".join(queries)
 
@@ -698,7 +710,10 @@ class Controller:
         print(tokens_remaining)
 
         recent_msgs = await self.clonedb.get_messages(num_tokens=tokens_remaining)
-        parent_id = recent_msgs[0].id if recent_msgs else None
+        if msg_to_unset:
+            parent_id = msg_to_unset.parent_id
+        else:
+            parent_id = recent_msgs[0].id if recent_msgs else None
         messages = list(reversed(recent_msgs))
         oldest_msg_timestamp = messages[0].timestamp
 
@@ -743,11 +758,11 @@ class Controller:
         # n_memories, n_pruned_memories, n_facts, fact_chars, mem_chars, etc.
         match self.memory_strategy:
             case MemoryStrategy.none:
-                return await self._generate_zero_memory_message()
+                return await self._generate_zero_memory_message(msg_gen=msg_gen)
             case MemoryStrategy.short_term | MemoryStrategy.long_term:
                 # the only diff is in adaptation strategy I guess, so it's
                 # all just handled in the same function
-                return self._generate_long_term_memory_message()
+                return self._generate_long_term_memory_message(msg_gen=msg_gen)
             case _:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -765,14 +780,23 @@ class Controller:
             sa.select(models.Document).order_by(models.Document.type)
         )
         docs = r.all()
-        long_desc = await generate.long_description_create(
-            llm=llm, short_description=clone.short_description, docs=docs
+        # TODO (Jonny): replace this with the real one, mock is too expensive
+        import warnings
+
+        from clonr.llms import MockLLM
+
+        warnings.warn(
+            "you hot swapped for a mock llm here. don't forget to change back"
         )
-        clone.long_description = long_desc
+
+        long_desc = await generate.long_description_create(
+            llm=MockLLM(), short_description=clone.short_description, docs=docs
+        )
+        # A stateful edit seems like a bad idea
+        # clone.long_description = long_desc
         long_desc_model = models.LongDescription(
             content=long_desc, documents=docs, clone=clone
         )
-        clonedb.db.add(clone)
         clonedb.db.add(long_desc_model)
         await clonedb.db.commit()
         await clonedb.db.refresh(long_desc_model, ["documents"])

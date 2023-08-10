@@ -48,6 +48,11 @@ class CaseInsensitiveComparator(Comparator[str]):
             other.lower(), sa.func.lower(self.__clause_element__()), **kwargs
         )
 
+    def operate(
+        self, op: sa.sql.expression.ColumnOperators, *other: Any, **kwargs: Any
+    ) -> sa.Operators:
+        return sa.func.lower(self.__clause_element__()).operate(op, *other, **kwargs)
+
 
 class Base(DeclarativeBase):
     type_annotation_map = {list[float]: Vector, dict[str, Any]: JSON}
@@ -417,7 +422,7 @@ class Document(CommonMixin, Base):
 
     content: Mapped[str]
     hash: Mapped[str] = mapped_column(index=True)
-    name: Mapped[str]
+    name: Mapped[str] = mapped_column(unique=True)
     description: Mapped[Optional[str]] = mapped_column(default=None)
     # wiki, messages, website, google search, etc.
     type: Mapped[Optional[str]] = mapped_column(default=None)
@@ -780,7 +785,7 @@ class LongDescription(CommonMixin, Base):
 #     timestamp: Mapped[datetime.datetime] = mapped_column(nullable=True)
 
 
-## TODO: edit
+# TODO: edit
 # class Subscription(CommonMixin, Base):
 #     __tablename__ = "subscriptions"
 

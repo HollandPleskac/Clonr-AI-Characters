@@ -51,7 +51,7 @@ DESCRIPTION:
 ---
 
 Next, you are given the following excerpt (enclosed with ---) taken from a document of type: {{ document_type }}.
-{%- if (document_description) -%} The document can be described as: {{document_description}}{%- endif -%}
+{%- if (document_description) -%} The document can be described as: {{document_description}}{%- endif %}
 ---
 {{ document_type.upper() }}:
 {{ document_content }}
