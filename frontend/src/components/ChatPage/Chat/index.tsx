@@ -48,6 +48,14 @@ export default function ChatScreen({
   const inputRef = useRef<HTMLInputElement>(null)
   const divRef = useRef<HTMLDivElement | null>(null)
 
+  // OPTIONAL: FETCH initialMessages client side here
+  // type: Message (see @/types)
+  // want to sync this type up with backend
+  // useEffect(() => {
+    // setMessages(...)
+    // also setInitialConversationState to 'undecided' or 'short' or 'long'
+  // },[])
+
   useEffect(() => {
     // @ts-ignore
     import('preline')
@@ -242,7 +250,7 @@ export default function ChatScreen({
                 </div>
               </div>
 
-              <div className='flex h-[92px] items-center border-t  border-[#252525] bg-[red-400] px-6'>
+              <div className='flex h-[92px] items-center border-t  border-[#252525] px-6'>
                 <div className='relative w-full'>
                   <div className='absolute right-4 top-3'>
                     <SmileIcon />

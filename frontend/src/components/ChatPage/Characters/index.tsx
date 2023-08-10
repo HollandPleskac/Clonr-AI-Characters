@@ -9,14 +9,22 @@ import { CharacterChat } from '@/types'
 import { formatDate } from '@/utils/formatDate'
 
 interface CharactersProps {
-  pastChats: CharacterChat[]
+  initialCharacterChats: CharacterChat[]
   currentCharacterId: string
 }
 
 export default function Characters({
-  pastChats,
+  initialCharacterChats,
   currentCharacterId,
 }: CharactersProps) {
+
+  const [characterChats, setCharacterChats] = useState<CharacterChat[]>(initialCharacterChats)
+
+  // OPTIONAL: FETCH initialCharacterChats client side here
+  // type: CharacterChat (see @/types)
+  // want to sync this type up with backend
+  // useEffect(() => {
+  // },[])
 
   // search state
   const [isInputActive, setInputActive] = useState(false)
@@ -77,10 +85,10 @@ export default function Characters({
       </div>
 
       <div className='sticky top-[154px] overflow-auto transition-all duration-100 h-full'>
-        {pastChats.map((pastChat) => (
+        {characterChats.map((charChat) => (
           <CharacterComponent
-            key={pastChat.character.id}
-            pastChat={pastChat}
+            key={charChat.character.id}
+            characterChat={charChat}
             currentCharacterId={currentCharacterId}
           />
         ))}

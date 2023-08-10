@@ -14,7 +14,7 @@ const PreviousConversations = ({
   return (
     <Link
       href={`/chat/${conversation.character.id}/${conversation.id}`}
-      className='group rounded-lg flex justify-between items-center bg-black hover:bg-gray-800 transition duration-200 w-full rounded-lg p-4 '
+      className='group rounded-lg flex justify-between items-center bg-[#121212] hover:bg-gray-800 transition duration-200 w-full rounded-lg p-4 '
     >
       <div className='flex flex-col items-start'>
         <h3 className='text-white text-xl font-semibold mb-2'>23 Days Ago</h3>

@@ -53,6 +53,7 @@ async function getCharacterPastChats() {
         tags: ['president', 'politician'],
       },
       lastMessage: "Why can't I just eat my waffle?",
+      lastConversationId: '123',
     },
     {
       character: {
@@ -69,6 +70,7 @@ async function getCharacterPastChats() {
         tags: ['entrepreneur', 'businessman'],
       },
       lastMessage: 'Next I’m buying Coca-Cola to put the cocaine back in',
+      lastConversationId: '1234',
     },
   ]
 }
@@ -161,7 +163,7 @@ export default async function ChatPage({
     params.characterId,
     params.conversationId
   )
-  const pastChats = await getCharacterPastChats()
+  const characterChats = await getCharacterPastChats()
   const initialMessages = await getInitialMessages(
     params.characterId,
     params.conversationId
@@ -180,7 +182,7 @@ export default async function ChatPage({
         style={{ height: 'calc(100vh)' }}
       >
         <Characters
-          pastChats={pastChats}
+          initialCharacterChats={characterChats}
           currentCharacterId={params.characterId}
         />
         <ChatScreen

@@ -8,7 +8,7 @@ const axios = require('axios').default;
 const stripePromise = loadStripe('pk_test_51MY0UYDg33BD1sq0OqYKxSAfdPZL4JvwavVzIuz3bIK8ndNUXO2MRaxM8eEMIWJLC2qD5XdPzXGYsgYQO3A4C6Hb008obmGHyR');
 const productId = 'price_1NdOE4Dg33BD1sq00t441T8D'
 
-export default async function PrivacyPage() {
+export default function PrivacyPage() {
   const handleStripeSignUp = async () => {
     const stripe = await stripePromise;
 

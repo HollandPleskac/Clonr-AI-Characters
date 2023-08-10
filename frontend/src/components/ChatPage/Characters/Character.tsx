@@ -5,18 +5,20 @@ import { CharacterChat } from '@/types'
 import { formatDate } from '@/utils/formatDate'
 
 interface MyComponentProps {
-  pastChat: CharacterChat
+  characterChat: CharacterChat
   currentCharacterId: string
 }
 const Character: React.FC<MyComponentProps> = ({
-  pastChat,
+  characterChat,
   currentCharacterId,
 }) => {
   return (
-    <Link href={`/chat/${pastChat.character.id}/123`}>
+    <Link
+      href={`/chat/${characterChat.character.id}/${characterChat.lastConversationId}`}
+    >
       <div
         className={`${
-          pastChat.character.id === currentCharacterId
+          characterChat.character.id === currentCharacterId
             ? ' border-[#252525] bg-[#282348]'
             : 'border-[#252525] bg-[#121212]'
         } border-r-none cursor-pointer border-b px-0`}
@@ -34,15 +36,15 @@ const Character: React.FC<MyComponentProps> = ({
             <div className='ml-3 flex flex-col'>
               <div className='mb-1 flex items-center'>
                 <h3 className='mr-2 text-[16px] font-bold leading-[22px]'>
-                  {pastChat.character.name}
+                  {characterChat.character.name}
                 </h3>
                 <h4 className='text-sm font-light leading-[18px] text-[#979797]'>
                   {/* {username} */}
-                  {' • ' + formatDate(pastChat.character.updated_at)}
+                  {' • ' + formatDate(characterChat.character.updated_at)}
                 </h4>
               </div>
               <div className='text-smibold text-[14px] leading-[18px] line-clamp-1'>
-                {pastChat.lastMessage}
+                {characterChat.lastMessage}
               </div>
             </div>
           </div>

@@ -1,10 +1,7 @@
 import React, { useEffect } from 'react'
-import ChevronRightPurple600 from '@/svg/ChatPage/Chat/chevron-right-purple-600.svg'
-import ChevronRightPurple500 from '@/svg/ChatPage/Chat/chevron-right-purple-500.svg'
 import PreviousConversation from './PreviousConversation'
 import { Conversation } from '@/types'
 import InfiniteScroll from 'react-infinite-scroll-component'
-import { ThreeDots } from 'react-loader-spinner'
 
 const dummyConversation: Conversation = {
   id: '12345',
@@ -31,6 +28,8 @@ const dummyConversation: Conversation = {
 const PreviousConversations = () => {
   const [conversations, setConversations] = React.useState<Conversation[]>([])
 
+  // FETCH first couple previous conversations client side
+  // let infinite scroll take care of the rest if the user scrolls down
   useEffect(() => {
     setConversations([
       dummyConversation,
@@ -80,10 +79,7 @@ const PreviousConversations = () => {
           className='pt-4 gap-y-4'
         >
           {conversations.map((message, index) => (
-              <PreviousConversation
-                conversation={conversations[0]}
-                key={index}
-              />
+            <PreviousConversation conversation={conversations[0]} key={index} />
           ))}
         </InfiniteScroll>
       </div>

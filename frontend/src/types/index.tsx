@@ -51,6 +51,7 @@ export type Character = {
 export type CharacterChat = {
   character: Character
   lastMessage: string
+  lastConversationId: string
 }
 
 export type Conversation = {
