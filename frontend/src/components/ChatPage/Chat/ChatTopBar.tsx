@@ -11,6 +11,7 @@ type ChatTopBarProps = {
   handleInputFocus: () => void
   handleInputBlur: () => void
   toggleChatState: () => void
+  showChat: boolean
 }
 
 const ChatTopBar = ({
@@ -20,6 +21,7 @@ const ChatTopBar = ({
   handleInputBlur,
   handleInputFocus,
   toggleChatState,
+  showChat
 }: ChatTopBarProps) => {
   return (
     <div className='flex h-[122px] w-full items-center justify-between border-b border-[#252525] px-10'>
@@ -71,7 +73,7 @@ const ChatTopBar = ({
           <Paperclip />
         </button>
 
-        <ChatDropdown toggleChatState={toggleChatState} />
+        <ChatDropdown toggleChatState={toggleChatState} showChat={showChat} />
       </div>
     </div>
   )

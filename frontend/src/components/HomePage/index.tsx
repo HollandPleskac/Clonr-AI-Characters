@@ -18,7 +18,7 @@ import StatBar from '../Statistics/StatBar'
 import ScaleFadeIn from '../Transitions/ScaleFadeIn'
 import useClones from '@/hooks/useClones'
 import AuthModal from '../AuthModal'
-import StripeCheckoutButton from '@/components/Stripe/StripeCheckoutButton';
+// import StripeCheckoutButton from '@/components/Stripe/StripeCheckoutButton';
 
 interface HomeScreenProps {
   topCharacters: Character[]
@@ -41,29 +41,29 @@ export default function HomeScreen({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const duration = 500
-  const { queryClones, fetchCloneById } = useClones();
+  const { queryClones, fetchCloneById } = useClones()
 
   useEffect(() => {
     require('preline')
   }, [])
 
   const handleCloneSearch = async () => {
-    setLoading(true);
-    setError(null);
+    setLoading(true)
+    setError(null)
 
     try {
-      const data = await queryClones(searchInput);
-      setSearchedCharacters(data);
-      setDoneSearching(searchInput !== '');
+      const data = await queryClones(searchInput)
+      setSearchedCharacters(data)
+      setDoneSearching(searchInput !== '')
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    const debounceTimeout = setTimeout(handleCloneSearch, 500);
+    const debounceTimeout = setTimeout(handleCloneSearch, 500)
     return () => {
       clearTimeout(debounceTimeout)
     }
@@ -98,7 +98,7 @@ export default function HomeScreen({
         </ScaleFadeIn>
       ) : (
         <ScaleFadeIn loaded={!searchInput} duration={duration}>
-          <StripeCheckoutButton />
+          {/* <StripeCheckoutButton /> */}
           <Carousel
             characters={topCharacters}
             name='Top Characters'

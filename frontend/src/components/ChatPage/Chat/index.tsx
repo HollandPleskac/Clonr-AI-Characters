@@ -52,8 +52,8 @@ export default function ChatScreen({
   // type: Message (see @/types)
   // want to sync this type up with backend
   // useEffect(() => {
-    // setMessages(...)
-    // also setInitialConversationState to 'undecided' or 'short' or 'long'
+  // setMessages(...)
+  // also setInitialConversationState to 'undecided' or 'short' or 'long'
   // },[])
 
   useEffect(() => {
@@ -199,6 +199,7 @@ export default function ChatScreen({
             handleInputBlur={handleInputBlur}
             inputRef={inputRef}
             toggleChatState={() => setShowChat((prevState) => !prevState)}
+            showChat={showChat}
           />
           {!showChat && <PreviousConversations />}
           {showChat && (
@@ -244,7 +245,11 @@ export default function ChatScreen({
                       />
                     </div>
                     {messages.map((message, index) => (
-                      <MessageComponent message={message} key={index} />
+                      <MessageComponent
+                        message={message}
+                        isLast={false}
+                        key={index}
+                      />
                     ))}
                   </InfiniteScroll>
                 </div>
