@@ -109,7 +109,7 @@ class OpenAI(LLM):
         num_tokens = 0
         for message in messages:
             num_tokens += tokens_per_message
-            for key, value in message.dict().items():
+            for key, value in message.model_dump().items():
                 num_tokens += len(self.tokenizer.encode(value))
                 if key == "name":
                     num_tokens += tokens_per_name
@@ -132,7 +132,7 @@ class OpenAI(LLM):
         matches = re.findall(pattern, prompt, re.DOTALL)
 
         if not matches:
-            return [{"role": "user", "content": prompt.strip()}]
+            return [Message(**{"role": "user", "content": prompt.strip()})]
 
         for match in matches:
             role, content = match
@@ -183,7 +183,7 @@ class OpenAI(LLM):
             model=self.model,
             messages=messages,
             stream=False,
-            **params.dict(exclude_unset=True),
+            **params.model_dump(exclude_unset=True),
         )
 
         start_time = time.time()
@@ -191,7 +191,7 @@ class OpenAI(LLM):
             openai.aiosession.set(sess)
             try:
                 r = await openai.ChatCompletion.acreate(
-                    **request.dict(exclude_unset=True),
+                    **request.model_dump(exclude_unset=True),
                     api_key=self.api_key,
                     api_base=self.api_base,
                 )
@@ -250,13 +250,13 @@ class OpenAI(LLM):
             model=self.model,
             messages=messages,
             stream=True,
-            **params.dict(exclude_unset=True),
+            **params.model_dump(exclude_unset=True),
         )
         async with aiohttp.ClientSession() as sess:
             openai.aiosession.set(sess)
             try:
                 chunks = await openai.ChatCompletion.acreate(
-                    **request.dict(exclude_unset=True),
+                    **request.model_dump(exclude_unset=True),
                     api_key=self.api_key,
                     api_base=self.api_base,
                 )
@@ -291,10 +291,10 @@ class OpenAI(LLM):
             model=self.model,
             messages=messages,
             stream=True,
-            **params.dict(exclude_unset=True),
+            **params.model_dump(exclude_unset=True),
         )
         chunks = openai.ChatCompletion.create(
-            **request.dict(exclude_unset=True),
+            **request.model_dump(exclude_unset=True),
             api_key=self.api_key,
             api_base=self.api_base,
         )

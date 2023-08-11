@@ -1,3 +1,4 @@
+import datetime
 import enum
 from dataclasses import dataclass
 from typing import Protocol, TypeVar
@@ -31,7 +32,15 @@ class VectorSearchProtocol(Protocol):
     content: str
 
 
+class GenAgentsSearchProtocol(Protocol):
+    embedding: list[float] | np.ndarray
+    content: str
+    importance: int | float
+    last_accessed_at: datetime.datetime
+
+
 VectorSearchable = TypeVar("VectorSearchable", bound=VectorSearchProtocol)
+GenAgentsSearchable = TypeVar("GenAgentsSearchable", bound=GenAgentsSearchProtocol)
 
 
 class MetricType(str, enum.Enum):
@@ -63,6 +72,16 @@ class ReRankResult(VectorSearchResult):
     rerank_score: float
 
 
+@dataclass
+class GenAgentsSearchResult:
+    model: GenAgentsSearchable
+    recency_score: float
+    relevance_score: float
+    importance_score: float
+    score: float
+    metric: MetricType
+
+
 class VectorSearchParams(BaseModel):
     max_items: int = Field(
         default=INF, ge=1, detail="Maximum number of items to retrieve from query"
@@ -73,7 +92,7 @@ class VectorSearchParams(BaseModel):
         detail="Maximum number of tokens from all retrieved results, inlcuding newlines",
     )
     metric: MetricType = Field(
-        default=MetricType.cosine,
+        default=MetricType.inner_product,
         detail="Which metric to use. Inner product is faster, and equal to cosine if all embeddings are normalized (which they should be for us).",
     )
 
@@ -82,15 +101,35 @@ class ReRankSearchParams(VectorSearchParams):
     overshot_multiplier: float = Field(
         ge=1,
         default=2,
-        detail="The number of additional items to pull before reranking",
+        detail="Increases number of retrieved items in 1st pass by `overshot_multiplier * max_items`, which is then cut down by re-ranking.",
     )
 
 
 class GenAgentsSearchParams(VectorSearchParams):
-    alpha_recency: float = Field(detail=1.0)
-    alph_relevance: float = Field(
-        default=1.0, detail="Weighting for cosine distance similarity score"
+    alpha_recency: float = Field(
+        default=1.0,
+        le=1.0,
+        ge=0.0,
+        detail="Weighting for how recently this memory was accessed.",
+    )
+    alpha_relevance: float = Field(
+        default=1.0,
+        le=1.0,
+        ge=0.0,
+        detail="Weighting for cosine distance similarity score",
     )
     alpha_importance: float = Field(
-        default=1.0, detail="Weighting for LLM predicted importance score"
+        default=1.0,
+        le=1.0,
+        ge=0.0,
+        detail="Weighting for LLM predicted importance score",
+    )
+    half_life_seconds: float = Field(
+        default=24.0 * 60 * 60,
+        ge=0.0,
+        detail="Half-life (in seconds) for decaying memory recency. For example, a value of 60 means that after one minute, the recency score drops from 1 => 0.5, after 2 minutes it is 0.25, 3m 0.125, etc.",
+    )
+    max_importance_score: float = Field(
+        default=10,
+        detail="Normalizing factor for the importance score. Used to weight memory importance.",
     )

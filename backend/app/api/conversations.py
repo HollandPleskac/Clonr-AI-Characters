@@ -279,6 +279,14 @@ async def generate_clone_message(
     conversation_id: Annotated[uuid.UUID, Path()],
     controller: Annotated[Controller, Depends(deps.get_controller)],
 ):
+    if (
+        msg_gen.is_revision
+        and controller.conversation.memory_strategy != MemoryStrategy.none
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Message regeneration is not allowed for anything but the Zero Memory Strategy",
+        )
     key = f"{conversation_id}::generating"
     if (await controller.clonedb.cache.conn.get(key)) is not None:
         raise HTTPException(
@@ -349,7 +357,7 @@ async def delete_message(
     )
     if memory_strategy != MemoryStrategy.none:
         raise HTTPException(
-            status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Message deletion is not allowed for anything but the Zero Memory Strategy",
         )
     r = await db.scalars(
@@ -395,5 +403,10 @@ async def set_revision_as_main(
     message_id: Annotated[uuid.UUID, Path()],
     controller: Annotated[Controller, Depends(deps.get_controller)],
 ):
+    if controller.conversation.memory_strategy != MemoryStrategy.none:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Message regeneration is not allowed for anything but the Zero Memory Strategy",
+        )
     msg = await controller.set_revision_as_main(message_id)
     return msg

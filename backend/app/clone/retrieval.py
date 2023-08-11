@@ -1,119 +1,26 @@
-import datetime
-import enum
-from dataclasses import dataclass
-from typing import Protocol, TypeVar
+from typing import Iterator
 
 import numpy as np
 import sqlalchemy as sa
-from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.embedding import EmbeddingClient
 from clonr.tokenizer import Tokenizer
 
+from .types import (
+    GenAgentsSearchable,
+    GenAgentsSearchParams,
+    GenAgentsSearchResult,
+    MetricType,
+    ReRankResult,
+    ReRankSearchParams,
+    VectorSearchable,
+    VectorSearchParams,
+    VectorSearchResult,
+)
+
 INF = int(1e6)
 DEFAULT_RERANK_FIRST_PASS_MAX_ITEMS = 20
-
-
-class VectorSearchProtocol(Protocol):
-    embedding: list[float] | np.ndarray
-    content: str
-
-
-class GenAgentsSearchProtocol(Protocol):
-    embedding: list[float] | np.ndarray
-    content: str
-    importance: int | float
-    last_accessed_at: datetime.datetime
-
-
-VectorSearchable = TypeVar("VectorSearchable", bound=VectorSearchProtocol)
-GenAgentsSearchable = TypeVar("GenAgentsSearchable", bound=GenAgentsSearchProtocol)
-
-
-class MetricType(str, enum.Enum):
-    """Distance metrics available.
-    Quick distance math because I'm stupid.
-    cosine similarity = $\cos\theta = (a \cdot b) / |a||b|$. So the range is -1 for anticorrelated and +1 for correlated.
-    inner product = $a \cdot b$ which is equivalent to cosine similarity for normalized vectors
-    cosine distance is not a real distance (triangle inequality violated). Given by 1 - cossim and range is [0, 2]
-    GenAgents normalizes to [0, 1] which is equivalent to dividing by 2.
-
-    Pgvector only supports three types, cosine, inner_product, and euclidean.
-    https://github.com/pgvector/pgvector-python/blob/master/pgvector/sqlalchemy/__init__.py
-    """
-
-    cosine: str = "cosine"
-    inner_product: str = "inner_product"
-    euclidean: str = "euclidean"
-
-
-@dataclass
-class VectorSearchResult:
-    model: VectorSearchable
-    distance: float
-    metric: MetricType
-
-
-@dataclass
-class ReRankResult(VectorSearchResult):
-    rerank_score: float
-
-
-@dataclass
-class GenAgentsSearchResult:
-    model: GenAgentsSearchable
-    recency_score: float
-    relevance_score: float
-    importance_score: float
-    score: float
-    metric: MetricType
-
-
-class VectorSearchParams(BaseModel):
-    max_items: int = Field(
-        default=INF, ge=1, detail="Maximum number of items to retrieve from query"
-    )
-    max_tokens: int = Field(
-        default=INF,
-        ge=16,
-        detail="Maximum number of tokens from all retrieved results, inlcuding newlines",
-    )
-    metric: MetricType = Field(
-        default=MetricType.cosine,
-        detail="Which metric to use. Inner product is faster, and equal to cosine if all embeddings are normalized (which they should be for us).",
-    )
-
-
-class ReRankSearchParams(VectorSearchParams):
-    overshot_multiplier: float = Field(
-        ge=1,
-        default=2,
-        detail="Increases number of retrieved items in 1st pass by `overshot_multiplier * max_items`, which is then cut down by re-ranking.",
-    )
-
-
-class GenAgentsSearchParams(VectorSearchParams):
-    alpha_recency: float = Field(
-        le=1.0,
-        ge=0.0,
-        detail="Weighting for how recently this memory was accessed.",
-    )
-    alpha_relevance: float = Field(
-        le=1.0, ge=0.0, detail="Weighting for cosine distance similarity score"
-    )
-    alpha_importance: float = Field(
-        le=1.0, ge=0.0, detail="Weighting for LLM predicted importance score"
-    )
-    half_life_seconds: float = Field(
-        default=24.0 * 60 * 60,
-        ge=0.0,
-        detail="Half-life (in seconds) for decaying memory recency. For example, a value of 60 means that after one minute, the recency score drops from 1 => 0.5, after 2 minutes it is 0.25, 3m 0.125, etc.",
-    )
-    max_importance_score: float = Field(
-        default=10,
-        detail="Normalizing factor for the importance score. Used to weight memory importance.",
-    )
 
 
 async def vector_search(
@@ -152,9 +59,6 @@ async def vector_search(
     stmt = stmt.order_by(dist.asc()).limit(params.max_items)
 
     r = await db.execute(stmt)
-
-    r = list(r)
-    print("VECTOR SEARCH:", r)
 
     res: list[VectorSearchResult] = []
 
@@ -276,14 +180,16 @@ async def gen_agents_search(
     for f in filters or []:
         stmt = stmt.where(f)
     stmt = stmt.order_by(gen_agents_score.desc()).limit(params.max_items)
-    result_itr = await db.execute(stmt)
+    result_itr: Iterator[
+        tuple[GenAgentsSearchable, float, float, float, float]
+    ] = await db.execute(stmt)
 
     # filter as we did for vector search
     max_tokens = params.max_tokens
-    res: list[ReRankResult] = []
+    res: list[GenAgentsSearchResult] = []
     for i, (x, ga_scr, rec_scr, rel_scr, imp_scr) in enumerate(result_itr):
         if max_tokens < INF:
-            max_tokens -= tokenizer.length(x.model.content)
+            max_tokens -= tokenizer.length(x.content)
         if i >= params.max_items or max_tokens < 0:
             break
         cur = GenAgentsSearchResult(

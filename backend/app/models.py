@@ -274,6 +274,9 @@ class Conversation(CommonMixin, Base):
     user_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
+    # NOTE (Jonny): decided against this, since we would also need an event to trigger
+    # on message update to recompute the number of messages that are active. Too complicated for now
+    # num_messages: Mapped[int] = mapped_column(default=0)
     user: Mapped["User"] = relationship("User", back_populates="conversations")
     clone_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
@@ -387,7 +390,7 @@ class Message(CommonMixin, Base):
     @property
     def time_str(self) -> str:
         # return DateFormat.relative(self.timestamp, n_largest_times=2)
-        return DateFormat.human_readable(self.timestamp)
+        return DateFormat.human_readable(self.timestamp, use_today_and_yesterday=True)
 
     def __repr__(self):
         return f"Message(content={self.content}, sender={self.sender_name}, is_clone={self.is_clone})"

@@ -32,7 +32,7 @@ You have gathered the following relevant memories (enclosed with ---) that you w
 Memories are thoughts, feelings, actions, or observations that {{char}} has had or taken in the past.
 ---
 {% for memory in memories -%}
-{{loop.index}}. {{memory}}
+{{loop.index}}. {{memory.content}}
 {%- if not loop.last %}
 {% endif %}
 {%- endfor %} 
@@ -73,7 +73,7 @@ You have gathered the following relevant memories (enclosed with ---) that you w
 Memories are thoughts, feelings, actions, or observations that {{char}} has had or taken in the past.
 ---
 {% for memory in memories -%}
-{{loop.index}}. {{memory}}
+{{loop.index}}. {{memory.content}}
 {%- if not loop.last %}
 {% endif %}
 {%- endfor %} 
@@ -100,7 +100,7 @@ with the number corresponding to which of the above questions is being answered.
         cls,
         llm: LLM,
         char: str,
-        memories: list[str] | list[Memory],
+        memories: list[Memory],
         questions: list[str] | None = None,
         long_description: str | None = None,
         short_description: str | None = None,
@@ -120,13 +120,12 @@ with the number corresponding to which of the above questions is being answered.
                     f"{e}"
                 )
             )
-        memories_ = [m if isinstance(m, str) else m.to_str() for m in memories]
         return cls.chat_template.render(
             llm=llm,
             system_prompt=system_prompt,
             char=char,
             long_description=long_description,
-            memories=memories_,
+            memories=memories,
             questions=questions,
             short_description=short_description,
         )
@@ -135,7 +134,7 @@ with the number corresponding to which of the above questions is being answered.
     def render_instruct(
         cls,
         char: str,
-        memories: list[str] | list[Memory],
+        memories: list[Memory],
         long_description: str | None = None,
         short_description: str | None = None,
         questions: list[str] | None = None,
@@ -152,7 +151,6 @@ with the number corresponding to which of the above questions is being answered.
                     f"{e}"
                 )
             )
-        memories = [m if isinstance(m, str) else m.to_str() for m in memories]
         return cls.instruct_template.render(
             char=char,
             long_description=long_description,

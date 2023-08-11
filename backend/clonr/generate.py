@@ -200,6 +200,7 @@ async def entity_context_create(
     entity: str,
     statements: list[str],
     system_prompt: str | None = None,
+    prev_entity_summary: str | None = None,
     **kwargs,
 ) -> str:
     if llm.is_chat_model:
@@ -209,12 +210,14 @@ async def entity_context_create(
             entity=entity,
             statements=statements,
             system_prompt=system_prompt,
+            prev_entity_summary=prev_entity_summary,
         )
     else:
         prompt = templates.EntityContextCreate.render_instruct(
             char=char,
             entity=entity,
             statements=statements,
+            prev_entity_summary=prev_entity_summary,
         )
     kwargs["template"] = templates.EntityContextCreate.__name__
     kwargs["subroutine"] = kwargs.get(
@@ -324,10 +327,7 @@ async def message_queries_create(
         queries = json.loads(text)
     except json.JSONDecodeError:
         if isinstance(llm, MockLLM):
-            try:
-                return text.strip().split("\n")
-            except Exception:
-                return ["foo", "bar", "baz"]
+            return ["foo", "bar", "baz"]
         err_msg = f"Unable to parse message_query_create output ({text}) to JSON."
         if kwargs["retry_attempt"] < MAX_RETRIES:
             logger.exception(err_msg)
@@ -376,6 +376,7 @@ async def question_and_answer(
 async def reflection_queries_create(
     llm: LLM,
     memories: list[Memory],
+    num_questions: int = 3,
     system_prompt: str | None = None,
     **kwargs,
 ) -> list[str]:
@@ -384,10 +385,13 @@ async def reflection_queries_create(
         prompt = templates.ReflectionQuestions.render(
             llm=llm,
             memories=memories,
+            num_questions=num_questions,
             system_prompt=system_prompt,
         )
     else:
-        prompt = templates.ReflectionQuestions.render_instruct(memories=memories)
+        prompt = templates.ReflectionQuestions.render_instruct(
+            memories=memories, num_questions=num_questions
+        )
     kwargs["template"] = templates.ReflectionQuestions.__name__
     kwargs["subroutine"] = kwargs.get("subroutine", "reflections")
     kwargs["retry_attempt"] = reflection_queries_create.retry.statistics[
@@ -453,8 +457,8 @@ async def reflections_create(
     except json.JSONDecodeError:
         if isinstance(llm, MockLLM):
             refls = [
-                ReflectionItem(insight="this is an insight", memories=[0]),
-                ReflectionItem(insight="this is also an insight", memories=[0, 1]),
+                ReflectionItem(insight="this is an insight", memories=[1]),
+                ReflectionItem(insight="this is also an insight", memories=[1, 2]),
             ]
         else:
             raise OutputParserError(
@@ -607,7 +611,7 @@ async def generate_long_term_memory_message(
 ) -> str:
     if not llm.is_chat_model:
         raise NotImplementedError("Instruct for message gen not supported yet.")
-    prompt = templates.ZeroMemoryMessage.render(
+    prompt = templates.LongTermMemoryMessage.render(
         llm=llm,
         char=char,
         user_name=user_name,
@@ -621,7 +625,7 @@ async def generate_long_term_memory_message(
         entity_context_summary=entity_context_summary,
         use_timestamps=use_timestamps,
     )
-    kwargs["template"] = templates.ZeroMemoryMessage.__name__
+    kwargs["template"] = templates.LongTermMemoryMessage.__name__
     kwargs["subroutine"] = kwargs.get(
         "subroutine", inspect.currentframe().f_code.co_name
     )

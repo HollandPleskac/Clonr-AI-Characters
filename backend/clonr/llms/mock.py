@@ -13,6 +13,7 @@ class MockLLM(OpenAI):
     model_type: str = "mock"
     _counter: int = 0
     is_chat_model: bool = True
+    model: str = "gpt-3.5-turbo"
 
     def __init__(
         self,
@@ -79,7 +80,10 @@ class MockLLM(OpenAI):
         for c in self.callbacks:
             await c.on_generate_start(self, prompt, params, **kwargs)
 
-        prompt_tokens = self.tokenizer.length(prompt)
+        if isinstance(prompt_or_messages, str):
+            prompt_tokens = self.num_tokens(self.prompt_to_messages(prompt_or_messages))
+        else:
+            prompt_tokens = self.num_tokens(prompt_or_messages)
         completion_tokens = self.tokenizer.length(content)
         total_tokens = prompt_tokens + completion_tokens
         r = LLMResponse(

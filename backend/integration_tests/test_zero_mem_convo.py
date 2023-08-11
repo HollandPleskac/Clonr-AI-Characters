@@ -1,44 +1,11 @@
-import json
 from datetime import datetime, timedelta
-from pathlib import Path
 
-import pytest
 from fastapi.encoders import jsonable_encoder
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app import schemas
 from app.clone.types import InformationStrategy, MemoryStrategy
-
-
-def load_makima_create() -> schemas.CloneCreate:
-    path = Path("tests") / "makima.json"
-    with open(path, "r") as f:
-        data = json.load(f)
-        clone = schemas.CloneCreate(**data, is_public=True, tags=["anime"])
-    return clone
-
-
-@pytest.fixture(name="makima_id", scope="module")
-def makima_clone_fixture(
-    client: TestClient,
-    creator_headers: dict[str, str],
-    user_headers: dict[str, str],
-    db: Session,
-) -> str:
-    # Create the Makima clone. It has a tag field, but for testing, no tags exist yet
-    clone_create = load_makima_create()
-    clone_create.greeting_message = "Jonny-kun, have you been a good dog?"
-    r = client.post(
-        "/clones/",
-        headers=creator_headers,
-        json=clone_create.model_dump(exclude_unset=True, exclude={"tags"}),
-    )
-    data = r.json()
-    clone_id = str(data["id"])
-    assert r.status_code == 201, data
-
-    yield clone_id
 
 
 def test_zero_memory_convo(
