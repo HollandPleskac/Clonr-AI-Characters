@@ -32,7 +32,7 @@ const ChatDropdown = ({ toggleChatState, showChat }: ChatDropdownProps) => {
       </button>
 
       <div
-        className='hs-dropdown-menu transition-[opacity,margin] duration hs-dropdown-open:opacity-100 opacity-0 hidden min-w-[15rem] bg-white shadow-md rounded-lg p-2 mt-2 divide-y divide-gray-200 dark:bg-black dark:border dark:border-gray-700 dark:divide-gray-700'
+        className='z-[100] hs-dropdown-menu transition-[opacity,margin] duration hs-dropdown-open:opacity-100 opacity-0 hidden min-w-[15rem] bg-white shadow-md rounded-lg p-2 mt-2 divide-y divide-gray-200 dark:bg-black dark:border dark:border-gray-700 dark:divide-gray-700'
         aria-labelledby='hs-dropdown-with-title'
       >
         <div className='py-2 first:pt-0 last:pb-0'>
