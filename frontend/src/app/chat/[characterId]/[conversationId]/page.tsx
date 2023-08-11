@@ -79,7 +79,7 @@ async function getInitialMessages(characterId: string, conversationId: string) {
   console.log('characterID', characterId)
   return [
     {
-      id: '123532234',
+      id: '12353223iy4',
       img: '/dummy-char.png',
       alt: 'dummy-char',
       name: 'dummy-char-first',
@@ -88,7 +88,7 @@ async function getInitialMessages(characterId: string, conversationId: string) {
       senderType: 'bot' as 'bot' | 'user',
     },
     {
-      id: 'adsklfjkj23',
+      id: 'adsklfhjjkj23',
       img: '/dummy-char.png',
       alt: 'dummy-char',
       name: 'dummy-char',
@@ -97,7 +97,7 @@ async function getInitialMessages(characterId: string, conversationId: string) {
       senderType: 'user' as 'bot' | 'user',
     },
     {
-      id: 'asdfhi34',
+      id: 'asdfhih34',
       img: '/dummy-char.png',
       alt: 'dummy-char',
       name: 'dummy-char',
@@ -106,7 +106,7 @@ async function getInitialMessages(characterId: string, conversationId: string) {
       senderType: 'bot' as 'bot' | 'user',
     },
     {
-      id: '325teqwjaf',
+      id: '325tieqwjaf',
       img: '/dummy-char.png',
       alt: 'dummy-char',
       name: 'dummy-char',
@@ -115,7 +115,7 @@ async function getInitialMessages(characterId: string, conversationId: string) {
       senderType: 'user' as 'bot' | 'user',
     },
     {
-      id: 'asdfhi34',
+      id: 'asghghdfhi34',
       img: '/dummy-char.png',
       alt: 'dummy-char',
       name: 'dummy-char',
@@ -124,7 +124,7 @@ async function getInitialMessages(characterId: string, conversationId: string) {
       senderType: 'bot' as 'bot' | 'user',
     },
     {
-      id: '325teqwjaf',
+      id: '325teqwkjjaf',
       img: '/dummy-char.png',
       alt: 'dummy-char',
       name: 'dummy-char',
@@ -133,7 +133,7 @@ async function getInitialMessages(characterId: string, conversationId: string) {
       senderType: 'user' as 'bot' | 'user',
     },
     {
-      id: 'asdfhi34',
+      id: 'asdfuhhi34',
       img: '/dummy-char.png',
       alt: 'dummy-char',
       name: 'dummy-char',
@@ -142,7 +142,7 @@ async function getInitialMessages(characterId: string, conversationId: string) {
       senderType: 'bot' as 'bot' | 'user',
     },
     {
-      id: '325teqwjaf',
+      id: '325iy98teqwjaf',
       img: '/dummy-char.png',
       alt: 'dummy-char',
       name: 'dummy-char-last',

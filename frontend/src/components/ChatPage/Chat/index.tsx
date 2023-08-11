@@ -228,11 +228,10 @@ export default function ChatScreen({
                     className='pt-4'
                   >
                     <div
-                      className={`${
-                        isFetching
+                      className={`${isFetching
                           ? 'text-white flex'
                           : 'text-transparent hidden'
-                      } w-full py-4 h-[56px]`}
+                        } w-full py-4 h-[56px]`}
                     >
                       <ThreeDots
                         height='25'
@@ -245,11 +244,14 @@ export default function ChatScreen({
                       />
                     </div>
                     {messages.map((message, index) => (
-                      <MessageComponent
-                        message={message}
-                        isLast={false}
-                        key={index}
-                      />
+                        <MessageComponent
+                          message={message}
+                          isLast={
+                            message.senderType === 'bot' && index === 0 ? true : false
+                          }
+                          key={message.id}
+                        />
+
                     ))}
                   </InfiniteScroll>
                 </div>

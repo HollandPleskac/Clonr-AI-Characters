@@ -8,11 +8,9 @@ import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import 'swiper/css/scrollbar'
-import { Swiper, SwiperSlide } from 'swiper/react'
 
 import NetflixCard from './NetflixCard'
 import { Character } from '@/types'
-import { Navigation, Pagination, Scrollbar } from 'swiper'
 import Image from 'next/image'
 
 interface SearchGridProps {
