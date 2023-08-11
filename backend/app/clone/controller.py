@@ -500,6 +500,18 @@ class Controller:
             messages=recent_msgs,
         )
 
+        # NOTE (Jonny): add in the last messages as a query too!
+        token_budget = 50
+        last_msgs: str = []
+        for m in reversed(recent_msgs):
+            token_budget -= self.clonedb.tokenizer.length(m.content) + 4
+            if token_budget < 0:
+                break
+            last_msgs.append(m.content)
+        last_msg = " ".join(reversed(last_msgs))
+        if last_msg:
+            queries.append(last_msg)
+
         return queries
 
     async def _generate_zero_memory_message(
@@ -548,12 +560,15 @@ class Controller:
             # do the higher accuracy info retrieval step. Weird we take str and not nodes.
             # whatever, not gonna redo it.
             facts: list[str] = []
+            vis: set[uuid.UUID] = set([])
             for q in queries:
                 cur = await self.clonedb.query_nodes_with_rerank(
                     query=q, params=ReRankSearchParams(max_items=3, max_tokens=170)
                 )
                 for c in cur:
-                    facts.append(c.model.content)
+                    if c.model.id not in vis:
+                        vis.add(c.model.id)
+                        facts.append(c.model.content)
         else:
             # TODO (Jonny): trying to avoid a ~500 token request by eliminating the
             # monologue query. We are always running for the thrill of it.
@@ -705,17 +720,20 @@ class Controller:
             InformationStrategy.external,
         ]:
             facts = []
+            vis: set[uuid.UUID] = set()
             for q in queries:
                 cur = await self.clonedb.query_nodes_with_rerank(
                     query=q,
                     params=ReRankSearchParams(max_items=3, max_tokens=fact_tokens),
                 )
-                tmp = [c.model.content for c in cur]
-                facts.extend(tmp)
+                for c in cur:
+                    if c.model.id not in vis:
+                        vis.add(c.model.id)
+                        facts.append(c.model.content)
 
         # Retrieve relevant memories (max 512 tokens)
         memories: list[Memory] = []
-        vis_mem: set[str] = set()
+        vis_mem: set[uuid.UUID] = set()
         for q in queries:
             cur = await self.clonedb.query_memories(
                 q,
@@ -723,7 +741,8 @@ class Controller:
                 update_access_date=False,
             )
             for c in cur:
-                if str(c.model.id) not in vis_mem:
+                if c.model.id not in vis_mem:
+                    vis_mem.add(c.model.id)
                     mem = Memory(
                         id=c.model.id,
                         content=c.model.content,
@@ -732,7 +751,6 @@ class Controller:
                         is_shared=c.model.is_shared,
                     )
                     memories.append(mem)
-                vis_mem.add(str(c.model.id))
 
         # we will prune overlapping memories with messages later, so this is a conservative
         # overcount early on in the convo

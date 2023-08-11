@@ -168,7 +168,7 @@ class OpenAI(LLM):
         params = params or GenerationParams()
         # NOTE (Jonny): This will be picked up callbacks, and it serves to place a unique ID on each
         # LLM call so that we can go back and trace it through logs (defends against async messing up order)
-        kwargs["llm_call_id"] = kwargs.get("llm_call_id", str(uuid.uuid4()))
+        kwargs["id"] = kwargs.get("id", str(uuid.uuid4()))
 
         for c in self.callbacks:
             await c.on_generate_start(self, prompt_or_messages, params, **kwargs)

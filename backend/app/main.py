@@ -160,9 +160,6 @@ app.include_router(
     tags=["auth"],
 )
 
-# origins = [
-#     "http://localhost:3000"
-# ]
 
 app.add_middleware(
     CORSMiddleware,
@@ -171,12 +168,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.patch("/users/me")
-def ok():
-    return "fuck you pay me"
-
 
 FastAPIInstrumentor.instrument_app(app)
 
