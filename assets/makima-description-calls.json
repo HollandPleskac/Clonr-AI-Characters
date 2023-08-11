@@ -9,7 +9,7 @@
       "completion_tokens": 530,
       "total_tokens": 2170
     },
-    "duration": 20.688,
+    "time": 20.688,
     "finish_reason": "stop",
     "role": "assistant",
     "tokens_per_second": 104.89
@@ -24,7 +24,7 @@
       "completion_tokens": 623,
       "total_tokens": 2771
     },
-    "duration": 25.925,
+    "time": 25.925,
     "finish_reason": "stop",
     "role": "assistant",
     "tokens_per_second": 106.88
@@ -39,7 +39,7 @@
       "completion_tokens": 446,
       "total_tokens": 2686
     },
-    "duration": 16.988,
+    "time": 16.988,
     "finish_reason": "stop",
     "role": "assistant",
     "tokens_per_second": 158.11
