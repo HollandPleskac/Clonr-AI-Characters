@@ -2,6 +2,13 @@ import React from 'react'
 import Image from 'next/image'
 import { Message } from '@/types'
 
+// TODO:
+// handle message revisions with arrows here
+// increase size of if (isLast) have more space on bottom with arrows options
+// take away isLast once a new message is sent
+// need to store index of last image and then set it to +1 of that once I send a new message
+// buttons with a function for each arrow
+
 interface MessageProps {
   message: Message
   isLast: boolean

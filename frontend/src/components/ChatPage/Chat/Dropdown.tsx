@@ -80,10 +80,10 @@ const ChatDropdown = ({ toggleChatState, showChat }: ChatDropdownProps) => {
                 <path d='M14.8 9c.1-.3.2-.6.2-1 0-2.2-1.8-4-4-4-1.5 0-2.9.9-3.5 2.2-.3-.1-.7-.2-1-.2C5.1 6 4 7.1 4 8.5c0 .2 0 .4.1.5-1.8.3-3.1 1.7-3.1 3.5C1 14.4 2.6 16 4.5 16h10c1.9 0 3.5-1.6 3.5-3.5 0-1.8-1.4-3.3-3.2-3.5zm-6.3 5.9l-3.2-3.2 1.4-1.4 1.8 1.8 3.8-3.8 1.4 1.4-5.2 5.2z' />
               </g>
             </svg>
-            {renderChat && 'View saved conversations'}
+            {renderChat && 'View saved chats'}
             {!renderChat && 'View current chat'}
           </button>
-          <button className='w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-purple-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300'>
+          {/* <button className='w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-purple-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300'>
             <svg
               width='16'
               height='12'
@@ -117,7 +117,7 @@ const ChatDropdown = ({ toggleChatState, showChat }: ChatDropdownProps) => {
               </g>
             </svg>
             Report
-          </button>
+          </button> */}
         </div>
         {/* <div className='py-2 first:pt-0 last:pb-0'>
           <span className='block py-2 px-3 text-xs font-medium uppercase text-gray-400 dark:text-gray-500'>
