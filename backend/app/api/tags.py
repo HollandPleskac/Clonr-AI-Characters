@@ -1,4 +1,5 @@
 import json
+import uuid
 from typing import Annotated
 
 import sqlalchemy as sa
@@ -55,7 +56,7 @@ async def get_tags(
 
 @router.get("/{name}", response_model=schemas.Tag)
 async def check_tag_by_name(
-    name: Annotated[str, Path()],
+    name: Annotated[uuid.UUID, Path()],
     db: Annotated[AsyncSession, Depends(get_async_session)],
 ):
     if tag := await db.scalar(sa.select(models.Tag).where(models.Tag.name == name)):
@@ -70,7 +71,7 @@ async def check_tag_by_name(
     "/{tag_id}", response_class=Response, dependencies=[Depends(get_superuser)]
 )
 async def delete_tag(
-    tag_id: Annotated[str, Path()],
+    tag_id: Annotated[uuid.UUID, Path()],
     db: Annotated[AsyncSession, Depends(get_async_session)],
 ):
     if not (tag := await db.get(models.Tag, tag_id)):
@@ -88,7 +89,7 @@ async def delete_tag(
 )
 async def patch_tag(
     tag_update: schemas.TagUpdate,
-    tag_id: Annotated[str, Path()],
+    tag_id: Annotated[uuid.UUID, Path()],
     db: Annotated[AsyncSession, Depends(get_async_session)],
 ):
     if not (tag := await db.get(models.Tag, tag_id)):

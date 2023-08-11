@@ -48,6 +48,11 @@ class CaseInsensitiveComparator(Comparator[str]):
             other.lower(), sa.func.lower(self.__clause_element__()), **kwargs
         )
 
+    def operate(
+        self, op: sa.sql.expression.ColumnOperators, *other: Any, **kwargs: Any
+    ) -> sa.Operators:
+        return sa.func.lower(self.__clause_element__()).operate(op, *other, **kwargs)
+
 
 class Base(DeclarativeBase):
     type_annotation_map = {list[float]: Vector, dict[str, Any]: JSON}
@@ -113,9 +118,9 @@ class User(Base, SQLAlchemyBaseUserTableUUID):
     clones: Mapped[list["Clone"]] = relationship(
         secondary=users_to_clones, back_populates="users"
     )
-    messages: Mapped[list["Message"]] = relationship("Message", back_populates="users")
+    messages: Mapped[list["Message"]] = relationship("Message", back_populates="user")
     conversations: Mapped[list["Conversation"]] = relationship(
-        "Conversation", back_populates="users"
+        "Conversation", back_populates="user"
     )
     creator: Mapped["Creator"] = relationship("Creator", back_populates="user")
     llm_calls: Mapped[list["LLMCall"]] = relationship(
@@ -245,7 +250,7 @@ class Clone(CommonMixin, Base):
 # this will also speed up LIKE and ILIKE statements
 ix_clones_case_insensitive_name = sa.Index(
     "ix_clones_case_insensitive_name",
-    Clone.case_insensitive_content,
+    sa.text("lower(clones.name) gin_trgm_ops"),
     postgresql_using="gin",
     postgresql_ops={"name": "gin_trgm_ops"},
 )
@@ -269,6 +274,9 @@ class Conversation(CommonMixin, Base):
     user_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
+    # NOTE (Jonny): decided against this, since we would also need an event to trigger
+    # on message update to recompute the number of messages that are active. Too complicated for now
+    # num_messages: Mapped[int] = mapped_column(default=0)
     user: Mapped["User"] = relationship("User", back_populates="conversations")
     clone_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
@@ -358,7 +366,7 @@ class Message(CommonMixin, Base):
     clone_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )
-    clone: Mapped["Clone"] = relationship("User", back_populates="messages")
+    clone: Mapped["Clone"] = relationship("Clone", back_populates="messages")
     user_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
@@ -382,7 +390,7 @@ class Message(CommonMixin, Base):
     @property
     def time_str(self) -> str:
         # return DateFormat.relative(self.timestamp, n_largest_times=2)
-        return DateFormat.human_readable(self.timestamp)
+        return DateFormat.human_readable(self.timestamp, use_today_and_yesterday=True)
 
     def __repr__(self):
         return f"Message(content={self.content}, sender={self.sender_name}, is_clone={self.is_clone})"
@@ -391,7 +399,7 @@ class Message(CommonMixin, Base):
 # (Jonny) gist has faster updates than gin, which is what we want for messages!
 msg_case_insensitive_content_trgm_index = sa.Index(
     "msg_case_insensitive_content_trgm_index",
-    Message.case_insensitive_content,
+    sa.text("lower(messages.name) gist_trgm_ops"),
     postgresql_using="gist",
     postgresql_ops={"name": "gist_trgm_ops"},
 )
@@ -417,7 +425,7 @@ class Document(CommonMixin, Base):
 
     content: Mapped[str]
     hash: Mapped[str] = mapped_column(index=True)
-    name: Mapped[str]
+    name: Mapped[str] = mapped_column(unique=True)
     description: Mapped[Optional[str]] = mapped_column(default=None)
     # wiki, messages, website, google search, etc.
     type: Mapped[Optional[str]] = mapped_column(default=None)
@@ -780,7 +788,7 @@ class LongDescription(CommonMixin, Base):
 #     timestamp: Mapped[datetime.datetime] = mapped_column(nullable=True)
 
 
-## TODO: edit
+# TODO: edit
 # class Subscription(CommonMixin, Base):
 #     __tablename__ = "subscriptions"
 

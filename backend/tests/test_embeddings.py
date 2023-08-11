@@ -1,12 +1,7 @@
 import numpy as np
 import pytest
 
-from app.embedding import EmbeddingClient, wait_for_embedding
-
-
-@pytest.fixture
-async def _wait_for_embedding():
-    await wait_for_embedding()
+from app.embedding import EmbeddingClient
 
 
 @pytest.mark.asyncio

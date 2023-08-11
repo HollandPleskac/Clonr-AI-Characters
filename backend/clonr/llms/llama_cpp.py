@@ -11,7 +11,7 @@ from .schemas import Message
 class LlamaCpp(OpenAI):
     model_type = "llama-cpp"
     model = "llama-cpp"
-    is_chat_model: bool = False
+    is_chat_model: bool = True
 
     def __init__(
         self,
@@ -31,7 +31,7 @@ class LlamaCpp(OpenAI):
 
     @property
     def user_end(self):
-        return ""
+        return "\n"
 
     @property
     def assistant_start(self):

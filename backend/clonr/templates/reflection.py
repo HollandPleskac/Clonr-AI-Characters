@@ -5,6 +5,8 @@ from clonr.templates.base import Template, env
 
 # TODO (Jonny): test that these work
 # Retrieve most salient questions for reflection
+# NOTE (Jonny): we're not using timestamps here. They're fucking expensive and probably don't add
+# that much to the output quality (a penalty of 18 tokens per memory!)
 class ReflectionQuestions(Template):
     chat_template = env.from_string(
         """\
@@ -17,7 +19,7 @@ Using the following statements (enclosed with ---) of recent memories, thoughts,
 and observations, answer the question that follows.
 ---
 {% for memory in memories -%}
-{{loop.index}}. {{memory}}
+{{loop.index}}. {{memory.content}}
 {%- endfor %} 
 ---
 Given only the information above, what are the {{num_questions}} most salient high-level \
@@ -41,7 +43,7 @@ Using the following statements (enclosed with ---) of recent memories, thoughts,
 and observations, answer the question that follows.
 ---
 {% for memory in memories -%}
-{{loop.index}}. {{memory}}
+{{loop.index}}. {{memory.content}}
 {%- endfor %} 
 ---
 
@@ -58,29 +60,29 @@ Return your response as a JSON list.
     def render(
         cls,
         llm: LLM,
-        memories: list[str] | list[Memory],
+        memories: list[Memory],
         num_questions: int = 3,
         system_prompt: str | None = None,
     ):
         if system_prompt is None:
             system_prompt = llm.default_system_prompt
-        memories_ = [m if isinstance(m, str) else m.to_str() for m in memories]
+        # it falls on the caller to sort memories chronologically
         return cls.chat_template.render(
             llm=llm,
             system_prompt=system_prompt,
-            memories=memories_,
+            memories=memories,
             num_questions=num_questions,
         )
 
     @classmethod
     def render_instruct(
         cls,
-        memories: str,
+        memories: list[Memory],
         num_questions: int = 3,
     ):
-        memories_ = [m if isinstance(m, str) else m.to_str() for m in memories]
+        memories = sorted(memories, key=lambda x: x.timestamp)
         return cls.instruct_template.render(
-            memories=memories_, num_questions=num_questions
+            memories=memories, num_questions=num_questions
         )
 
 

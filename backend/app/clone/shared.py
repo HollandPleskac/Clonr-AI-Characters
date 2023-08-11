@@ -4,6 +4,8 @@ from clonr.tokenizer import Tokenizer
 
 if settings.LLM == "mock":
     SHARED_TOKENIZER = Tokenizer.from_openai("gpt-3.5-turbo")
+elif settings.LLM == "llamacpp":
+    SHARED_TOKENIZER = Tokenizer.from_openai("gpt-3.5-turbo")
 else:
     SHARED_TOKENIZER = Tokenizer.from_openai(settings.LLM)
 

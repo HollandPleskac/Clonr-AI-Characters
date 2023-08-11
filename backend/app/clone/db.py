@@ -3,6 +3,8 @@ from datetime import datetime
 
 import numpy as np
 import sqlalchemy as sa
+from fastapi import status
+from fastapi.exceptions import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
@@ -61,7 +63,10 @@ class CloneDB:
         if await self.db.scalar(
             sa.select(models.Document.hash).where(models.Document.hash == doc.hash)
         ):
-            return
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Document with the provided content already exists!",
+            )
 
         # Add embedding stuff. Doc embeddings are just the mean of all node embeddings
         embs = await self.embedding_client.encode_passage([x.content for x in nodes])
@@ -243,6 +248,8 @@ class CloneDB:
             raise ValueError("Adding messages requires conversation_id.")
         if self.user_id is None:
             raise ValueError("Adding messages requires user_id.")
+        embedding = await self.embedding_client.encode_passage(message.content)
+        embedding_model = await self.embedding_client.encoder_name()
         msg = models.Message(
             id=message.id,
             sender_name=message.sender_name,
@@ -255,6 +262,8 @@ class CloneDB:
             clone_id=self.clone_id,
             conversation_id=self.conversation_id,
             user_id=self.user_id,
+            embedding=embedding[0],
+            embedding_model=embedding_model,
         )
         self.db.add(msg)
         if msg_to_unset is not None:
@@ -390,7 +399,6 @@ class CloneDB:
             timestamp = get_current_datetime()
             for r in memory_results:
                 r.model.last_accessed_at = timestamp
-                self.db.add(r.model)
             await self.db.commit()
 
         return memory_results
@@ -425,7 +433,8 @@ class CloneDB:
             # TODO (Jonny): find a way to make sure this is in sync with the templates
             # this should hopefully be an upper bound on how bad it can be. (if we omit timestamps)
             formatted_content = f"[{msg.time_str}] {msg.content}"
-            num_tokens -= self.tokenizer.length(formatted_content)
+            # add 4 tokens per message due to <|im_start|>role\n and \n
+            num_tokens -= self.tokenizer.length(formatted_content) + 4
             if num_tokens < 0:
                 break
             messages.append(msg)
@@ -501,7 +510,7 @@ class CloneDB:
             .order_by(models.EntityContextSummary.created_at.desc())
             .limit(n)
         )
-        summaries = await sa.scalars(q)
+        summaries = await self.db.scalars(q)
         return summaries.all()
 
     async def get_agent_summary(self, n: int = 1) -> list[models.AgentSummary]:
@@ -513,7 +522,7 @@ class CloneDB:
             .order_by(models.AgentSummary.created_at.desc())
             .limit(n)
         )
-        summaries = await sa.scalars(q)
+        summaries = await self.db.scalars(q)
         return summaries.all()
 
     async def increment_reflection_counter(self, importance: int) -> int:

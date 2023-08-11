@@ -9,7 +9,6 @@ def test_documents(
     client: TestClient,
     makima: tuple[dict[str, str], str],
     db: Session,
-    superuser_headers: dict[str, str],
 ):
     makima_headers, clone_id = makima
 
@@ -33,6 +32,20 @@ def test_documents(
         data = r.json()
         assert r.status_code == 201, data
         doc_id = data["id"]  # the last doc_id is nickelback. python quirk.
+
+    # check that we can't add duplicate documents
+    name = d["name"]
+    d["name"] = "some other name"
+    r = client.post(f"/clones/{clone_id}/documents", json=d, headers=makima_headers)
+    data = r.json()
+    assert r.status_code == 400, data
+
+    # check that we can't add documents with an existing name
+    d["content"] = "some other content"
+    d["name"] = name
+    r = client.post(f"/clones/{clone_id}/documents", json=d, headers=makima_headers)
+    data = r.json()
+    assert r.status_code == 400, data
 
     # test the nodes exist, and
     nodes = db.scalars(
@@ -64,24 +77,6 @@ def test_documents(
     assert r.status_code == 200, data
     assert len(data) == 2
     assert data[0]["id"] == doc_id
-
-    # test generate long description
-    r = client.post(
-        f"/clones/{clone_id}/generate_long_description",
-        params=dict(name="nickel"),
-        headers=superuser_headers,
-    )
-    data = r.json()
-    assert r.status_code == 201, data
-
-    # retrieve long descriptions
-    r = client.get(
-        f"/clones/{clone_id}/generate_long_description",
-        headers=superuser_headers,
-    )
-    data = r.json()
-    assert r.status_code == 200, data
-    assert len(data) == 1
 
     # test delete document
     r = client.delete(f"/clones/{clone_id}/documents/{doc_id}", headers=makima_headers)

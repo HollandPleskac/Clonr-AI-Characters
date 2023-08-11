@@ -15,7 +15,7 @@ def test_clones(
     inp = schemas.CloneCreate(
         name=name, short_description=short_description, is_public=False
     )
-    data = inp.dict()
+    data = inp.model_dump()
 
     # Create a basic clone
     r = client.post("/clones/", headers=creator_headers, json=data)

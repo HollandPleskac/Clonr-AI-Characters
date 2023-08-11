@@ -4,6 +4,7 @@ import logging
 import re
 
 from loguru import logger
+from pydantic import BaseModel
 from tenacity import after_log, before_sleep_log, retry, stop_after_attempt, wait_random
 
 from clonr import templates
@@ -22,6 +23,11 @@ MIN_CHUNK_SIZE = 256
 
 class OutputParserError(Exception):
     pass
+
+
+class ReflectionItem(BaseModel):
+    insight: str
+    memories: list[int]
 
 
 class Params:
@@ -194,6 +200,7 @@ async def entity_context_create(
     entity: str,
     statements: list[str],
     system_prompt: str | None = None,
+    prev_entity_summary: str | None = None,
     **kwargs,
 ) -> str:
     if llm.is_chat_model:
@@ -203,12 +210,14 @@ async def entity_context_create(
             entity=entity,
             statements=statements,
             system_prompt=system_prompt,
+            prev_entity_summary=prev_entity_summary,
         )
     else:
         prompt = templates.EntityContextCreate.render_instruct(
             char=char,
             entity=entity,
             statements=statements,
+            prev_entity_summary=prev_entity_summary,
         )
     kwargs["template"] = templates.EntityContextCreate.__name__
     kwargs["subroutine"] = kwargs.get(
@@ -230,6 +239,7 @@ async def entity_context_create(
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
     before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
+    reraise=True,
 )
 async def rate_memory(
     llm: LLM,
@@ -261,6 +271,8 @@ async def rate_memory(
     try:
         return int(r.content.strip()) + 1
     except ValueError:
+        if isinstance(llm, MockLLM):
+            return 4
         raise OutputParserError(
             f"Unable to convert output ({r.content}) to an integer."
         )
@@ -271,6 +283,7 @@ async def rate_memory(
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
     before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
+    reraise=True,
 )
 async def message_queries_create(
     llm: LLM,
@@ -303,7 +316,7 @@ async def message_queries_create(
     kwargs["subroutine"] = kwargs.get(
         "subroutine", inspect.currentframe().f_code.co_name
     )
-    kwargs["retry_attempt"] = rate_memory.retry.statistics["attempt_number"]
+    kwargs["retry_attempt"] = message_queries_create.retry.statistics["attempt_number"]
     r = await llm.agenerate(
         prompt_or_messages=prompt, params=Params.message_queries_create, **kwargs
     )
@@ -313,7 +326,14 @@ async def message_queries_create(
     try:
         queries = json.loads(text)
     except json.JSONDecodeError:
-        raise OutputParserError(f"Unable to convert output ({text}) to JSON.")
+        if isinstance(llm, MockLLM):
+            return ["foo", "bar", "baz"]
+        err_msg = f"Unable to parse message_query_create output ({text}) to JSON."
+        if kwargs["retry_attempt"] < MAX_RETRIES:
+            logger.exception(err_msg)
+            raise OutputParserError(err_msg)
+        logger.exception(err_msg + " Returning approximate answer.")
+        return text.strip().split("\n")
     return queries
 
 
@@ -351,10 +371,12 @@ async def question_and_answer(
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
     before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
+    reraise=True,
 )
 async def reflection_queries_create(
     llm: LLM,
     memories: list[Memory],
+    num_questions: int = 3,
     system_prompt: str | None = None,
     **kwargs,
 ) -> list[str]:
@@ -363,13 +385,18 @@ async def reflection_queries_create(
         prompt = templates.ReflectionQuestions.render(
             llm=llm,
             memories=memories,
+            num_questions=num_questions,
             system_prompt=system_prompt,
         )
     else:
-        prompt = templates.ReflectionQuestions.render_instruct(memories=memories)
+        prompt = templates.ReflectionQuestions.render_instruct(
+            memories=memories, num_questions=num_questions
+        )
     kwargs["template"] = templates.ReflectionQuestions.__name__
     kwargs["subroutine"] = kwargs.get("subroutine", "reflections")
-    kwargs["retry_attempt"] = rate_memory.retry.statistics["attempt_number"]
+    kwargs["retry_attempt"] = reflection_queries_create.retry.statistics[
+        "attempt_number"
+    ]
     r = await llm.agenerate(
         prompt_or_messages=prompt, params=Params.reflection_queries_create, **kwargs
     )
@@ -377,7 +404,14 @@ async def reflection_queries_create(
     try:
         queries = json.loads(text)
     except json.JSONDecodeError:
-        raise OutputParserError(f"Unable to convert output ({text}) to JSON.")
+        if isinstance(llm, MockLLM):
+            return ["What do I stand for?", "Where was I?"]
+        err_msg = f"Unable to parse reflection_queries_create output ({text}) to JSON."
+        logger.exception(err_msg)
+        if kwargs["retry_attempt"] < MAX_RETRIES:
+            raise OutputParserError(err_msg)
+        logger.exception(err_msg + " Returning approximate answer.")
+        return text.strip().split("\n")
     return queries
 
 
@@ -386,6 +420,7 @@ async def reflection_queries_create(
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
     before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
+    reraise=True,
 )
 async def reflections_create(
     llm: LLM,
@@ -418,13 +453,22 @@ async def reflections_create(
     text = '[{"insight":' + r.content
     try:
         data = json.loads(text)
+        refls = [ReflectionItem(**x) for x in data]
     except json.JSONDecodeError:
-        raise OutputParserError(f"Unable to convert output ({text}) to JSON.")
+        if isinstance(llm, MockLLM):
+            refls = [
+                ReflectionItem(insight="this is an insight", memories=[1]),
+                ReflectionItem(insight="this is also an insight", memories=[1, 2]),
+            ]
+        else:
+            raise OutputParserError(
+                f"Unable to convert reflections_create output ({text}) to JSON."
+            )
 
     reflections: list[Memory] = []
-    for x in data:
+    for x in refls:
         try:
-            child_indexes = [int(z) for z in x["memories"]]
+            child_indexes = x.memories
             children = [index_to_memory[z] for z in child_indexes]
         except Exception as e:
             raise OutputParserError(
@@ -432,13 +476,13 @@ async def reflections_create(
             )
         depth = max(c.depth for c in children) + 1
         child_ids = [c.id for c in children]
-        content = x["insight"]
+        content = x.insight
         if add_rating:
             importance = await rate_memory(llm=llm, memory=content)
         else:
             importance = 4
         m = Memory(
-            content=x["insight"],
+            content=x.insight,
             importance=importance,
             depth=depth,
             child_ids=child_ids,
@@ -567,7 +611,7 @@ async def generate_long_term_memory_message(
 ) -> str:
     if not llm.is_chat_model:
         raise NotImplementedError("Instruct for message gen not supported yet.")
-    prompt = templates.ZeroMemoryMessage.render(
+    prompt = templates.LongTermMemoryMessage.render(
         llm=llm,
         char=char,
         user_name=user_name,
@@ -581,7 +625,7 @@ async def generate_long_term_memory_message(
         entity_context_summary=entity_context_summary,
         use_timestamps=use_timestamps,
     )
-    kwargs["template"] = templates.ZeroMemoryMessage.__name__
+    kwargs["template"] = templates.LongTermMemoryMessage.__name__
     kwargs["subroutine"] = kwargs.get(
         "subroutine", inspect.currentframe().f_code.co_name
     )

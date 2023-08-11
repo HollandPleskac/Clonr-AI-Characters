@@ -1,3 +1,4 @@
+from app import models
 from clonr.llms import LLM
 from clonr.templates.base import Template, env
 
@@ -12,11 +13,17 @@ class EntityContextCreate(Template):
 {{- llm.system_end }}
 
 {{ llm.user_start -}}
-Using the following statements (enclosed with ---) of recent memories, thoughts, \
+{% if (prev_entity_summary) -%}
+You have previously inferred the following about {{char}}'s relationship to {{entity}}.
+{{prev_entity_summary}}
+
+{% endif -%}
+Using the following {%- if (prev_entity_summary) %} most-recent {%- endif %} statements \
+(enclosed with ---) of recent memories, thoughts, \
 and observations, answer the question that follows.
 ---
 {% for stmt in statements -%}
-{{loop.index}}. {{stmt}}
+{{loop.index}}. {{stmt.content}}
 {%- if not loop.last %}
 {% endif %}
 {%- endfor %} 
@@ -38,11 +45,17 @@ Below is an instruction that describes a task. Write a response that \
 appropriately completes the request
 
 ### Instruction: 
-Using the following statements (enclosed with ---) of recent memories, thoughts, \
+{% if (prev_entity_summary) -%}
+You have previously inferred the following about {{char}}'s relationship to {{entity}}.
+{{prev_entity_summary}}
+
+{% endif -%}
+Using the following {%- if (prev_entity_summary) %} most-recent {%- endif %} statements \
+(enclosed with ---) of recent memories, thoughts, \
 and observations, answer the question that follows.
 ---
 {% for stmt in statements -%}
-{{loop.index}}. {{stmt}}
+{{loop.index}}. {{stmt.content}}
 {%- if not loop.last %}
 {% endif %}
 {%- endfor %} 
@@ -68,7 +81,8 @@ Your answer should be concise yet contain all of the necessary information to pr
         llm: LLM,
         char: str,
         entity: str,
-        statements: list[str],
+        statements: list[models.Memory],
+        prev_entity_summary: str | None = None,
         system_prompt: str | None = None,
     ):
         if system_prompt is None:
@@ -79,6 +93,7 @@ Your answer should be concise yet contain all of the necessary information to pr
             statements=statements,
             char=char,
             entity=entity,
+            prev_entity_summary=prev_entity_summary,
         )
 
     @classmethod
@@ -86,8 +101,12 @@ Your answer should be concise yet contain all of the necessary information to pr
         cls,
         char: str,
         entity: str,
-        statements: list[str],
+        statements: list[models.Memory],
+        prev_entity_summary: str | None = None,
     ):
         return cls.instruct_template.render(
-            statements=statements, char=char, entity=entity
+            statements=statements,
+            char=char,
+            entity=entity,
+            prev_entity_summary=prev_entity_summary,
         )

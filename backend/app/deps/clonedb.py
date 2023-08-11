@@ -1,3 +1,4 @@
+import uuid
 from typing import Annotated
 
 import sqlalchemy as sa
@@ -19,7 +20,7 @@ from .users import get_current_active_user
 
 
 async def get_clonedb(
-    clone_id: Annotated[str, Path()],
+    clone_id: Annotated[uuid.UUID, Path()],
     user: Annotated[models.User, Depends(get_current_active_user)],
     db: Annotated[AsyncSession, Depends(get_async_session)],
     conn: Annotated[Redis, Depends(get_async_redis)],
@@ -37,7 +38,10 @@ async def get_clonedb(
     if not user.is_superuser and not exists.all():
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     user_id = user.id
-    if user.is_superuser:
+    # TODO (Jonny): we should probably have a creator clonedb
+    # and a user clonedb. We don't want None floating around for
+    if user.is_superuser and conversation_id:
+        # conversation ID
         user_id = await db.scalar(
             sa.select(models.Conversation.user_id).where(
                 models.Conversation.id == conversation_id

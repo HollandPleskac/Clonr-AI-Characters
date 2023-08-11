@@ -62,12 +62,12 @@ def test_conversation_initialization(
     r.status_code == 201, data
     convo_id = data["id"]
 
-    # test memories are nonzero and have one memory
+    # test memories are nonzero and have two memories (the greeting msg + I started a convo with...)
     r = db.scalars(
         sa.select(models.Memory).where(models.Memory.conversation_id == convo_id)
     )
     mems = r.all()
-    assert len(mems) == 1, mems
+    assert len(mems) == 2, mems
 
     # test that there is a single message, and it's the greating
     r = db.scalars(

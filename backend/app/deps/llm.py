@@ -1,3 +1,4 @@
+import uuid
 from typing import Annotated
 
 from fastapi import Depends, Path
@@ -16,7 +17,7 @@ from .users import get_current_active_user
 # no auth done here, it's assumed to have been done in the clonedb
 async def get_llm(
     db: Annotated[AsyncSession, Depends(get_async_session)],
-    clone_id: Annotated[str, Path()],
+    clone_id: Annotated[uuid.UUID, Path()],
     user: Annotated[str, Depends(get_current_active_user)],
     tokenizer: Annotated[Tokenizer, Depends(get_tokenizer)],
     conversation_id: Annotated[str | None, Path()] = None,

@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 from enum import Enum
 from typing import Annotated
@@ -44,9 +45,7 @@ class CloneSortType(str, Enum):
 
 
 async def get_clone(
-    clone_id: Annotated[
-        str, Path(min_length=36, max_length=36, description="Clone ID")
-    ],
+    clone_id: Annotated[uuid.UUID, Path(description="Clone ID")],
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
 ) -> models.Clone:
     if (clone := await db.get(models.Clone, clone_id)) is None:
@@ -57,9 +56,7 @@ async def get_clone(
 
 
 async def get_document(
-    document_id: Annotated[
-        str, Path(min_length=36, max_length=36, description="Document ID")
-    ],
+    document_id: Annotated[uuid.UUID, Path(description="Document ID")],
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
 ) -> models.Document:
     if not (doc := await db.get(models.Document, document_id)):
@@ -70,9 +67,7 @@ async def get_document(
 
 
 async def get_monologue(
-    monologue_id: Annotated[
-        str, Path(min_length=36, max_length=36, description="Monologue ID")
-    ],
+    monologue_id: Annotated[uuid.UUID, Path(description="Monologue ID")],
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
 ) -> models.Monologue:
     if not (doc := await db.get(models.Monologue, monologue_id)):
@@ -120,13 +115,12 @@ async def create_clone(
                 if t not in tags:
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,
-                        detail="Tag {t} is not a valid tag.",
+                        detail=f"Tag {t} is not a valid tag.",
                     )
         data["tags"] = tags
-    from loguru import logger
 
     clone = models.Clone(**data, creator_id=creator.user_id)
-    # NOTE (Jonny): idk some arbitrary length here to prevent zero length string embeddings
+
     if clone.long_description:
         clone.embedding = (
             await embedding_client.encode_passage(clone.long_description)
@@ -134,11 +128,11 @@ async def create_clone(
         clone.embedding_model = await embedding_client.encoder_name()
     db.add(clone)
     await db.commit()
+
     # (Jonny): the second argument forces sqlalchemy to load in the result
     # if you get a greenlet spawn error, that's why. Could do lazy=joined too
     # or add , ["tags"] to the refresh.
     await db.refresh(clone)
-    logger.info(clone)
     return clone
 
 
@@ -218,7 +212,7 @@ async def patch_clone(
 ):
     if user.is_superuser or clone.creator_id == user.id:
         not_modified = True
-        for k, v in obj.dict(exclude_unset=True).items():
+        for k, v in obj.model_dump(exclude_unset=True).items():
             if getattr(clone, k) == v:
                 continue
             not_modified = False
@@ -294,48 +288,6 @@ async def view_generated_long_descs(
 
 
 # ------------ Documents ------------ #
-@router.patch("/{clone_id}/documents/{document_id}", response_model=schemas.Document)
-async def update_document(
-    doc_update: schemas.DocumentUpdate,
-    doc: Annotated[models.Document, Depends(get_document)],
-    clonedb: Annotated[
-        CloneDB, Depends(deps.get_clonedb)
-    ],  # used only for auth, to make sure that user has access to edit this clone
-):
-    data = doc_update.model_dump(exclude_unset=True)
-    not_modified = True
-    for k, v in data.items():
-        if getattr(doc, k) == v:
-            continue
-        not_modified = False
-        setattr(doc, k, v)
-    if not_modified:
-        raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
-    clonedb.db.add(doc)
-    await clonedb.db.commit()
-    await clonedb.db.refresh(doc)
-    return doc
-
-
-@router.delete(
-    "/{clone_id}/documents/{document_id}",
-)
-async def delete_document(
-    doc: Annotated[models.Document, Depends(get_document)],
-    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
-):
-    await clonedb.delete_document(doc=doc)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
-@router.get("/{clone_id}/documents/{document_id}", response_model=schemas.Document)
-async def get_document_by_id(
-    doc: Annotated[models.Document, Depends(get_document)],
-    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
-):
-    return doc
-
-
 @router.post(
     "/{clone_id}/documents",
     response_model=schemas.Document,
@@ -347,7 +299,16 @@ async def create_document(
     tokenizer: Annotated[Tokenizer, Depends(deps.get_tokenizer)],
     splitter: Annotated[DynamicTextSplitter, Depends(deps.get_text_splitter)],
 ):
-    doc = Document(index_type=IndexType.list, **doc_create.dict(exclude_unset=True))
+    if await clonedb.db.scalar(
+        sa.select(models.Document.id).where(models.Document.name == doc_create.name)
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Document with name {doc_create.name} already exists.",
+        )
+    doc = Document(
+        index_type=IndexType.list, **doc_create.model_dump(exclude_unset=True)
+    )
     index = ListIndex(tokenizer=tokenizer, splitter=splitter)
     nodes = await index.abuild(doc=doc)
     doc_model = await clonedb.add_document(doc=doc, nodes=nodes)
@@ -396,6 +357,48 @@ async def get_documents(
     return docs.unique().all()
 
 
+@router.patch("/{clone_id}/documents/{document_id}", response_model=schemas.Document)
+async def update_document(
+    doc_update: schemas.DocumentUpdate,
+    doc: Annotated[models.Document, Depends(get_document)],
+    clonedb: Annotated[
+        CloneDB, Depends(deps.get_clonedb)
+    ],  # used only for auth, to make sure that user has access to edit this clone
+):
+    data = doc_update.model_dump(exclude_unset=True)
+    not_modified = True
+    for k, v in data.items():
+        if getattr(doc, k) == v:
+            continue
+        not_modified = False
+        setattr(doc, k, v)
+    if not_modified:
+        raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
+    clonedb.db.add(doc)
+    await clonedb.db.commit()
+    await clonedb.db.refresh(doc)
+    return doc
+
+
+@router.delete(
+    "/{clone_id}/documents/{document_id}",
+)
+async def delete_document(
+    doc: Annotated[models.Document, Depends(get_document)],
+    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
+):
+    await clonedb.delete_document(doc=doc)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/{clone_id}/documents/{document_id}", response_model=schemas.Document)
+async def get_document_by_id(
+    doc: Annotated[models.Document, Depends(get_document)],
+    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
+):
+    return doc
+
+
 # ------------ Monologues ------------ #
 @router.patch("/{clone_id}/monologues/{monologue_id}", response_model=schemas.Monologue)
 async def update_monologue(
@@ -405,7 +408,7 @@ async def update_monologue(
         CloneDB, Depends(deps.get_clonedb)
     ],  # used only for auth, to make sure that user has access to edit this clone
 ):
-    data = monologue_update.dict(exclude_unset=True)
+    data = monologue_update.model_dump(exclude_unset=True)
     not_modified = True
     for k, v in data.items():
         if getattr(monologue, k) == v:
@@ -446,7 +449,7 @@ async def create_monologue(
     monologue_create: schemas.MonologueCreate,
     clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
 ):
-    monologue = Monologue(**monologue_create.dict(exclude_none=True))
+    monologue = Monologue(**monologue_create.model_dump(exclude_none=True))
     m = await clonedb.add_monologues([monologue])
     if not m:
         raise HTTPException(

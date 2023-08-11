@@ -1,5 +1,6 @@
 import datetime
 import enum
+import uuid
 from typing import Annotated
 
 import sqlalchemy as sa
@@ -7,6 +8,8 @@ from fastapi import Depends, HTTPException, Path, Query, status
 from fastapi.responses import Response
 from fastapi.routing import APIRouter
 from redis.asyncio import Redis
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import deps, models, schemas
@@ -23,6 +26,20 @@ router = APIRouter(
 FREE_MESSAGE_LIMIT = 10
 
 
+# TODO (Jonny): set the actual number here
+limiter = Limiter(
+    key_func=get_remote_address,
+    default_limits=["5/minute"],
+    storage_uri="redis://localhost:6379",
+)
+
+
+# def calculate_dynamic_rate_limit(request: Request):
+#     print("TODO")
+#     # raise error for now
+#     raise HTTPException(status_code=400, detail="Not implemented")
+
+
 class MsgSortType(str, enum.Enum):
     newest: str = "newest"
     oldest: str = "oldest"
@@ -32,7 +49,7 @@ class MsgSortType(str, enum.Enum):
 
 # TODO (Jonny): put a paywall behind this dependency
 async def get_conversation(
-    conversation_id: Annotated[str, Path(min_length=36, max_length=36)],
+    conversation_id: Annotated[uuid.UUID, Path()],
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
     user: Annotated[models.Creator, Depends(deps.get_paying_user)],
 ) -> models.Conversation:
@@ -127,7 +144,7 @@ async def patch_conversation(
 
 @router.delete("/{conversation_id}", response_class=Response)
 async def delete_conversation(
-    conversation_id: Annotated[str, Path()],
+    conversation_id: Annotated[uuid.UUID, Path()],
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
     user: Annotated[models.Conversation, Depends(deps.get_superuser)],
 ):
@@ -142,7 +159,7 @@ async def delete_conversation(
 # ----------- Messages ----------- #
 @router.get("/{conversation_id}/messages", response_model=list[schemas.Message])
 async def get_messages(
-    conversation_id: Annotated[str, Path(min_length=36, max_length=36)],
+    conversation_id: Annotated[uuid.UUID, Path()],
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
     embedding_client: Annotated[EmbeddingClient, Depends(deps.get_embedding_client)],
     user: Annotated[models.Creator, Depends(deps.get_current_active_user)],
@@ -158,14 +175,14 @@ async def get_messages(
     if not user.is_superuser and (not is_active or not is_main):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Query parameters is_active, is_main not allowed",
+            detail="Query parameters is_active, is_main are not allowed",
         )
     if q is None and sort in [MsgSortType.similarity, MsgSortType.embedding]:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f'If using sort type ({sort}), you must pass a query parameter "q"',
         )
-    if not (conversation := await db.get(models.Conversation, id)):
+    if not (conversation := await db.get(models.Conversation, conversation_id)):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Conversation {conversation_id} not found.",
@@ -204,7 +221,9 @@ async def get_messages(
                 dist.asc()
             )
         case MsgSortType.similarity:
-            query = query.where(models.Message.op("%>")(q)).order_by(sml.desc())
+            query = query.where(
+                models.Message.case_insensitive_content.op("%>")(q)
+            ).order_by(sml.desc())
         case MsgSortType.newest:
             query = query.order_by(models.Message.timestamp.desc())
         case MsgSortType.oldest:
@@ -214,15 +233,16 @@ async def get_messages(
     return msgs
 
 
-@router.post("/{conversation_id}/messages", response_model=schemas.Message)
+@router.post(
+    "/{conversation_id}/messages", response_model=schemas.Message, status_code=201
+)
 async def receive_message(
     msg_create: schemas.MessageCreate,
-    conversation_id: Annotated[str, Path()],
-    user: Annotated[models.User, Depends(deps.get_current_active_user)],
+    conversation_id: Annotated[uuid.UUID, Path()],
     controller: Annotated[Controller, Depends(deps.get_controller)],
 ):
     key = f"{conversation_id}::generating"
-    if (await controller.cache.conn.get(key)) is not None:
+    if (await controller.clonedb.cache.conn.get(key)) is not None:
         raise HTTPException(
             status_code=status.HTTP_423_LOCKED,
             detail=(
@@ -231,7 +251,7 @@ async def receive_message(
             ),
         )
     # timeout for accidental deadlocks
-    await controller.cache.conn.set(key, b"", ex=5)
+    await controller.clonedb.cache.conn.set(key, b"", ex=5)
     try:
         # TODO (Jonny): we'll need to handle multiple models on the backend eventually
         # TODO (Jonny): put back in, in prod
@@ -247,18 +267,28 @@ async def receive_message(
         #         )
         msg = await controller.add_user_message(msg_create=msg_create)
     finally:
-        controller.cache.conn.delete(key)
+        await controller.clonedb.cache.conn.delete(key)
     return msg
 
 
-@router.post("/{conversation_id}/generate", response_model=schemas.Message)
+@router.post(
+    "/{conversation_id}/generate", response_model=schemas.Message, status_code=201
+)
 async def generate_clone_message(
     msg_gen: schemas.MessageGenerate,
-    conversation_id: Annotated[str, Path()],
+    conversation_id: Annotated[uuid.UUID, Path()],
     controller: Annotated[Controller, Depends(deps.get_controller)],
 ):
+    if (
+        msg_gen.is_revision
+        and controller.conversation.memory_strategy != MemoryStrategy.none
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Message regeneration is not allowed for anything but the Zero Memory Strategy",
+        )
     key = f"{conversation_id}::generating"
-    if (await controller.cache.conn.get(key)) is not None:
+    if (await controller.clonedb.cache.conn.get(key)) is not None:
         raise HTTPException(
             status_code=status.HTTP_423_LOCKED,
             detail=(
@@ -266,42 +296,51 @@ async def generate_clone_message(
                 "Please wait until current message has been received."
             ),
         )
-    await controller.cache.conn.set(key, b"", ex=60)
+    await controller.clonedb.cache.conn.set(key, b"", ex=60)
     try:
         msg = await controller.generate_message(msg_gen)
     finally:
-        controller.cache.conn.delete(key)
+        await controller.clonedb.cache.conn.delete(key)
     return msg
 
 
-@router.post(
+@router.get(
     "/{conversation_id}/current_revisions", response_model=list[schemas.Message]
 )
-async def generate_revision_to_clone_message(
+async def get_current_revisions(
     controller: Annotated[Controller, Depends(deps.get_controller)],
 ):
-    msgs = await controller.clonedb.get_messages(num_messages=2)
-    if len(msgs) < 2:
+    msgs = await controller.clonedb.get_messages(num_messages=1)
+    if not msgs:
         return []
-    if len(msgs) == 1:
-        return msgs
-    parent = msgs[-1]
-    return parent.children
+    msg = msgs[0]
+    if not msg.is_clone or not msg.parent_id:
+        return []
+    print(msg)
+    r = await controller.clonedb.db.scalars(
+        sa.select(models.Message)
+        .where(models.Message.parent_id.is_not(None))
+        .where(models.Message.parent_id == msg.parent_id)
+        .where(models.Message.is_active)
+        .where(models.Message.is_clone)
+    )
+    return r.all()
 
 
 @router.delete("/{conversation_id}/messages/{message_id}", response_class=Response)
 async def delete_message(
-    message_id: Annotated[str, Path()],
-    conversation_id: Annotated[str, Path(min_length=36, max_length=36)],
+    message_id: Annotated[uuid.UUID, Path()],
+    conversation_id: Annotated[uuid.UUID, Path()],
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
     user: Annotated[models.Creator, Depends(deps.get_current_active_user)],
 ):
     msg = await db.get(models.Message, message_id)
-    if (
-        not msg
-        or (not msg.is_active and not user.is_superuser)
-        or msg.conversation_id != conversation_id
-    ):
+    if not msg:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Message {message_id} not found.",
+        )
+    if not user.is_superuser and msg.conversation_id != conversation_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Message {message_id} not found.",
@@ -318,7 +357,7 @@ async def delete_message(
     )
     if memory_strategy != MemoryStrategy.none:
         raise HTTPException(
-            status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Message deletion is not allowed for anything but the Zero Memory Strategy",
         )
     r = await db.scalars(
@@ -334,8 +373,8 @@ async def delete_message(
 
 @router.get("/{conversation_id}/messages/{message_id}", response_model=schemas.Message)
 async def get_message_by_id(
-    message_id: Annotated[str, Path(min_length=36, max_length=36)],
-    conversation_id: Annotated[str, Path(min_length=36, max_length=36)],
+    message_id: Annotated[uuid.UUID, Path()],
+    conversation_id: Annotated[uuid.UUID, Path()],
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
     user: Annotated[models.Creator, Depends(deps.get_current_active_user)],
 ):
@@ -361,9 +400,13 @@ async def get_message_by_id(
     "/{conversation_id}/messages/{message_id}/is_main", response_model=schemas.Message
 )
 async def set_revision_as_main(
-    message_id: Annotated[str, Path(min_length=36, max_length=36)],
-    conversation_id: Annotated[str, Path(min_length=36, max_length=36)],
+    message_id: Annotated[uuid.UUID, Path()],
     controller: Annotated[Controller, Depends(deps.get_controller)],
 ):
+    if controller.conversation.memory_strategy != MemoryStrategy.none:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Message regeneration is not allowed for anything but the Zero Memory Strategy",
+        )
     msg = await controller.set_revision_as_main(message_id)
     return msg
