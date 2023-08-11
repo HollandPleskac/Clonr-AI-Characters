@@ -16,6 +16,8 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 import ChooseChatExperience from './ChooseChatExperience'
 import PreviousConversations from './PreviousConversations'
 import ChatTopBar from './ChatTopBar'
+import useConversations from '@/hooks/useConversations';
+
 interface ChatScreenProps {
   characterId: string
   conversationId: string
@@ -47,6 +49,9 @@ export default function ChatScreen({
   const handleInputBlur = () => setInputActive(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const divRef = useRef<HTMLDivElement | null>(null)
+
+  // hooks
+  const {createConversation, queryConversation, queryConversationMessages, createMessage, generateCloneMessage, queryCurrentRevisions} = useConversations();
 
   // OPTIONAL: FETCH initialMessages client side here
   // type: Message (see @/types)
@@ -95,15 +100,21 @@ export default function ChatScreen({
     await new Promise((resolve) => setTimeout(resolve, 500))
 
     try {
-      let url = `http://localhost:8000/v1/conversation/${convoID}/message`
-      let data = { content: in_msg, sender_name: 'User' }
-      let response = await axios.post(url, data)
-      url = `http://localhost:8000/v1/conversation/${convoID}/response`
-      response = await axios.get(url)
-      const serverMessage = response.data
+      // TODO: edit - needs to be valid convoID str
+      const convoID = "";
+      console.log("this is the convoID: ", convoID)
+      let serverMessage = await generateCloneMessage(convoID);
+      console.log("this is the server message: ", serverMessage)
+
+      // let url = `http://localhost:8000/v1/conversation/${convoID}/message`
+      // let data = { content: in_msg, sender_name: 'User' }
+      // let response = await axios.post(url, data)
+      // url = `http://localhost:8000/v1/conversation/${convoID}/response`
+      // response = await axios.get(url)
+      // const serverMessage = response.data
 
       // update frontend
-      if (response) {
+      if (serverMessage) {
         console.log('Server Message:', serverMessage.message)
       }
 

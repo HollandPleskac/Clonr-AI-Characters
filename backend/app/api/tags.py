@@ -1,6 +1,7 @@
 import json
 import uuid
 from typing import Annotated
+from loguru import logger
 
 import sqlalchemy as sa
 from fastapi import APIRouter, Depends, HTTPException, Path, Response, status
@@ -24,17 +25,18 @@ async def create_tag(
     tag_create: schemas.TagCreate,
     db: Annotated[AsyncSession, Depends(get_async_session)],
 ):
-    if not (
-        await db.scalar(sa.select(models.Tag).where(models.Tag.name == tag_create.name))
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Tag {tag_create.name} already exists",
-        )
+    # if not (
+    #     await db.scalar(sa.select(models.Tag).where(models.Tag.name == tag_create.name))
+    # ):
+    #     raise HTTPException(
+    #         status_code=status.HTTP_400_BAD_REQUEST,
+    #         detail=f"Tag {tag_create.name} already exists",
+    #     )
     tag = models.Tag(**tag_create.model_dump(exclude_unset=True))
     db.add(tag)
     await db.commit()
     await db.refresh(tag)
+    logger.info(f"Created tag {tag}")
     return tag
 
 

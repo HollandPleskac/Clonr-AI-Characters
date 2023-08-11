@@ -25,11 +25,17 @@ async def main():
     with open("../clonr/data/scrapers/results.json", "r") as f:
         data = json.load(f)
 
+    #print("this is data: ", data)
+
     print("Creating default Tags")
     for k in data["characters_by_curated_category"]:
+        print("Creating tag: ", k)
         r = requests.post(
             "http://localhost:8000/tags/", headers=headers, json=dict(name=k)
         )
+        r.raise_for_status()
+    
+    print("Done creating default Tags")
     r = requests.get(
         "http://localhost:8000/tags", headers=headers, params=dict(limit=2)
     )
@@ -61,10 +67,13 @@ async def main():
         async with aiohttp.ClientSession(connector=tcp_connection) as session:
             tasks = []
             for x in clone_data:
-                task = session.post(
-                    url="http://localhost:8000/clones", json=x, headers=headers
-                )
-                tasks.append(task)
+                try:
+                    task = session.post(
+                        url="http://localhost:8000/clones", json=x, headers=headers
+                    )
+                    tasks.append(task)
+                except Exception as e:
+                    print("Error: ", e)
             await tqdm.asyncio.tqdm_asyncio.gather(*tasks)
 
 
