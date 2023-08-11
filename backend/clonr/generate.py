@@ -3,9 +3,17 @@ import json
 import logging
 import re
 
+import openai
 from loguru import logger
 from pydantic import BaseModel
-from tenacity import after_log, before_sleep_log, retry, stop_after_attempt, wait_random
+from tenacity import (
+    after_log,
+    before_sleep_log,
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_random,
+)
 
 from clonr import templates
 from clonr.data_structures import Document, Memory, Message, Monologue, Node
@@ -240,6 +248,7 @@ async def entity_context_create(
     before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
     reraise=True,
+    retry=retry_if_exception_type(openai.error.RateLimitError),
 )
 async def rate_memory(
     llm: LLM,
@@ -284,6 +293,7 @@ async def rate_memory(
     before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
     reraise=True,
+    retry=retry_if_exception_type((openai.error.RateLimitError, json.JSONDecodeError)),
 )
 async def message_queries_create(
     llm: LLM,
@@ -322,7 +332,7 @@ async def message_queries_create(
     )
     # NOTE (Jonny): no way to really enforce this lines up with the templates except
     # for thoughts and prayers ^_^
-    text = f'["{r.content.strip()}'
+    text = f"{r.content.strip()}"
     try:
         queries = json.loads(text)
     except json.JSONDecodeError:
@@ -372,6 +382,7 @@ async def question_and_answer(
     before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
     reraise=True,
+    retry=retry_if_exception_type((openai.error.RateLimitError, json.JSONDecodeError)),
 )
 async def reflection_queries_create(
     llm: LLM,
@@ -421,6 +432,7 @@ async def reflection_queries_create(
     before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
     reraise=True,
+    retry=retry_if_exception_type((openai.error.RateLimitError, json.JSONDecodeError)),
 )
 async def reflections_create(
     llm: LLM,

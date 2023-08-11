@@ -30,9 +30,11 @@ async def main():
         r = requests.post(
             "http://localhost:8000/tags/", headers=headers, json=dict(name=k)
         )
+        r.raise_for_status()
     r = requests.get(
         "http://localhost:8000/tags", headers=headers, params=dict(limit=2)
     )
+    r.raise_for_status()
     assert r.status_code == 200
 
     print("Preparing c.ai clones")
@@ -54,7 +56,7 @@ async def main():
                 is_public=True,
                 tags=[tag],
             )
-            clone_data.append(x.dict())
+            clone_data.append(x.model_dump())
 
     print("Uploading c.ai clones")
     async with aiohttp.TCPConnector(limit=64) as tcp_connection:

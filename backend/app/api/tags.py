@@ -24,14 +24,14 @@ async def create_tag(
     tag_create: schemas.TagCreate,
     db: Annotated[AsyncSession, Depends(get_async_session)],
 ):
-    if not (
-        await db.scalar(sa.select(models.Tag).where(models.Tag.name == tag_create.name))
+    if await db.scalar(
+        sa.select(models.Tag.name).where(models.Tag.name == tag_create.name)
     ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Tag {tag_create.name} already exists",
         )
-    tag = models.Tag(**tag_create.model_dump(exclude_unset=True))
+    tag = models.Tag(**tag_create.model_dump())
     db.add(tag)
     await db.commit()
     await db.refresh(tag)
@@ -49,7 +49,7 @@ async def get_tags(
     r = await db.scalars(sa.select(models.Tag).order_by(models.Tag.name))
     tags = r.all()
     tag_bytes = json.dumps(jsonable_encoder(tags)).encode()
-    ex = 60 * 10  # recompute every 10 minutes
+    ex = 60  # recompute every minute
     await conn.set("tags", tag_bytes, ex=ex)
     return tags
 

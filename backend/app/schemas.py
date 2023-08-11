@@ -93,7 +93,7 @@ class Creator(CreatorCreate):
 class TagCreate(BaseModel):
     name: str
     color_code: Annotated[str, AfterValidator(is_valid_hex_code)] = Field(
-        default=generate_hex_code,
+        default_factory=generate_hex_code,
         detail="Color hex code for displaying tag on the frontend",
     )
 

@@ -53,14 +53,13 @@ Read the following conversation bewteen {{char}} and {{entity_name}} and answer 
 {%- endfor %}
 
 In order to write a response to {{entity_name}}, what questions do you need answered? \
-Write at most {{num_results}} questions. Format your response as JSON list. \
+Write at most {{num_results}} questions. Format your response as JSON list (e.g. ["a", "b", "c"]). \
 Write your questions from the point of view of {{char}}. \
 If you have no questions, simply return the last message in the conversation.
 {%- endif -%}
 {{- llm.user_end }}
 
 {{ llm.assistant_start -}}
-["\
 {{- llm.assistant_end -}}
 """
     )
