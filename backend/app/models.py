@@ -164,7 +164,7 @@ class Tag(CommonMixin, Base):
     __tablename__ = "tags"
 
     name: Mapped[str] = mapped_column(unique=True)
-    color_code: Mapped[str]
+    color_code: Mapped[str] = mapped_column(nullable=True)
     clones: Mapped[list["Clone"]] = relationship(
         secondary=clones_to_tags, back_populates="tags"
     )

@@ -1,6 +1,7 @@
 import json
 import uuid
 from typing import Annotated
+from loguru import logger
 
 import sqlalchemy as sa
 from fastapi import APIRouter, Depends, HTTPException, Path, Response, status
@@ -35,6 +36,7 @@ async def create_tag(
     db.add(tag)
     await db.commit()
     await db.refresh(tag)
+    logger.info(f"Created tag {tag}")
     return tag
 
 
