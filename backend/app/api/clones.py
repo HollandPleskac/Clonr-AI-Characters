@@ -259,7 +259,7 @@ async def delete(
     status_code=201,
 )
 async def generate_long_desc(
-    llm: Annotated[LLM, Depends(deps.get_llm)],
+    llm: Annotated[LLM, Depends(deps.get_llm_with_clone_id)],
     clone: Annotated[models.Clone, Depends(get_clone)],
     clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
 ):
@@ -270,7 +270,7 @@ async def generate_long_desc(
 
 
 @router.get(
-    "/{clone_id}/generate_long_description",
+    "/{clone_id}/long_descriptions",
     response_model=list[schemas.LongDescription],
 )
 async def view_generated_long_descs(
