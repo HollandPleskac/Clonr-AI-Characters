@@ -159,9 +159,11 @@ async def query_clones(
         query = query.where(models.Clone.tags.in_(tags))
     if name is not None:
         query = query.where(models.Clone.case_insensitive_name.ilike(f"%{name}%"))
-        # query = query.where(models.Clone.case_insensitive_name.match(q))
-        # query = query.order_by(sa.func.similarity(models.Clone.case_insensitive_name, q).desc())
-        # query = query.where(sa.func.soundex(models.Clone.name) == sa.func.soundex(query))
+        # This doesn't seem to work well for short names. Looks like it's better on long ones
+        # await db.execute(sa.text("SET pg_trgm.word_similarity_threshold = 0.7"))
+        # sml = models.Clone.case_insensitive_name.word_similarity(name)
+        # query = query.where(models.Clone.case_insensitive_name.op("%>")(name))
+        # query = query.order_by(sml.desc())
     if created_after is not None:
         query = query.where(models.Clone.created_at >= created_after)
     if created_before is not None:
@@ -295,13 +297,20 @@ async def view_generated_long_descs(
 )
 async def create_document(
     doc_create: schemas.DocumentCreate,
+    clone_id: Annotated[uuid.UUID, Path()],
     clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
     tokenizer: Annotated[Tokenizer, Depends(deps.get_tokenizer)],
     splitter: Annotated[DynamicTextSplitter, Depends(deps.get_text_splitter)],
 ):
-    if await clonedb.db.scalar(
-        sa.select(models.Document.id).where(models.Document.name == doc_create.name)
+    if z := await clonedb.db.scalar(
+        sa.select(models.Document.id)
+        .where(models.Document.name == doc_create.name)
+        .where(models.Document.clone_id == clone_id)
     ):
+        from loguru import logger
+
+        logger.exception(z)
+        raise ValueError("fuck everything and fuck this world")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Document with name {doc_create.name} already exists.",

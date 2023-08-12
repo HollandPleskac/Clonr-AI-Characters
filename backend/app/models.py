@@ -425,7 +425,7 @@ class Document(CommonMixin, Base):
 
     content: Mapped[str]
     hash: Mapped[str] = mapped_column(index=True)
-    name: Mapped[str] = mapped_column(unique=True)
+    name: Mapped[str]
     description: Mapped[Optional[str]] = mapped_column(default=None)
     # wiki, messages, website, google search, etc.
     type: Mapped[Optional[str]] = mapped_column(default=None)

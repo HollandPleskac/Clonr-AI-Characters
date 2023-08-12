@@ -61,7 +61,9 @@ class CloneDB:
     async def add_document(self, doc: Document, nodes: list[Node]) -> models.Document:
         # don't re-do work if it's already there?
         if await self.db.scalar(
-            sa.select(models.Document.hash).where(models.Document.hash == doc.hash)
+            sa.select(models.Document.hash)
+            .where(models.Document.hash == doc.hash)
+            .where(models.Document.clone_id == self.clone_id)
         ):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -174,7 +176,9 @@ class CloneDB:
         monologue_models: list[models.Monologue] = []
         hashes = [m.hash for m in monologues]
         r = await self.db.execute(
-            sa.select(models.Monologue.hash).where(models.Monologue.hash.in_(hashes))
+            sa.select(models.Monologue.hash)
+            .where(models.Monologue.hash.in_(hashes))
+            .where(models.Monologue.clone_id == self.clone_id)
         )
         redundant_hashes = set(r.all())
         monologues = [m for m in monologues if m.hash not in redundant_hashes]

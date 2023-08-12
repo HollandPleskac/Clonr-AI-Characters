@@ -1,9 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
 'use client'
 
+import React from 'react'
 import { Character } from '@/types'
 import styles from '@/styles/Cards.module.scss'
 import { formatNumber } from '@/utils/formatNumber'
+import { Tag } from '@/types'
 
 interface CardsProps {
   defaultCard?: boolean
@@ -65,10 +67,8 @@ export default function Cards({
   )
 }
 
-import React from 'react'
-
 type GenreProps = {
-  tags: string[]
+  tags: Tag[]
 }
 
 const GenreComponent: React.FC<GenreProps> = ({ tags }) => {
@@ -78,7 +78,7 @@ const GenreComponent: React.FC<GenreProps> = ({ tags }) => {
         const isLast = index === tags.length - 1
         return (
           <div key={index} className={styles.row}>
-            <span className={styles.regularText}>{tag}</span>
+            <span className={styles.regularText} style={{color: "#" + tag.color_code}}>{tag.name}</span>
             {!isLast && <div className={styles.dot}>&bull;</div>}
           </div>
         )

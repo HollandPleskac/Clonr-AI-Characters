@@ -35,6 +35,15 @@ export enum MediaType {
   MOVIE = 'movie',
   TV = 'tv',
 }
+
+export type Tag = {
+  id: string
+  created_at: Date
+  updated_at: Date
+  color_code: string
+  name: string
+}
+
 export type Character = {
   id: string
   created_at: Date
@@ -45,7 +54,7 @@ export type Character = {
   avatar_uri: string
   num_messages: number
   num_conversations: number
-  tags: string[]
+  tags: Tag[]
 }
 
 export type CharacterChat = {
