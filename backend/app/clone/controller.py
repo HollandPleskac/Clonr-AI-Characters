@@ -1,6 +1,6 @@
 import re
 import uuid
-
+from tenacity import RetryError
 import sqlalchemy as sa
 from fastapi import BackgroundTasks, HTTPException, status
 from loguru import logger
@@ -505,15 +505,21 @@ class Controller:
             if not entity_context_summary:
                 entity_context_summary = None
 
-        queries = await generate.message_queries_create(
-            llm=self.llm,
-            char=self.clone.name,
-            short_description=self.clone.short_description,
-            agent_summary=agent_summary,
-            entity_context_summary=entity_context_summary,
-            entity_name=entity_name,
-            messages=recent_msgs,
-        )
+        try:
+            queries = await generate.message_queries_create(
+                llm=self.llm,
+                char=self.clone.name,
+                short_description=self.clone.short_description,
+                agent_summary=agent_summary,
+                entity_context_summary=entity_context_summary,
+                entity_name=entity_name,
+                messages=recent_msgs,
+            )
+        except RetryError as e:
+            logger.exception(e)
+            queries: list[str] = []
+        except Exception as e:
+            logger.exception(e)
 
         # NOTE (Jonny): add in the last messages as a query too!
         token_budget = 50

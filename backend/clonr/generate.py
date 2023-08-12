@@ -352,6 +352,8 @@ async def message_queries_create(
                 raise OutputParserError(queries)
         else:
             raise OutputParserError(queries)
+    if not isinstance(queries, list):
+        raise OutputParserError(queries)
     return queries
 
 
@@ -431,6 +433,8 @@ async def reflection_queries_create(
             raise OutputParserError(err_msg)
         logger.exception(err_msg + " Returning approximate answer.")
         return text.strip().split("\n")
+    if not isinstance(queries, list):
+        raise OutputParserError(queries)
     return queries
 
 
