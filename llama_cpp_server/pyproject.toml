@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "llama-cpp-server"
+version = "0.1.0"
+description = ""
+authors = ["Jonny Kernes <jmkernes@g.ucla.edu>"]
+readme = "README.md"
+packages = [{include = "llama_cpp_server"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+anyio = "^3.7.1"
+llama-cpp-python = "^0.1.77"
+fastapi = "^0.101.0"
+uvicorn = "^0.23.2"
+sse-starlette = "^1.6.1"
+python-dotenv = "^1.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

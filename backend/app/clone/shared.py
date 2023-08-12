@@ -4,10 +4,13 @@ from clonr.tokenizer import Tokenizer
 
 if settings.LLM == "mock":
     SHARED_TOKENIZER = Tokenizer.from_openai("gpt-3.5-turbo")
-elif settings.LLM == "llamacpp":
-    SHARED_TOKENIZER = Tokenizer.from_openai("gpt-3.5-turbo")
-else:
+elif settings.LLM == "llama":
+    name = "TheBloke/Llama-2-13B-chat-GPTQ"
+    SHARED_TOKENIZER = Tokenizer.from_huggingface(name)
+elif settings.LLM.startswith("gpt"):
     SHARED_TOKENIZER = Tokenizer.from_openai(settings.LLM)
+else:
+    raise ValueError(settings.LLM)
 
 SHARED_DYNAMIC_SPLITTER = DynamicTextSplitter(
     sentence_splitter=SentenceSplitter(tokenizer=SHARED_TOKENIZER, use_tokens=True),

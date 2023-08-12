@@ -1,21 +1,15 @@
 import hashlib
 import json
 import multiprocessing
-import re
 import threading
-import time
 from contextlib import asynccontextmanager
-from dataclasses import dataclass
 from functools import partial
-from typing import Optional
+from typing import Optional, Literal, Union, Iterator
 
 import anyio
-import guidance
 import llama_cpp
-import torch
 from anyio import Semaphore
 from anyio.streams.memory import MemoryObjectSendStream
-from app import schemas
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.concurrency import iterate_in_threadpool
@@ -26,9 +20,45 @@ from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
 from sse_starlette import EventSourceResponse
 from starlette.concurrency import run_in_threadpool
-from transformers import LlamaTokenizer
+
+from app import schemas
 
 load_dotenv()
+
+
+class SpecialTokens(BaseModel):
+    system_start: str = ""
+    system_end: str = "\n\n"
+    assistant_start: str = "ASSISTANT: "
+    assistant_end: str = "\n"
+    user_start: str = "USER: "
+    user_end: str = "\n"
+
+
+def msgs2prompt(messages: list[dict], spec: SpecialTokens):
+    arr: list[str] = []
+    if not messages:
+        return ""
+    if messages[-1]["role"] != "assistant":
+        messages.append({"role": "assistant", "content": ""})
+    for i, m in enumerate(messages):
+        c = m["content"]
+        match m["role"]:
+            case "system":
+                s = f"{spec.system_start}{c}{spec.system_end}"
+            case "assistant":
+                if i == len(messages) - 1:
+                    # rstrip is very very important!
+                    s = f"{spec.assistant_start}{c}".rstrip()
+                else:
+                    s = f"{spec.assistant_start}{c}{spec.assistant_end}"
+            case "user":
+                s = f"{spec.user_start}{c}{spec.user_end}"
+            case _:
+                raise TypeError(m)
+        arr.append(s)
+    prompt = "".join(arr).rstrip()
+    return prompt
 
 
 class ZeroTempCache:
@@ -42,9 +72,6 @@ class ZeroTempCache:
     def put(self, prompt: str, value):
         key = hashlib.sha256(prompt.encode()).hexdigest()
         self._d[key] = value
-
-
-zero_temp_cache = ZeroTempCache()
 
 
 class Settings(BaseSettings):
@@ -99,87 +126,10 @@ class Settings(BaseSettings):
     verbose: bool = Field(
         default=True, description="Whether to print debug information."
     )
-    port: int = 6000
+    port: int = 8100  # lol, on mac, port 6000 is unsafe
     max_concurrent_threads: int = Field(
         default=10, description="Number of threads that can access the LLM? Idk."
     )
-
-
-@dataclass
-class _InnerModelConfig:
-    vocab_size: int
-    max_sequence_length: int
-    pad_token_id: int | None
-
-
-class _InnerModel:
-    def __init__(self, model):
-        self.model = model
-        for k, v in vars(model).items():
-            if k != "generate":
-                setattr(self, k, v)
-
-    def to(self):
-        return self
-
-    @property
-    def device(self):
-        return None
-
-    @property
-    def config(self):
-        return _InnerModelConfig(
-            vocab_size=llama_cpp.llama_n_vocab(self.ctx),
-            max_sequence_length=self.params.n_ctx,
-            pad_token_id=None,
-        )
-
-    def generate(self, inputs, **kwargs):
-        kwargs["inputs"] = inputs
-        gen = self.model.generate(
-            tokens=inputs[0],
-            temp=kwargs["temperature"],
-            top_p=kwargs["top_p"],
-            logits_processor=kwargs["logits_processor"],
-            stopping_criteria=kwargs["stopping_criteria"],
-        )
-        d = {"sequences": [], "scores": []}
-        if streamer := kwargs.get("streamer"):
-            streamer.put({"sequences": inputs})
-        for i, token in enumerate(gen):
-            d["sequences"].append(token)
-            d["scores"].append(self.eval_logits[-1])
-            if streamer:
-                streamer.put(
-                    {k: torch.tensor(v[-1:]).reshape(1, -1) for k, v in d.items()}
-                )
-            if i > kwargs["max_new_tokens"]:
-                break
-        if streamer:
-            streamer.end()
-        return {
-            "sequences": torch.tensor(d["sequences"]),
-            "scores": torch.tensor(d["scores"])[None],
-        }
-
-
-class GuidanceLLM(guidance.llms._transformers.Transformers):
-    def __init__(self, model, **kwargs):
-        self.model = model
-        tokenizer = LlamaTokenizer.from_pretrained("openlm-research/open_llama_7b")
-        return super().__init__(
-            model=model,
-            tokenizer=tokenizer,
-            acceleration=False,
-            caching=False,
-            **kwargs,
-        )
-
-
-settings = Settings()
-lock = threading.Lock()
-
-MAX_THREADS_GUARD = Semaphore(settings.max_concurrent_threads)
 
 
 async def run_in_guarded_threadpool(func, *args, **kwargs):
@@ -187,11 +137,20 @@ async def run_in_guarded_threadpool(func, *args, **kwargs):
         return await run_in_threadpool(func, *args, **kwargs)
 
 
+settings = Settings()
+zero_temp_cache = ZeroTempCache()
+lock = threading.Lock()
+MAX_THREADS_GUARD = Semaphore(settings.max_concurrent_threads)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Loading Llama model and performing warmup run.")
     global LLM
-    global GUIDANCE_LLM
+    global SPECIAL_TOKENS
+
+    SPECIAL_TOKENS = SpecialTokens()
+
     LLM = llama_cpp.Llama(
         model_path=settings.model,
         n_gpu_layers=settings.n_gpu_layers,
@@ -208,16 +167,16 @@ async def lifespan(app: FastAPI):
         verbose=settings.verbose,
     )
     if settings.cache:
+        logger.info("Using llamacpp prefill cache.")
         cache = llama_cpp.LlamaCache(capacity_bytes=settings.cache_size)
         LLM.set_cache(cache)
-    GUIDANCE_LLM = GuidanceLLM(model=_InnerModel(LLM))
     with lock:
         LLM("test", max_tokens=1)
     logger.info("Warmup run completed ✅")
     yield
 
 
-app = FastAPI(title="llama.cpp server", version="0.0.1", lifespan=lifespan)
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -254,6 +213,39 @@ def _convert_completion(x: dict):
     return r
 
 
+def make_logit_bias_processor(
+    llama: llama_cpp.Llama,
+    logit_bias: dict[str, float],
+    logit_bias_type: Optional[Literal["input_ids", "tokens"]],
+):
+    if logit_bias_type is None:
+        logit_bias_type = "input_ids"
+
+    to_bias: dict[int, float] = {}
+    if logit_bias_type == "input_ids":
+        for input_id, score in logit_bias.items():
+            input_id = int(input_id)
+            to_bias[input_id] = score
+
+    elif logit_bias_type == "tokens":
+        for token, score in logit_bias.items():
+            token = token.encode("utf-8")
+            for input_id in llama.tokenize(token, add_bos=False):
+                to_bias[input_id] = score
+
+    def logit_bias_processor(
+        input_ids: list[int],
+        scores: list[float],
+    ) -> list[float]:
+        new_scores = [None] * len(scores)
+        for input_id, score in enumerate(scores):
+            new_scores[input_id] = score + to_bias.get(input_id, 0.0)
+
+        return new_scores
+
+    return logit_bias_processor
+
+
 @app.post("/v1/chat/completions", response_model=schemas.ChatCompletion)
 async def v2_chat(
     request: Request,
@@ -261,34 +253,30 @@ async def v2_chat(
 ):
     if body.stop and isinstance(body.stop, str):
         body.stop = [body.stop]
-
-    if body.logit_bias is None:
-        body.logit_bias = {}
+    if not body.stop:
+        body.stop = []
+    body.stop.extend(["\n" + SPECIAL_TOKENS.user_start, SPECIAL_TOKENS.user_start])
 
     exclude = {
         "n",
+        "best_of",
         "logit_bias",
+        "logit_bias_type",
         "user",
     }
-    kwargs = body.dict(exclude=exclude)
+    kwargs = body.model_dump(exclude=exclude)
 
-    # if bias := kwargs.pop("logit_bias"):
-    #     logger.error(f"Received bias: {bias}")
-
-    #     def _bias_fn(arr):
-    #         for k, v in bias.items():
-    #             arr[k] += v
-    #         return arr
-
-    #     kwargs["logits_processor"] = [_bias_fn]
-
-    print(json.dumps(kwargs, indent=2))
+    if body.logit_bias is not None:
+        kwargs["logits_processor"] = llama_cpp.LogitsProcessorList(
+            [
+                make_logit_bias_processor(LLM, body.logit_bias, "input_ids"),
+            ]
+        )
 
     messages = kwargs.pop("messages")
-    # WARNING. We concatenate with a newline. This might be an unexpected prompt adjustment from the user side!
-    prompt = "\n".join([x["content"] for x in messages])
-    logger.info(f"Received prompt: {prompt}")
-    kwargs["prompt"] = messages[0]["content"]
+    prompt = msgs2prompt(messages=messages, spec=SPECIAL_TOKENS)
+    kwargs["prompt"] = prompt
+    logger.info(f"\n~~~~~ Received prompt: ~~~~~:\n{prompt}")
 
     if body.temperature <= 0 and (r := zero_temp_cache.get(kwargs["prompt"])):
         logger.info("CACHE HIT!")
@@ -321,7 +309,12 @@ async def v2_chat(
             recv_chan, data_sender_callable=partial(event_publisher, send_chan)
         )
     else:
-        completion: llama_cpp.ChatCompletion = await run_in_guarded_threadpool(LLM, **kwargs)  # type: ignore
+        print(kwargs)
+        completion = LLM(**kwargs)
+        # completion: llama_cpp.ChatCompletion = await run_in_guarded_threadpool(LLM, **kwargs)  # type: ignore
+        logger.info(
+            f"\n~~~~~ Generated completion: ~~~~~\n{completion['choices'][0]['text']}"
+        )
         completion = _convert_completion(completion)
         zero_temp_cache.put(kwargs["prompt"], completion)
         return completion
@@ -338,63 +331,6 @@ class NumTokensResponse(BaseModel):
 @app.post("/v1/tokens", response_model=NumTokensResponse)
 async def num_tokens(inp: NumTokensRequest):
     return {"num_tokens": len(LLM.tokenize(inp.prompt.encode()))}
-
-
-class GuidanceRequest(BaseModel):
-    prompt: str
-    variables: dict | None = None
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "prompt": 'When in the course of{{gen "response" max_tokens=16 temperature=0.7}}',
-                "variables": {},
-            }
-        }
-
-
-class GuidanceResponse(BaseModel):
-    text: str
-    variables: dict
-    input_tokens: int
-    completion_tokens: int
-    total_tokens: int
-    generation_time: float
-    tokens_per_second: float
-
-
-@app.post("/v1/guidance", response_model=GuidanceResponse)
-async def guidance_completion(
-    body: GuidanceRequest,
-):
-    st = time.time()
-    if body.variables is None:
-        body.variables = {}
-    program = guidance(body.prompt, async_mode=True, silent=True)
-    r = await program(llm=GUIDANCE_LLM, **body.variables)
-
-    variables = r.variables()
-    variables.pop("llm")
-
-    # This can break for a bunch of reasons, but none of it really matters
-    # since llama cpp sucks, it can only do gen. Error causes would be using
-    # the hidden function, things like select or if statements
-    completion_tokens = 0
-    for k, v in variables.items():
-        if k not in body.variables:
-            completion_tokens += len(GUIDANCE_LLM.encode(v))
-    total_tokens = len(GUIDANCE_LLM.encode(r.text))
-    input_tokens = total_tokens - completion_tokens
-
-    return GuidanceResponse(
-        text=r.text,
-        variables=variables,
-        input_tokens=input_tokens,
-        completion_tokens=completion_tokens,
-        total_tokens=total_tokens,
-        generation_time=time.time() - st,
-        tokens_per_second=total_tokens / (time.time() - st),
-    )
 
 
 if __name__ == "__main__":

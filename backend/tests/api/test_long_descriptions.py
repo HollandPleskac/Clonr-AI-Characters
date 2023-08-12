@@ -42,7 +42,7 @@ def test_long_descs(
 
     # retrieve long descriptions
     r = client.get(
-        f"/clones/{clone_id}/generate_long_description",
+        f"/clones/{clone_id}/long_descriptions",
         headers=superuser_headers,
     )
     data = r.json()

@@ -22,7 +22,7 @@ async def main():
     r = requests.get("http://localhost:8000/users/me", headers=headers)
 
     print("Loading scraped c.ai data")
-    with open("../clonr/data/scrapers/results.json", "r") as f:
+    with open("../scrapers/results.json", "r") as f:
         data = json.load(f)
 
     #print("this is data: ", data)
@@ -34,11 +34,10 @@ async def main():
             "http://localhost:8000/tags/", headers=headers, json=dict(name=k)
         )
         r.raise_for_status()
-    
-    print("Done creating default Tags")
     r = requests.get(
         "http://localhost:8000/tags", headers=headers, params=dict(limit=2)
     )
+    r.raise_for_status()
     assert r.status_code == 200
 
     print("Preparing c.ai clones")
@@ -60,7 +59,7 @@ async def main():
                 is_public=True,
                 tags=[tag],
             )
-            clone_data.append(x.dict())
+            clone_data.append(x.model_dump())
 
     print("Uploading c.ai clones")
     async with aiohttp.TCPConnector(limit=64) as tcp_connection:

@@ -4,8 +4,15 @@ import logging
 import re
 
 from loguru import logger
-from pydantic import BaseModel
-from tenacity import after_log, before_sleep_log, retry, stop_after_attempt, wait_random
+from pydantic import BaseModel, ValidationError
+from tenacity import (
+    after_log,
+    before_sleep_log,
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_random,
+)
 
 from clonr import templates
 from clonr.data_structures import Document, Memory, Message, Monologue, Node
@@ -23,6 +30,10 @@ MIN_CHUNK_SIZE = 256
 
 class OutputParserError(Exception):
     pass
+
+
+class QueryList(BaseModel):
+    arr: list[str]
 
 
 class ReflectionItem(BaseModel):
@@ -239,7 +250,6 @@ async def entity_context_create(
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
     before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
-    reraise=True,
 )
 async def rate_memory(
     llm: LLM,
@@ -265,7 +275,7 @@ async def rate_memory(
     kwargs["subroutine"] = kwargs.get(
         "subroutine", inspect.currentframe().f_code.co_name
     )
-    kwargs["retry_attempt"] = rate_memory.retry.statistics["attempt_number"]
+    kwargs["retry_attempt"] = rate_memory.retry.statistics["attempt_number"] - 1
     params = GenerationParams(**templates.MemoryRating.get_constraints(llm=llm))
     r = await llm.agenerate(prompt_or_messages=prompt, params=params, **kwargs)
     try:
@@ -281,9 +291,9 @@ async def rate_memory(
 @retry(
     stop=stop_after_attempt(MAX_RETRIES),
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
-    before_sleep=before_sleep_log(logger, logging.INFO),
-    after=after_log(logger, logging.WARN),
-    reraise=True,
+    # before_sleep=before_sleep_log(logger, logging.INFO),
+    # after=after_log(logger, logging.WARN),
+    retry=retry_if_exception_type(OutputParserError),
 )
 async def message_queries_create(
     llm: LLM,
@@ -316,13 +326,15 @@ async def message_queries_create(
     kwargs["subroutine"] = kwargs.get(
         "subroutine", inspect.currentframe().f_code.co_name
     )
-    kwargs["retry_attempt"] = message_queries_create.retry.statistics["attempt_number"]
+    kwargs["retry_attempt"] = (
+        message_queries_create.retry.statistics["attempt_number"] - 1
+    )
     r = await llm.agenerate(
         prompt_or_messages=prompt, params=Params.message_queries_create, **kwargs
     )
     # NOTE (Jonny): no way to really enforce this lines up with the templates except
     # for thoughts and prayers ^_^
-    text = f'["{r.content.strip()}'
+    text = f"{r.content.strip()}"
     try:
         queries = json.loads(text)
     except json.JSONDecodeError:
@@ -334,6 +346,10 @@ async def message_queries_create(
             raise OutputParserError(err_msg)
         logger.exception(err_msg + " Returning approximate answer.")
         return text.strip().split("\n")
+    try:
+        QueryList(arr=queries)
+    except ValidationError as e:
+        raise OutputParserError(e)
     return queries
 
 
@@ -371,7 +387,7 @@ async def question_and_answer(
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
     before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
-    reraise=True,
+    retry=retry_if_exception_type(OutputParserError),
 )
 async def reflection_queries_create(
     llm: LLM,
@@ -394,9 +410,9 @@ async def reflection_queries_create(
         )
     kwargs["template"] = templates.ReflectionQuestions.__name__
     kwargs["subroutine"] = kwargs.get("subroutine", "reflections")
-    kwargs["retry_attempt"] = reflection_queries_create.retry.statistics[
-        "attempt_number"
-    ]
+    kwargs["retry_attempt"] = (
+        reflection_queries_create.retry.statistics["attempt_number"] - 1
+    )
     r = await llm.agenerate(
         prompt_or_messages=prompt, params=Params.reflection_queries_create, **kwargs
     )
@@ -412,6 +428,10 @@ async def reflection_queries_create(
             raise OutputParserError(err_msg)
         logger.exception(err_msg + " Returning approximate answer.")
         return text.strip().split("\n")
+    try:
+        QueryList(arr=queries)
+    except ValidationError as e:
+        raise OutputParserError(e)
     return queries
 
 
@@ -420,7 +440,7 @@ async def reflection_queries_create(
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
     before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
-    reraise=True,
+    retry=retry_if_exception_type(OutputParserError),
 )
 async def reflections_create(
     llm: LLM,
@@ -442,7 +462,7 @@ async def reflections_create(
         )
     kwargs["template"] = templates.ReflectionInsights.__name__
     kwargs["subroutine"] = kwargs.get("subroutine", "reflections")
-    kwargs["retry_attempt"] = reflections_create.retry.statistics["attempt_number"]
+    kwargs["retry_attempt"] = reflections_create.retry.statistics["attempt_number"] - 1
 
     index_to_memory = {i + 1: m for i, m in enumerate(memories)}
 
@@ -606,7 +626,7 @@ async def generate_long_term_memory_message(
     memories: list[Memory] | None = None,
     agent_summary: str | None = None,
     entity_context_summary: str | None = None,
-    use_timestamps: bool = True,
+    use_timestamps: bool = False,
     **kwargs,
 ) -> str:
     if not llm.is_chat_model:

@@ -25,11 +25,11 @@ COPY ./app /app
 COPY ./pb /pb
 COPY ./clonr /clonr
 
-# Testing. We'll remove all of this in prod and have two dockerfiles
-RUN poetry export -f requirements.txt --output requirements_only_dev.txt --only dev
-RUN --mount=type=cache,target=/root/.cache/pip python3.10 -m pip install -r requirements_only_dev.txt
-
-COPY ./tests /tests
+# # Testing. We'll remove all of this in prod and have two dockerfiles
+# RUN poetry export -f requirements.txt --output requirements_only_dev.txt --only dev
+# RUN --mount=type=cache,target=/root/.cache/pip python3.10 -m pip install -r requirements_only_dev.txt
+RUN python -c "from clonr.tokenizer import Tokenizer; Tokenizer.from_huggingface('TheBloke/Llama-2-13B-chat-GPTQ')"
+# COPY ./tests /tests
 COPY ./.env.dev /.env
 
 # To test, run: docker exec -it <container-id-here> pytest -v--disable-warnings ./tests

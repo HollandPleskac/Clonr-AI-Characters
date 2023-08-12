@@ -425,7 +425,7 @@ class Document(CommonMixin, Base):
 
     content: Mapped[str]
     hash: Mapped[str] = mapped_column(index=True)
-    name: Mapped[str] = mapped_column(unique=True)
+    name: Mapped[str]
     description: Mapped[Optional[str]] = mapped_column(default=None)
     # wiki, messages, website, google search, etc.
     type: Mapped[Optional[str]] = mapped_column(default=None)
@@ -705,6 +705,7 @@ class LLMCall(CommonMixin, Base):
     template: Mapped[str] = mapped_column(nullable=True)
     # number of retries for calls that require output parsing
     retry_attempt: Mapped[int] = mapped_column(nullable=True)
+    http_retry_attempt: Mapped[int] = mapped_column(nullable=True)
     # Metadata from LongDescription generation
     document_id: Mapped[uuid.UUID | None] = mapped_column(
         sa.ForeignKey("documents.id", ondelete="SET NULL"),
@@ -742,6 +743,12 @@ class LLMCall(CommonMixin, Base):
     conversation: Mapped["Conversation"] = relationship(
         "Conversation", back_populates="llm_calls"
     )
+
+    def __repr__(self):
+        content = self.content
+        if len(content) < 80:
+            content = content[:50] + " ..."
+        return f"LLMCall(subroutine={self.subroutine}, duration={self.duration}, prompt_tokens={self.prompt_tokens}, total_tokens={self.total_tokens}, content={self.content})"
 
 
 class ContentViolation(CommonMixin, Base):

@@ -1,6 +1,7 @@
 import datetime
 import random
 import uuid
+import re
 from typing import Annotated
 
 from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate
@@ -23,6 +24,18 @@ def special_char_validator(v: str | None, info: ValidationInfo) -> str | None:
     if "<|" in v or "|>" in v:
         raise ValueError("May not contain special chars <| or |>")
     return v
+
+
+# NOTE (Jonny): I forgot that this one is important, we don't want to allow users to
+# do like llm-injection
+def sanitize_text(text: str):
+    return re.sub(r"\<\|.*?\|\>", "", text)
+
+
+def text_sanitation_validator(v: str | None, info: ValidationInfo) -> str | None:
+    if v is None:
+        return v
+    return sanitize_text(v)
 
 
 def generate_hex_code():
@@ -93,7 +106,7 @@ class Creator(CreatorCreate):
 class TagCreate(BaseModel):
     name: str
     color_code: Annotated[str, AfterValidator(is_valid_hex_code)] = Field(
-        default=generate_hex_code,
+        default_factory=generate_hex_code,
         detail="Color hex code for displaying tag on the frontend",
     )
 
@@ -112,10 +125,16 @@ class Tag(CommonMixin, BaseModel):
 
 
 class CloneCreate(BaseModel):
-    name: str = Field(min_length=2)
-    short_description: str = Field(min_length=3)
-    long_description: str | None = Field(default=None, min_length=32)
-    greeting_message: str | None = None
+    name: Annotated[str, AfterValidator(special_char_validator)] = Field(min_length=2)
+    short_description: Annotated[str, AfterValidator(special_char_validator)] = Field(
+        min_length=3
+    )
+    long_description: Annotated[str | None, AfterValidator(sanitize_text)] = Field(
+        default=None, min_length=32
+    )
+    greeting_message: Annotated[
+        str | None, AfterValidator(special_char_validator)
+    ] = None
     avatar_uri: str | None = None
     is_active: bool = True
     is_public: bool = False
@@ -126,10 +145,14 @@ class CloneCreate(BaseModel):
 
 
 class CloneUpdate(BaseModel):
-    name: str | None = None
-    short_description: str | None = None
-    long_description: str | None = None
-    greeting_message: str | None = None
+    name: Annotated[str | None, AfterValidator(special_char_validator)] = None
+    short_description: Annotated[
+        str | None, AfterValidator(special_char_validator)
+    ] = None
+    long_description: Annotated[str | None, AfterValidator(sanitize_text)] = None
+    greeting_message: Annotated[
+        str | None, AfterValidator(special_char_validator)
+    ] = None
     avatar_uri: str | None = None
     is_active: bool | None = None
     is_public: bool | None = None
@@ -168,7 +191,7 @@ class CloneSearchResult(CommonMixin, BaseModel):
 # TODO (Jonny): URL field is unused until we figure out a way to make it safe
 # See the bottom for some sample validation code
 class DocumentCreate(BaseModel):
-    content: str
+    content: Annotated[str, AfterValidator(text_sanitation_validator)]
     name: str | None = Field(
         max_length=36,
         description="A human readable name for the document. If none is given, one will be automatically assigned.",
@@ -176,7 +199,7 @@ class DocumentCreate(BaseModel):
     description: str | None = Field(
         max_length=128, description="A short description of the document"
     )
-    type: str | None = Field(
+    type: Annotated[str, AfterValidator(special_char_validator)] = Field(
         max_length=32,
         pattern=r"[a-zA-Z0-9_\-]+",
         description="One word tag describing the source. Letters, numbers, underscores, and hyphens allowed.",
@@ -216,7 +239,7 @@ class DocumentSuggestion(BaseModel):
 
 
 class MonologueCreate(BaseModel):
-    content: str = Field(
+    content: Annotated[str, AfterValidator(text_sanitation_validator)] = Field(
         description="An example message that your clone might send. If you clone sends short replies, this should be short. If your clone is long winded, it can be multiple sentences."
     )
     source: str = Field(
@@ -226,7 +249,7 @@ class MonologueCreate(BaseModel):
 
 
 class MonologueUpdate(BaseModel):
-    content: str | None = None
+    content: Annotated[str | None, AfterValidator(text_sanitation_validator)] = None
     source: str | None = None
 
 
@@ -256,6 +279,9 @@ class Monologue(CommonMixin, MonologueCreate):
 #     NSFW: int = "no content moderation boi"
 
 
+# TODO (Jonny): add timezone to this! fix the timezone for all messages at convo create time.
+# we're getting a mismatch in times between user and assistant for some reason too
+# lol maybe don't add it: https://www.youtube.com/watch?v=-5wpm-gesOY.
 class ConversationCreate(BaseModel):
     name: str | None = Field(
         default=None,
@@ -347,7 +373,7 @@ class MessageGenerate(BaseModel):
 
 # user_id is taken from auth, and clone_id is taken from the route.
 class SharedMemoryCreate(BaseModel):
-    content: str = Field(
+    content: Annotated[str, AfterValidator(special_char_validator)] = Field(
         detail="The memory that your clone will record. In general, the format should be stuff like: 'I felt angry' or 'I saw a duck'"
     )
     timestamp: datetime.datetime = Field(

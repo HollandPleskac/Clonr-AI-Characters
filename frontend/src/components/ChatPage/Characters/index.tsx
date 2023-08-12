@@ -7,6 +7,7 @@ import CharacterComponent from './Character'
 import CharacterDropdown from './CharacterDropdown'
 import { CharacterChat } from '@/types'
 import { formatDate } from '@/utils/formatDate'
+import Link from 'next/link'
 
 interface CharactersProps {
   initialCharacterChats: CharacterChat[]
@@ -17,8 +18,9 @@ export default function Characters({
   initialCharacterChats,
   currentCharacterId,
 }: CharactersProps) {
-
-  const [characterChats, setCharacterChats] = useState<CharacterChat[]>(initialCharacterChats)
+  const [characterChats, setCharacterChats] = useState<CharacterChat[]>(
+    initialCharacterChats
+  )
 
   // OPTIONAL: FETCH initialCharacterChats client side here
   // type: CharacterChat (see @/types)
@@ -41,7 +43,7 @@ export default function Characters({
     >
       <div className='flex items-center px-4 justify-between py-6'>
         <div className='flex items-center cursor-pointer '>
-          <div className='h-8 w-8 relative'>
+          {/* <div className='h-8 w-8 relative'>
             <Image
               src='/clonr-logo.png'
               alt='logo'
@@ -49,17 +51,32 @@ export default function Characters({
               objectFit='cover'
               className=''
             />
-          </div>
+          </div> */}
+          <Link href='/' className='flex items-center cursor-pointer'>
+            <div className='h-8 w-8 relative'>
+              <Image
+                src='/clonr-logo.png'
+                alt='logo'
+                layout='fill'
+                objectFit='cover'
+                className=''
+              />
+            </div>
+            <h3 className='ml-2 text-[30px] font-semibold leading-5 text-white font-fabada'>
+              clonr
+            </h3>
+            <p className='text-white font-thin ml-2 align-middle'>users</p>
+          </Link>
         </div>
-        <div className='cursor-pointer text-white h-[40px] w-[40px] bg-[#979797] rounded-full grid place-items-center hover:ring-1 hover:ring-[rgba(255,255,255,0.2)] '>
+        {/* <div className='cursor-pointer text-white h-[40px] w-[40px] bg-[#979797] rounded-full grid place-items-center hover:ring-1 hover:ring-[rgba(255,255,255,0.2)] '>
           J
-        </div>
+        </div> */}
         {/* <div className='w-8 flex'>
           <HorizontalDots />
         </div> */}
-        <div className='z-50'>
+        {/* <div className='z-50'>
           <CharacterDropdown />
-        </div>
+        </div> */}
       </div>
       <div
         className={` flex w-[375px] min-w-[375px] max-w-[375px] items-center gap-x-2 pb-4`}

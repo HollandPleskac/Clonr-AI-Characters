@@ -146,18 +146,8 @@ RATING: \
         """
         # we have to use type, since we don't want to match a subclass
         if type(llm) == LlamaCpp:
-            ids = [
-                31852,
-                31853,
-                31855,
-                31878,
-                31882,
-                31880,
-                31887,
-                31888,
-                31886,
-                31877,
-            ]
+            # this changed for llama-2 it seems, it used to be in the 30,000s.
+            ids = [29900, 29896, 29906, 29941, 29946, 29945, 29953, 29955, 29947, 29929]
         elif type(llm) in (OpenAI, MockLLM):
             ids = [15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
         else:

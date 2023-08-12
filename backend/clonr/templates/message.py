@@ -53,14 +53,13 @@ Read the following conversation bewteen {{char}} and {{entity_name}} and answer 
 {%- endfor %}
 
 In order to write a response to {{entity_name}}, what questions do you need answered? \
-Write at most {{num_results}} questions. Format your response as JSON list. \
+Write at most {{num_results}} questions. Format your response as list of strings. (e.g. ["question 1", ..., "question 3"]). \
 Write your questions from the point of view of {{char}}. \
 If you have no questions, simply return the last message in the conversation.
 {%- endif -%}
 {{- llm.user_end }}
 
 {{ llm.assistant_start -}}
-["\
 {{- llm.assistant_end -}}
 """
     )
@@ -142,8 +141,7 @@ Each section of your profile will begin with ###.
 
 ### Task
 You are {{char}}. Carry out a conversation with {{user_name}} as {{char}}. \
-Respond only as {{char}} and do not break character. \
-Separate distinct messages by using a newline.
+Respond only as {{char}} and do not break character.
 {{- llm.system_end }}
 
 {% for msg in messages -%}
@@ -265,8 +263,7 @@ The following is a list of relevant memories that you've recalled.
 ### Task
 You are {{char}}. Using the above information, \
 carry out a conversation with {{user_name}} as {{char}}. \
-Respond only as {{char}} and do not break character. \
-Separate distinct messages by using a newline.
+Respond only as {{char}} and do not break character.
 {%- endif -%}
 {{- llm.system_end }}
 
@@ -303,7 +300,7 @@ Separate distinct messages by using a newline.
         facts: list[str] | None = None,
         agent_summary: str | None = None,
         entity_context_summary: str | None = None,
-        use_timestamps: bool = True,
+        use_timestamps: bool = False,
     ):
         cur_time = DateFormat.human_readable(
             get_current_datetime(), use_today_and_yesterday=True

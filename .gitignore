@@ -163,3 +163,5 @@ _data/*
 
 llm_server/models
 artifacts
+
+backend/demo.ipynb

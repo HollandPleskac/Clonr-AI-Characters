@@ -50,7 +50,7 @@ class HFResource(BaseModel):
     size: int
     path: str
     url: str
-    lfs: Optional[LFSResource]
+    lfs: Optional[LFSResource] = None
 
 
 class HFDownloader:
@@ -182,14 +182,13 @@ class HFDownloader:
     def download(
         self,
         model_name: str,
-        output_dir: str | Path | None = None,
+        output_dir: str | Path,
         branch: str | None = None,
         resume_download: bool = True,
         n_threads: int | None = None,
         regex_filter: str | None = None,
     ):
-        output_dir = output_dir / model_name.split("/")[-1]
-        output_dir = Path(output_dir)
+        output_dir = Path(output_dir) / model_name.split("/")[-1]
         n_threads = n_threads or 8
         resources = self._gather_repo_resources(model_name=model_name, branch=branch)
 
@@ -243,3 +242,37 @@ class HFDownloader:
         print(
             f"{bcolors.UNDERLINE}Summary{bcolors.ENDC}: Time: {bcolors.BOLD}{time_str}{bcolors.ENDC}. Size: {bcolors.BOLD}{total_size}{bcolors.ENDC}"
         )
+
+
+def main(
+    model_name: str,
+    output_dir: str | Path,
+    branch: str | None = None,
+    resume_download: bool = True,
+    n_threads: int | None = None,
+    regex_filter: str | None = None,
+):
+    dl = HFDownloader()
+    dl.preview_download(model_name=model_name, branch=branch, regex_filter=regex_filter)
+    if input("Proceed (y/n)?\n") == "y":
+        dl.download(
+            model_name=model_name,
+            output_dir=output_dir,
+            branch=branch,
+            resume_download=resume_download,
+            n_threads=n_threads,
+            regex_filter=regex_filter,
+        )
+
+
+if __name__ == "__main__":
+    # An example script usage from the backend root would be
+    """
+    python -m clonr.utils.hf_downloader \
+        --model_name "TheBloke/WizardLM-1.0-Uncensored-Llama2-13B-GGML" \
+        --regex_filter "q5_K_M" \
+        --output_dir "../../../llm-models/"
+    """
+    from fire import Fire
+
+    Fire(main)

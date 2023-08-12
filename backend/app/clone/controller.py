@@ -1,5 +1,6 @@
+import re
 import uuid
-
+from tenacity import RetryError
 import sqlalchemy as sa
 from fastapi import BackgroundTasks, HTTPException, status
 from loguru import logger
@@ -49,6 +50,18 @@ def get_num_fact_tokens(extra_space: bool) -> int:
 
 def get_num_memory_tokens(extra_space: bool) -> int:
     return 200 if extra_space else 100
+
+
+# TODO (Jonny): we need a way to make sure that both this and the DateFormat are always in sync
+# this covers the human readable, relative, and isoformat cases
+def remove_timestamps_from_msg(content: str) -> str:
+    # The first are days of the week and shit
+    # the second is a date like 2023-01-01
+    # the last covers stuff like 12 hours ago, 12 hours 5 mintues ago, 12 hours and 5 minutes ago
+    pattern = r"^\[(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Yesterday|Today|\d\d\d\d\-\d\d\-\d\d|\d+\s\w+\sago|\d+\s\w+\sand|\d+\s\w+\s\d+).*?\]"  # noqa
+    lines = re.split(pattern, content)
+    # the pattern alternates content, split-token, content, split-token.
+    return "\n".join(lines[::2])
 
 
 class ControllerException(Exception):
@@ -159,7 +172,7 @@ class Controller:
         if convo.memory_strategy != MemoryStrategy.none:
             # NOTE (Jonny): to make things easier, we don't count the greeting message towards any of the
             # memory-based counters. We can assume things start at zero.
-            mem_content = f'{greeting_message.sender_name} messaged me, "{greeting_message.content}"'
+            mem_content = f'I messaged {convo.user_name}, "{greeting_message.content}"'
             memory_struct = Memory(content=mem_content, importance=3, is_shared=False)
             await clonedb.add_memories([memory_struct])
 
@@ -226,7 +239,9 @@ class Controller:
 
         if self.memory_strategy != MemoryStrategy.none:
             mem_content = f'{msg.sender_name} messaged me, "{msg.content}"'
-            await self._add_private_memory(content=mem_content)
+            self.background_tasks.add_task(
+                self._add_private_memory, content=mem_content
+            )
 
         return msg
 
@@ -490,15 +505,34 @@ class Controller:
             if not entity_context_summary:
                 entity_context_summary = None
 
-        queries = await generate.message_queries_create(
-            llm=self.llm,
-            char=self.clone.name,
-            short_description=self.clone.short_description,
-            agent_summary=agent_summary,
-            entity_context_summary=entity_context_summary,
-            entity_name=entity_name,
-            messages=recent_msgs,
-        )
+        try:
+            queries = await generate.message_queries_create(
+                llm=self.llm,
+                char=self.clone.name,
+                short_description=self.clone.short_description,
+                agent_summary=agent_summary,
+                entity_context_summary=entity_context_summary,
+                entity_name=entity_name,
+                messages=recent_msgs,
+            )
+        except RetryError as e:
+            logger.exception(e)
+            queries: list[str] = []
+        except Exception as e:
+            logger.exception(e)
+            raise
+
+        # NOTE (Jonny): add in the last messages as a query too!
+        token_budget = 50
+        last_msgs: str = []
+        for m in reversed(recent_msgs):
+            token_budget -= self.clonedb.tokenizer.length(m.content) + 4
+            if token_budget < 0:
+                break
+            last_msgs.append(m.content)
+        last_msg = " ".join(reversed(last_msgs))
+        if last_msg:
+            queries.append(last_msg)
 
         return queries
 
@@ -548,12 +582,15 @@ class Controller:
             # do the higher accuracy info retrieval step. Weird we take str and not nodes.
             # whatever, not gonna redo it.
             facts: list[str] = []
+            vis: set[uuid.UUID] = set([])
             for q in queries:
                 cur = await self.clonedb.query_nodes_with_rerank(
                     query=q, params=ReRankSearchParams(max_items=3, max_tokens=170)
                 )
                 for c in cur:
-                    facts.append(c.model.content)
+                    if c.model.id not in vis:
+                        vis.add(c.model.id)
+                        facts.append(c.model.content)
         else:
             # TODO (Jonny): trying to avoid a ~500 token request by eliminating the
             # monologue query. We are always running for the thrill of it.
@@ -590,6 +627,8 @@ class Controller:
 
         messages = list(reversed(recent_msgs))
 
+        # TODO (Jonny): it's possible that this thing spans multiple lines
+        # so we need to return multiple messages
         new_msg_content = await generate.generate_zero_memory_message(
             char=self.clone.name,
             user_name=self.user_name,
@@ -601,8 +640,9 @@ class Controller:
             llm=self.llm,
             use_timestamps=False,
         )
+        content = remove_timestamps_from_msg(new_msg_content)
         new_msg_struct = Message(
-            content=new_msg_content,
+            content=content,
             sender_name=self.clone.name,
             is_clone=True,
             parent_id=parent_id,
@@ -705,17 +745,20 @@ class Controller:
             InformationStrategy.external,
         ]:
             facts = []
+            vis: set[uuid.UUID] = set()
             for q in queries:
                 cur = await self.clonedb.query_nodes_with_rerank(
                     query=q,
                     params=ReRankSearchParams(max_items=3, max_tokens=fact_tokens),
                 )
-                tmp = [c.model.content for c in cur]
-                facts.extend(tmp)
+                for c in cur:
+                    if c.model.id not in vis:
+                        vis.add(c.model.id)
+                        facts.append(c.model.content)
 
         # Retrieve relevant memories (max 512 tokens)
         memories: list[Memory] = []
-        vis_mem: set[str] = set()
+        vis_mem: set[uuid.UUID] = set()
         for q in queries:
             cur = await self.clonedb.query_memories(
                 q,
@@ -723,7 +766,8 @@ class Controller:
                 update_access_date=False,
             )
             for c in cur:
-                if str(c.model.id) not in vis_mem:
+                if c.model.id not in vis_mem:
+                    vis_mem.add(c.model.id)
                     mem = Memory(
                         id=c.model.id,
                         content=c.model.content,
@@ -732,7 +776,6 @@ class Controller:
                         is_shared=c.model.is_shared,
                     )
                     memories.append(mem)
-                vis_mem.add(str(c.model.id))
 
         # we will prune overlapping memories with messages later, so this is a conservative
         # overcount early on in the convo
@@ -765,9 +808,12 @@ class Controller:
 
         # NOTE (Jonny): Since only shared memories can be non-messages at the moment,
         # we can just remove any memory that is more recent than the oldest message
-        # and that is not shared. Pretty simple fix to prevent overlap
+        # and that is not shared. Pretty simple fix to prevent overlap. We also
+        # allow reflections through, since they should not collide with memories either.
         memories = [
-            m for m in memories if m.is_shared or m.timestamp < oldest_msg_timestamp
+            m
+            for m in memories
+            if m.is_shared or m.depth > 0 or m.timestamp < oldest_msg_timestamp
         ]
 
         new_msg_content = await generate.generate_long_term_memory_message(
@@ -784,17 +830,17 @@ class Controller:
             llm=self.llm,
             use_timestamps=True,
         )
+        content = remove_timestamps_from_msg(new_msg_content)
         new_msg_struct = Message(
-            content=new_msg_content,
+            content=content,
             sender_name=self.clone.name,
             is_clone=True,
             parent_id=parent_id,
         )
         new_msg = await self.clonedb.add_message(new_msg_struct, msg_to_unset)
-
         mem_content = f'I messaged {self.user_name}, "{new_msg.content}"'
-        await self._add_private_memory(content=mem_content)
-
+        # don't block on these
+        self.background_tasks.add_task(self._add_private_memory, content=mem_content)
         return new_msg
 
     async def generate_message(

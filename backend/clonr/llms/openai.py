@@ -8,7 +8,13 @@ from typing import AsyncGenerator, Generator
 
 import aiohttp
 import openai
-from tenacity import retry, retry_if_exception_type, wait_random
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    wait_random,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 from clonr.tokenizer import Tokenizer
 
@@ -116,16 +122,16 @@ class OpenAI(LLM):
         num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
         return num_tokens
 
-    def _num_tokens_from_string(self, value: str):
+    def _num_tokens_from_string(self, value: str) -> int:
         return len(self.tokenizer.encode(value))
 
-    def num_tokens(self, inp: list[Message] | str):
+    def num_tokens(self, inp: list[Message] | str) -> int:
         if isinstance(inp, str):
             return self._num_tokens_from_string(inp)
         return self._num_tokens_from_messages(inp)
 
     @classmethod
-    def prompt_to_messages(cls, prompt: str):
+    def prompt_to_messages(cls, prompt: str) -> list[Message]:
         messages = []
 
         pattern = r"<\|im_start\|>(\w+)(.*?)(?=<\|im_end\|>|$)"
@@ -141,14 +147,6 @@ class OpenAI(LLM):
 
         messages = [Message(**m) for m in messages]
 
-        # if messages and messages[-1].role != RoleEnum.assistant:
-        #    msg = (
-        #         "When calling OpenAI chat models you must generate only directly"
-        #         " inside the assistant role! The OpenAI API does not currently"
-        #         " support partial assistant prompting."
-        #     )
-        #     raise ValueError(msg)
-
         return messages
 
     @classmethod
@@ -156,8 +154,11 @@ class OpenAI(LLM):
         return "\n".join(m.to_prompt() for m in messages)
 
     @retry(
-        retry=retry_if_exception_type(openai.error.RateLimitError),
-        wait=wait_random(min=0.1, max=2),
+        retry=retry_if_exception_type(
+            (openai.error.RateLimitError, openai.error.APIConnectionError)
+        ),
+        wait=wait_exponential(min=0.1, max=2),
+        stop=stop_after_attempt(3),
     )
     async def agenerate(
         self,
@@ -168,7 +169,10 @@ class OpenAI(LLM):
         params = params or GenerationParams()
         # NOTE (Jonny): This will be picked up callbacks, and it serves to place a unique ID on each
         # LLM call so that we can go back and trace it through logs (defends against async messing up order)
-        kwargs["llm_call_id"] = kwargs.get("llm_call_id", str(uuid.uuid4()))
+        kwargs["id"] = kwargs.get("id", str(uuid.uuid4()))
+        kwargs["http_retry_attempt"] = (
+            self.agenerate.retry.statistics["attempt_number"] - 1
+        )
 
         for c in self.callbacks:
             await c.on_generate_start(self, prompt_or_messages, params, **kwargs)

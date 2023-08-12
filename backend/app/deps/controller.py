@@ -1,4 +1,6 @@
+import os
 import uuid
+from functools import lru_cache
 from typing import Annotated
 
 from fastapi import BackgroundTasks, Depends, Path, status
@@ -20,6 +22,17 @@ from .db import get_async_redis, get_async_session
 from .embedding import get_embedding_client
 from .text import get_tokenizer
 from .users import get_current_active_user
+from .llm import _get_llm
+
+
+@lru_cache(maxsize=1)
+def is_docker() -> bool:
+    path = "/proc/self/cgroup"
+    if os.path.exists("/.dockerenv"):
+        return True
+    if os.path.isfile(path) and any("docker" in line for line in open(path)):
+        return True
+    return False
 
 
 # Requires either the clone_id or conversation_id
@@ -46,25 +59,15 @@ async def get_controller(
         )
     clone = await db.get(models.Clone, conversation.clone_id)
 
-    # LLM
+    # LLM. We have to repeat the code from get_llm, since this runs before the conversation has
+    # been created. This could use a refactor
     callbacks: list[LLMCallback] = [
         LoggingCallback(),
         AddToPostgresCallback(
             db=db, clone_id=clone.id, user_id=user.id, conversation_id=conversation_id
         ),
     ]
-    if settings.LLM == "mock":
-        # so much output parsing will break with the mock llm though...
-        llm = MockLLM(response="mock response", callbacks=callbacks)
-    elif settings.LLM == "llamacpp":
-        llm = LlamaCpp(chat_mode=True)
-    else:
-        llm = OpenAI(
-            model=settings.LLM,
-            api_key=settings.OPENAI_API_KEY,
-            tokenizer=tokenizer,
-            callbacks=callbacks,
-        )
+    llm = _get_llm(model_name=settings.LLM, tokenizer=tokenizer, callbacks=callbacks)
 
     # redis cache
     cache = CloneCache(conn=conn)

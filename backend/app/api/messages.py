@@ -106,6 +106,7 @@ async def get_messages(
         else:
             # this has to run everytime to set the minimum sim score. This is what
             # make the index really fast. full similarity is easy here, just .similarity(q)
+            # similarily, strict_word_similarity is the same.
             await db.execute(sa.text("SET pg_trgm.word_similarity_threshold = 0.7"))
             sml = models.Message.case_insensitive_content.word_similarity(q)
     match sort:
