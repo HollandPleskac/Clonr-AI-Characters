@@ -141,8 +141,7 @@ Each section of your profile will begin with ###.
 
 ### Task
 You are {{char}}. Carry out a conversation with {{user_name}} as {{char}}. \
-Respond only as {{char}} and do not break character. \
-Separate distinct messages by using a newline.
+Respond only as {{char}} and do not break character.
 {{- llm.system_end }}
 
 {% for msg in messages -%}
@@ -264,8 +263,7 @@ The following is a list of relevant memories that you've recalled.
 ### Task
 You are {{char}}. Using the above information, \
 carry out a conversation with {{user_name}} as {{char}}. \
-Respond only as {{char}} and do not break character. \
-Separate distinct messages by using a newline.
+Respond only as {{char}} and do not break character.
 {%- endif -%}
 {{- llm.system_end }}
 

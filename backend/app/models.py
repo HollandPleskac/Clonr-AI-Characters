@@ -743,6 +743,12 @@ class LLMCall(CommonMixin, Base):
         "Conversation", back_populates="llm_calls"
     )
 
+    def __repr__(self):
+        content = self.content
+        if len(content) < 80:
+            content = content[:80] + " ..."
+        return f"LLMCall(subroutine={self.subroutine}, duration={self.duration}, prompt_tokens={self.prompt_tokens}, total_tokens={self.total_tokens}, content={self.content})"
+
 
 class ContentViolation(CommonMixin, Base):
     __tablename__ = "content_violations"

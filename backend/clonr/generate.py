@@ -293,7 +293,7 @@ async def rate_memory(
     before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
     reraise=True,
-    retry=retry_if_exception_type((openai.error.RateLimitError, json.JSONDecodeError)),
+    retry=retry_if_exception_type((openai.error.RateLimitError, OutputParserError)),
 )
 async def message_queries_create(
     llm: LLM,
@@ -344,6 +344,14 @@ async def message_queries_create(
             raise OutputParserError(err_msg)
         logger.exception(err_msg + " Returning approximate answer.")
         return text.strip().split("\n")
+    # we could possible get back [[a], [b], [c]]. wild, but it's possible and annoying
+    if not all(isinstance(z, str) for z in queries):
+        if all(isinstance(z, list) for z in queries):
+            queries = [z[0] for z in queries]
+            if not all(isinstance(z, str) for z in queries):
+                raise OutputParserError(queries)
+        else:
+            raise OutputParserError(queries)
     return queries
 
 
@@ -382,7 +390,7 @@ async def question_and_answer(
     before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
     reraise=True,
-    retry=retry_if_exception_type((openai.error.RateLimitError, json.JSONDecodeError)),
+    retry=retry_if_exception_type((openai.error.RateLimitError, OutputParserError)),
 )
 async def reflection_queries_create(
     llm: LLM,
@@ -432,7 +440,7 @@ async def reflection_queries_create(
     before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
     reraise=True,
-    retry=retry_if_exception_type((openai.error.RateLimitError, json.JSONDecodeError)),
+    retry=retry_if_exception_type((openai.error.RateLimitError, OutputParserError)),
 )
 async def reflections_create(
     llm: LLM,

@@ -1,3 +1,4 @@
+import re
 import uuid
 
 import sqlalchemy as sa
@@ -49,6 +50,18 @@ def get_num_fact_tokens(extra_space: bool) -> int:
 
 def get_num_memory_tokens(extra_space: bool) -> int:
     return 200 if extra_space else 100
+
+
+# TODO (Jonny): we need a way to make sure that both this and the DateFormat are always in sync
+# this covers the human readable, relative, and isoformat cases
+def remove_timestamps_from_msg(content: str) -> str:
+    # The first are days of the week and shit
+    # the second is a date like 2023-01-01
+    # the last covers stuff like 12 hours ago, 12 hours 5 mintues ago, 12 hours and 5 minutes ago
+    pattern = r"^\[(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|Yesterday|Today|\d\d\d\d\-\d\d\-\d\d|\d+\s\w+\sago|\d+\s\w+\sand|\d+\s\w+\s\d+).*?\]"  # noqa
+    lines = re.split(pattern, content)
+    # the pattern alternates content, split-token, content, split-token.
+    return "\n".join(lines[::2])
 
 
 class ControllerException(Exception):
@@ -226,7 +239,9 @@ class Controller:
 
         if self.memory_strategy != MemoryStrategy.none:
             mem_content = f'{msg.sender_name} messaged me, "{msg.content}"'
-            await self._add_private_memory(content=mem_content)
+            self.background_tasks.add_task(
+                self._add_private_memory, content=mem_content
+            )
 
         return msg
 
@@ -605,6 +620,8 @@ class Controller:
 
         messages = list(reversed(recent_msgs))
 
+        # TODO (Jonny): it's possible that this thing spans multiple lines
+        # so we need to return multiple messages
         new_msg_content = await generate.generate_zero_memory_message(
             char=self.clone.name,
             user_name=self.user_name,
@@ -616,8 +633,9 @@ class Controller:
             llm=self.llm,
             use_timestamps=False,
         )
+        content = remove_timestamps_from_msg(new_msg_content)
         new_msg_struct = Message(
-            content=new_msg_content,
+            content=content,
             sender_name=self.clone.name,
             is_clone=True,
             parent_id=parent_id,
@@ -783,9 +801,12 @@ class Controller:
 
         # NOTE (Jonny): Since only shared memories can be non-messages at the moment,
         # we can just remove any memory that is more recent than the oldest message
-        # and that is not shared. Pretty simple fix to prevent overlap
+        # and that is not shared. Pretty simple fix to prevent overlap. We also
+        # allow reflections through, since they should not collide with memories either.
         memories = [
-            m for m in memories if m.is_shared or m.timestamp < oldest_msg_timestamp
+            m
+            for m in memories
+            if m.is_shared or m.depth > 0 or m.timestamp < oldest_msg_timestamp
         ]
 
         new_msg_content = await generate.generate_long_term_memory_message(
@@ -802,17 +823,17 @@ class Controller:
             llm=self.llm,
             use_timestamps=True,
         )
+        content = remove_timestamps_from_msg(new_msg_content)
         new_msg_struct = Message(
-            content=new_msg_content,
+            content=content,
             sender_name=self.clone.name,
             is_clone=True,
             parent_id=parent_id,
         )
         new_msg = await self.clonedb.add_message(new_msg_struct, msg_to_unset)
-
         mem_content = f'I messaged {self.user_name}, "{new_msg.content}"'
-        await self._add_private_memory(content=mem_content)
-
+        # don't block on these
+        self.background_tasks.add_task(self._add_private_memory, content=mem_content)
         return new_msg
 
     async def generate_message(

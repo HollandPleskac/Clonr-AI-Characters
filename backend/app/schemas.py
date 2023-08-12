@@ -256,6 +256,9 @@ class Monologue(CommonMixin, MonologueCreate):
 #     NSFW: int = "no content moderation boi"
 
 
+# TODO (Jonny): add timezone to this! fix the timezone for all messages at convo create time.
+# we're getting a mismatch in times between user and assistant for some reason too
+# lol maybe don't add it: https://www.youtube.com/watch?v=-5wpm-gesOY.
 class ConversationCreate(BaseModel):
     name: str | None = Field(
         default=None,

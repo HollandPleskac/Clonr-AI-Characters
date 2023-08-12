@@ -116,16 +116,16 @@ class OpenAI(LLM):
         num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
         return num_tokens
 
-    def _num_tokens_from_string(self, value: str):
+    def _num_tokens_from_string(self, value: str) -> int:
         return len(self.tokenizer.encode(value))
 
-    def num_tokens(self, inp: list[Message] | str):
+    def num_tokens(self, inp: list[Message] | str) -> int:
         if isinstance(inp, str):
             return self._num_tokens_from_string(inp)
         return self._num_tokens_from_messages(inp)
 
     @classmethod
-    def prompt_to_messages(cls, prompt: str):
+    def prompt_to_messages(cls, prompt: str) -> list[Message]:
         messages = []
 
         pattern = r"<\|im_start\|>(\w+)(.*?)(?=<\|im_end\|>|$)"
@@ -140,14 +140,6 @@ class OpenAI(LLM):
             messages.append({"role": role, "content": content})
 
         messages = [Message(**m) for m in messages]
-
-        # if messages and messages[-1].role != RoleEnum.assistant:
-        #    msg = (
-        #         "When calling OpenAI chat models you must generate only directly"
-        #         " inside the assistant role! The OpenAI API does not currently"
-        #         " support partial assistant prompting."
-        #     )
-        #     raise ValueError(msg)
 
         return messages
 

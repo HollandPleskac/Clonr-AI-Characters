@@ -67,8 +67,8 @@ def _get_llama_cpp_tokenizer(path: str | Path):
 
 
 @lru_cache(maxsize=None)
-def _get_hf_tokenizer(model_name_or_path: str):
-    return AutoTokenizer.from_pretrained(model_name_or_path)
+def _get_hf_tokenizer(model_name_or_path: str, use_fast: bool):
+    return AutoTokenizer.from_pretrained(model_name_or_path, use_fast=use_fast)
 
 
 class Tokenizer(ABC):
@@ -129,22 +129,22 @@ class OpenAITokenizer(Tokenizer):
 
 
 class HuggingFaceTokenizer(Tokenizer):
-    def __init__(self, model):
+    def __init__(self, model, use_fast: bool = True):
         if TRANSFORMERS_NOT_AVAILABLE:
             raise ImportError("`transformers` package not installed.")
         self.model = model
-        self.tokenizer = _get_hf_tokenizer(model)
+        self.tokenizer = _get_hf_tokenizer(model, use_fast=use_fast)
 
-    def _encode(self, text):
+    def encode(self, text):
         return self.tokenizer.encode(text)
 
-    def _encode_batch(self, text: list[str]) -> list[list[int]]:
+    def encode_batch(self, text: list[str]) -> list[list[int]]:
         return self.tokenizer(text)["input_ids"]
 
-    def _decode(self, ids: list[int]) -> str:
+    def decode(self, ids: list[int]) -> str:
         return self.tokenizer.decode(ids)
 
-    def _decode_batch(self, ids: list[list[int]]) -> list[str]:
+    def decode_batch(self, ids: list[list[int]]) -> list[str]:
         # https://github.com/huggingface/transformers/issues/10019
         # homie says they can't go faster. sounds like a load of shit but whatever.
         return [self.tokenizer.decode(x) for x in ids]

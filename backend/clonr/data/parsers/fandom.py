@@ -1,5 +1,6 @@
-import re
 import json
+import re
+
 import requests
 from bs4 import BeautifulSoup, Tag
 from loguru import logger
@@ -189,7 +190,7 @@ class FullURLParser(Parser):
             br.replace_with("\n")
         res = "".join(convert_to_markdown(tag) for tag in soup.find_all() if tag.name)
 
-        ## NEW:
+        # NEW:
         res = process_lines(res.split("\n"))
 
         return Document(content=res, url=url, type=type)
@@ -210,7 +211,7 @@ class FandomParserOther(Parser):
             fandom.set_wiki(wiki)
             page = fandom.page(character_name)
             page_content = json.dumps(page.content)
-        except Exception as e:
+        except Exception:
             raise ParserException(f"No results found for {character_name}.")
 
         return Document(content=page_content)
