@@ -8,7 +8,13 @@ from typing import AsyncGenerator, Generator
 
 import aiohttp
 import openai
-from tenacity import retry, retry_if_exception_type, wait_random
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    wait_random,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 from clonr.tokenizer import Tokenizer
 
@@ -151,7 +157,8 @@ class OpenAI(LLM):
         retry=retry_if_exception_type(
             (openai.error.RateLimitError, openai.error.APIConnectionError)
         ),
-        wait=wait_random(min=0.1, max=2),
+        wait=wait_exponential(min=0.1, max=2),
+        stop=stop_after_attempt(3),
     )
     async def agenerate(
         self,
@@ -163,6 +170,9 @@ class OpenAI(LLM):
         # NOTE (Jonny): This will be picked up callbacks, and it serves to place a unique ID on each
         # LLM call so that we can go back and trace it through logs (defends against async messing up order)
         kwargs["id"] = kwargs.get("id", str(uuid.uuid4()))
+        kwargs["http_retry_attempt"] = (
+            self.agenerate.retry.statistics["attempt_number"] - 1
+        )
 
         for c in self.callbacks:
             await c.on_generate_start(self, prompt_or_messages, params, **kwargs)

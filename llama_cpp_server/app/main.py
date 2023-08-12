@@ -276,7 +276,7 @@ async def v2_chat(
     messages = kwargs.pop("messages")
     prompt = msgs2prompt(messages=messages, spec=SPECIAL_TOKENS)
     kwargs["prompt"] = prompt
-    logger.info(f"Received prompt:\n{prompt}")
+    logger.info(f"\n~~~~~ Received prompt: ~~~~~:\n{prompt}")
 
     if body.temperature <= 0 and (r := zero_temp_cache.get(kwargs["prompt"])):
         logger.info("CACHE HIT!")
@@ -310,8 +310,11 @@ async def v2_chat(
         )
     else:
         print(kwargs)
-        completion: llama_cpp.ChatCompletion = await run_in_guarded_threadpool(LLM, **kwargs)  # type: ignore
-        logger.info(f"Generated completion:\n{completion['choices'][0]['text']}")
+        completion = LLM(**kwargs)
+        # completion: llama_cpp.ChatCompletion = await run_in_guarded_threadpool(LLM, **kwargs)  # type: ignore
+        logger.info(
+            f"\n~~~~~ Generated completion: ~~~~~\n{completion['choices'][0]['text']}"
+        )
         completion = _convert_completion(completion)
         zero_temp_cache.put(kwargs["prompt"], completion)
         return completion

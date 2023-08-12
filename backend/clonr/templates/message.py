@@ -53,7 +53,7 @@ Read the following conversation bewteen {{char}} and {{entity_name}} and answer 
 {%- endfor %}
 
 In order to write a response to {{entity_name}}, what questions do you need answered? \
-Write at most {{num_results}} questions. Format your response as JSON list (e.g. ["a", "b", "c"]). \
+Write at most {{num_results}} questions. Format your response as list of strings. (e.g. ["question 1", ..., "question 3"]). \
 Write your questions from the point of view of {{char}}. \
 If you have no questions, simply return the last message in the conversation.
 {%- endif -%}
@@ -300,7 +300,7 @@ Respond only as {{char}} and do not break character.
         facts: list[str] | None = None,
         agent_summary: str | None = None,
         entity_context_summary: str | None = None,
-        use_timestamps: bool = True,
+        use_timestamps: bool = False,
     ):
         cur_time = DateFormat.human_readable(
             get_current_datetime(), use_today_and_yesterday=True

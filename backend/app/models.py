@@ -705,6 +705,7 @@ class LLMCall(CommonMixin, Base):
     template: Mapped[str] = mapped_column(nullable=True)
     # number of retries for calls that require output parsing
     retry_attempt: Mapped[int] = mapped_column(nullable=True)
+    http_retry_attempt: Mapped[int] = mapped_column(nullable=True)
     # Metadata from LongDescription generation
     document_id: Mapped[uuid.UUID | None] = mapped_column(
         sa.ForeignKey("documents.id", ondelete="SET NULL"),
@@ -746,7 +747,7 @@ class LLMCall(CommonMixin, Base):
     def __repr__(self):
         content = self.content
         if len(content) < 80:
-            content = content[:80] + " ..."
+            content = content[:50] + " ..."
         return f"LLMCall(subroutine={self.subroutine}, duration={self.duration}, prompt_tokens={self.prompt_tokens}, total_tokens={self.total_tokens}, content={self.content})"
 
 

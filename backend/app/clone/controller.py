@@ -172,7 +172,7 @@ class Controller:
         if convo.memory_strategy != MemoryStrategy.none:
             # NOTE (Jonny): to make things easier, we don't count the greeting message towards any of the
             # memory-based counters. We can assume things start at zero.
-            mem_content = f'{greeting_message.sender_name} messaged me, "{greeting_message.content}"'
+            mem_content = f'I messaged {convo.user_name}, "{greeting_message.content}"'
             memory_struct = Memory(content=mem_content, importance=3, is_shared=False)
             await clonedb.add_memories([memory_struct])
 
@@ -520,6 +520,7 @@ class Controller:
             queries: list[str] = []
         except Exception as e:
             logger.exception(e)
+            raise
 
         # NOTE (Jonny): add in the last messages as a query too!
         token_budget = 50
