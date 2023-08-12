@@ -3,6 +3,15 @@
 import { useState } from 'react';
 import axios from 'axios';
 
+interface ConversationCreate {
+    name: string;
+    user_name: string;
+    memory_strategy: string;
+    information_strategy: string,
+    adaptation_strategy: string,
+    clone_id: string;
+}
+
 interface Conversation {
     id: string;
     name: string;
@@ -15,9 +24,9 @@ interface Conversation {
     updated_at: string;
     user_id: string;
     is_active: boolean
-  }
+}
   
-  interface Message {
+interface Message {
     id: string;
     content: string;
     created_at: string;
@@ -31,10 +40,10 @@ interface Conversation {
     clone_id: string;
     user_id: string;
     conversation_id: string;
-  }
+}
 
 export default function useConversations() {
-    const createConversation = async (conversationData: Conversation): Promise<string> => {
+    const createConversation = async (conversationData: ConversationCreate): Promise<string> => {
         try {
           const response = await axios.post<{ conversationId: string }>(
             `http://localhost:8000/conversations/`,
@@ -94,14 +103,23 @@ export default function useConversations() {
     
       const generateCloneMessage = async (conversationId: string) => {
         try {
+          const payload = {
+            is_revision: false,
+          };
+      
           const response = await axios.post(
             `http://localhost:8000/conversations/${conversationId}/generate`,
-            null,
+            payload,
             {
-              withCredentials: true
+              withCredentials: true,
+              headers: {
+                'Content-Type': 'application/json',
+                'accept': 'application/json',
+              },
             }
           );
-          return response.status === 200;
+
+          return response.data;
         } catch (error) {
           throw new Error('Error generating conversation: ' + error.message);
         }

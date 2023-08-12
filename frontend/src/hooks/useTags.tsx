@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import axios from 'axios';
 
+interface TagCreate {
+    name: string;
+    color_code: string;
+}
+
 interface Tag {
   id: string;
   created_at: string;
@@ -25,7 +30,7 @@ export default function useTags() {
       }
     };
   
-    const createTag = async (tagData: Tag): Promise<Tag> => {
+    const createTag = async (tagData: TagCreate): Promise<Tag> => {
       try {
         const response = await axios.post<Tag>(
           'http://localhost:8000/tags',

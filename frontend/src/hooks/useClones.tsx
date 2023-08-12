@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { Character } from '@/types';
 
 interface Tag {
   id: string;
@@ -7,6 +8,20 @@ interface Tag {
   updated_at: string;
   name: string;
   color_code: string;
+}
+
+interface CloneCreate {
+    name: string;
+    short_description: string;
+    long_description: string;
+    greeting_message: string;
+    avatar_uri: string;
+    is_active: boolean;
+    is_public: boolean;
+    is_short_description_generated: boolean;
+    is_long_description_generated: boolean;
+    is_greeting_message_generated: boolean;
+    tags: Tag[];
 }
 
 interface Clone {
@@ -44,9 +59,24 @@ interface Document {
 }
 
 export default function useClones() {
+  const createClone = async (cloneData: CloneCreate) => {
+    try {
+      const response = await axios.post<Character[]>(
+        `http://localhost:8000/clones/`,
+        cloneData,
+        {
+            withCredentials: true
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error('Error fetching clone: ' + error.message);
+    }
+  };
+
   const queryClones = async () => {
     try {
-      const response = await axios.get<Clone[]>(
+      const response = await axios.get<Character[]>(
         `http://localhost:8000/clones/`,
         {
           withCredentials: true
@@ -60,7 +90,7 @@ export default function useClones() {
 
   const queryClone = async (cloneId: string) => {
     try {
-      const response = await axios.get<Clone>(
+      const response = await axios.get<Character>(
         `http://localhost:8000/clones/${cloneId}`,
         {
           withCredentials: true
@@ -173,6 +203,7 @@ export default function useClones() {
   };
 
   return {
+    createClone,
     queryClones,
     queryClone,
     generateLongDescription,

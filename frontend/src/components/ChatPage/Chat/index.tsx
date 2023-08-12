@@ -64,6 +64,7 @@ export default function ChatScreen({
   useEffect(() => {
     // @ts-ignore
     import('preline')
+    // TODO: create conversation if not exists
   }, [])
 
   useEffect(() => {
@@ -79,13 +80,29 @@ export default function ChatScreen({
 
     const newMessage = {
       id: window.Date.now().toString(),
-      img: '/dummy-char.png',
-      alt: 'Character Profile Picture ' + (messages.length + 1),
-      name: 'Holland',
       content: message,
-      timeStamp: new window.Date(),
-      senderType: 'user' as 'bot' | 'user',
+      created_at: new window.Date().toString(),
+      updated_at: new window.Date().toString(),
+      sender_name: 'Holland',
+      timestamp: new window.Date().toString(),
+      is_clone: false,
+      is_main: true,
+      is_active: true,
+      parent_id: '',
+      clone_id: '',
+      user_id: '',
+      conversation_id: convoID
     }
+
+    // const newMessage = {
+    //   id: window.Date.now().toString(),
+    //   img: '/dummy-char.png',
+    //   alt: 'Character Profile Picture ' + (messages.length + 1),
+    //   name: 'Holland',
+    //   content: message,
+    //   timeStamp: new window.Date(),
+    //   senderType: 'user' as 'bot' | 'user',
+    // }
 
     let updatedMessages = [newMessage, ...messages]
     setMessages(updatedMessages)
@@ -101,7 +118,8 @@ export default function ChatScreen({
 
     try {
       // TODO: edit - needs to be valid convoID str
-      const convoID = "";
+      // const convoID = "5f1ae839-b4ca-492b-9493-7c7619f9c298";
+      const convoID = "7698849f-2c88-4979-8f75-79c702c81e48";
       console.log("this is the convoID: ", convoID)
       let serverMessage = await generateCloneMessage(convoID);
       console.log("this is the server message: ", serverMessage)
@@ -115,20 +133,20 @@ export default function ChatScreen({
 
       // update frontend
       if (serverMessage) {
-        console.log('Server Message:', serverMessage.message)
+        console.log('Server Message:', serverMessage.content)
       }
 
-      const newServerMessage = {
-        id: window.Date.now().toString(),
-        img: '/dummy-char.png',
-        alt: 'Character Profile Picture ' + (messages.length + 1),
-        name: 'Barack Obama',
-        content: serverMessage.content,
-        timeStamp: new window.Date(),
-        senderType: 'bot' as 'bot' | 'user',
-      }
+      // const newServerMessage = {
+      //   id: window.Date.now().toString(),
+      //   img: '/dummy-char.png',
+      //   alt: 'Character Profile Picture ' + (messages.length + 1),
+      //   name: 'Barack Obama',
+      //   content: serverMessage.content,
+      //   timeStamp: new window.Date(),
+      //   senderType: 'bot' as 'bot' | 'user',
+      // }
 
-      setMessages((messages) => [...messages, newServerMessage])
+      setMessages((messages) => [...messages, serverMessage])
     } catch (error) {
       console.error(error)
     }
@@ -137,22 +155,28 @@ export default function ChatScreen({
   }
 
   const handleConversationCreate = async () => {
-    let r_convo = await axios.post('http://localhost:8000/v1/conversation')
-    let convo_id = r_convo.data.id
+    let conversationCreateData = {
+      name: 'example',
+      user_name: 'user',
+      memory_strategy: 'short_term',
+      information_strategy: 'internal',
+      adaptation_strategy: 'static',
+      clone_id: 'd433575f-d8ad-4f80-a90d-f21122b71bf0'
+    }
+    let convo_id = await createConversation(conversationCreateData);
+    //let r_convo = await axios.post('http://localhost:8000/v1/conversation')
+    //let convo_id = r_convo.data.id
     setConvoID(convo_id)
-    let r_msg = await axios.get(
-      `http://localhost:8000/v1/conversation/${convo_id}/message`
-    )
-    let msgs = r_msg.data
-    console.log(msgs)
-    msgs = msgs.map((x: any, index: number) => ({
-      id: x.id,
-      src: '/dummy-char.png',
-      alt: `Character Profile Picture ${x.id}`,
-      time: '09:22',
-      message: x.content,
-      name: x.sender_name,
-    }))
+
+    let r_msg = await queryConversationMessages(convo_id);
+    // let r_msg = await axios.get(
+    //   `http://localhost:8000/v1/conversation/${convo_id}/message`
+    // )
+    // let msgs: Message[] = r_msg
+    // console.log(msgs)
+    let msgs = r_msg.map((x: Message, index: number) => (
+      x
+    ))
     setMessages(msgs)
   }
 
@@ -177,12 +201,18 @@ export default function ChatScreen({
     // Simulate fetching 10 more messages from a server or other data source
     const newMessages: Message[] = Array.from({ length: 10 }, (_, index) => ({
       id: '134adlj23',
-      img: '/dummy-char.png',
-      alt: 'dummy-char',
-      name: 'dummy-char',
       content: `New message ${messages.length + index}`,
-      timeStamp: new window.Date(),
-      senderType: 'bot',
+      created_at: new Date().toString(),
+      updated_at: new Date().toString(),
+      sender_name: 'Bot',
+      timestamp: new Date().toString(),
+      is_clone: false,
+      is_main: true,
+      is_active: true,
+      parent_id: '',
+      clone_id: 'd433575f-d8ad-4f80-a90d-f21122b71bf0',
+      user_id: 'TODO',
+      conversation_id: '7698849f-2c88-4979-8f75-79c702c81e48',
     }))
 
     // Add the new messages to the end of the existing messages
@@ -258,7 +288,7 @@ export default function ChatScreen({
                         <MessageComponent
                           message={message}
                           isLast={
-                            message.senderType === 'bot' && index === 0 ? true : false
+                            message.sender_name === 'bot' && index === 0 ? true : false
                           }
                           key={message.id}
                         />

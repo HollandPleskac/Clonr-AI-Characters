@@ -44,17 +44,30 @@ export type Tag = {
   name: string
 }
 
+// export type Character = {
+//   id: string
+//   created_at: Date
+//   updated_at: Date
+//   creator_id: string
+//   name: string
+//   short_description: string
+//   avatar_uri: string
+//   num_messages: number
+//   num_conversations: number
+//   tags: Tag[]
+// }
+
 export type Character = {
-  id: string
-  created_at: Date
-  updated_at: Date
-  creator_id: string
-  name: string
-  short_description: string
-  avatar_uri: string
-  num_messages: number
-  num_conversations: number
-  tags: Tag[]
+  id: string;
+  created_at: string;
+  updated_at: string;
+  creator_id: string;
+  name: string;
+  short_description: string;
+  avatar_uri: string;
+  num_messages: number;
+  num_conversations: number;
+  tags: Tag[];
 }
 
 export type CharacterChat = {
@@ -63,23 +76,54 @@ export type CharacterChat = {
   lastConversationId: string
 }
 
+
+// export type Conversation = {
+//   id: string
+//   character: Character
+//   lastBotMessage: string
+//   lastUserMessage: string
+//   lastChatTime: Date
+//   memoryType: 'long' | 'short'
+// }
+
 export type Conversation = {
-  id: string
-  character: Character
-  lastBotMessage: string
-  lastUserMessage: string
-  lastChatTime: Date
-  memoryType: 'long' | 'short'
+  id: string;
+  name: string;
+  user_name: string;
+  memory_strategy: string;
+  information_strategy: string,
+  adaptation_strategy: string,
+  clone_id: string;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  is_active: boolean
 }
 
+// export type Message = {
+//   id: string
+//   img: string
+//   alt: string
+//   name: string
+//   content: string
+//   timeStamp: Date
+//   senderType: 'bot' | 'user'
+// }
+
 export type Message = {
-  id: string
-  img: string
-  alt: string
-  name: string
-  content: string
-  timeStamp: Date
-  senderType: 'bot' | 'user'
+  id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  sender_name: string;
+  timestamp: string;
+  is_clone: boolean;
+  is_main: boolean;
+  is_active: boolean;
+  parent_id: string;
+  clone_id: string;
+  user_id: string;
+  conversation_id: string;
 }
 
 export type ImageType = 'poster' | 'original'
