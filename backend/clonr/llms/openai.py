@@ -148,7 +148,9 @@ class OpenAI(LLM):
         return "\n".join(m.to_prompt() for m in messages)
 
     @retry(
-        retry=retry_if_exception_type(openai.error.RateLimitError),
+        retry=retry_if_exception_type(
+            (openai.error.RateLimitError, openai.error.APIConnectionError)
+        ),
         wait=wait_random(min=0.1, max=2),
     )
     async def agenerate(

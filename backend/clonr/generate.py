@@ -248,7 +248,6 @@ async def entity_context_create(
     before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
     reraise=True,
-    retry=retry_if_exception_type(openai.error.RateLimitError),
 )
 async def rate_memory(
     llm: LLM,
@@ -293,7 +292,7 @@ async def rate_memory(
     before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
     reraise=True,
-    retry=retry_if_exception_type((openai.error.RateLimitError, OutputParserError)),
+    retry=retry_if_exception_type((OutputParserError,)),
 )
 async def message_queries_create(
     llm: LLM,
@@ -392,7 +391,7 @@ async def question_and_answer(
     before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
     reraise=True,
-    retry=retry_if_exception_type((openai.error.RateLimitError, OutputParserError)),
+    retry=retry_if_exception_type((OutputParserError,)),
 )
 async def reflection_queries_create(
     llm: LLM,
@@ -444,7 +443,7 @@ async def reflection_queries_create(
     before_sleep=before_sleep_log(logger, logging.INFO),
     after=after_log(logger, logging.WARN),
     reraise=True,
-    retry=retry_if_exception_type((openai.error.RateLimitError, OutputParserError)),
+    retry=retry_if_exception_type((OutputParserError,)),
 )
 async def reflections_create(
     llm: LLM,
