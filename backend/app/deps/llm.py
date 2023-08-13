@@ -32,15 +32,19 @@ def _get_llm(
 ) -> LLM:
     if model_name == "mock":
         llm = MockLLM(callbacks=callbacks)
-    elif model_name == "llama":
+    elif model_name == "llamacpp":
+        model = model_name
         if is_docker():
             # https://stackoverflow.com/questions/24319662/from-inside-of-a-docker-container-how-do-i-connect-to-the-localhost-of-the-mach
             # If we are running llama cpp locally, localhost won't work from inside the container.
             api_base = "http://host.docker.internal:8100/v1"
         else:
             api_base = "http://localhost:8100/v1"
+    elif model_name == "colab":
+        api_base = "<NGROK URL HERE>"
+        model = "<MODEL NAME HERE. MUST ALIGN WITH SERVER>"
         llm = LlamaCpp(
-            model="wizardlm-uncensored-13b",
+            model=model,
             api_base=api_base,
             api_key="none",
             tokenizer=tokenizer,

@@ -4,6 +4,10 @@ import re
 import textwrap
 import time
 import uuid
+from loguru import logger
+from functools import wraps
+from fastapi import status
+from fastapi.exceptions import HTTPException
 from typing import AsyncGenerator, Generator
 
 import aiohttp
@@ -14,6 +18,7 @@ from tenacity import (
     wait_random,
     stop_after_attempt,
     wait_exponential,
+    RetryError,
 )
 
 from clonr.tokenizer import Tokenizer
@@ -33,6 +38,52 @@ from .schemas import (
 )
 
 openai.api_key = os.environ.get("OPENAI_API_KEY", "")
+
+
+def retry_decorator(fn: callable):
+    @retry(
+        retry=retry_if_exception_type(
+            (
+                openai.error.RateLimitError,
+                openai.error.APIConnectionError,
+                openai.error.ServiceUnavailableError,
+                openai.error.APIError,
+                openai.error.Timeout,
+            )
+        ),
+        wait=wait_exponential(min=1, max=3),
+        stop=stop_after_attempt(2),
+    )
+    def original(*args, **kwargs):
+        return fn(*args, **kwargs)
+
+    @wraps(original)
+    def wrapped(*args, **kwargs):
+        try:
+            return original(*args, **kwargs)
+        except RetryError as e:
+            try:
+                e.reraise()
+            except openai.error.Timeout as e2:
+                logger.error(e2)
+                raise HTTPException(
+                    status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+                    detail="Request timed out",
+                )
+            except openai.error.RateLimitError as e2:
+                logger.error(e2)
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail="Servers are currently overloaded. Please try again later.",
+                )
+            except Exception as e2:
+                logger.error(e2)
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Internal server error",
+                )
+
+    return wrapped
 
 
 class OpenAI(LLM):
@@ -153,13 +204,7 @@ class OpenAI(LLM):
     def messages_to_prompt(cls, messages: list[Message]) -> str:
         return "\n".join(m.to_prompt() for m in messages)
 
-    @retry(
-        retry=retry_if_exception_type(
-            (openai.error.RateLimitError, openai.error.APIConnectionError)
-        ),
-        wait=wait_exponential(min=0.1, max=2),
-        stop=stop_after_attempt(3),
-    )
+    @retry_decorator
     async def agenerate(
         self,
         prompt_or_messages: str | list[Message],
@@ -231,10 +276,7 @@ class OpenAI(LLM):
             self.agenerate(prompt_or_messages=prompt_or_messages, params=params)
         )
 
-    @retry(
-        retry=retry_if_exception_type(openai.error.RateLimitError),
-        wait=wait_random(min=0.1, max=2),
-    )
+    @retry_decorator
     async def astream(
         self,
         prompt_or_messages: str | list[Message],
@@ -277,10 +319,7 @@ class OpenAI(LLM):
         for c in self.callbacks:
             await c.on_stream_end(self, **kwargs)
 
-    @retry(
-        retry=retry_if_exception_type(openai.error.RateLimitError),
-        wait=wait_random(min=0.1, max=2),
-    )
+    @retry_decorator
     def stream(
         self,
         prompt_or_messages: str | list[Message],

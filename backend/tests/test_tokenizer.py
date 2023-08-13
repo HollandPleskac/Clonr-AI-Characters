@@ -10,7 +10,7 @@ def test_openai_tokenizer():
 
 
 def test_huggingface_tokenizer():
-    tok = HuggingFaceTokenizer(model="TheBloke/Llama-2-13B-chat-GPTQ")
+    tok = HuggingFaceTokenizer(model="hf-internal-testing/llama-tokenizer")
     assert len(tok.encode("foo bar baz foo bar baz")) > 2
     assert len(tok.encode_batch(4 * ["foo bar baz foo bar baz"])) == 4
     assert type(tok.decode(tok.encode("foo bar baz foo bar baz"))) == str
@@ -18,6 +18,6 @@ def test_huggingface_tokenizer():
 
 
 def test_instantiations():
-    name = "TheBloke/Llama-2-13B-chat-GPTQ"
+    name = "hf-internal-testing/llama-tokenize"
     assert isinstance(Tokenizer.from_openai("gpt-3.5-turbo"), OpenAITokenizer)
     assert isinstance(Tokenizer.from_huggingface(name), HuggingFaceTokenizer)

@@ -15,7 +15,14 @@ from tenacity import (
 )
 
 from clonr import templates
-from clonr.data_structures import Document, Memory, Message, Monologue, Node
+from clonr.data_structures import (
+    Document,
+    Memory,
+    Message,
+    Monologue,
+    Node,
+    MemoryWithoutRating,
+)
 from clonr.llms import LLM, GenerationParams, LLMResponse, MockLLM
 from clonr.templates.memory import MemoryExample
 from clonr.templates.qa import Excerpt
@@ -23,8 +30,8 @@ from clonr.text_splitters import TokenSplitter
 from clonr.tokenizer import Tokenizer
 
 MAX_RETRIES = 3
-RETRY_MIN = 1e-3
-RETRY_MAX = 1e-2
+RETRY_MIN = 0.1
+RETRY_MAX = 1
 MIN_CHUNK_SIZE = 256
 
 
@@ -248,8 +255,7 @@ async def entity_context_create(
 @retry(
     stop=stop_after_attempt(MAX_RETRIES),
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
-    before_sleep=before_sleep_log(logger, logging.INFO),
-    after=after_log(logger, logging.WARN),
+    retry=retry_if_exception_type(OutputParserError),
 )
 async def rate_memory(
     llm: LLM,
@@ -283,16 +289,14 @@ async def rate_memory(
     except ValueError:
         if isinstance(llm, MockLLM):
             return 4
-        raise OutputParserError(
-            f"Unable to convert output ({r.content}) to an integer."
-        )
+        err_msg = f"Could not parse output to an integer. Output: {r.content.strip()}"
+        logger.error(err_msg)
+        raise OutputParserError(err_msg)
 
 
 @retry(
     stop=stop_after_attempt(MAX_RETRIES),
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
-    # before_sleep=before_sleep_log(logger, logging.INFO),
-    # after=after_log(logger, logging.WARN),
     retry=retry_if_exception_type(OutputParserError),
 )
 async def message_queries_create(
@@ -332,20 +336,35 @@ async def message_queries_create(
     r = await llm.agenerate(
         prompt_or_messages=prompt, params=Params.message_queries_create, **kwargs
     )
-    # NOTE (Jonny): no way to really enforce this lines up with the templates except
-    # for thoughts and prayers ^_^
-    text = f"{r.content.strip()}"
+    # NOTE (Jonny): We're trying to force no extra output like "Sure!" or "Certainly!" by
+    # prefilling the first two tokens. We are currently enforcing that these first tokens
+    # line up with the templates through the power of thoughts and prayers ^_^
+    text = f'["{r.content.strip()}'
     try:
         queries = json.loads(text)
     except json.JSONDecodeError:
-        if isinstance(llm, MockLLM):
-            return ["foo", "bar", "baz"]
-        err_msg = f"Unable to parse message_query_create output ({text}) to JSON."
-        if kwargs["retry_attempt"] < MAX_RETRIES:
-            logger.exception(err_msg)
-            raise OutputParserError(err_msg)
-        logger.exception(err_msg + " Returning approximate answer.")
-        return text.strip().split("\n")
+        # if isinstance(llm, MockLLM):
+        #     return ["foo", "bar", "baz"]
+
+        # see if we got back a numbered list
+        numbered_arr = re.split(r"\b\d\.\s*", text)
+        numbered_arr = list(filter(bool, numbered_arr))
+        if len(numbered_arr) == num_results:
+            return numbered_arr
+
+        # To prevent blocking, we will settle for just returning whatever shit the LLM
+        # output. In the controller, we append the last msg too, so the damage is hopefully
+        # not that bad.
+        err_msg = f"Unable to parse message_query_create output to JSON. Output: {text}"
+        logger.error(err_msg)
+        if kwargs["retry_attempt"] >= MAX_RETRIES - 1:
+            logger.warning("Returning approximate answer.")
+            return text.strip().split("\n")
+        logger.error(err_msg)
+        raise OutputParserError(err_msg)
+
+    # Sometimes we get back valid JSON, but it's not a list, random shit like
+    # [{"a":"hello", "b":"world"}]. Use Pydantic to remove these.
     try:
         QueryList(arr=queries)
     except ValidationError as e:
@@ -385,8 +404,6 @@ async def question_and_answer(
 @retry(
     stop=stop_after_attempt(MAX_RETRIES),
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
-    before_sleep=before_sleep_log(logger, logging.INFO),
-    after=after_log(logger, logging.WARN),
     retry=retry_if_exception_type(OutputParserError),
 )
 async def reflection_queries_create(
@@ -422,12 +439,17 @@ async def reflection_queries_create(
     except json.JSONDecodeError:
         if isinstance(llm, MockLLM):
             return ["What do I stand for?", "Where was I?"]
+
         err_msg = f"Unable to parse reflection_queries_create output ({text}) to JSON."
-        logger.exception(err_msg)
-        if kwargs["retry_attempt"] < MAX_RETRIES:
-            raise OutputParserError(err_msg)
-        logger.exception(err_msg + " Returning approximate answer.")
-        return text.strip().split("\n")
+        logger.error(err_msg)
+
+        # Similar to msg_queries, we just settle for the output and use that as query
+        # if we fail enough times
+        if kwargs["retry_attempt"] >= MAX_RETRIES - 1:
+            logger.error(err_msg + " Returning approximate answer.")
+            return text.strip().split("\n")
+
+        raise OutputParserError(err_msg)
     try:
         QueryList(arr=queries)
     except ValidationError as e:
@@ -438,17 +460,14 @@ async def reflection_queries_create(
 @retry(
     stop=stop_after_attempt(MAX_RETRIES),
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
-    before_sleep=before_sleep_log(logger, logging.INFO),
-    after=after_log(logger, logging.WARN),
     retry=retry_if_exception_type(OutputParserError),
 )
 async def reflections_create(
     llm: LLM,
     memories: list[Memory],
     system_prompt: str | None = None,
-    add_rating: bool = True,
     **kwargs,
-) -> list[Memory]:
+) -> list[MemoryWithoutRating]:
     """WARNING: This will produce memories that have not been rated for importance!"""
     if llm.is_chat_model:
         prompt = templates.ReflectionInsights.render(
@@ -470,6 +489,7 @@ async def reflections_create(
         prompt_or_messages=prompt, params=Params.reflection_create, **kwargs
     )
 
+    # NOTE (Jonny): More thoughts and prayers here to ensure it aligns with the templates ^_^
     text = '[{"insight":' + r.content
     try:
         data = json.loads(text)
@@ -481,29 +501,32 @@ async def reflections_create(
                 ReflectionItem(insight="this is also an insight", memories=[1, 2]),
             ]
         else:
-            raise OutputParserError(
-                f"Unable to convert reflections_create output ({text}) to JSON."
+            err_msg = (
+                f"Unable to convert reflections_create output to JSON. Output: {text}"
             )
+            logger.error(err_msg)
+            raise OutputParserError(err_msg)
 
     reflections: list[Memory] = []
     for x in refls:
         try:
             child_indexes = x.memories
             children = [index_to_memory[z] for z in child_indexes]
-        except Exception as e:
-            raise OutputParserError(
-                f"Failed to parse insight memory dependencies: ({e})"
+        except IndexError as e:
+            err_msg = (
+                "Parsing failure. Reflection memory dependencies do not point "
+                f"to valid indexes: {e}"
             )
+            logger.error(err_msg)
+            raise OutputParserError(err_msg)
+        except Exception as e:
+            err_msg = f"Unknown parsing error. {e}"
+            logger.error(err_msg)
+            raise OutputParserError(err_msg)
         depth = max(c.depth for c in children) + 1
         child_ids = [c.id for c in children]
-        content = x.insight
-        if add_rating:
-            importance = await rate_memory(llm=llm, memory=content)
-        else:
-            importance = 4
-        m = Memory(
+        m = MemoryWithoutRating(
             content=x.insight,
-            importance=importance,
             depth=depth,
             child_ids=child_ids,
         )
