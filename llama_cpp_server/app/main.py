@@ -25,6 +25,15 @@ from app import schemas
 
 load_dotenv()
 
+import enum
+
+
+class ModelName(str, enum.Enum):
+    ehartford_dolphin_llama2_7b = "ehartford/dolphin-llama2-7b"
+    ehartford_wizardlm_1_uncensored_llama2_13b = (
+        "ehartford/WizardLM-1.0-Uncensored-Llama2-13b"
+    )
+
 
 class SpecialTokens(BaseModel):
     system_start: str = ""
@@ -33,6 +42,30 @@ class SpecialTokens(BaseModel):
     assistant_end: str = "\n"
     user_start: str = "USER: "
     user_end: str = "\n"
+
+    @classmethod
+    def from_model_name(cls, model_name: ModelName):
+        match model_name:
+            case ModelName.ehartford_dolphin_llama2_7b:
+                return cls(
+                    system_start="SYSTEM: ",
+                    system_end="\n",
+                    assistant_start="ASSISTANT: ",
+                    assistant_end="\n",
+                    user_start="USER: ",
+                    user_end="\n",
+                )
+            case ModelName.ehartford_wizardlm_1_uncensored_llama2_13b:
+                return cls(
+                    system_start="",
+                    system_end="\n\n",
+                    assistant_start="ASSISTANT: ",
+                    assistant_end="\n",
+                    user_start="USER: ",
+                    user_end="\n",
+                )
+            case _:
+                raise TypeError("Unsupported model type")
 
 
 def msgs2prompt(messages: list[dict], spec: SpecialTokens):
@@ -149,7 +182,9 @@ async def lifespan(app: FastAPI):
     global LLM
     global SPECIAL_TOKENS
 
-    SPECIAL_TOKENS = SpecialTokens()
+    SPECIAL_TOKENS = SpecialTokens.from_model_name(
+        ModelName.ehartford_dolphin_llama2_7b
+    )
 
     LLM = llama_cpp.Llama(
         model_path=settings.model,

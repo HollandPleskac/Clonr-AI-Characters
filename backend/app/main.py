@@ -1,5 +1,6 @@
 import asyncio
 import json
+from pathlib import Path
 from contextlib import asynccontextmanager
 
 import uvicorn
@@ -172,4 +173,12 @@ app.add_middleware(
 FastAPIInstrumentor.instrument_app(app)
 
 if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="0.0.0.0", port=settings.PORT, reload=True)
+    p = Path(__file__).parent.parent
+    reload_dirs = [(p / x).resolve() for x in ["app", "clonr"]]
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0",
+        port=settings.PORT,
+        reload=True,
+        reload_dirs=reload_dirs,
+    )

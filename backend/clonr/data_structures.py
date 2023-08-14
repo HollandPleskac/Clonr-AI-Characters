@@ -188,6 +188,15 @@ class Memory(BaseModel):
         return DateFormat.human_readable(self.timestamp)
 
 
+class MemoryWithoutRating(Memory):
+    importance: int | None = Field(
+        default=None,
+        detail="The LLM rated importance of this memory. scaled 0-9 to make guidance easier",
+        ge=0,
+        le=9,
+    )
+
+
 class Message(BaseModel):
     id: uuid.UUID = Field(default_factory=uuid.uuid4)
     sender_name: str

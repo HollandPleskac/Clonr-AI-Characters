@@ -173,7 +173,7 @@ export default function ChatScreen({
   const fetchMoreData = () => {
     // Simulate fetching 10 more messages from a server or other data source
     const newMessages: Message[] = Array.from({ length: 10 }, (_, index) => ({
-      id: '134adlj23',
+      id: window.Date.now().toString() + index,
       content: `New message ${messages.length + index}`,
       created_at: new Date().toString(),
       updated_at: new Date().toString(),
@@ -262,7 +262,7 @@ export default function ChatScreen({
                           message={message}
                           clone_avatar_uri={character.avatar_uri}
                           isLast={
-                            message.sender_name === 'bot' && index === 0 ? true : false
+                            message.is_clone && index === 0 ? true : false
                           }
                           key={message.id}
                         />

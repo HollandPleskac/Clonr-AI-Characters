@@ -147,7 +147,34 @@ RATING: \
         # we have to use type, since we don't want to match a subclass
         if type(llm) == LlamaCpp:
             # this changed for llama-2 it seems, it used to be in the 30,000s.
-            ids = [29900, 29896, 29906, 29941, 29946, 29945, 29953, 29955, 29947, 29929]
+            if "ggml" in llm.model:
+                # this is for llama2 llama-cpp
+                ids = [
+                    29900,
+                    29896,
+                    29906,
+                    29941,
+                    29946,
+                    29945,
+                    29953,
+                    29955,
+                    29947,
+                    29929,
+                ]
+            else:
+                # this is for llama2 huggingface
+                ids = [
+                    29896,
+                    29906,
+                    29941,
+                    29946,
+                    29945,
+                    29953,
+                    29955,
+                    29947,
+                    29929,
+                    29900,
+                ]
         elif type(llm) in (OpenAI, MockLLM):
             ids = [15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
         else:

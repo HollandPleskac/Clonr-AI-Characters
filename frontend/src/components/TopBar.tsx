@@ -138,7 +138,7 @@ export default function TopBar({
                     pathname === '/'
                       ? 'text-white font-semibold'
                       : 'text-[#e5e5e5] hover:text-[#979797]'
-                  }`}
+                  } translate-y-[6px]`}
                 >
                   Home
                 </Link>
@@ -149,7 +149,7 @@ export default function TopBar({
                     pathname === '/create'
                       ? 'text-white font-semibold'
                       : 'text-[#e5e5e5] hover:text-[#979797]'
-                  }`}
+                  } translate-y-[6px]`}
                 >
                   Pricing
                 </Link>
@@ -160,7 +160,7 @@ export default function TopBar({
                     pathname === '/create'
                       ? 'text-white font-semibold'
                       : 'text-[#e5e5e5]'
-                  }`}
+                  } translate-y-[6px]`}
                 >
                   <span>
                     Create <sup className=''>Coming Soon</sup>

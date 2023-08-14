@@ -62,11 +62,8 @@ const ChatTopBar = ({
               }}
               className='group absolute peer left-[10px] top-2 peer cursor-default'
             >
-              <MagnifyingGlass
-                strokeClasses={` group-focus:stroke-[#5848BC] ${
-                  isInputActive ? 'stroke-[#5848BC]' : 'stroke-[#515151]'
-                } transition duration-100 bg-red-400`}
-              />
+              <MagnifyingGlass/>
+              
             </button>
             <input
               ref={inputRef}

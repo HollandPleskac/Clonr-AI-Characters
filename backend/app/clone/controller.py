@@ -324,9 +324,15 @@ class Controller:
             retrieved_memories.extend([c.model for c in cur])
         retrieved_memories.sort(key=lambda x: x.timestamp)
 
-        reflections = await generate.reflections_create(
+        reflections_without_ratings = await generate.reflections_create(
             llm=self.llm, memories=retrieved_memories
         )
+        reflections: list[Memory] = []
+        for r in reflections_without_ratings:
+            data = r.model_dump()
+            data["importance"] = await generate.rate_memory
+            refl = Memory(**data)
+            reflections.append(refl)
 
         mems = await self.clonedb.add_memories(reflections)
         await self.clonedb.set_reflection_count(0)
@@ -490,7 +496,7 @@ class Controller:
         recent_msgs = await self.clonedb.get_messages(
             num_messages=num_messges, num_tokens=num_tokens
         )
-        recent_msgs = list(reversed(recent_msgs))
+        recent_msgs_reversed = list(reversed(recent_msgs))
         entity_name = self.user_name
         agent_summary = None
         entity_context_summary = None
@@ -505,27 +511,23 @@ class Controller:
             if not entity_context_summary:
                 entity_context_summary = None
 
-        try:
-            queries = await generate.message_queries_create(
-                llm=self.llm,
-                char=self.clone.name,
-                short_description=self.clone.short_description,
-                agent_summary=agent_summary,
-                entity_context_summary=entity_context_summary,
-                entity_name=entity_name,
-                messages=recent_msgs,
-            )
-        except RetryError as e:
-            logger.exception(e)
-            queries: list[str] = []
-        except Exception as e:
-            logger.exception(e)
-            raise
+        # This should always return a value, we catch any exceptions in the generate
+        # function and default to returning the entire output as a query
+        queries = await generate.message_queries_create(
+            llm=self.llm,
+            char=self.clone.name,
+            short_description=self.clone.short_description,
+            agent_summary=agent_summary,
+            entity_context_summary=entity_context_summary,
+            entity_name=entity_name,
+            messages=recent_msgs_reversed,
+        )
 
         # NOTE (Jonny): add in the last messages as a query too!
-        token_budget = 50
+        # pull at most 2 messages
+        token_budget = 128
         last_msgs: str = []
-        for m in reversed(recent_msgs):
+        for m in recent_msgs[:2]:
             token_budget -= self.clonedb.tokenizer.length(m.content) + 4
             if token_budget < 0:
                 break
@@ -533,7 +535,12 @@ class Controller:
         last_msg = " ".join(reversed(last_msgs))
         if last_msg:
             queries.append(last_msg)
+        else:
+            logger.warning(
+                f"Unable to use last messages for queries. Over token budget by {-token_budget}"
+            )
 
+        logger.info(f"Conversation ({self.conversation.id}) message queries: {queries}")
         return queries
 
     async def _generate_zero_memory_message(
@@ -638,7 +645,7 @@ class Controller:
             messages=messages,
             facts=facts,
             llm=self.llm,
-            use_timestamps=False,
+            # TODO (Jonny): Figure out the use_timestamps logic here
         )
         content = remove_timestamps_from_msg(new_msg_content)
         new_msg_struct = Message(
@@ -828,7 +835,6 @@ class Controller:
             entity_context_summary=entity_context_summary,
             facts=facts,
             llm=self.llm,
-            use_timestamps=True,
         )
         content = remove_timestamps_from_msg(new_msg_content)
         new_msg_struct = Message(

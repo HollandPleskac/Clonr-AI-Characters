@@ -53,6 +53,7 @@ services:
       - port=8000
     volumes:
       - ./backend/app:/app
+      - ./backend/clonr:/clonr
       - ./backend/migrations:/migrations
       - ./backend/tests:/tests
     depends_on:
