@@ -57,14 +57,17 @@ export default async function ChatPage({
   params: { characterId: string; conversationId: string }
 }) {
 
-  const [character, setCharacter] = useState(null);
+  const [character, setCharacter] = useState<Character>(null);
   const [characterChats, setCharacterChats] = useState([]);
   const [initialMessages, setInitialMessages] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log("HERE...")
+        console.log("THIS IS PARAMS: ", params)
         const charDetails = await queryCloneById(params.characterId);
+        console.log("BASE PAGE, this is charDetails: ", charDetails)
         setCharacter(charDetails);
 
         const chats = await getCharacterPastChats(
@@ -86,6 +89,8 @@ export default async function ChatPage({
     fetchData();
   }, [params.characterId, params.conversationId]); 
 
+  console.log("In BASE PAGE, this is character: ", character);
+
 
   // fetch previous 20 messages for chat screen
   // fetch 10 previous chats for character screen
@@ -105,7 +110,7 @@ export default async function ChatPage({
         />
         <ChatScreen
           characterId={params.characterId}
-          character={character ? character : null}
+          character={character}
           // need initial 20 msgs
           // need initial 10 characters
 

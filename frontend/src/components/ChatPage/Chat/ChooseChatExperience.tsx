@@ -3,10 +3,20 @@
 import React from 'react'
 import HorizontalDotsBig from '@/svg/ChatPage/Chat/horizontal-dots-big.svg'
 import Image from 'next/image'
+import useConversations from '@/hooks/useConversations'
+
+const {createConversation, queryConversation, queryConversationMessages, createMessage, generateCloneMessage, queryCurrentRevisions} = useConversations();
+
+const handleConversationCreate = () => {
+  console.log('conversation created')
+}
+
 type ChooseChatExperienceProps = {
+  // TODO: need clone_id / character_id
   setConversationState: (newState: string) => void
 }
 
+// TODO: edit hardcoding
 const ChooseChatExperience = ({setConversationState}: ChooseChatExperienceProps) => {
   return (
     <div

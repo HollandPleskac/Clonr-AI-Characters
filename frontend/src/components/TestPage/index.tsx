@@ -51,15 +51,16 @@ const TestPage = () => {
     'msg3',
   ])
 
+  // TODO: edit
   const fetchMoreData = () => {
     // Simulate fetching 10 more messages from a server or other data source
-    const newMessages: string[] = Array.from(
-      { length: 20 },
-      (_, index) => `New message ${messages.length + index}`
-    )
+    // const newMessages: string[] = Array.from(
+    //   { length: 20 },
+    //   (_, index) => `New message ${messages.length + index}`
+    // )
 
-    // Add the new messages to the end of the existing messages
-    setMessages((prevMessages) => [...prevMessages, ...newMessages])
+    // // Add the new messages to the end of the existing messages
+    // setMessages((prevMessages) => [...prevMessages, ...newMessages])
   }
 
   return (
