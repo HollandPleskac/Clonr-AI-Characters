@@ -5,10 +5,11 @@ import { notFound } from 'next/navigation'
 
 interface MessageProps {
   message: Message
+  clone_avatar_uri: string
   isLast: boolean
 }
 
-const Message: React.FC<MessageProps> = ({ message, isLast }) => {
+const Message: React.FC<MessageProps> = ({ message, clone_avatar_uri, isLast }) => {
 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [messages, setMessages] = useState<Message[]>([message])

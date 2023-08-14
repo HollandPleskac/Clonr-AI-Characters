@@ -41,7 +41,7 @@ export default function HomeScreen({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const duration = 500
-  const { queryClones, fetchCloneById } = useClones()
+  const { queryClones, queryCloneById } = useClones()
 
   useEffect(() => {
     require('preline')

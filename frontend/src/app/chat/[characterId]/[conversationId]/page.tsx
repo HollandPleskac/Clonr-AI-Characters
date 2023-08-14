@@ -1,231 +1,52 @@
+'use client'
+
 import Characters from '@/components/ChatPage/Characters'
 import ChatScreen from '@/components/ChatPage/Chat'
 import { Character } from '@/types'
+import useClones from '@/hooks/useClones'
+import useConversations from '@/hooks/useConversations'
+import { useEffect, useState } from 'react'
+
+const { queryClones, queryCloneById } = useClones()
+
+const {createConversation, queryConversation, queryConversationMessages, createMessage, generateCloneMessage, queryCurrentRevisions} = useConversations();
+
 
 async function getCharacterDetails(
   characterId: string,
   conversationId: string
 ) {
-  if (characterId === '12345') {
-    return {
-      id: '12345',
-      created_at: 'string',
-      updated_at: 'string',
-      creator_id: 'string',
-      name: 'Barack Obama',
-      short_description: 'short description',
-      avatar_uri: '/dummy-char.png',
-      num_messages: 2134,
-      num_conversations: 234,
-      tags: [
-        {
-          id: '123',
-          created_at: new Date(),
-          updated_at: new Date(),
-          color_code: '#853838',
-          name: 'Politician'
-        }
-      ]
-    }
-  } else {
-    return {
-      id: '54321',
-      created_at: 'string',
-      updated_at: 'string',
-      creator_id: 'string',
-      name: 'Elon Musk',
-      short_description: 'CEO',
-      avatar_uri: '/dummy-char.png',
-      num_messages: 2134,
-      num_conversations: 234,
-      tags: [
-        {
-          id: '123',
-          created_at: new Date(),
-          updated_at: new Date(),
-          color_code: '#853838',
-          name: 'CEO'
-        }
-      ]
-    }
-  }
+  const charDetails = await queryCloneById(characterId)
+  return charDetails
 }
 
-async function getCharacterPastChats() {
-  return [
-    {
-      character: {
-        id: '12345',
-        created_at: 'string',
-        updated_at: 'string',
-        creator_id: 'string',
-        name: 'Barack Obama',
-        short_description: 'short description',
-        avatar_uri: '/dummy-char.png',
-        num_messages: 2134,
-        num_conversations: 234,
-        tags: [
-          {
-            id: '123',
-            created_at: new Date(),
-            updated_at: new Date(),
-            color_code: '#853838',
-            name: 'Politician'
-          }
-        ]
-      },
-      lastMessage: "Why can't I just eat my waffle?",
-      lastConversationId: '123',
-    },
-    {
-      character: {
-        id: '54321',
-        created_at: 'string',
-        updated_at: 'string',
-        creator_id: 'string',
-        name: 'Elon Musk',
-        short_description: 'CEO',
-        avatar_uri: '/dummy-char.png',
-        num_messages: 2134,
-        num_conversations: 234,
-        tags: [
-          {
-            id: '123',
-            created_at: new Date(),
-            updated_at: new Date(),
-            color_code: '#853838',
-            name: 'CEO'
-          }
-        ]
-      },
-      lastMessage: 'Next I’m buying Coca-Cola to put the cocaine back in',
-      lastConversationId: '1234',
-    },
-  ]
+async function getCharacterPastChats(
+  characterId: string,
+  conversationId: string
+) {
+  const charDetails = await queryConversationMessages(conversationId)
+  return charDetails
 }
 
 async function getInitialMessages(characterId: string, conversationId: string) {
   console.log('characterID', characterId)
   return [
     {
-      id: '12345323',
-      content: 'string',
-      created_at: 'string',
-      updated_at: 'string',
-      sender_name: 'string',
-      timestamp: 'string',
+      id: '12353223iy4',
+      img: '/dummy-char.png',
+      alt: 'dummy-char',
+      content: 'Test first message?',
+      created_at: new Date(),
+      updated_at: new Date(),
+      sender_name: 'Test',
+      timestamp: new Date(),
       is_clone: true,
       is_main: true,
       is_active: true,
-      parent_id: '123',
-      clone_id: '123',
-      user_id: '13432',
-      conversation_id: '3243',
-    },
-    {
-      id: '123asdf45',
-      content: 'string',
-      created_at: 'string',
-      updated_at: 'string',
-      sender_name: 'string',
-      timestamp: 'string',
-      is_clone: true,
-      is_main: true,
-      is_active: true,
-      parent_id: '123',
-      clone_id: '123',
-      user_id: '13432',
-      conversation_id: '3243',
-    },
-    {
-      id: '1243r345',
-      content: 'string',
-      created_at: 'string',
-      updated_at: 'string',
-      sender_name: 'string',
-      timestamp: 'string',
-      is_clone: true,
-      is_main: true,
-      is_active: true,
-      parent_id: '123',
-      clone_id: '123',
-      user_id: '13432',
-      conversation_id: '3243',
-    },
-    {
-      id: '1234asdf5',
-      content: 'string',
-      created_at: 'string',
-      updated_at: 'string',
-      sender_name: 'string',
-      timestamp: 'string',
-      is_clone: true,
-      is_main: true,
-      is_active: true,
-      parent_id: '123',
-      clone_id: '123',
-      user_id: '13432',
-      conversation_id: '3243',
-    },
-    {
-      id: '1234adf5',
-      content: 'string',
-      created_at: 'string',
-      updated_at: 'string',
-      sender_name: 'string',
-      timestamp: 'string',
-      is_clone: true,
-      is_main: true,
-      is_active: true,
-      parent_id: '123',
-      clone_id: '123',
-      user_id: '13432',
-      conversation_id: '3243',
-    },
-    {
-      id: '12fdas345',
-      content: 'string',
-      created_at: 'string',
-      updated_at: 'string',
-      sender_name: 'string',
-      timestamp: 'string',
-      is_clone: true,
-      is_main: true,
-      is_active: true,
-      parent_id: '123',
-      clone_id: '123',
-      user_id: '13432',
-      conversation_id: '3243',
-    },
-    {
-      id: 'adsfdasfdsa',
-      content: 'string',
-      created_at: 'string',
-      updated_at: 'string',
-      sender_name: 'string',
-      timestamp: 'string',
-      is_clone: true,
-      is_main: true,
-      is_active: true,
-      parent_id: '123',
-      clone_id: '123',
-      user_id: '13432',
-      conversation_id: '3243',
-    },
-    {
-      id: '12asf345',
-      content: 'string',
-      created_at: 'string',
-      updated_at: 'string',
-      sender_name: 'string',
-      timestamp: 'string',
-      is_clone: true,
-      is_main: true,
-      is_active: true,
-      parent_id: '123',
-      clone_id: '123',
-      user_id: '13432',
-      conversation_id: '3243',
+      parent_id: '',
+      clone_id: characterId,
+      user_id: '41238967-9489-400d-9616-4bcacfb9140', // TODO: edit
+      conversation_id: conversationId,
     },
   ]
 }
@@ -235,16 +56,41 @@ export default async function ChatPage({
 }: {
   params: { characterId: string; conversationId: string }
 }) {
-  // get character for chat screen
-  const character = await getCharacterDetails(
-    params.characterId,
-    params.conversationId
-  )
-  const characterChats = await getCharacterPastChats()
-  const initialMessages = await getInitialMessages(
-    params.characterId,
-    params.conversationId
-  )
+
+  const [character, setCharacter] = useState<Character>(null);
+  const [characterChats, setCharacterChats] = useState([]);
+  const [initialMessages, setInitialMessages] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        console.log("HERE...")
+        console.log("THIS IS PARAMS: ", params)
+        const charDetails = await queryCloneById(params.characterId);
+        console.log("BASE PAGE, this is charDetails: ", charDetails)
+        setCharacter(charDetails);
+
+        const chats = await getCharacterPastChats(
+          params.characterId,
+          params.conversationId
+        );
+        setCharacterChats(chats);
+
+        const messages = await getCharacterPastChats(
+          params.characterId,
+          params.conversationId
+        );
+        setInitialMessages(messages);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, [params.characterId, params.conversationId]); 
+
+  console.log("In BASE PAGE, this is character: ", character);
+
 
   // fetch previous 20 messages for chat screen
   // fetch 10 previous chats for character screen
@@ -271,7 +117,8 @@ export default async function ChatPage({
           initialMessages={initialMessages}
           conversationId={params.conversationId}
           initialConversationState={
-            character.name === 'Barack Obama' ? 'undecided' : 'short term'
+            'short term'
+            //character && character.name === 'Barack Obama' ? 'undecided' : 'short term'
           }
         />
       </div>

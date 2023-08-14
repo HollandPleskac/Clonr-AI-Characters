@@ -3,6 +3,7 @@ import PreviousConversation from './PreviousConversation'
 import { Conversation } from '@/types'
 import InfiniteScroll from 'react-infinite-scroll-component'
 
+// TODO: edit
 const dummyConversation: Conversation = {
   id: '12345',
 
@@ -32,11 +33,6 @@ const PreviousConversations = () => {
   // let infinite scroll take care of the rest if the user scrolls down
   useEffect(() => {
     setConversations([
-      dummyConversation,
-      dummyConversation,
-      dummyConversation,
-      dummyConversation,
-      dummyConversation,
       dummyConversation,
     ])
   }, [])
