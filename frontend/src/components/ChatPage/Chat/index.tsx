@@ -121,7 +121,22 @@ export default function ChatScreen({
       // const convoID = "5f1ae839-b4ca-492b-9493-7c7619f9c298";
       const convoID = "7698849f-2c88-4979-8f75-79c702c81e48";
       console.log("this is the convoID: ", convoID)
-      let serverMessage = await generateCloneMessage(convoID);
+      // let serverMessage = await generateCloneMessage(convoID);
+      let serverMessage = {
+        id: window.Date.now().toString(),
+        content: 'a simulated message from the server!!',
+        created_at: 'string',
+        updated_at: 'string',
+        sender_name: 'string',
+        timestamp: 'string',
+        is_clone: true,
+        is_main: true,
+        is_active: true,
+        parent_id: '123',
+        clone_id: '123',
+        user_id: '13432',
+        conversation_id: '3243',
+      };
       console.log("this is the server message: ", serverMessage)
 
       // let url = `http://localhost:8000/v1/conversation/${convoID}/message`
@@ -146,7 +161,7 @@ export default function ChatScreen({
       //   senderType: 'bot' as 'bot' | 'user',
       // }
 
-      setMessages((messages) => [...messages, serverMessage])
+      setMessages((messages) => [serverMessage, ...messages ])
     } catch (error) {
       console.error(error)
     }
@@ -200,7 +215,7 @@ export default function ChatScreen({
   const fetchMoreData = () => {
     // Simulate fetching 10 more messages from a server or other data source
     const newMessages: Message[] = Array.from({ length: 10 }, (_, index) => ({
-      id: '134adlj23',
+      id: window.Date.now().toString() + index,
       content: `New message ${messages.length + index}`,
       created_at: new Date().toString(),
       updated_at: new Date().toString(),
@@ -288,7 +303,7 @@ export default function ChatScreen({
                         <MessageComponent
                           message={message}
                           isLast={
-                            message.sender_name === 'bot' && index === 0 ? true : false
+                            message.is_clone && index === 0 ? true : false
                           }
                           key={message.id}
                         />

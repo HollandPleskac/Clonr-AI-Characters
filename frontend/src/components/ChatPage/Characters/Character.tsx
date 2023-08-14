@@ -40,7 +40,7 @@ const Character: React.FC<MyComponentProps> = ({
                 </h3>
                 <h4 className='text-sm font-light leading-[18px] text-[#979797]'>
                   {/* {username} */}
-                  {' • ' + formatDate(characterChat.character.updated_at)}
+                  {' • ' + formatDate(new Date(characterChat.character.updated_at))}
                 </h4>
               </div>
               <div className='text-smibold text-[14px] leading-[18px] line-clamp-1'>
