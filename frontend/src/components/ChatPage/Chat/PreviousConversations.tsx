@@ -33,11 +33,11 @@ const PreviousConversations = () => {
   useEffect(() => {
     setConversations([
       dummyConversation,
-      dummyConversation,
-      dummyConversation,
-      dummyConversation,
-      dummyConversation,
-      dummyConversation,
+      // dummyConversation,
+      // dummyConversation,
+      // dummyConversation,
+      // dummyConversation,
+      // dummyConversation,
     ])
   }, [])
 

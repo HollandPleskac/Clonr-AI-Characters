@@ -1,78 +1,31 @@
+'use client'
+
 import Characters from '@/components/ChatPage/Characters'
 import ChatScreen from '@/components/ChatPage/Chat'
 import { Character } from '@/types'
+import useClones from '@/hooks/useClones'
+import useConversations from '@/hooks/useConversations'
+import { useEffect, useState } from 'react'
+
+const { queryClones, queryCloneById } = useClones()
+
+const {createConversation, queryConversation, queryConversationMessages, createMessage, generateCloneMessage, queryCurrentRevisions} = useConversations();
+
 
 async function getCharacterDetails(
   characterId: string,
   conversationId: string
 ) {
-  if (characterId === '12345') {
-    return {
-      id: '12345',
-      created_at: new Date(),
-      updated_at: new Date(),
-      creator_id: '0987',
-      name: 'Barack Obama',
-      short_description:
-        'I am Barack Obama, 44th President of the United States. ',
-      avatar_uri: '/dummy-char.png',
-      num_messages: 234234,
-      num_conversations: 3423,
-      tags: ['president', 'politician'],
-    }
-  } else {
-    return {
-      id: '23456',
-      created_at: new Date(),
-      updated_at: new Date(),
-      creator_id: '0987',
-      name: 'Elon Musk',
-      short_description: "You're wasting my time. I literally rule the world.",
-      avatar_uri: '/dummy-char.png',
-      num_messages: 2342343,
-      num_conversations: 34233,
-      tags: ['entrepreneur', 'businessman'],
-    }
-  }
+  const charDetails = await queryCloneById(characterId)
+  return charDetails
 }
 
-async function getCharacterPastChats() {
-  return [
-    {
-      character: {
-        id: '12345',
-        created_at: new Date(),
-        updated_at: new Date(),
-        creator_id: '0987',
-        name: 'Barack Obama',
-        short_description:
-          'I am Barack Obama, 44th President of the United States. ',
-        avatar_uri: '/dummy-char.png',
-        num_messages: 234234,
-        num_conversations: 3423,
-        tags: ['president', 'politician'],
-      },
-      lastMessage: "Why can't I just eat my waffle?",
-      lastConversationId: '123',
-    },
-    {
-      character: {
-        id: '23456',
-        created_at: new Date(),
-        updated_at: new Date(),
-        creator_id: '0987',
-        name: 'Elon Musk',
-        short_description:
-          "You're wasting my time. I literally rule the world.",
-        avatar_uri: '/dummy-char.png',
-        num_messages: 2342343,
-        num_conversations: 34233,
-        tags: ['entrepreneur', 'businessman'],
-      },
-      lastMessage: 'Next I’m buying Coca-Cola to put the cocaine back in',
-      lastConversationId: '1234',
-    },
-  ]
+async function getCharacterPastChats(
+  characterId: string,
+  conversationId: string
+) {
+  const charDetails = await queryConversationMessages(conversationId)
+  return charDetails
 }
 
 async function getInitialMessages(characterId: string, conversationId: string) {
@@ -82,73 +35,18 @@ async function getInitialMessages(characterId: string, conversationId: string) {
       id: '12353223iy4',
       img: '/dummy-char.png',
       alt: 'dummy-char',
-      name: 'dummy-char-first',
-      content: 'Hey how are you?',
-      timeStamp: new Date(),
-      senderType: 'bot' as 'bot' | 'user',
-    },
-    {
-      id: 'adsklfhjjkj23',
-      img: '/dummy-char.png',
-      alt: 'dummy-char',
-      name: 'dummy-char',
-      content: 'Hey how are you?',
-      timeStamp: new Date(),
-      senderType: 'user' as 'bot' | 'user',
-    },
-    {
-      id: 'asdfhih34',
-      img: '/dummy-char.png',
-      alt: 'dummy-char',
-      name: 'dummy-char',
-      content: 'Hey how are you?',
-      timeStamp: new Date(),
-      senderType: 'bot' as 'bot' | 'user',
-    },
-    {
-      id: '325tieqwjaf',
-      img: '/dummy-char.png',
-      alt: 'dummy-char',
-      name: 'dummy-char',
-      content: 'Hey how are you?',
-      timeStamp: new Date(),
-      senderType: 'user' as 'bot' | 'user',
-    },
-    {
-      id: 'asghghdfhi34',
-      img: '/dummy-char.png',
-      alt: 'dummy-char',
-      name: 'dummy-char',
-      content: 'Hey how are you?',
-      timeStamp: new Date(),
-      senderType: 'bot' as 'bot' | 'user',
-    },
-    {
-      id: '325teqwkjjaf',
-      img: '/dummy-char.png',
-      alt: 'dummy-char',
-      name: 'dummy-char',
-      content: 'Hey how are you?',
-      timeStamp: new Date(),
-      senderType: 'user' as 'bot' | 'user',
-    },
-    {
-      id: 'asdfuhhi34',
-      img: '/dummy-char.png',
-      alt: 'dummy-char',
-      name: 'dummy-char',
-      content: 'Hey how are you?',
-      timeStamp: new Date(),
-      senderType: 'bot' as 'bot' | 'user',
-    },
-    {
-      id: '325iy98teqwjaf',
-      img: '/dummy-char.png',
-      alt: 'dummy-char',
-      name: 'dummy-char-last',
-      content: 'Hey how are you?',
-      timeStamp: new Date(),
-      senderType: 'user' as 'bot' | 'user',
+      content: 'Test first message?',
+      created_at: new Date(),
+      updated_at: new Date(),
+      sender_name: 'Test',
+      timestamp: new Date(),
+      is_clone: true,
+      is_main: true,
+      is_active: true,
+      parent_id: '',
+      clone_id: characterId,
+      user_id: '41238967-9489-400d-9616-4bcacfb9140', // TODO: edit
+      conversation_id: conversationId,
     },
   ]
 }
@@ -158,16 +56,36 @@ export default async function ChatPage({
 }: {
   params: { characterId: string; conversationId: string }
 }) {
-  // get character for chat screen
-  const character = await getCharacterDetails(
-    params.characterId,
-    params.conversationId
-  )
-  const characterChats = await getCharacterPastChats()
-  const initialMessages = await getInitialMessages(
-    params.characterId,
-    params.conversationId
-  )
+
+  const [character, setCharacter] = useState(null);
+  const [characterChats, setCharacterChats] = useState([]);
+  const [initialMessages, setInitialMessages] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const charDetails = await queryCloneById(params.characterId);
+        setCharacter(charDetails);
+
+        const chats = await getCharacterPastChats(
+          params.characterId,
+          params.conversationId
+        );
+        setCharacterChats(chats);
+
+        const messages = await getCharacterPastChats(
+          params.characterId,
+          params.conversationId
+        );
+        setInitialMessages(messages);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, [params.characterId, params.conversationId]); 
+
 
   // fetch previous 20 messages for chat screen
   // fetch 10 previous chats for character screen
@@ -187,14 +105,15 @@ export default async function ChatPage({
         />
         <ChatScreen
           characterId={params.characterId}
-          character={character}
+          character={character ? character : null}
           // need initial 20 msgs
           // need initial 10 characters
 
           initialMessages={initialMessages}
           conversationId={params.conversationId}
           initialConversationState={
-            character.name === 'Barack Obama' ? 'undecided' : 'short term'
+            'short term'
+            //character && character.name === 'Barack Obama' ? 'undecided' : 'short term'
           }
         />
       </div>

@@ -88,10 +88,10 @@ export default function useClones() {
     }
   };
 
-  const queryClone = async (cloneId: string) => {
+  const queryCloneById = async (clone_id: string) => {
     try {
       const response = await axios.get<Character>(
-        `http://localhost:8000/clones/${cloneId}`,
+        `http://localhost:8000/clones/${clone_id}`,
         {
           withCredentials: true
         }
@@ -205,7 +205,7 @@ export default function useClones() {
   return {
     createClone,
     queryClones,
-    queryClone,
+    queryCloneById,
     generateLongDescription,
     queryGeneratedLongDescription,
     createDocument,

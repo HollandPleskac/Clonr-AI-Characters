@@ -34,7 +34,7 @@ export default function ChatScreen({
   initialConversationState,
 }: ChatScreenProps) {
   const [message, setMessage] = useState('')
-  const [messages, setMessages] = useState<Message[]>(initialMessages)
+  const [messages, setMessages] = useState<Message[]>([])
   const [isFetching, setIsFetching] = useState(false)
   const [convoID, setConvoID] = useState('')
   const [conversationState, setConversationState] = useState(
@@ -64,8 +64,9 @@ export default function ChatScreen({
   useEffect(() => {
     // @ts-ignore
     import('preline')
+    setMessages(initialMessages);
     // TODO: create conversation if not exists
-  }, [])
+  }, [initialMessages])
 
   useEffect(() => {
     if (scrollToNewMessage && divRef.current) {
@@ -74,8 +75,7 @@ export default function ChatScreen({
     }
   }, [messages, scrollToNewMessage])
 
-  const sendMessage = () => {
-    console.log('sending message:', message)
+  const sendMessage = async () => {
     setScrollToNewMessage(true)
 
     const newMessage = {
@@ -83,7 +83,7 @@ export default function ChatScreen({
       content: message,
       created_at: new window.Date().toString(),
       updated_at: new window.Date().toString(),
-      sender_name: 'Holland',
+      sender_name: 'Test User',
       timestamp: new window.Date().toString(),
       is_clone: false,
       is_main: true,
@@ -105,10 +105,12 @@ export default function ChatScreen({
     // }
 
     let updatedMessages = [newMessage, ...messages]
+
+    let sentMsg = await createMessage(conversationId, message);
     setMessages(updatedMessages)
     const message_copy = message
     setMessage('')
-    fetchMessageFromServer(message_copy)
+    await fetchMessageFromServer(message_copy)
   }
 
   const fetchMessageFromServer = async (in_msg: String) => {
@@ -117,36 +119,14 @@ export default function ChatScreen({
     await new Promise((resolve) => setTimeout(resolve, 500))
 
     try {
-      // TODO: edit - needs to be valid convoID str
-      // const convoID = "5f1ae839-b4ca-492b-9493-7c7619f9c298";
-      const convoID = "7698849f-2c88-4979-8f75-79c702c81e48";
-      console.log("this is the convoID: ", convoID)
-      let serverMessage = await generateCloneMessage(convoID);
-      console.log("this is the server message: ", serverMessage)
-
-      // let url = `http://localhost:8000/v1/conversation/${convoID}/message`
-      // let data = { content: in_msg, sender_name: 'User' }
-      // let response = await axios.post(url, data)
-      // url = `http://localhost:8000/v1/conversation/${convoID}/response`
-      // response = await axios.get(url)
-      // const serverMessage = response.data
+      let serverMessage = await generateCloneMessage(conversationId);
 
       // update frontend
       if (serverMessage) {
         console.log('Server Message:', serverMessage.content)
       }
-
-      // const newServerMessage = {
-      //   id: window.Date.now().toString(),
-      //   img: '/dummy-char.png',
-      //   alt: 'Character Profile Picture ' + (messages.length + 1),
-      //   name: 'Barack Obama',
-      //   content: serverMessage.content,
-      //   timeStamp: new window.Date(),
-      //   senderType: 'bot' as 'bot' | 'user',
-      // }
-
-      setMessages((messages) => [...messages, serverMessage])
+      
+      setMessages((messages) => [serverMessage, ...messages])
     } catch (error) {
       console.error(error)
     }
@@ -164,16 +144,9 @@ export default function ChatScreen({
       clone_id: 'd433575f-d8ad-4f80-a90d-f21122b71bf0'
     }
     let convo_id = await createConversation(conversationCreateData);
-    //let r_convo = await axios.post('http://localhost:8000/v1/conversation')
-    //let convo_id = r_convo.data.id
     setConvoID(convo_id)
 
     let r_msg = await queryConversationMessages(convo_id);
-    // let r_msg = await axios.get(
-    //   `http://localhost:8000/v1/conversation/${convo_id}/message`
-    // )
-    // let msgs: Message[] = r_msg
-    // console.log(msgs)
     let msgs = r_msg.map((x: Message, index: number) => (
       x
     ))
@@ -287,6 +260,7 @@ export default function ChatScreen({
                     {messages.map((message, index) => (
                         <MessageComponent
                           message={message}
+                          clone_avatar_uri={character.avatar_uri}
                           isLast={
                             message.sender_name === 'bot' && index === 0 ? true : false
                           }

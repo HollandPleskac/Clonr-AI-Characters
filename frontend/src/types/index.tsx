@@ -70,6 +70,7 @@ export type Character = {
   tags: Tag[];
 }
 
+// TODO: EDIT
 export type CharacterChat = {
   character: Character
   lastMessage: string
@@ -86,6 +87,8 @@ export type CharacterChat = {
 //   memoryType: 'long' | 'short'
 // }
 
+// TODO: add character: Clone field here
+// TODO: lastBotMsg and lastUserMsg?
 export type Conversation = {
   id: string;
   name: string;

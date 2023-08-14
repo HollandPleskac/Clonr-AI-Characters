@@ -36,7 +36,8 @@ const ChatTopBar = ({
           className='rounded-full'
         />
 
-        <div className='flex flex-col ml-6 gap-y-3'>
+        {character ? (
+          <div className='flex flex-col ml-6 gap-y-3'>
           <h3 className='text-3xl font-bold leading-5 text-white'>
             {character.name}
           </h3>
@@ -44,6 +45,11 @@ const ChatTopBar = ({
             {character.short_description}
           </p>
         </div>
+        ) : (
+          <p>Loading character</p>
+        )}
+
+        
       </div>
       {showChat && (
         <div className='flex items-center gap-x-4'>

@@ -5,10 +5,11 @@ import { notFound } from 'next/navigation'
 
 interface MessageProps {
   message: Message
+  clone_avatar_uri: string
   isLast: boolean
 }
 
-const Message: React.FC<MessageProps> = ({ message, isLast }) => {
+const Message: React.FC<MessageProps> = ({ message, clone_avatar_uri, isLast }) => {
 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [messages, setMessages] = useState<Message[]>([message])
@@ -82,10 +83,10 @@ const Message: React.FC<MessageProps> = ({ message, isLast }) => {
       <div className='ml-3 flex flex-col grow'>
         <div className='mb-[2px] flex items-center'>
           <span className='mr-2 text-[15px] font-semibold leading-5 text-white'>
-            {messages[currentIndex].name}
+            {messages[currentIndex].sender_name}
           </span>
           <span className='text-xs font-light text-[#979797]'>
-            {formatTime(messages[currentIndex].timeStamp)}
+            {formatTime(new Date(messages[currentIndex].timestamp))}
           </span>
         </div>
         <span className='text-xs font-light leading-[18px] text-white'>

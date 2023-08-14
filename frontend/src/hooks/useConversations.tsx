@@ -72,10 +72,10 @@ export default function useConversations() {
         }
       };
     
-      const queryConversationMessages = async (conversationId: string) => {
+      const queryConversationMessages = async (conversation_id: string) => {
         try {
           const response = await axios.get<Message[]>(
-            `http://localhost:8000/conversations/${conversationId}/messages`,
+            `http://localhost:8000/conversations/${conversation_id}/messages`,
             {
               withCredentials: true
             }
