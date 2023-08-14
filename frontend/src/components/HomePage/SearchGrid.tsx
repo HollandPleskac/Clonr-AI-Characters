@@ -16,11 +16,13 @@ import Image from 'next/image'
 interface SearchGridProps {
   characters: Character[]
   doneSearching: boolean
+  paddingTop?: string
 }
 
 export default function SearchGrid({
   characters,
   doneSearching,
+  paddingTop = '100px'
 }: SearchGridProps) {
   function calcEdgeCard(n: number): 'left' | 'right' | undefined {
     if (n % 6 === 0) {
@@ -44,7 +46,7 @@ export default function SearchGrid({
       )}
       {doneSearching && characters.length > 0 && (
         <div
-          className='grid grid-cols-6 gap-1 gap-y-10 pt-[100px] pb-[100px] px-[4%]'
+          className={`grid grid-cols-6 gap-1 gap-y-10 pt-[${paddingTop}] pb-[100px] px-[4%]`}
           style={{ minHeight: 'calc(100vh - 72px - 48px)' }}
         >
           {characters.map((item, index) => {
