@@ -5,6 +5,7 @@ import numpy as np
 import sqlalchemy as sa
 from fastapi import status
 from fastapi.exceptions import HTTPException
+from opentelemetry import trace
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
@@ -15,6 +16,8 @@ from clonr.utils import get_current_datetime
 
 from . import retrieval
 from .cache import CloneCache
+
+tracer = trace.get_tracer(__name__)
 
 INF = 1_000_000
 
@@ -58,6 +61,7 @@ class CloneDB:
         self.conversation_id = conversation_id
         self.user_id = user_id
 
+    @tracer.start_as_current_span("add_document")
     async def add_document(self, doc: Document, nodes: list[Node]) -> models.Document:
         # don't re-do work if it's already there?
         if await self.db.scalar(
@@ -121,6 +125,7 @@ class CloneDB:
         await self.db.refresh(doc_model)
         return doc_model
 
+    @tracer.start_as_current_span("add_dialogues")
     async def add_dialogues(self, dialogues: list[Dialogue]):
         """Requires that the dialogues have messages inside of them!"""
         embedding_model = await self.embedding_client.encoder_name()
@@ -170,6 +175,7 @@ class CloneDB:
             self.db.add(dlg)
             await self.db.commit()
 
+    @tracer.start_as_current_span("add_monologues")
     async def add_monologues(
         self, monologues: list[Monologue]
     ) -> list[models.Monologue]:
@@ -203,6 +209,7 @@ class CloneDB:
         await self.db.commit()
         return monologue_models
 
+    @tracer.start_as_current_span("add_memories")
     async def add_memories(self, memories: list[Memory]) -> list[models.Memory]:
         # batch embed
         embs = await self.embedding_client.encode_passage([x.content for x in memories])
@@ -245,6 +252,7 @@ class CloneDB:
         await self.db.commit()
         return mem_models
 
+    @tracer.start_as_current_span("add_message")
     async def add_message(
         self, message: Message, msg_to_unset: models.Message | None = None
     ) -> models.Message:
@@ -276,6 +284,7 @@ class CloneDB:
         await self.db.refresh(msg)
         return msg
 
+    @tracer.start_as_current_span("add_entity_context_summary")
     async def add_entity_context_summary(
         self,
         content: str,
@@ -298,6 +307,7 @@ class CloneDB:
         await self.db.refresh(obj)
         return obj
 
+    @tracer.start_as_current_span("add_agent_summary")
     async def add_agent_summary(
         self, content: str, timestamp: datetime = get_current_datetime()
     ) -> models.AgentSummary:
@@ -316,6 +326,7 @@ class CloneDB:
         await self.db.refresh(obj)
         return obj
 
+    @tracer.start_as_current_span("query_nodes")
     async def query_nodes(
         self, query: str, params: retrieval.VectorSearchParams
     ) -> list[QueryNodeResult]:
@@ -329,6 +340,7 @@ class CloneDB:
             filters=[models.Node.clone_id == self.clone_id],
         )
 
+    @tracer.start_as_current_span("query_nodes_with_rerank")
     async def query_nodes_with_rerank(
         self, query: str, params: retrieval.ReRankSearchParams
     ) -> list[QueryNodeReRankResult]:
@@ -342,6 +354,7 @@ class CloneDB:
             filters=[models.Node.clone_id == self.clone_id],
         )
 
+    @tracer.start_as_current_span("query_monologues")
     async def query_monologues(
         self, query: str, params: retrieval.VectorSearchParams
     ) -> list[QueryMonologueResult]:
@@ -355,6 +368,7 @@ class CloneDB:
             filters=[models.Monologue.clone_id == self.clone_id],
         )
 
+    @tracer.start_as_current_span("query_monologues_with_rerank")
     async def query_monologues_with_rerank(
         self, query: str, params: retrieval.ReRankSearchParams
     ) -> list[QueryMonologueReRankResult]:
@@ -368,6 +382,7 @@ class CloneDB:
             filters=[models.Monologue.clone_id == self.clone_id],
         )
 
+    @tracer.start_as_current_span("query_memories")
     async def query_memories(
         self,
         query: str,
@@ -408,6 +423,7 @@ class CloneDB:
         return memory_results
 
     # get operations
+    @tracer.start_as_current_span("get_messages")
     async def get_messages(
         self, num_messages: int | None = None, num_tokens: int | None = None
     ) -> list[models.Message]:
@@ -444,6 +460,7 @@ class CloneDB:
             messages.append(msg)
         return messages
 
+    @tracer.start_as_current_span("get_memories")
     async def get_memories(
         self, num_messages: int | None = None, num_tokens: int | None = None
     ) -> list[models.Memory]:
@@ -474,6 +491,7 @@ class CloneDB:
             memories.append(mem)
         return memories
 
+    @tracer.start_as_current_span("get_monologues")
     async def get_monologues(
         self, num_messages: int | None = None, num_tokens: int | None = None
     ) -> list[models.Message]:
@@ -500,6 +518,7 @@ class CloneDB:
             messages.append(msg)
         return messages
 
+    @tracer.start_as_current_span("get_entity_context_summary")
     async def get_entity_context_summary(
         self, entity_name: str, n: int = 1
     ) -> list[models.EntityContextSummary]:
@@ -517,6 +536,7 @@ class CloneDB:
         summaries = await self.db.scalars(q)
         return summaries.all()
 
+    @tracer.start_as_current_span("get_agent_summary")
     async def get_agent_summary(self, n: int = 1) -> list[models.AgentSummary]:
         if self.conversation_id is None:
             raise ValueError("Retrieving agent summary requires conversation_id.")
@@ -529,6 +549,7 @@ class CloneDB:
         summaries = await self.db.scalars(q)
         return summaries.all()
 
+    @tracer.start_as_current_span("increment_reflection_counter")
     async def increment_reflection_counter(self, importance: int) -> int:
         if self.conversation_id is None:
             raise ValueError(
@@ -538,6 +559,7 @@ class CloneDB:
             conversation_id=self.conversation_id
         ).increment(importance=importance)
 
+    @tracer.start_as_current_span("increment_entity_context_counter")
     async def increment_entity_context_counter(self, importance: int) -> int:
         if self.conversation_id is None:
             raise ValueError(
@@ -547,6 +569,7 @@ class CloneDB:
             conversation_id=self.conversation_id
         ).increment(importance=importance)
 
+    @tracer.start_as_current_span("increment_agent_summary_counter")
     async def increment_agent_summary_counter(self, importance: int) -> int:
         if self.conversation_id is None:
             raise ValueError(
@@ -556,46 +579,55 @@ class CloneDB:
             conversation_id=self.conversation_id
         ).increment(importance=importance)
 
+    @tracer.start_as_current_span("get_reflection_count")
     async def get_reflection_count(self) -> int:
         return await self.cache.reflection_counter(
             conversation_id=self.conversation_id
         ).get()
 
+    @tracer.start_as_current_span("get_entity_context_count")
     async def get_entity_context_count(self) -> int:
         return await self.cache.entity_context_counter(
             conversation_id=self.conversation_id
         ).get()
 
+    @tracer.start_as_current_span("get_agent_summary_count")
     async def get_agent_summary_count(self) -> int:
         return await self.cache.agent_summary_counter(
             conversation_id=self.conversation_id
         ).get()
 
+    @tracer.start_as_current_span("set_reflection_count")
     async def set_reflection_count(self, value: int) -> None:
         return await self.cache.reflection_counter(
             conversation_id=self.conversation_id
         ).set(value=value)
 
+    @tracer.start_as_current_span("set_entity_context_count")
     async def set_entity_context_count(self, value: int) -> None:
         return await self.cache.entity_context_counter(
             conversation_id=self.conversation_id
         ).set(value=value)
 
+    @tracer.start_as_current_span("set_agent_summary_count")
     async def set_agent_summary_count(self, value: int) -> None:
         return await self.cache.agent_summary_counter(
             conversation_id=self.conversation_id
         ).set(value=value)
 
+    @tracer.start_as_current_span("delete_document")
     async def delete_document(self, doc: models.Document) -> None:
         await self.db.delete(doc)
         await self.db.commit()
         return None
 
+    @tracer.start_as_current_span("delete_monologue")
     async def delete_monologue(self, monologue: models.Monologue) -> None:
         await self.db.delete(monologue)
         await self.db.commit()
         return None
 
+    @tracer.start_as_current_span("get_message_ancestors")
     async def get_message_ancestors(
         self, message_id: uuid.UUID
     ) -> list[models.Message]:
@@ -617,6 +649,7 @@ class CloneDB:
 
     # (Jonny): is a flat list the best data structure to return here?
     # maybe like a hierarchical dict would be better?
+    @tracer.start_as_current_span("get_message_descendants")
     async def get_message_descendants(
         self, message_id: uuid.UUID
     ) -> list[models.Message]:

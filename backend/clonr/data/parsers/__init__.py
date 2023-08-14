@@ -2,8 +2,8 @@ from .base import ParserException
 from .fandom import FandomParser, FullURLParser
 from .web import BasicWebParser
 from .wiki import WikipediaParser
-from .yt_transcript import YoutubeTranscriptParser
 from .wikiquotes import WikiQuotesParser
+from .yt_transcript import YoutubeTranscriptParser
 
 
 def url_to_doc(url: str):

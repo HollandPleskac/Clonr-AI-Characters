@@ -1,7 +1,10 @@
+import re
+
 from loguru import logger
 
 from clonr.data.parsers.base import Parser, ParserException
-from clonr.data_structures import Document
+from clonr.data_structures import Monologue
+from clonr.text_splitters import SentenceSplitter
 from clonr.utils.shared import instance_level_lru_cache
 
 try:
@@ -11,27 +14,42 @@ try:
 except ImportError:
     WIKIQUOTE_AVAILABLE = False
 
+# this is by character size
+SPLITTER = SentenceSplitter(max_chunk_size=256, use_tokens=False)
 
+
+# TODO (Jonny): add a text-splitter to downsize big quotes. splitting in non-english is tough
+# so just check the limit then language?
 class WikiQuotesParser(Parser):
     @instance_level_lru_cache(maxsize=None)
-    def _extract(self, character_name: str):
+    def _extract(self, character_name: str, max_quotes: int) -> list[Monologue]:
         if not WIKIQUOTE_AVAILABLE:
             raise ImportError("wikiquote package not found. `pip install wikiquote`.")
         try:
-            quotes = wikiquote.quotes(character_name, max_quotes=10)
+            raw_quotes: list[str] = wikiquote.quotes(
+                character_name, max_quotes=max_quotes
+            )
+            raw_quotes = [re.sub(r"\s*\<s\>\s*", " ", x) for x in raw_quotes]
         except (
             wikiquote.utils.DisambiguationPageException,
             wikiquote.utils.NoSuchPageException,
         ):
             raise ParserException(f"No results found for {character_name}.")
 
-        unique_quotes = list(dict.fromkeys(quotes))
-        return Document(content="\n\n".join(unique_quotes))
+        unique_quotes = list(dict.fromkeys(raw_quotes))
+        quotes = [
+            segment
+            for q in unique_quotes
+            for segment in SPLITTER.split(q)
+            if len(segment) < 256
+        ]
+        monologues = [Monologue(content=q, source="wikiquotes") for q in quotes]
+        return monologues
 
-    def extract(self, character_name: str):
+    def extract(self, character_name: str, max_quotes: int = 2_000) -> list[Monologue]:
         logger.info(
             f"Attempting to extract Wikiquotes, character_name: {character_name}"
         )
-        r = self._extract(character_name)
-        logger.info("✅ Extracted for character name.")
+        r = self._extract(character_name=character_name, max_quotes=max_quotes)
+        logger.info(f"✅ Extracted wikiquotes for {character_name}.")
         return r

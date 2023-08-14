@@ -4,21 +4,20 @@ import re
 import textwrap
 import time
 import uuid
-from loguru import logger
 from functools import wraps
-from fastapi import status
-from fastapi.exceptions import HTTPException
 from typing import AsyncGenerator, Generator
 
 import aiohttp
 import openai
+from fastapi import status
+from fastapi.exceptions import HTTPException
+from loguru import logger
 from tenacity import (
+    RetryError,
     retry,
     retry_if_exception_type,
-    wait_random,
     stop_after_attempt,
     wait_exponential,
-    RetryError,
 )
 
 from clonr.tokenizer import Tokenizer

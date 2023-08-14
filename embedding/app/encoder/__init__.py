@@ -1,1 +1,1 @@
-from .encoder import EmbeddingModel, CrossEncoder
+from .encoder import CrossEncoder, EmbeddingModel

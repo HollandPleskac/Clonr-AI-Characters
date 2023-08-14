@@ -25,7 +25,7 @@ async def main():
     with open("../scrapers/results.json", "r") as f:
         data = json.load(f)
 
-    #print("this is data: ", data)
+    # print("this is data: ", data)
 
     print("Creating default Tags")
     for k in data["characters_by_curated_category"]:

@@ -1,27 +1,19 @@
 import inspect
 import json
-import logging
 import re
 
 from loguru import logger
 from pydantic import BaseModel, ValidationError
-from tenacity import (
-    after_log,
-    before_sleep_log,
-    retry,
-    retry_if_exception_type,
-    stop_after_attempt,
-    wait_random,
-)
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_random
 
 from clonr import templates
 from clonr.data_structures import (
     Document,
     Memory,
+    MemoryWithoutRating,
     Message,
     Monologue,
     Node,
-    MemoryWithoutRating,
 )
 from clonr.llms import LLM, GenerationParams, LLMResponse, MockLLM
 from clonr.templates.memory import MemoryExample

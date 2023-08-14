@@ -1,11 +1,11 @@
 import json
 import uuid
 from typing import Annotated
-from loguru import logger
 
 import sqlalchemy as sa
 from fastapi import APIRouter, Depends, HTTPException, Path, Response, status
 from fastapi.encoders import jsonable_encoder
+from loguru import logger
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 

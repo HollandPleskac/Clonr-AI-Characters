@@ -21,7 +21,7 @@ try:
 except ImportError:
     import warnings
 
-    warnings.warn("LlamaCpp not available.")
+    warnings.warn("LlamaCpp Tokenizer not available.")
     LLAMA_CPP_AVAILABLE = False
 
 

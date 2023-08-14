@@ -1,12 +1,6 @@
-import asyncio
-import logging
-import random
-from typing import Iterable, List
-
 import grpc
-from embedding.app.pb import embed_pb2
-from embedding.app.pb import embed_pb2_grpc
 
+from embedding.app.pb import embed_pb2, embed_pb2_grpc
 
 PORT = 50051
 

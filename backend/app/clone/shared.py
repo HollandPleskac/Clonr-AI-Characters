@@ -4,7 +4,7 @@ from clonr.tokenizer import Tokenizer
 
 if settings.LLM == "mock":
     SHARED_TOKENIZER = Tokenizer.from_openai("gpt-3.5-turbo")
-elif settings.LLM == "llama":
+elif settings.LLM in ["llamacpp", "colab"]:
     name = "hf-internal-testing/llama-tokenizer"
     SHARED_TOKENIZER = Tokenizer.from_huggingface(name)
 elif settings.LLM.startswith("gpt"):

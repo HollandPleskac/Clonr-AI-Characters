@@ -1,7 +1,7 @@
 import datetime
 import random
-import uuid
 import re
+import uuid
 from typing import Annotated
 
 from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate

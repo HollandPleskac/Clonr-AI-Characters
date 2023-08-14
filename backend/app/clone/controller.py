@@ -1,9 +1,10 @@
 import re
 import uuid
-from tenacity import RetryError
+
 import sqlalchemy as sa
 from fastapi import BackgroundTasks, HTTPException, status
 from loguru import logger
+from opentelemetry import trace
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -26,6 +27,8 @@ from .types import (
     ReRankSearchParams,
     VectorSearchParams,
 )
+
+tracer = trace.get_tracer(__name__)
 
 # the Gen Agents paper uses a threshold of 150 (that's what he said during the talk)
 # min memory importance is 1 and max is 10, so a score of 100 ~ 20 memories on avg.
@@ -147,15 +150,15 @@ class Controller:
             user_id=user.id,
         )
 
-        if convo.memory_strategy == MemoryStrategy.long_term:
-            # counters for different strategies
-            await clonedb.set_reflection_count(0)
+        # counters for different strategies. Set all just to be safe
+        await clonedb.set_reflection_count(0)
+        await clonedb.set_agent_summary_count(0)
+        await clonedb.set_entity_context_count(0)
 
-            if convo.adaptation_strategy != AdaptationStrategy.static:
-                await clonedb.set_agent_summary_count(0)
-                await clonedb.set_entity_context_count(0)
-
+        if convo.memory_strategy != MemoryStrategy.none:
             # add seed memories
+            # TODO (Jonny): Should we make this something like "I am eager to learn more about {{user}}?"
+            # in order to drive the conversation, or make this configurable to creators?
             content = f"I started a conversation with {convo.user_name}"
             seed_memories = [Memory(content=content, importance=SEED_IMPORTANCE)]
             await clonedb.add_memories(seed_memories)
@@ -178,6 +181,7 @@ class Controller:
 
         return convo
 
+    @tracer.start_as_current_span("add_private_memory")
     async def _add_private_memory(self, content: str) -> models.Memory:
         if self.memory_strategy == MemoryStrategy.none:
             raise HTTPException(
@@ -220,6 +224,7 @@ class Controller:
 
         return memory[0]
 
+    @tracer.start_as_current_span("add_user_message")
     async def add_user_message(
         self, msg_create: schemas.MessageCreate
     ) -> models.Message:
@@ -246,6 +251,7 @@ class Controller:
         return msg
 
     # TODO (Jonny): ensure auth happens further up the chain at the route level
+    @tracer.start_as_current_span("add_public_memory")
     @classmethod
     async def add_public_memory(
         cls,
@@ -293,6 +299,7 @@ class Controller:
         )
         return memory
 
+    @tracer.start_as_current_span("reflect")
     async def _reflect(self, num_memories: int) -> list[models.Memory]:
         # typical value is 100 memories. the query template is 112 tokens so we have lots of room here
         # assume a max output of 512 tokens for questions
@@ -339,6 +346,7 @@ class Controller:
 
         return mems
 
+    @tracer.start_as_current_span("agent_summary_compute")
     async def _agent_summary_compute(self) -> models.AgentSummary:
         # NOTE (Jonny): the queries are from clonr/templates/agent_summary
         # the default questions. In this step.
@@ -393,6 +401,7 @@ class Controller:
 
         return agent_summary
 
+    @tracer.start_as_current_span("entity_context_compute")
     async def _entity_context_compute(self):
         logger.info(
             f"Entity context compute triggered for conversation {self.conversation.id}"
@@ -442,6 +451,7 @@ class Controller:
 
         return entity_summary
 
+    @tracer.start_as_current_span("set_revision_as_main")
     async def set_revision_as_main(self, message_id: uuid.UUID) -> models.Message:
         """Given a list of current revisions, this sets the given one as part of the main
         message thread. This should trigger whenever users click the revision arrows."""
@@ -490,6 +500,7 @@ class Controller:
         await self.clonedb.db.refresh(msg)
         return msg
 
+    @tracer.start_as_current_span("generate_message_queries")
     async def _generate_msg_queries(
         self, num_messges: int | None, num_tokens: int | None
     ) -> list[str]:
@@ -543,6 +554,7 @@ class Controller:
         logger.info(f"Conversation ({self.conversation.id}) message queries: {queries}")
         return queries
 
+    @tracer.start_as_current_span("generate_zero_memory_message")
     async def _generate_zero_memory_message(
         self, msg_gen: schemas.MessageGenerate
     ) -> models.Message:
@@ -658,6 +670,7 @@ class Controller:
 
         return new_msg
 
+    @tracer.start_as_current_span("generate_long_term_memory_message")
     async def _generate_long_term_memory_message(
         self, msg_gen: schemas.MessageGenerate
     ) -> models.Message:
@@ -849,6 +862,7 @@ class Controller:
         self.background_tasks.add_task(self._add_private_memory, content=mem_content)
         return new_msg
 
+    @tracer.start_as_current_span("generate_message")
     async def generate_message(
         self, msg_gen: schemas.MessageGenerate
     ) -> models.Message:
@@ -870,6 +884,7 @@ class Controller:
                     detail=f"Invalid memory strategy: {self.memory_strategy}",
                 )
 
+    @tracer.start_as_current_span("generate_long_description")
     @classmethod
     async def generate_long_description(
         cls, llm: LLM, clone: models.Clone, clonedb: CloneDB

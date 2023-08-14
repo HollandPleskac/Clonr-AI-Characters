@@ -1,19 +1,21 @@
-import os
 import asyncio
 import logging
+import os
 
 import grpc
 from grpc_reflection.v1alpha import reflection
 from loguru import logger
-from app.pb import embed_pb2
-from app.pb import embed_pb2_grpc
 
-from app.encoder import EmbeddingModel, CrossEncoder
-from app.interceptors import ExceptionInterceptor, UDSOpenTelemetryAioServerInterceptor
-
+from app.encoder import CrossEncoder, EmbeddingModel
+from app.interceptors import ExceptionInterceptor, setup_tracing
+from app.pb import embed_pb2, embed_pb2_grpc
 
 HOST = os.environ.get("EMBEDDINGS_GRPC_HOST", "localhost")
 PORT = os.environ.get("EMBEDDINGS_GRPC_PORT", 50051)
+OTLP_ENDPOINT = os.environ.get("OTLP_ENDPOINT")
+
+
+setup_tracing(otlp_endpoint=OTLP_ENDPOINT)
 
 
 class EmbedServicer(embed_pb2_grpc.EmbedServicer):
@@ -67,17 +69,9 @@ class EmbedServicer(embed_pb2_grpc.EmbedServicer):
 
 async def serve(port: int = 50051) -> None:
     server = grpc.aio.server()
-    # unix_socket_template = "unix://{}-{}"
-    # local_url = unix_socket_template.format(uds_path, 0)
     local_url = f"[::]:{port}"
-    # local_url = f"unix://{uds_path}"
 
-    server = grpc.aio.server(
-        interceptors=[
-            ExceptionInterceptor(),
-            UDSOpenTelemetryAioServerInterceptor(),
-        ]
-    )
+    server = grpc.aio.server(interceptors=[ExceptionInterceptor()])
     embed_pb2_grpc.add_EmbedServicer_to_server(EmbedServicer(), server)
 
     SERVICE_NAMES = (

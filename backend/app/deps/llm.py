@@ -4,7 +4,6 @@ from typing import Annotated
 
 import sqlalchemy as sa
 from fastapi import Depends, Path
-from fastapi.exceptions import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
@@ -41,8 +40,9 @@ def _get_llm(
         else:
             api_base = "http://localhost:8100/v1"
     elif model_name == "colab":
-        api_base = "<NGROK URL HERE>"
+        api_base = "<NGROK URL HERE>/v1"
         model = "<MODEL NAME HERE. MUST ALIGN WITH SERVER>"
+        # model = "wizardlm-1.0-uncensored-llama2-13b"
         llm = LlamaCpp(
             model=model,
             api_base=api_base,

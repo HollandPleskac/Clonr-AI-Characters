@@ -54,6 +54,7 @@ class WikipediaParser(Parser):
         try:
             page = wikipedia.page(title=title, pageid=pageid, auto_suggest=False)
             content = page.content
+            content = re.sub(r"\s*\<s\>\s*", " ", content)
         except wikipedia.exceptions.DisambiguationError as e:
             raise ParserException(
                 f"Failed to parse Wikipedia page: {page}. Reason: {str(e)}"

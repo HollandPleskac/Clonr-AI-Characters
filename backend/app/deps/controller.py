@@ -14,15 +14,14 @@ from app.clone.controller import Controller
 from app.clone.db import CloneDB
 from app.embedding import EmbeddingClient
 from app.settings import settings
-from clonr.llms import LlamaCpp, MockLLM, OpenAI
 from clonr.llms.callbacks import AddToPostgresCallback, LLMCallback, LoggingCallback
 from clonr.tokenizer import Tokenizer
 
 from .db import get_async_redis, get_async_session
 from .embedding import get_embedding_client
+from .llm import _get_llm
 from .text import get_tokenizer
 from .users import get_current_active_user
-from .llm import _get_llm
 
 
 @lru_cache(maxsize=1)
