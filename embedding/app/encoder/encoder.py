@@ -108,9 +108,11 @@ class EmbeddingModel:
         return emb
 
     def _encode(self, texts: list[str]) -> list[list[float]]:
-        assert isinstance(
-            texts, list
-        ), "Must pass list input. If just a string, make it a list of size 1."
+        if not isinstance(texts, list):
+            logger.error(f"Type: {type(texts)}. Texts: {texts}")
+            raise ValueError(
+                "Must pass list input. If just a string, make it a list of size 1."
+            )
         if len(texts) > self.max_batch_size:
             ids = range(0, len(texts), bsz := self.max_batch_size)
             return [x for i in ids for x in self._encode(texts[i : i + bsz])]

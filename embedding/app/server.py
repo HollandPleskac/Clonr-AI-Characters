@@ -58,7 +58,7 @@ class EmbedServicer(embed_pb2_grpc.EmbedServicer):
         req_meter.add(amount=1, attributes=attributes)
         reqs_in_progress_meter.add(amount=1, attributes=attributes)
 
-        encodings = self.encoder.encode_query(request.text)
+        encodings = self.encoder.encode_query([x for x in request.text])
         embeddings = [embed_pb2.Embedding(embedding=x) for x in encodings]
         res = embed_pb2.EmbeddingResponse(embeddings=embeddings)
 
@@ -82,7 +82,8 @@ class EmbedServicer(embed_pb2_grpc.EmbedServicer):
         req_meter.add(amount=1, attributes=attributes)
         reqs_in_progress_meter.add(amount=1, attributes=attributes)
 
-        encodings = self.encoder.encode_passage(request.text)
+        logger.warning(request.text)
+        encodings = self.encoder.encode_passage([x for x in request.text])
         embeddings = [embed_pb2.Embedding(embedding=x) for x in encodings]
         res = embed_pb2.EmbeddingResponse(embeddings=embeddings)
 
