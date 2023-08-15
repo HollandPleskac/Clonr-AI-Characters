@@ -141,7 +141,7 @@ async def create_clone(
 @router.get("/", response_model=list[schemas.CloneSearchResult])
 async def query_clones(
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
-    user: Annotated[models.User, Depends(deps.get_current_active_user)],
+    user: Annotated[models.User | None, Depends(deps.get_optional_current_active_user)],
     embedding_client: Annotated[EmbeddingClient, Depends(deps.get_embedding_client)],
     tags: Annotated[list[str] | None, Query()] = None,
     name: Annotated[str | None, Query()] = None,
@@ -153,7 +153,7 @@ async def query_clones(
     limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
 ):
     query = sa.select(models.Clone)
-    if not user.is_superuser:
+    if user is not None and user.is_superuser:
         query = query.where(models.Clone.is_active).where(models.Clone.is_public)
     if tags is not None:
         query = query.where(models.Clone.tags.in_(tags))
@@ -186,15 +186,19 @@ async def query_clones(
 @router.get("/{clone_id}", response_model=schemas.Clone)
 async def get_clone_by_id(
     clone: Annotated[models.Clone, Depends(get_clone)],
-    user: Annotated[models.User, Depends(deps.get_current_active_user)],
+    user: Annotated[models.User, Depends(deps.get_optional_current_active_user)],
 ):
-    if user.is_superuser or clone.creator_id == user.id:
+    if (
+        user is not None
+        and user.is_active
+        and (user.is_superuser or clone.creator_id == user.id)
+    ):
         return clone
     if not clone.is_public:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Clone does not exist."
         )
-    response = schemas.Clone.from_orm(clone)
+    response = schemas.Clone.model_dump(clone)
     if not clone.is_long_description_public:
         response.long_description = None
     if not clone.is_short_description_public:

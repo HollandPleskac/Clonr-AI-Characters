@@ -7,15 +7,12 @@ from grpc_reflection.v1alpha import reflection
 from loguru import logger
 
 from app.encoder import CrossEncoder, EmbeddingModel
-from app.interceptors import ExceptionInterceptor, setup_tracing
 from app.pb import embed_pb2, embed_pb2_grpc
+from app.tracing import setup_tracing
 
 HOST = os.environ.get("EMBEDDINGS_GRPC_HOST", "localhost")
 PORT = os.environ.get("EMBEDDINGS_GRPC_PORT", 50051)
 OTLP_ENDPOINT = os.environ.get("OTLP_ENDPOINT")
-
-
-setup_tracing(otlp_endpoint=OTLP_ENDPOINT)
 
 
 class EmbedServicer(embed_pb2_grpc.EmbedServicer):
@@ -71,7 +68,7 @@ async def serve(port: int = 50051) -> None:
     server = grpc.aio.server()
     local_url = f"[::]:{port}"
 
-    server = grpc.aio.server(interceptors=[ExceptionInterceptor()])
+    server = setup_tracing(server=server, otlp_endpoint=OTLP_ENDPOINT)
     embed_pb2_grpc.add_EmbedServicer_to_server(EmbedServicer(), server)
 
     SERVICE_NAMES = (

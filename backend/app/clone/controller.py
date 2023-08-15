@@ -1,3 +1,5 @@
+# TODO (Jonny): add opentelemetry metrics. consider doing this at a high level here or a lower level, i.e.
+# making an LLM callback for the llm calls, and adding in the metrics for performance of queries in clonedb
 import re
 import uuid
 

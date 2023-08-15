@@ -4,9 +4,12 @@ from typing import AsyncGenerator
 
 import redis.asyncio as redis
 from loguru import logger
+from opentelemetry.instrumentation.redis import RedisInstrumentor
 from tenacity import after_log, before_log, retry, stop_after_attempt, wait_exponential
 
 from app.settings import settings
+
+RedisInstrumentor().instrument()
 
 
 def redis_connection(host: str | None = None, port: str | None = None):

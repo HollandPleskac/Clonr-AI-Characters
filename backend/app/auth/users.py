@@ -32,7 +32,12 @@ redis = redis.asyncio.Redis(
 )
 
 google_oauth_client = GoogleOAuth2(
-    settings.GOOGLE_CLIENT_ID, settings.GOOGLE_CLIENT_SECRET
+    settings.GOOGLE_CLIENT_ID,
+    settings.GOOGLE_CLIENT_SECRET,
+    scopes=[
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "https://www.googleapis.com/auth/userinfo.email",
+    ],
 )
 
 facebook_oauth_client = FacebookOAuth2(

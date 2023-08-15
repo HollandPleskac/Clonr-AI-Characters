@@ -39,6 +39,8 @@ services:
     build: './embedding'
     env_file:
       - .env
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
     volumes:
       - ./embedding/app:/app
       - ./artifacts:/artifacts
@@ -50,7 +52,8 @@ services:
     env_file:
       - .env
     environment:
-      - port=8000
+      - PORT=8000
+      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
     volumes:
       - ./backend/app:/app
       - ./backend/clonr:/clonr
@@ -75,11 +78,68 @@ services:
       - backend
     ports:
       - 3000:3000
-    # Set environment variables directly in the docker-compose file
-    # environment:
-    #   ENV_VARIABLE: ${ENV_VARIABLE}
-    #   NEXT_PUBLIC_ENV_VARIABLE: ${NEXT_PUBLIC_ENV_VARIABLE}
 
-    # Set envrionment variables based on the .env file
-    # env_file:
-    #   - .env
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+    ports:
+      - 5775:5775/udp
+      - 6831:6831/udp
+      - 6832:6832/udp
+      - 5778:5778
+      - 16686:16686
+      - 14268:14268
+      - 14250:14250
+      - 9411:9411
+
+  # zipkin-all-in-one:
+  #   image: openzipkin/zipkin:latest
+  #   restart: always
+  #   ports:
+  #     - "9411:9411"
+
+  prometheus:
+    image: prom/prometheus:latest
+    restart: always
+    volumes:
+      - ./telemetry/prometheus/prometheus.yml:/workspace/prometheus.yml
+    ports:
+      - 9090:9090
+    command:
+      - --config.file=/workspace/prometheus.yml
+      - --enable-feature=exemplar-storage
+
+  # Collector
+  otel-collector:
+    image: ${OTELCOL_IMG}
+    restart: always
+    command: ["--config=/etc/otel-collector-config.yaml", "${OTELCOL_ARGS}"]
+    volumes:
+      - ./telemetry/otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "1888:1888"   # pprof extension
+      - "8888:8888"   # Prometheus metrics exposed by the collector
+      - "8889:8889"   # Prometheus exporter metrics
+      - "13133:13133" # health_check extension
+      - "4317:4317"   # OTLP gRPC receiver
+      - "55679:55679" # zpages extension
+    depends_on:
+      - jaeger
+      - prometheus
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - 3001:3000 # 1st value is container port, 2nd value is localhost port. This conflicts with frontend otherwise
+    # NOTE (Jonny): this doesn't work for some reason, the app always says you're unauthorized
+    # environment:
+    #   - GF_AUTH_ANONYMOUS_ENABLED=true
+    #   - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    #   - GF_AUTH_DISABLE_LOGIN_FORM=true
+    # NOTE (Jonny): for some reason this causes data sources to never be found
+    # volumes:
+    #   - ./telemetry/grafana/grafana.ini:/etc/grafana/grafana.ini
+    #   - ./telemetry/grafana/provisioning/:/etc/grafana/provisioning/
+    depends_on:
+      - otel-collector

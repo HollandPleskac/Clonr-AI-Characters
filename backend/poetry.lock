@@ -1399,6 +1399,17 @@ files = [
 ]
 
 [[package]]
+name = "install"
+version = "1.3.5"
+description = "Install packages from within code"
+optional = false
+python-versions = ">=2.7, >=3.5"
+files = [
+    {file = "install-1.3.5-py3-none-any.whl", hash = "sha256:0d3fadf4aa62c95efe8d34757c8507eb46177f86c016c21c6551eafc6a53d5a9"},
+    {file = "install-1.3.5.tar.gz", hash = "sha256:e67c8a0be5ccf8cb4ffa17d090f3a61b6e820e6a7e21cd1d2c0f7bc59b18e647"},
+]
+
+[[package]]
 name = "ipython"
 version = "8.14.0"
 description = "IPython: Productive Interactive Computing"
@@ -1954,6 +1965,27 @@ instruments = ["fastapi (>=0.58,<1.0)"]
 test = ["httpx (>=0.22,<1.0)", "opentelemetry-instrumentation-fastapi[instruments]", "opentelemetry-test-utils (==0.40b0)", "requests (>=2.23,<3.0)"]
 
 [[package]]
+name = "opentelemetry-instrumentation-redis"
+version = "0.40b0"
+description = "OpenTelemetry Redis instrumentation"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "opentelemetry_instrumentation_redis-0.40b0-py3-none-any.whl", hash = "sha256:a847f734901deac050fd1c4f4f7171c5231bc870c76c62be0ae74938c5e51269"},
+    {file = "opentelemetry_instrumentation_redis-0.40b0.tar.gz", hash = "sha256:61fab955611e7fbac2f6dd702c1dd4834447d8c9b1474e7d7d740fb387012397"},
+]
+
+[package.dependencies]
+opentelemetry-api = ">=1.12,<2.0"
+opentelemetry-instrumentation = "0.40b0"
+opentelemetry-semantic-conventions = "0.40b0"
+wrapt = ">=1.12.1"
+
+[package.extras]
+instruments = ["redis (>=2.6)"]
+test = ["opentelemetry-instrumentation-redis[instruments]", "opentelemetry-sdk (>=1.3,<2.0)", "opentelemetry-test-utils (==0.40b0)"]
+
+[[package]]
 name = "opentelemetry-instrumentation-sqlalchemy"
 version = "0.40b0"
 description = "OpenTelemetry SQLAlchemy instrumentation"
@@ -2090,6 +2122,17 @@ python-versions = "*"
 files = [
     {file = "pickleshare-0.7.5-py2.py3-none-any.whl", hash = "sha256:9649af414d74d4df115d5d718f82acb59c9d418196b7b4290ed47a12ce62df56"},
     {file = "pickleshare-0.7.5.tar.gz", hash = "sha256:87683d47965c1da65cdacaf31c8441d12b8044cdec9aca500cd78fc2c683afca"},
+]
+
+[[package]]
+name = "pip"
+version = "23.2.1"
+description = "The PyPA recommended tool for installing Python packages."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pip-23.2.1-py3-none-any.whl", hash = "sha256:7ccf472345f20d35bdc9d1841ff5f313260c2c33fe417f48c30ac46cccabf5be"},
+    {file = "pip-23.2.1.tar.gz", hash = "sha256:fb0bd5435b3200c602b5bf61d2d43c2f13c02e29c1707567ae7fbc514eb9faf2"},
 ]
 
 [[package]]
@@ -3651,4 +3694,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "4907e92cdeea414d45b3f048d48b1675b76b6fb0e3e206c28cc2b8e35b1f82a5"
+content-hash = "4f7edaabea32287f56f7de11daef6a30615e75eb43467fe142333adf70eb2f90"

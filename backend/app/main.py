@@ -8,7 +8,6 @@ from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 from app import api, deps, models, schemas
 from app.auth.users import (
@@ -29,6 +28,7 @@ from app.db import (
 from app.deps.users import fastapi_users
 from app.embedding import wait_for_embedding
 from app.settings import settings
+from app.tracing import setup_tracing
 
 # import sentry_sdk
 # sentry_sdk.init(
@@ -116,17 +116,17 @@ app.include_router(
     prefix="/auth",
     tags=["auth"],
 )
-app.include_router(
-    fastapi_users.get_reset_password_router(),
-    prefix="/auth",
-    tags=["auth"],
-)
-# email verification
-app.include_router(
-    fastapi_users.get_verify_router(schemas.UserRead),
-    prefix="/auth",
-    tags=["auth"],
-)
+# app.include_router(
+#     fastapi_users.get_reset_password_router(),
+#     prefix="/auth",
+#     tags=["auth"],
+# )
+# # email verification
+# app.include_router(
+#     fastapi_users.get_verify_router(schemas.UserRead),
+#     prefix="/auth",
+#     tags=["auth"],
+# )
 app.include_router(
     fastapi_users.get_users_router(schemas.UserRead, schemas.UserUpdate),
     prefix="/users",
@@ -161,7 +161,6 @@ app.include_router(
     tags=["auth"],
 )
 
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -170,7 +169,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-FastAPIInstrumentor.instrument_app(app)
+
+@app.get("/health")
+def test_get():
+    return {"success": True}
+
+
+setup_tracing(app=app)
+
 
 if __name__ == "__main__":
     p = Path(__file__).parent.parent

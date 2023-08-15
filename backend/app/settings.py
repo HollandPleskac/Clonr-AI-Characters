@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     REDDIT_CLIENT_SECRET: str
     DISCORD_CLIENT_ID: str
     DISCORD_CLIENT_SECRET: str
-    PORT: int = 8000
+    PORT: int
     REDIS_PASSWORD: str
     REDIS_PORT: str
     REDIS_HOST: str
@@ -37,6 +37,7 @@ class Settings(BaseSettings):
     DISCORD_TOKEN: str
     OPENAI_API_KEY: str
     LLM: str
+    OTEL_EXPORTER_OTLP_ENDPOINT: str
 
 
 settings = Settings()

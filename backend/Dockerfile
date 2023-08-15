@@ -19,6 +19,9 @@ RUN --mount=type=cache,target=/root/.cache/pip python3.10 -m pip install --no-ca
 
 RUN python -c "import nltk; nltk.download('punkt')"
 
+# To test, run: docker exec -it <container-id-here> pytest -v--disable-warnings ./tests
+RUN pip install opentelemetry-sdk && pip install opentelemetry-exporter-otlp-proto-grpc
+
 COPY ./alembic.ini /alembic.ini
 COPY ./migrations /migrations
 COPY ./app /app
@@ -32,6 +35,5 @@ RUN python -c "from clonr.tokenizer import Tokenizer; Tokenizer.from_huggingface
 # COPY ./tests /tests
 COPY ./.env.dev /.env
 
-# To test, run: docker exec -it <container-id-here> pytest -v--disable-warnings ./tests
 
 ENTRYPOINT [ "python", "-m", "app.main"]
