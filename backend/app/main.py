@@ -13,6 +13,8 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
+# import tracing first so no meters are uninitialized!
+from app.tracing import setup_tracing  # isort: skip
 from app import api, deps, models, schemas
 from app.auth.users import (
     auth_backend,
@@ -32,7 +34,6 @@ from app.db import (
 from app.deps.users import fastapi_users
 from app.embedding import wait_for_embedding
 from app.settings import settings
-from app.tracing import setup_tracing
 
 # import sentry_sdk
 # sentry_sdk.init(
@@ -105,12 +106,7 @@ app.include_router(router=api.clones_router)
 app.include_router(router=api.conversations_router)
 app.include_router(router=api.tags_router)
 app.include_router(router=api.stripe_router)
-# app.middleware("http")(moderation_middleware)
-# app.include_router(api.voice_router)
-# app.include_router(api.apikeys_router)
-# app.include_router(api.memories_router)
-# app.include_router(api.messages_router)
-# app.include_router(api.documents_router)
+
 
 app.include_router(
     fastapi_users.get_auth_router(auth_backend), prefix="/auth/cookies", tags=["auth"]
@@ -120,17 +116,6 @@ app.include_router(
     prefix="/auth",
     tags=["auth"],
 )
-# app.include_router(
-#     fastapi_users.get_reset_password_router(),
-#     prefix="/auth",
-#     tags=["auth"],
-# )
-# # email verification
-# app.include_router(
-#     fastapi_users.get_verify_router(schemas.UserRead),
-#     prefix="/auth",
-#     tags=["auth"],
-# )
 app.include_router(
     fastapi_users.get_users_router(schemas.UserRead, schemas.UserUpdate),
     prefix="/users",

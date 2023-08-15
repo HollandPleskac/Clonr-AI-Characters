@@ -1,3 +1,7 @@
+compile_protobuf_code:
+	chmod u+x ./compile_proto.sh
+	./compile_proto
+
 run_tests:
 	poetry run pytest tests/
 

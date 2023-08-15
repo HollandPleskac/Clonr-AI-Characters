@@ -20,10 +20,27 @@ from starlette.types import ASGIApp
 
 from app.settings import settings
 
+APP_NAME = "clonr-server"
 # Default value is http://localhost:4317, and described here:
 # https://opentelemetry.io/docs/concepts/sdk-configuration/otlp-exporter-configuration/
 # and it creates routes at /v1/metrics, /v1/traces. /v1/logs
+otlp_endpoint = settings.OTEL_EXPORTER_OTLP_ENDPOINT
 
+# Service name is required for most backends
+resource = Resource(attributes={SERVICE_NAME: APP_NAME})
+
+# If these are not set right away, then silently, nothing will be tracked!
+trace_provider = TracerProvider(resource=resource)
+trace_exporter = OTLPSpanExporter(endpoint=otlp_endpoint, insecure=True)
+trace_processor = BatchSpanProcessor(trace_exporter)
+trace_provider.add_span_processor(trace_processor)
+trace.set_tracer_provider(trace_provider)
+
+reader = PeriodicExportingMetricReader(
+    OTLPMetricExporter(endpoint=otlp_endpoint, insecure=True)
+)
+meter_provider = MeterProvider(resource=resource, metric_readers=[reader])
+metrics.set_meter_provider(meter_provider)
 
 meter = metrics.get_meter(__name__)
 
@@ -52,9 +69,6 @@ reqs_in_progress_meter = meter.create_up_down_counter(
     name="fastapi_requests_in_progress",
     description="Gauge of requests by method and path currently being processed",
 )
-
-
-app = FastAPI()
 
 
 def get_path(request: Request) -> tuple[str, bool]:
@@ -140,23 +154,9 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
 
 def setup_tracing(
     app: FastAPI,
-    endpoint: str | None = settings.OTEL_EXPORTER_OTLP_ENDPOINT,
-    service_name: str = "clonr-server",
 ):
-    # Service name is required for most backends
-    resource = Resource(attributes={SERVICE_NAME: service_name})
-
-    provider = TracerProvider(resource=resource)
-    processor = BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint, insecure=True))
-    provider.add_span_processor(processor)
-    trace.set_tracer_provider(provider)
-
-    reader = PeriodicExportingMetricReader(
-        OTLPMetricExporter(endpoint=endpoint, insecure=True)
+    app.add_middleware(PrometheusMiddleware, app_name=APP_NAME)
+    FastAPIInstrumentor.instrument_app(
+        app, tracer_provider=trace_provider, meter_provider=meter_provider
     )
-    provider = MeterProvider(resource=resource, metric_readers=[reader])
-    metrics.set_meter_provider(provider)
-
-    app.add_middleware(PrometheusMiddleware, app_name=service_name)
     LoggingInstrumentor().instrument()
-    FastAPIInstrumentor.instrument_app(app)

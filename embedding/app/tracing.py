@@ -50,8 +50,8 @@ def setup_tracing(server: Server, otlp_endpoint: str | None) -> Server:
     reader = PeriodicExportingMetricReader(
         OTLPMetricExporter(endpoint=otlp_endpoint, insecure=True)
     )
-    metric_provider = MeterProvider(resource=resource, metric_readers=[reader])
-    metrics.set_meter_provider(metric_provider)
+    meter_provider = MeterProvider(resource=resource, metric_readers=[reader])
+    metrics.set_meter_provider(meter_provider)
 
     server = grpc.aio.server(
         interceptors=[ExceptionInterceptor(), aio_server_interceptor()]

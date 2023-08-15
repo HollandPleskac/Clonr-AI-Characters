@@ -33,17 +33,27 @@ receivers:
     tls:
       insecure: true
 
+  loki:
+    protocols:
+      http:
+    use_incoming_timestamp: true
+
 processors:
   resourcedetection:
     detectors: ["system"]
+
   batch:
     send_batch_size: 10000
     timeout: 10s
-  resource:
-    attributes:
+
+  attributes:
+    actions:
+      - action: insert
+        key: loki.attribute.labels
+        value: container
       - action: insert
         key: loki.format
-        value: logfmt
+        value: raw
 
 exporters:
   logging:
@@ -63,9 +73,11 @@ exporters:
 
   loki:
     endpoint: http://loki:3100/loki/api/v1/push
-    default_labels_enabled:
-      exporter: false
-      job: true
+    # default_labels_enabled:
+    #   exporter: false
+    #   job: true
+    # tls:
+    #   insecure: true
 
   # zipkin:
   #   endpoint: "http://zipkin:9411/api/v2/spans"
@@ -94,6 +106,6 @@ service:
       processors: [batch, resourcedetection]
       exporters: [prometheus]
     logs:
-      receivers: [otlp]
-      processors: [resource]
+      receivers: [loki]
+      processors: [attributes]
       exporters: [loki]
