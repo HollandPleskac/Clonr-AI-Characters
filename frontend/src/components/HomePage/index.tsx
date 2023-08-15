@@ -33,8 +33,6 @@ export default function HomeScreen({
   trending,
   anime,
 }: HomeScreenProps) {
-  const [searchInput, setSearchInput] = useState('')
-  const [searchedCharacters, setSearchedCharacters] = useState<Character[]>([])
   const [doneSearching, setDoneSearching] = useState(false)
   const [showSearchGrid, setShowSearchGrid] = useState(false)
   const [trill, setTrill] = useState(false)
@@ -46,6 +44,39 @@ export default function HomeScreen({
   useEffect(() => {
     require('preline')
   }, [])
+
+  // search grid characters state
+  const [searchInput, setSearchInput] = useState('')
+  const [searchedCharacters, setSearchedCharacters] = useState<Character[]>([])
+  const [hasMoreData, setHasMoreData] = useState(true)
+
+  const fetchMoreGridData = () => {
+    // Simulate fetching 50 more characters from a server or other data source
+    const newCharacter: Character[] = Array.from(
+        { length: 50 },
+        (_, index) => (
+            {
+                id: 'test' + index,
+                created_at: 'string',
+                updated_at: 'string',
+                creator_id: 'string',
+                name: 'string',
+                short_description: 'ring',
+                avatar_uri: 'https://image.tmdb.org/t/p/w500/rktDFPbfHfUbArZ6OOOKsXcv0Bm.jpg',
+                num_messages: 34234,
+                num_conversations: 34,
+                tags: []
+            }
+        )
+    )
+
+    // Add the new characters to the end of the existing characters
+    setSearchedCharacters((prevCharacters) => [
+        ...prevCharacters,
+        ...newCharacter,
+    ])
+    setHasMoreData(false)
+}
 
   const handleCloneSearch = async () => {
     setLoading(true)
@@ -94,7 +125,12 @@ export default function HomeScreen({
       />
       {showSearchGrid ? (
         <ScaleFadeIn loaded={showSearchGrid} duration={duration}>
-          <SearchGrid characters={searchedCharacters} doneSearching={true} />
+          <SearchGrid
+            characters={searchedCharacters}
+            doneSearching={true}
+            fetchMoreData={fetchMoreGridData}
+            hasMoreData={hasMoreData}
+          />
         </ScaleFadeIn>
       ) : (
         <ScaleFadeIn loaded={!searchInput} duration={duration}>

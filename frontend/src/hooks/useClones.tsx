@@ -76,13 +76,27 @@ export default function useClones() {
 
   const queryClones = async () => {
     try {
-      const response = await axios.get<Character[]>(
-        `http://localhost:8000/clones/`,
-        {
-          withCredentials: true
-        }
-      );
-      return response.data;
+      // const response = await axios.get<Character[]>(
+      //   `http://localhost:8000/clones/`,
+      //   {
+      //     withCredentials: true
+      //   }
+      // );
+
+      // return response.data;
+
+      return [{
+        id: 'hksadfhkjhjkd',
+        created_at: 'string',
+        updated_at: 'string',
+        creator_id: 'string',
+        name: 'string',
+        short_description: 'string',
+        avatar_uri: 'string',
+        num_messages: 324234,
+        num_conversations: 234,
+        tags: []
+      }]
     } catch (error) {
       throw new Error('Error fetching clone: ' + error.message);
     }
