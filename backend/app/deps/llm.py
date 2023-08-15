@@ -9,7 +9,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import models
 from app.settings import settings
 from clonr.llms import LLM, LlamaCpp, MockLLM, OpenAI
-from clonr.llms.callbacks import AddToPostgresCallback, LLMCallback, LoggingCallback
+from clonr.llms.callbacks import (
+    AddToPostgresCallback,
+    LLMCallback,
+    LoggingCallback,
+    OTLPMetricsCallback,
+)
 from clonr.tokenizer import Tokenizer
 
 from .db import get_async_session
@@ -81,6 +86,9 @@ async def get_llm_with_convo_id(
         AddToPostgresCallback(
             db=db, clone_id=clone_id, user_id=user.id, conversation_id=conversation_id
         ),
+        OTLPMetricsCallback(
+            clone_id=clone_id, user_id=user.id, conversation_id=conversation_id
+        ),
     ]
     llm = _get_llm(model_name=settings.LLM, tokenizer=tokenizer, callbacks=callbacks)
     yield llm
@@ -97,6 +105,7 @@ async def get_llm_with_clone_id(
         AddToPostgresCallback(
             db=db, clone_id=clone_id, user_id=user.id, conversation_id=None
         ),
+        OTLPMetricsCallback(clone_id=clone_id, user_id=user.id, conversation_id=None),
     ]
     llm = _get_llm(model_name=settings.LLM, tokenizer=tokenizer, callbacks=callbacks)
     yield llm

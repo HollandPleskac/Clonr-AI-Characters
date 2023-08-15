@@ -231,12 +231,10 @@ class ModerationCallback(LLMCallback):
 class OTLPMetricsCallback(LLMCallback):
     def __init__(
         self,
-        db: AsyncSession,
         clone_id: str,
         user_id: str,
         conversation_id: str | None = None,
     ):
-        self.db = db
         self.clone_id = clone_id
         self.user_id = user_id
         self.conversation_id = conversation_id
@@ -276,7 +274,6 @@ class OTLPMetricsCallback(LLMCallback):
             subroutine=kwargs.get("subroutine"),
         )
         resp_meter.add(amount=1, attributes=attributes)
-
         req_processing_time_meter.record(amount=r.duration, attributes=attributes)
         tok_per_sec_meter.record(amount=r.tokens_per_second, attributes=attributes)
         prompt_tokens_meter.record(amount=r.usage.prompt_tokens, attributes=attributes)
@@ -284,22 +281,3 @@ class OTLPMetricsCallback(LLMCallback):
             amount=r.usage.completion_tokens, attributes=attributes
         )
         total_tokens_meter.record(amount=r.usage.total_tokens, attributes=attributes)
-
-        mdl = models.LLMCall(
-            content=r.content,
-            model_type=r.model_type,
-            model_name=r.model_name,
-            prompt_tokens=r.usage.prompt_tokens,
-            completion_tokens=r.usage.completion_tokens,
-            total_tokens=r.usage.total_tokens,
-            duration=r.duration,
-            role=r.role,
-            tokens_per_second=r.tokens_per_second,
-            input_prompt=r.input_prompt,
-            clone_id=self.clone_id,
-            user_id=self.user_id,
-            conversation_id=self.conversation_id,
-            **kwargs,
-        )
-        self.db.add(mdl)
-        await self.db.commit()
