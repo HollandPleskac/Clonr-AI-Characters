@@ -28,29 +28,6 @@ async function getCharacterPastChats(
   return charDetails
 }
 
-async function getInitialMessages(characterId: string, conversationId: string) {
-  console.log('characterID', characterId)
-  return [
-    {
-      id: '12353223iy4',
-      img: '/dummy-char.png',
-      alt: 'dummy-char',
-      content: 'Test first message?',
-      created_at: new Date(),
-      updated_at: new Date(),
-      sender_name: 'Test',
-      timestamp: new Date(),
-      is_clone: true,
-      is_main: true,
-      is_active: true,
-      parent_id: '',
-      clone_id: characterId,
-      user_id: '41238967-9489-400d-9616-4bcacfb9140', // TODO: edit
-      conversation_id: conversationId,
-    },
-  ]
-}
-
 export default async function ChatPage({
   params,
 }: {
@@ -117,7 +94,8 @@ export default async function ChatPage({
           initialMessages={initialMessages}
           conversationId={params.conversationId}
           initialConversationState={
-            'short term'
+            'undecided'
+            //'short term'
             //character && character.name === 'Barack Obama' ? 'undecided' : 'short term'
           }
         />

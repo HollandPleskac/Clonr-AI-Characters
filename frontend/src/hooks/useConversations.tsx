@@ -8,7 +8,7 @@ interface ConversationCreate {
     user_name: string;
     memory_strategy: string;
     information_strategy: string,
-    adaptation_strategy: string,
+    adaptation_strategy: string | null,
     clone_id: string;
 }
 
@@ -18,7 +18,7 @@ interface Conversation {
     user_name: string;
     memory_strategy: string;
     information_strategy: string,
-    adaptation_strategy: string,
+    adaptation_strategy: string | null,
     clone_id: string;
     created_at: string;
     updated_at: string;

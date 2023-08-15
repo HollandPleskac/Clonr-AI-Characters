@@ -230,7 +230,15 @@ export default function BrowsePage({
         setError(null)
         console.log("DONE SEARCHINGgg")
         try {
-            const data = await queryClones(searchInput)
+            const queryParams = {
+                tags: tags ? tags.map((tag) => tag.id).join(',') : null,
+                name: searchInput,
+                sort: 'top',
+                similar: searchInput,
+                offset: 0,
+                limit: 10
+            }
+            const data = await queryClones(queryParams)
             setSearchedCharacters(data)
             setDoneSearching(searchInput !== '')
             console.log("success")

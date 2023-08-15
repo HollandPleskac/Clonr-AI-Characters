@@ -74,29 +74,31 @@ export default function useClones() {
     }
   };
 
-  const queryClones = async () => {
+  const queryClones = async (queryParams) => {
+    const {
+        tags,
+        name,
+        sort,
+        similar,
+        offset = 0,
+        limit = 10
+    } = queryParams;
     try {
-      // const response = await axios.get<Character[]>(
-      //   `http://localhost:8000/clones/`,
-      //   {
-      //     withCredentials: true
-      //   }
-      // );
-
-      // return response.data;
-
-      return [{
-        id: 'hksadfhkjhjkd',
-        created_at: 'string',
-        updated_at: 'string',
-        creator_id: 'string',
-        name: 'string',
-        short_description: 'string',
-        avatar_uri: 'string',
-        num_messages: 324234,
-        num_conversations: 234,
-        tags: []
-      }]
+      const response = await axios.get<Character[]>(
+        `http://localhost:8000/clones/`,
+        {
+          withCredentials: true,
+          params: {
+            tags,
+            name,
+            sort,
+            similar,
+            offset,
+            limit
+          }
+        }
+      );
+      return response.data;
     } catch (error) {
       throw new Error('Error fetching clone: ' + error.message);
     }
