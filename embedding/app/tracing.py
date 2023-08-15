@@ -41,17 +41,17 @@ class ExceptionInterceptor(AsyncServerInterceptor):
 
 def setup_tracing(server: Server, otlp_endpoint: str | None) -> Server:
     resource = Resource.create(attributes={SERVICE_NAME: "embedding.server"})
-    provider = TracerProvider(resource=resource)
-    exporter = OTLPSpanExporter(endpoint=otlp_endpoint, insecure=True)
-    processor = BatchSpanProcessor(exporter)
-    provider.add_span_processor(processor)
-    trace.set_tracer_provider(provider)
+    trace_provider = TracerProvider(resource=resource)
+    trace_exporter = OTLPSpanExporter(endpoint=otlp_endpoint, insecure=True)
+    trace_processor = BatchSpanProcessor(trace_exporter)
+    trace_provider.add_span_processor(trace_processor)
+    trace.set_tracer_provider(trace_provider)
 
     reader = PeriodicExportingMetricReader(
         OTLPMetricExporter(endpoint=otlp_endpoint, insecure=True)
     )
-    provider = MeterProvider(resource=resource, metric_readers=[reader])
-    metrics.set_meter_provider(provider)
+    metric_provider = MeterProvider(resource=resource, metric_readers=[reader])
+    metrics.set_meter_provider(metric_provider)
 
     server = grpc.aio.server(
         interceptors=[ExceptionInterceptor(), aio_server_interceptor()]

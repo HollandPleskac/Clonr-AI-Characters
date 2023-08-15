@@ -1,4 +1,5 @@
 import numpy as np
+from typing_extensions import Self
 import transformers
 from loguru import logger
 from optimum.onnxruntime import (
@@ -68,7 +69,7 @@ class EmbeddingModel:
         normalized: bool = True,
         download_if_needed: bool = False,
         max_batch_size: int = MAX_BATCH_SIZE,
-    ):
+    ) -> Self:
         if not (
             path := (get_artifacts_dir() / "onnx" / model_name.split("/")[-1])
         ).exists():
@@ -97,7 +98,6 @@ class EmbeddingModel:
             normalized=normalized,
             max_batch_size=max_batch_size,
         )
-        obj._pretrained_name = model_name.value
         return obj
 
     def _mean_pool(self, h: np.ndarray, attn_mask: np.ndarray) -> np.ndarray:
@@ -143,12 +143,12 @@ class EmbeddingModel:
         return self._encode(text)
 
     def __repr__(self):
-        if hasattr(self, "_pretrained_name"):
-            return f"{self.__class__.__name__}(model={self._pretrained_name}, dimension={self.dimension})"
-        return f"{self.__class__.__name__}(dimension={self.dimension})"
+        return (
+            f"{self.__class__.__name__}(model={self.name}, dimension={self.dimension})"
+        )
 
 
-class CrossEncoder(EmbeddingModel):
+class CrossEncoder:
     def __init__(
         self,
         model: transformers.PreTrainedModel,
@@ -170,7 +170,7 @@ class CrossEncoder(EmbeddingModel):
         cls,
         model_name: CrossEncoderEnum = CrossEncoderEnum.mmarco_mMiniLMv2_L12_H384_v1,
         download_if_needed: bool = False,
-    ):
+    ) -> Self:  # type: ignore
         if not (
             path := (get_artifacts_dir() / "onnx" / model_name.split("/")[-1])
         ).exists():
@@ -193,7 +193,6 @@ class CrossEncoder(EmbeddingModel):
         )
         tokenizer = get_hf_tokenizer(str(path.resolve()))
         obj = cls(model=model, tokenizer=tokenizer)
-        obj._pretrained_name = model_name.value
         return obj
 
     def similarity_score(

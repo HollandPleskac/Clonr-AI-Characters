@@ -48,25 +48,30 @@ def _export(model_name_or_dir: str, ORTClass, output_dir: str | None = None) -> 
 
 
 def export(
-    model_name_or_dir: CrossEncoderEnum | EmbeddingModelEnum,
+    model_name_or_dir: str,
     output_dir: str | None = None,
 ) -> Path:
-    if isinstance(model_name_or_dir, EmbeddingModelEnum):
+    try:
+        _ = EmbeddingModelEnum(model_name_or_dir)
         return _export(
-            model_name_or_dir=model_name_or_dir.value,
+            model_name_or_dir=model_name_or_dir,
             ORTClass=ORTModelForFeatureExtraction,
             output_dir=output_dir,
         )
-    elif isinstance(model_name_or_dir, CrossEncoderEnum):
+    except ValueError:
+        pass
+    try:
+        _ = CrossEncoderEnum(model_name_or_dir)
         return _export(
-            model_name_or_dir=model_name_or_dir.value,
+            model_name_or_dir=model_name_or_dir,
             ORTClass=ORTModelForSequenceClassification,
             output_dir=output_dir,
         )
-    else:
-        raise ValueError(
-            "Currently not accepting models not listed in the model Enums. If you want to override this behavior, please use the hidden _export function instead."
-        )
+    except ValueError:
+        pass
+    raise ValueError(
+        "Currently not accepting models not listed in the model Enums. If you want to override this behavior, please use the hidden _export function instead."
+    )
 
 
 if __name__ == "__main__":
