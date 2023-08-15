@@ -40,8 +40,6 @@ export default function ChatScreen({
   const [conversationState, setConversationState] = useState(
     initialConversationState
   )
-  console.log("THIS IS initialConversationState: ", initialConversationState)
-  console.log("THIS IS conversationState: ", conversationState)
   const [showChat, setShowChat] = useState(true)
   const [scrollToNewMessage, setScrollToNewMessage] = useState<boolean>(false)
 

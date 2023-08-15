@@ -199,7 +199,16 @@ export default function BrowsePage({
         setError(null)
 
         try {
-            const data = await queryClones()
+            const queryParams = {
+                // tags - convert arr to str
+                tags: tags ? tags.map((tag) => tag.id).join(',') : null,
+                name: searchInput,
+                sort: 'top',
+                similar: searchInput,
+                offset: 0,
+                limit: 10
+            }
+            const data = await queryClones(queryParams)
             setSearchedCharacters(data)
             setDoneSearching(searchInput !== '')
             setActiveTag(null)

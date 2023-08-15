@@ -52,7 +52,15 @@ export default function HomeScreen({
     setError(null)
 
     try {
-      const data = await queryClones(searchInput)
+      const queryParams = {
+        tags: '',
+        name: searchInput,
+        sort: 'top',
+        similar: searchInput,
+        offset: 0,
+        limit: 10
+      }
+      const data = await queryClones(queryParams)
       setSearchedCharacters(data)
       setDoneSearching(searchInput !== '')
     } catch (err: any) {

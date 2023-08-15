@@ -8,6 +8,7 @@ type PreviousConversationsProps = {
   conversation: Conversation
 }
 
+// TODO: edit
 const PreviousConversations = ({
   conversation,
 }: PreviousConversationsProps) => {
@@ -28,18 +29,18 @@ const PreviousConversations = ({
       </div>
       <div
         className={`${
-          conversation.memoryType === 'short'
+          conversation.memory_strategy === 'short_term'
             ? 'text-purple-500'
             : 'text-purple-600'
         } font-semibold flex items-center `}
       >
         <p className=''>
-          {conversation.memoryType === 'short'
+          {conversation.memory_strategy === 'short_term'
             ? 'Short Term Memory'
             : 'Long Term Memory'}
         </p>
         <div className='flex h-[24px] w-[24px] items-center justify-center ml-2'>
-          {conversation.memoryType === 'short' ? (
+          {conversation.memory_strategy === 'short_term' ? (
             <ChevronRightPurple500 />
           ) : (
             <ChevronRightPurple600 />

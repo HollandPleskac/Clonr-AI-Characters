@@ -74,11 +74,27 @@ export default function useClones() {
     }
   };
 
-  const queryClones = async () => {
+  const queryClones = async (queryParams) => {
+    const {
+        tags,
+        name,
+        sort,
+        similar,
+        offset = 0,
+        limit = 10
+    } = queryParams;
     try {
       const response = await axios.get<Character[]>(
         `http://localhost:8000/clones/`,
         {
+            params: {
+                tags,
+                name,
+                sort,
+                similar,
+                offset,
+                limit
+            },
           withCredentials: true
         }
       );
