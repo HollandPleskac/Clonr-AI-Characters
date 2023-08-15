@@ -61,8 +61,8 @@ class EmbeddingClient:
 @retry(
     stop=stop_after_attempt(8),
     wait=wait_exponential(multiplier=1, min=1, max=2),
-    before=before_log(logger, logging.INFO),
-    after=after_log(logger, logging.WARN),
+    before=before_log(logger, logging.INFO),  # type: ignore
+    after=after_log(logger, logging.WARN),  # type: ignore
 )
 async def wait_for_embedding():
     async with EmbeddingClient() as client:

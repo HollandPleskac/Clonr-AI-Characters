@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 
@@ -24,7 +25,7 @@ class Settings(BaseSettings):
     REDIS_PORT: str
     REDIS_HOST: str
     EMBEDDINGS_GRPC_HOST: str
-    EMBEDDINGS_GRPC_PORT: str
+    EMBEDDINGS_GRPC_PORT: int
     USE_ALEMBIC: bool = False
     SUPERUSER_EMAIL: str
     SUPERUSER_PASSWORD: str

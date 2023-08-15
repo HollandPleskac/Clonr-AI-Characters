@@ -36,6 +36,17 @@ HOT_TIME: float = 60 * 60 * 12
 # TODO (Jonny): the query stuff doesn't properly filter out column-level is_public flags
 # we should maybe just make a class to only return like name, short_desc, prof_pic, num_messages, num_convos
 
+# TODO (Kevin or Jonny): Run this for all of our query
+# methods, and test latency on similarity search/embedding search
+# get the duration, and number of query characters
+# meter = metrics.get_meter(__name__)
+
+# query_processing_time_meter = meter.create_histogram(
+#     name="query_processing_time",
+#     description="Time spent querying",
+#     unit="s",
+# )
+
 
 class CloneSortType(str, Enum):
     hot: str = "hot"

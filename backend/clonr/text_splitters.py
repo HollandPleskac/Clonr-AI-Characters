@@ -3,7 +3,7 @@ import warnings
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import Literal, Sequence, TypeVar
+from typing import Literal, TypeVar
 
 try:
     from nltk.tokenize import sent_tokenize as _nltk_sent_tokenize
@@ -82,7 +82,7 @@ def _validate_regex_split_pattern(s: str) -> None:
         )
 
 
-def regex_split(text: str, pattern: str, include_separator: bool) -> str:
+def regex_split(text: str, pattern: str, include_separator: bool) -> list[str]:
     """The recommended way to write a pattern would be something like this:
     r'[\?\!\.]+'. This captures stuff like What?!?! or ok... Note (Jonny): that if you
     wrap in parenthesis () with include_separator=False, you'll get chunks that
@@ -90,18 +90,19 @@ def regex_split(text: str, pattern: str, include_separator: bool) -> str:
     _validate_regex_split_pattern(pattern)
     if include_separator:
         pattern = pattern if pattern[0] == "(" else f"({pattern})"
-    splits = re.split(pattern, text)
+    raw_splits = re.split(pattern, text)
+    splits = [x for x in raw_splits if isinstance(x, str)]
     if include_separator:
         splits = ["".join(splits[i : i + 2]) for i in range(0, len(splits), 2)]
     return [x for x in splits if x]
 
 
 def _chunk_with_overlap(
-    arr: Sequence[T],
+    arr: list[T],
     size: int,
     overlap: int,
-) -> T:
-    res = []
+) -> list[list[T]]:
+    res: list[list[T]] = []
     stride = size - overlap
     for i in range(0, N := len(arr), stride):
         res.append(arr[i : i + size])
@@ -110,14 +111,15 @@ def _chunk_with_overlap(
     return res
 
 
-def _chunk_evenly(arr: Sequence[T], max_size: int) -> list[T]:
+def _chunk_evenly(arr: list[T], max_size: int) -> list[list[T]]:
     N = len(arr)
     if max_size >= N:
         return [arr]
     # the last part says if there's leftover, add one more chunk
     n_splits = N // max_size + bool(N % max_size)
     chunk_size, remainder = divmod(N, n_splits)
-    res, index = [], 0
+    res: list[list[T]] = []
+    index = 0
     for i in range(n_splits):
         # for each leftover, add a new section size that's +1 bigger
         size = chunk_size + int(i <= remainder)
@@ -126,10 +128,10 @@ def _chunk_evenly(arr: Sequence[T], max_size: int) -> list[T]:
     return res
 
 
-def chunk(arr: Sequence[T], size: int, overlap: int) -> list[list[T]]:
+def chunk(arr: list[T], size: int, overlap: int) -> list[list[T]]:
     assert overlap < size, "Overlap cannot be >= chunk size."
     if not arr:
-        return arr
+        return []
     size = max(1, size)
     overlap = max(0, overlap)
     if overlap <= 0:
@@ -145,7 +147,9 @@ class TextSplitter(ABC):
 
     def _split_doc(self, doc: Document) -> list[Chunk]:
         splits = self._split_text(doc.content)
-        chunks = [Chunk(content=x, document_id=doc.id) for x in splits]
+        chunks = [
+            Chunk(content=x, document_id=doc.id, index=i) for i, x in enumerate(splits)
+        ]
         if len(chunks) > 1:
             for i in range(len(chunks)):
                 if i:
@@ -283,7 +287,7 @@ class SentenceSplitter(TextSplitter):
             # add the completed chunk, you're now sitting on the newest element
             # if overlap were 0, you would repeat here
             if chunk and isinstance(chunk[0], str):
-                chunk = " ".join(chunk)
+                chunk = " ".join(chunk)  # type: ignore
             elif chunk and isinstance(chunk[0], list):
                 chunk = [x for y in chunk for x in y]
             res.append(chunk)
@@ -295,7 +299,7 @@ class SentenceSplitter(TextSplitter):
             while r > (l + 1) and (overlap + len(sentences[r - 1])) < self.overlap:
                 r -= 1
                 overlap += len(sentences[r - 1])
-            l = r
+            l = r  # noqa
             chunk = []
             chunk_len = 0
         return res
@@ -328,13 +332,17 @@ class SentenceSplitter(TextSplitter):
             )
         sentences = self._text_to_sentences(text)
         if self.tokenizer is not None:
-            sentences = self.tokenizer.encode_batch(sentences)
-        sentences = self._aggregate_small_chunks(sentences)
-        sentences = self._split_large_chunks(sentences)
-        if self.overlap > 0:
-            sentences = self._sentences_to_overlapped_sentences(sentences)
-        if self.tokenizer is not None:
-            sentences = self.tokenizer.decode_batch(sentences)
+            sentences_ids = self.tokenizer.encode_batch(sentences)
+            sentences_ids = self._aggregate_small_chunks(sentences_ids)
+            sentences_ids = self._split_large_chunks(sentences_ids)
+            if self.overlap > 0:
+                sentences_ids = self._sentences_to_overlapped_sentences(sentences_ids)
+            sentences = self.tokenizer.decode_batch(sentences_ids)
+        else:
+            sentences = self._aggregate_small_chunks(sentences)
+            sentences = self._split_large_chunks(sentences)
+            if self.overlap > 0:
+                sentences = self._sentences_to_overlapped_sentences(sentences)
         return sentences
 
     def __repr__(self) -> str:
@@ -363,14 +371,15 @@ class CharSplitter(TextSplitter):
             chunk_overlap if chunk_overlap is not None else DEFAULTS.overlap_chars
         )
 
-    def _split_text(self, document: Document) -> list[str]:
-        arr = chunk(document.content, size=self.chunk_size, overlap=self.overlap)
+    def _split_text(self, text: str) -> list[str]:
+        text_arr = list(text)
+        arr = chunk(text_arr, size=self.chunk_size, overlap=self.chunk_overlap)
         sentences = ["".join(x) for x in arr]
         return sentences
 
     def __repr__(self) -> str:
         name = self.__class__.__name__
-        return f"{name}(chunk_size={self.chunk_size}, " f"overlap={self.overlap})"
+        return f"{name}(chunk_size={self.chunk_size}, " f"overlap={self.chunk_overlap})"
 
 
 class TokenSplitter(TextSplitter):

@@ -143,7 +143,7 @@ class Dialogue(BaseModel):
         return self.content
 
 
-class Memory(BaseModel):
+class _MemoryBase(BaseModel):
     id: uuid.UUID = Field(default_factory=uuid.uuid4)
     content: str
     timestamp: datetime.datetime = Field(
@@ -154,11 +154,6 @@ class Memory(BaseModel):
     last_accessed_at: datetime.datetime = Field(
         detail="date of last access in the DB. This counts reflections and message retrieval?",
         default_factory=get_current_datetime,
-    )
-    importance: int = Field(
-        detail="The LLM rated importance of this memory. scaled 0-9 to make guidance easier",
-        ge=0,
-        le=9,
     )
     is_shared: bool = Field(
         default=False,
@@ -188,7 +183,15 @@ class Memory(BaseModel):
         return DateFormat.human_readable(self.timestamp)
 
 
-class MemoryWithoutRating(Memory):
+class Memory(_MemoryBase):
+    importance: int = Field(
+        detail="The LLM rated importance of this memory. scaled 0-9 to make guidance easier",
+        ge=0,
+        le=9,
+    )
+
+
+class MemoryWithoutRating(_MemoryBase):
     importance: int | None = Field(
         default=None,
         detail="The LLM rated importance of this memory. scaled 0-9 to make guidance easier",

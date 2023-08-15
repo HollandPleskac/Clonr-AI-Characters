@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from fastapi import status
 from fastapi.exceptions import HTTPException
 from loguru import logger
+from opentelemetry import metrics
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
@@ -16,6 +17,44 @@ from clonr.llms.schemas import (
     Message,
     OpenAIStreamResponse,
 )
+
+meter = metrics.get_meter(__name__)
+
+req_meter = meter.create_counter(
+    name="llm_requests_total",
+    description="Total count of requests by method and path.",
+    unit="responses",
+)
+resp_meter = meter.create_counter(
+    name="llm_responses_total",
+    description="Total count of responses by method, path and status codes.",
+)
+req_processing_time_meter = meter.create_histogram(
+    name="llm_requests_duration_seconds",
+    description="Histogram of requests processing time by path (in seconds)",
+    unit="s",
+)
+tok_per_sec_meter = meter.create_histogram(
+    name="llm_tokens_per_second",
+    description="Number of total tokens processed per second",
+    unit="tokens/s",
+)
+prompt_tokens_meter = meter.create_histogram(
+    name="llm_prompt_tokens",
+    description="Number of prompt tokens",
+    unit="tokens",
+)
+completion_tokens_meter = meter.create_histogram(
+    name="llm_completion_tokens",
+    description="Number of completion tokens",
+    unit="tokens",
+)
+total_tokens_meter = meter.create_histogram(
+    name="llm_total_tokens",
+    description="Total number of tokens",
+    unit="tokens",
+)
+
 
 # NOTE (Jonny): the **kwargs is really bad coding practice, but I could not find another solution
 # I spent nearly a full day with codeblock on this. The issue, is that we want to trigger some event
@@ -187,3 +226,80 @@ class ModerationCallback(LLMCallback):
 
     async def increment_flagged_counter(self):
         await self.cache.add_moderation_violations(self.user_id)
+
+
+class OTLPMetricsCallback(LLMCallback):
+    def __init__(
+        self,
+        db: AsyncSession,
+        clone_id: str,
+        user_id: str,
+        conversation_id: str | None = None,
+    ):
+        self.db = db
+        self.clone_id = clone_id
+        self.user_id = user_id
+        self.conversation_id = conversation_id
+
+    # (Jonny): sharing this callback between concurrent requests means that
+    # we can't assign state in the callbacks so you can't communicate
+    # information from here to on_generate_end
+    async def on_generate_start(
+        self,
+        llm: LLM,
+        prompt_or_messages: str | list[Message],
+        params: GenerationParams | None,
+        **kwargs,
+    ):
+        attributes = dict(
+            model=llm.model,
+            model_type=llm.model_type,
+            clone_id=self.clone_id,
+            user_id=self.user_id,
+            conversation_id=self.conversation_id,
+            retry_attempt=kwargs.get("retry_attempt"),
+            http_retry_attempt=kwargs.get("http_retry_attempt"),
+            subroutine=kwargs.get("subroutine"),
+        )
+        req_meter.add(amount=1, attributes=attributes)
+
+    async def on_generate_end(self, llm: LLM, llm_response: LLMResponse, **kwargs):
+        r = llm_response
+        attributes = dict(
+            model=llm.model,
+            model_type=llm.model_type,
+            clone_id=self.clone_id,
+            user_id=self.user_id,
+            conversation_id=self.conversation_id,
+            retry_attempt=kwargs.get("retry_attempt"),
+            http_retry_attempt=kwargs.get("http_retry_attempt"),
+            subroutine=kwargs.get("subroutine"),
+        )
+        resp_meter.add(amount=1, attributes=attributes)
+
+        req_processing_time_meter.record(amount=r.duration, attributes=attributes)
+        tok_per_sec_meter.record(amount=r.tokens_per_second, attributes=attributes)
+        prompt_tokens_meter.record(amount=r.usage.prompt_tokens, attributes=attributes)
+        completion_tokens_meter.record(
+            amount=r.usage.completion_tokens, attributes=attributes
+        )
+        total_tokens_meter.record(amount=r.usage.total_tokens, attributes=attributes)
+
+        mdl = models.LLMCall(
+            content=r.content,
+            model_type=r.model_type,
+            model_name=r.model_name,
+            prompt_tokens=r.usage.prompt_tokens,
+            completion_tokens=r.usage.completion_tokens,
+            total_tokens=r.usage.total_tokens,
+            duration=r.duration,
+            role=r.role,
+            tokens_per_second=r.tokens_per_second,
+            input_prompt=r.input_prompt,
+            clone_id=self.clone_id,
+            user_id=self.user_id,
+            conversation_id=self.conversation_id,
+            **kwargs,
+        )
+        self.db.add(mdl)
+        await self.db.commit()

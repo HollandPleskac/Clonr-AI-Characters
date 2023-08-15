@@ -115,6 +115,8 @@ class DateFormat:
         Returns:
             str: the natural language time difference string.
         """
+        if end_date is None:
+            end_date = datetime.now(tz=start_date.tzinfo or ZoneInfo("utc"))
         arr = DateFormat._datediff_to_arr(start_date=start_date, end_date=end_date)
         if not arr:
             return ZERO_TIME_LABEL

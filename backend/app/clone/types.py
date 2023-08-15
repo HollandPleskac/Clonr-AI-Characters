@@ -1,10 +1,10 @@
 import datetime
 import enum
 from dataclasses import dataclass
-from typing import Protocol, TypeVar
 
-import numpy as np
 from pydantic import BaseModel, Field
+from sqlalchemy.orm.attributes import InstrumentedAttribute
+from sqlalchemy.orm.decl_api import DeclarativeAttributeIntercept
 
 INF = int(1e10)
 
@@ -27,20 +27,16 @@ class AdaptationStrategy(str, enum.Enum):
     fluid = "fluid"
 
 
-class VectorSearchProtocol(Protocol):
-    embedding: list[float] | np.ndarray
+class VectorSearchable(DeclarativeAttributeIntercept):
+    embedding: InstrumentedAttribute  # list[float]
     content: str
 
 
-class GenAgentsSearchProtocol(Protocol):
-    embedding: list[float] | np.ndarray
+class GenAgentsSearchable(DeclarativeAttributeIntercept):
+    embedding: InstrumentedAttribute
     content: str
-    importance: int | float
+    importance: InstrumentedAttribute  # int
     last_accessed_at: datetime.datetime
-
-
-VectorSearchable = TypeVar("VectorSearchable", bound=VectorSearchProtocol)
-GenAgentsSearchable = TypeVar("GenAgentsSearchable", bound=GenAgentsSearchProtocol)
 
 
 class MetricType(str, enum.Enum):

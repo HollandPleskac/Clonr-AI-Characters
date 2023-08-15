@@ -1,5 +1,4 @@
 import asyncio
-import os
 import re
 import textwrap
 import time
@@ -12,6 +11,7 @@ import openai
 from fastapi import status
 from fastapi.exceptions import HTTPException
 from loguru import logger
+from opentelemetry import metrics
 from tenacity import (
     RetryError,
     retry,
@@ -36,7 +36,16 @@ from .schemas import (
     StreamDelta,
 )
 
-openai.api_key = os.environ.get("OPENAI_API_KEY", "")
+meter = metrics.get_meter(__name__)
+
+exc_meter = meter.create_counter(
+    name="llm_exceptions_total",
+    description="Total count of exceptions raised by path and exception type",
+)
+reqs_in_progress_meter = meter.create_up_down_counter(
+    name="llm_requests_in_progress",
+    description="OpenAI or other LLM requests currently in progress",
+)
 
 
 def retry_decorator(fn: callable):
@@ -53,34 +62,48 @@ def retry_decorator(fn: callable):
         wait=wait_exponential(min=1, max=3),
         stop=stop_after_attempt(2),
     )
-    def original(*args, **kwargs):
-        return fn(*args, **kwargs)
+    def original(self, *args, **kwargs):
+        return fn(self, *args, **kwargs)
 
     @wraps(original)
-    def wrapped(*args, **kwargs):
+    def wrapped(self, *args, **kwargs):
+        attributes = dict(model=self.model, model_type=self.model_type)
         try:
-            return original(*args, **kwargs)
+            reqs_in_progress_meter.add(amount=1, attributes=attributes)
+            return original(self, *args, **kwargs)
         except RetryError as e:
             try:
                 e.reraise()
             except openai.error.Timeout as e2:
                 logger.error(e2)
+                exception_type = type(e2).__name__
+                exc_meter.add(
+                    amount=1, attributes={**attributes, exception_type: exception_type}
+                )
                 raise HTTPException(
                     status_code=status.HTTP_504_GATEWAY_TIMEOUT,
                     detail="Request timed out",
                 )
             except openai.error.RateLimitError as e2:
                 logger.error(e2)
+                exc_meter.add(
+                    amount=1, attributes={**attributes, exception_type: exception_type}
+                )
                 raise HTTPException(
                     status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                     detail="Servers are currently overloaded. Please try again later.",
                 )
             except Exception as e2:
                 logger.error(e2)
+                exc_meter.add(
+                    amount=1, attributes={**attributes, exception_type: exception_type}
+                )
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail="Internal server error",
                 )
+            finally:
+                reqs_in_progress_meter.add(amount=-1, attributes=attributes)
 
     return wrapped
 

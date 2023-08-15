@@ -89,8 +89,8 @@ class HFDownloader:
             r = sess.get(repo_url, timeout=self.timeout)
             r.raise_for_status()
         resources = r.json()
-        for i, r in enumerate(resources):
-            fname = r["path"]
+        for i, resource in enumerate(resources):
+            fname = resource["path"]
             resources[i]["url"] = self._get_download_url(model_name, fname, branch)
         return [HFResource(**r) for r in resources]
 
@@ -110,6 +110,7 @@ class HFDownloader:
                 sess.auth = (self.hf_user, self.hf_password)
 
             # if download exists and is already completed, do nothing.
+            headers: dict[str, str] = {}
             if output_path.exists() and resume_download:
                 print(f"Resuming Download for: {filename}")
                 r = sess.get(url, stream=True, timeout=10)
@@ -117,12 +118,9 @@ class HFDownloader:
                 total_size = int(r.headers.get("content-length", 0))
                 if output_path.stat().st_size >= total_size:
                     return
-                headers: dict[str, str] = {
-                    "Range": f"bytes={output_path.stat().st_size}-"
-                }
+                headers = {"Range": f"bytes={output_path.stat().st_size}-"}
                 mode = "ab"
             else:
-                headers: dict[str, str] = {}
                 mode = "wb"
 
             r = sess.get(url, stream=True, headers=headers, timeout=10)

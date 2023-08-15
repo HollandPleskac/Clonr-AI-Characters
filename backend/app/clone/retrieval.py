@@ -88,7 +88,7 @@ async def rerank_search(
 ) -> list[ReRankResult]:
     # If max items is not passed, defaults to pulling 20 results
     # else, it's max items * multiplier
-    first_pass_max_items = (
+    first_pass_max_items = int(
         params.max_items * params.overshot_multiplier
         if params.max_items < INF
         else DEFAULT_RERANK_FIRST_PASS_MAX_ITEMS
@@ -182,7 +182,9 @@ async def gen_agents_search(
     stmt = stmt.order_by(gen_agents_score.desc()).limit(params.max_items)
     result_itr: Iterator[
         tuple[GenAgentsSearchable, float, float, float, float]
-    ] = await db.execute(stmt)
+    ] = await db.execute(
+        stmt
+    )  # type: ignore
 
     # filter as we did for vector search
     max_tokens = params.max_tokens

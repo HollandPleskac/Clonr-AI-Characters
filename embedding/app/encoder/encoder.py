@@ -1,11 +1,11 @@
 import numpy as np
-from typing_extensions import Self
 import transformers
 from loguru import logger
 from optimum.onnxruntime import (
     ORTModelForFeatureExtraction,
     ORTModelForSequenceClassification,
 )
+from typing_extensions import Self
 
 from .types import CrossEncoderEnum, EmbeddingModelEnum, EmbeddingType
 from .utils import get_artifacts_dir, get_hf_tokenizer

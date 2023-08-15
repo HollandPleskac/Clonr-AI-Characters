@@ -1,10 +1,12 @@
 import asyncio
 import logging
 import os
+import time
 
 import grpc
 from grpc_reflection.v1alpha import reflection
 from loguru import logger
+from opentelemetry import metrics
 
 from app.encoder import CrossEncoder, EmbeddingModel
 from app.pb import embed_pb2, embed_pb2_grpc
@@ -14,6 +16,25 @@ HOST = os.environ.get("EMBEDDINGS_GRPC_HOST", "localhost")
 PORT = os.environ.get("EMBEDDINGS_GRPC_PORT", 50051)
 OTLP_ENDPOINT = os.environ.get("OTLP_ENDPOINT")
 
+APP_NAME = "embeddings.server"
+
+meter = metrics.get_meter(__name__)
+info_meter = meter.create_up_down_counter(
+    name="embedding_app_info", description="FastAPI application information."
+)
+req_meter = meter.create_counter(
+    name="embedding_requests", description="Number of embeddings requests"
+)
+req_processing_time_meter = meter.create_histogram(
+    name="embedding_requests_duration_seconds",
+    description="Histogram of requests processing time by path (in seconds)",
+    unit="s",
+)
+reqs_in_progress_meter = meter.create_up_down_counter(
+    name="embedding_requests_in_progress",
+    description="Gauge of requests by method currently being processed",
+)
+
 
 class EmbedServicer(embed_pb2_grpc.EmbedServicer):
     """Provides methods that implement functionality of route guide server."""
@@ -21,40 +42,85 @@ class EmbedServicer(embed_pb2_grpc.EmbedServicer):
     def __init__(self) -> None:
         self.encoder = EmbeddingModel.default()
         self.cross_encoder = CrossEncoder.default()
+        info_meter.add(amount=1, attributes=dict(app_name=APP_NAME))
 
     async def EncodeQueries(
         self, request: embed_pb2.EncodeQueryRequest, unused_context
     ) -> embed_pb2.EmbeddingResponse:
-        logger.info(
-            f"EncodeQueries request. Batch size: {len(request.text)}. Chars: {sum(len(x) for x in request.text)}"
+        bsz = len(request.text)
+        chars = sum(len(x) for x in request.text)
+        logger.info(f"EncodeQueries request. Batch size: {bsz}. Chars: {chars}")
+
+        st = time.perf_counter()
+        attributes = dict(
+            method="EncodeQueries", batch_size=bsz, n_chars=chars, app_name=APP_NAME
         )
+        req_meter.add(amount=1, attributes=attributes)
+        reqs_in_progress_meter.add(amount=1, attributes=attributes)
+
         encodings = self.encoder.encode_query(request.text)
         embeddings = [embed_pb2.Embedding(embedding=x) for x in encodings]
-        return embed_pb2.EmbeddingResponse(embeddings=embeddings)
+        res = embed_pb2.EmbeddingResponse(embeddings=embeddings)
+
+        duration = time.perf_counter() - st
+        req_processing_time_meter.record(amount=duration, attributes=attributes)
+        reqs_in_progress_meter.add(amount=-1, attributes=attributes)
+
+        return res
 
     async def EncodePassages(
         self, request: embed_pb2.EncodePassageRequest, unused_context
     ) -> embed_pb2.EmbeddingResponse:
-        logger.info(
-            f"EncodePassages request. Batch size: {len(request.text)}. Chars: {sum(len(x) for x in request.text)}"
+        bsz = len(request.text)
+        chars = sum(len(x) for x in request.text)
+        logger.info(f"EncodePassages request. Batch size: {bsz}. Chars: {chars}")
+
+        st = time.perf_counter()
+        attributes = dict(
+            method="EncodePassages", batch_size=bsz, n_chars=chars, app_name=APP_NAME
         )
+        req_meter.add(amount=1, attributes=attributes)
+        reqs_in_progress_meter.add(amount=1, attributes=attributes)
+
         encodings = self.encoder.encode_passage(request.text)
         embeddings = [embed_pb2.Embedding(embedding=x) for x in encodings]
-        return embed_pb2.EmbeddingResponse(embeddings=embeddings)
+        res = embed_pb2.EmbeddingResponse(embeddings=embeddings)
+
+        duration = time.perf_counter() - st
+        req_processing_time_meter.record(amount=duration, attributes=attributes)
+        reqs_in_progress_meter.add(amount=-1, attributes=attributes)
+
+        return res
 
     async def GetRankingScores(
         self, request: embed_pb2.RankingScoreRequest, unused_context
     ) -> embed_pb2.RankingScoreResponse:
+        bsz = len(request.passages)
+        chars = sum(len(x) for x in request.passages)
         logger.info(
             (
-                f"GetRankingScores request. Batch size: {len(request.passages)}. Query: {request.query}. "
-                f"Num Passages: {len(request.passages)}. Passage chars: {sum(len(x) for x in request.passages)}"
+                f"GetRankingScores request. Batch size: {bsz}. Query: {request.query}. "
+                f"Passage chars: {chars}"
             )
         )
+
+        st = time.perf_counter()
+        attributes = dict(
+            method="GetRankingScores", batch_size=bsz, n_chars=chars, app_name=APP_NAME
+        )
+        req_meter.add(amount=1, attributes=attributes)
+        reqs_in_progress_meter.add(amount=1, attributes=attributes)
+
         scores = self.cross_encoder.similarity_score(
             query=request.query, passages=[p for p in request.passages]
         )
-        return embed_pb2.RankingScoreResponse(scores=scores)
+        res = embed_pb2.RankingScoreResponse(scores=scores)
+
+        duration = time.perf_counter() - st
+        req_processing_time_meter.record(amount=duration, attributes=attributes)
+        reqs_in_progress_meter.add(amount=-1, attributes=attributes)
+
+        return res
 
     async def IsNormalized(self, *args, **kwargs) -> embed_pb2.IsNormalizedResponse:
         logger.info(f"IsNormalized request. Value: {self.encoder.normalized}")

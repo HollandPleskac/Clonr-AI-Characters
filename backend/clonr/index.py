@@ -151,6 +151,9 @@ class ListIndexWithContext(ListIndex):
             passage="", prev_summary="", llm=MockLLM("")
         )
         self._prompt_len = self.tokenizer.length(prompt)
+        self.max_tokens = (
+            4096  # FixMe (Jonny): just put this in for now, until we use this class.
+        )
 
     @property
     def num_nodes(self):
@@ -166,7 +169,7 @@ class ListIndexWithContext(ListIndex):
         nodes = create_leaf_nodes(doc=doc, splitter=self.splitter)
 
         # every node can generate up to max_tokens for its summary
-        llm_call_tokens += len(nodes) * self.gen_params.max_tokens
+        llm_call_tokens += len(nodes) * self.max_tokens
         llm_call_tokens += len(nodes) * self._prompt_len
 
         return TokenEstimate(

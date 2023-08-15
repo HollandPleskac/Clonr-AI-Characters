@@ -5,7 +5,7 @@ import numpy as np
 import sqlalchemy as sa
 from fastapi import status
 from fastapi.exceptions import HTTPException
-from opentelemetry import trace
+from opentelemetry import metrics, trace
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
@@ -18,6 +18,19 @@ from . import retrieval
 from .cache import CloneCache
 
 tracer = trace.get_tracer(__name__)
+
+
+# TODO (Kevin or Jonny): Run this for all of our query
+# methods. Track if it's vsearch, rerank, or gen-agents querying
+# get the duration, and number of query characters
+meter = metrics.get_meter(__name__)
+
+query_processing_time_meter = meter.create_histogram(
+    name="query_processing_time",
+    description="Time spent querying",
+    unit="s",
+)
+
 
 INF = 1_000_000
 

@@ -1,10 +1,14 @@
 import asyncio
 import json
+import logging
+import random
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Optional
 
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
@@ -171,8 +175,56 @@ app.add_middleware(
 
 
 @app.get("/health")
-def test_get():
+def health_check():
     return {"success": True}
+
+
+# Below are temporary just for running Locust
+@app.get("/")
+async def read_root():
+    logging.error("Hello World")
+    return {"Hello": "World"}
+
+
+@app.get("/items/{item_id}")
+async def read_item(item_id: int, q: Optional[str] = None):
+    logging.error("items")
+    return {"item_id": item_id, "q": q}
+
+
+@app.get("/io_task")
+async def io_task():
+    time.sleep(1)
+    logging.error("io task")
+    return "IO bound task finish!"
+
+
+@app.get("/cpu_task")
+async def cpu_task():
+    for i in range(1000):
+        i * i * i
+    logging.error("cpu task")
+    return "CPU bound task finish!"
+
+
+@app.get("/random_status")
+async def random_status(response: Response):
+    response.status_code = random.choice([200, 200, 300, 400, 500])
+    logging.error("random status")
+    return {"path": "/random_status"}
+
+
+@app.get("/random_sleep")
+async def random_sleep(response: Response):
+    time.sleep(random.randint(0, 5))
+    logging.error("random sleep")
+    return {"path": "/random_sleep"}
+
+
+@app.get("/error_test")
+async def error_test(response: Response):
+    logging.error("got error!!!!")
+    raise ValueError("value error")
 
 
 setup_tracing(app=app)

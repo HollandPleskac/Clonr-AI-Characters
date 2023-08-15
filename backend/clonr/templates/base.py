@@ -10,6 +10,4 @@ env = jinja2.Environment(
 class Template(ABC):
     @abstractclassmethod
     def render(cls, *args, **kwargs) -> str:
-        # TODO (Jonny): We should have a render_chat and render_instruct method,
-        # Then at run time perform something like (if llm.chat_model return render_chat ...)
-        pass
+        raise NotImplementedError()
