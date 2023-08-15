@@ -12,18 +12,25 @@ import 'swiper/css/scrollbar'
 import NetflixCard from './NetflixCard'
 import { Character } from '@/types'
 import Image from 'next/image'
+import InfiniteScroll from 'react-infinite-scroll-component'
+
 
 interface SearchGridProps {
   characters: Character[]
   doneSearching: boolean
-  paddingTop?: string
+  fetchMoreData: () => void
+  hasMoreData: boolean
+  showPadding2?: boolean
 }
 
 export default function SearchGrid({
   characters,
   doneSearching,
-  paddingTop = '100px'
+  fetchMoreData,
+  hasMoreData,
+  showPadding2 = false
 }: SearchGridProps) {
+
   function calcEdgeCard(n: number): 'left' | 'right' | undefined {
     if (n % 6 === 0) {
       return 'left'
@@ -36,6 +43,14 @@ export default function SearchGrid({
 
   return (
     <div className=''>
+      {!doneSearching && (
+         <div
+         className='text-white grid place-items-center'
+         style={{ minHeight: 'calc(100vh - 72px - 48px)' }}
+       >
+         <p></p>
+       </div>
+      )}
       {doneSearching && characters.length === 0 && (
         <div
           className='text-white grid place-items-center'
@@ -45,20 +60,24 @@ export default function SearchGrid({
         </div>
       )}
       {doneSearching && characters.length > 0 && (
-        <div
-          className={`grid grid-cols-6 gap-1 gap-y-10 pt-[${paddingTop}] pb-[100px] px-[4%]`}
-          style={{ minHeight: 'calc(100vh - 72px - 48px)' }}
+        <InfiniteScroll
+          dataLength={characters.length}
+          next={fetchMoreData}
+          hasMore={hasMoreData}
+          loader={<h4>Loading...</h4>}
+          className={`grid grid-cols-6 gap-1 gap-y-10 ${showPadding2 ? 'pt-[40px]' : 'pt-[100px]'} pb-[100px] px-[4%]`}
         >
           {characters.map((item, index) => {
             const edgeCard = calcEdgeCard(index)
             return (
-              <div className='w-full z-0 hover:z-10' key={index}>
+              <div className='w-full z-0 hover:z-10' key={item.id}>
                 <NetflixCard item={item} edgeCard={edgeCard} />
               </div>
             )
           })}
-        </div>
+        </InfiniteScroll>
       )}
+
     </div>
   )
 }

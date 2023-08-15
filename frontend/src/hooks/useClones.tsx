@@ -87,15 +87,15 @@ export default function useClones() {
       const response = await axios.get<Character[]>(
         `http://localhost:8000/clones/`,
         {
-            params: {
-                tags,
-                name,
-                sort,
-                similar,
-                offset,
-                limit
-            },
-          withCredentials: true
+          withCredentials: true,
+          params: {
+            tags,
+            name,
+            sort,
+            similar,
+            offset,
+            limit
+          }
         }
       );
       return response.data;
