@@ -117,7 +117,8 @@ export default async function ChatPage({
           initialMessages={initialMessages}
           conversationId={params.conversationId}
           initialConversationState={
-            'short term'
+            'undecided'
+            //'short term'
             //character && character.name === 'Barack Obama' ? 'undecided' : 'short term'
           }
         />

@@ -40,6 +40,8 @@ export default function ChatScreen({
   const [conversationState, setConversationState] = useState(
     initialConversationState
   )
+  console.log("THIS IS initialConversationState: ", initialConversationState)
+  console.log("THIS IS conversationState: ", conversationState)
   const [showChat, setShowChat] = useState(true)
   const [scrollToNewMessage, setScrollToNewMessage] = useState<boolean>(false)
 
@@ -93,16 +95,6 @@ export default function ChatScreen({
       user_id: '',
       conversation_id: convoID
     }
-
-    // const newMessage = {
-    //   id: window.Date.now().toString(),
-    //   img: '/dummy-char.png',
-    //   alt: 'Character Profile Picture ' + (messages.length + 1),
-    //   name: 'Holland',
-    //   content: message,
-    //   timeStamp: new window.Date(),
-    //   senderType: 'user' as 'bot' | 'user',
-    // }
 
     let updatedMessages = [newMessage, ...messages]
 
@@ -173,36 +165,24 @@ export default function ChatScreen({
 
   // TODO: edit this
   const fetchMoreData = () => {
-    // Simulate fetching 10 more messages from a server or other data source
-    // const newMessages: Message[] = Array.from({ length: 10 }, (_, index) => ({
-    //   id: window.Date.now().toString() + index,
-    //   content: `New message ${messages.length + index}`,
-    //   created_at: new Date().toString(),
-    //   updated_at: new Date().toString(),
-    //   sender_name: 'Bot',
-    //   timestamp: new Date().toString(),
-    //   is_clone: false,
-    //   is_main: true,
-    //   is_active: true,
-    //   parent_id: '',
-    //   clone_id: 'd433575f-d8ad-4f80-a90d-f21122b71bf0',
-    //   user_id: 'TODO',
-    //   conversation_id: '7698849f-2c88-4979-8f75-79c702c81e48',
-    // }))
-
-    // // Add the new messages to the end of the existing messages
-    // setMessages((prevMessages) => [...prevMessages, ...newMessages])
   }
 
   const handleSetConversationState = (newState: string) => {
     setConversationState(newState)
   }
 
+  const handleSetConvoID = (newID: string) => {
+    setConvoID(newID)
+  }
+
   return (
     <div className='w-[100%] border-r-[2px] border-[#252525] bg-[#121212] lg:inline'>
       {conversationState === 'undecided' && (
         <ChooseChatExperience
+          characterId={characterId}
+          character={character}
           setConversationState={handleSetConversationState}
+          setConvoID={handleSetConvoID}
         />
       )}
 

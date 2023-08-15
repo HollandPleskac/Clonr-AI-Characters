@@ -64,6 +64,7 @@ export type Character = {
   creator_id: string;
   name: string;
   short_description: string;
+  // TODO: long_description
   avatar_uri: string;
   num_messages: number;
   num_conversations: number;
