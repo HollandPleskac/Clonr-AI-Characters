@@ -29,7 +29,7 @@ const ChatTopBar = ({
       <div className='flex items-center'>
         <Image
           key={0}
-          src='/dummy-char.png'
+          src={character.avatar_uri}
           alt={`Character Profile Picture ${0 + 1}`}
           width={55}
           height={55}

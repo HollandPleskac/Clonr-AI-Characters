@@ -6,6 +6,7 @@ import Image from 'next/image'
 import useConversations from '@/hooks/useConversations'
 import { Character, Message } from '@/types'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 //import { useHistory } from 'react-router-dom';
 
 const {createConversation, queryConversation, queryConversationMessages, createMessage, generateCloneMessage, queryCurrentRevisions} = useConversations();
@@ -40,6 +41,7 @@ const ChooseChatExperience = ({characterId, character, setConversationState, set
   }
   const [conversationID, setConversationID] = useState('')
   //const history = useHistory();
+  const router = useRouter();
   return (
     <div
       className='h-full px-8 flex flex-col gap-x-8 justify-center items-start pt-8'
@@ -52,7 +54,7 @@ const ChooseChatExperience = ({characterId, character, setConversationState, set
         <div className='w-[280px] flex flex-col'>
           <div className='h-[280px] w-[280px] relative'>
             <Image
-              src='/barack2.jpeg'
+              src={character.avatar_uri}
               alt='logo'
               layout='fill'
               objectFit='cover'
@@ -91,11 +93,10 @@ const ChooseChatExperience = ({characterId, character, setConversationState, set
             onClick={async () => {
               setConversationState('short term')
               const conversationId = await createCharacterConversation(characterId, 'short_term')
-              setConversationID(conversationId)
-              setConvoID(conversationId)
+              // setConversationID(conversationId)
+              // setConvoID(conversationId)
               const new_url = `http://localhost:3000/chat/${characterId}/${conversationId}`
-              window.location.href = new_url
-              //history.push(`/chat/${characterId}/${conversationId}`);
+              router.push(new_url)
             }}
             className='flex items-center justify-between w-full py-2 px-4 inline-flex bg-purple-500 rounded-lg hover:bg-purple-600 text-white'
           >
@@ -105,11 +106,10 @@ const ChooseChatExperience = ({characterId, character, setConversationState, set
             onClick={async () => {
               setConversationState('long term')
               const conversationId = await createCharacterConversation(characterId, 'long_term')
-              setConversationID(conversationId)
-              setConvoID(conversationId)
+              // setConversationID(conversationId)
+              // setConvoID(conversationId)
               const new_url = `http://localhost:3000/chat/${characterId}/${conversationId}`
-              window.location.href = new_url
-              //history.push(`/chat/${characterId}/${conversationId}`);
+              router.push(new_url)
             }}
             className='mt-2 flex items-center justify-between w-full py-2 px-4 inline-flex bg-purple-500 rounded-lg hover:bg-purple-600 text-white'
           >

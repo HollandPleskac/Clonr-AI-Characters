@@ -52,7 +52,8 @@ export default function useConversations() {
               withCredentials: true
             }
           );
-          return response.data.conversationId;
+
+          return response.data.id;
         } catch (error) {
           throw new Error('Error creating conversation: ' + error.message);
         }

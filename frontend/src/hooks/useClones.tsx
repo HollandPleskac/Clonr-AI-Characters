@@ -88,14 +88,14 @@ export default function useClones() {
         `http://localhost:8000/clones/`,
         {
           withCredentials: true,
-          params: {
-            tags,
-            name,
-            sort,
-            similar,
-            offset,
-            limit
-          }
+        //   params: {
+        //     tags,
+        //     name,
+        //     sort,
+        //     similar,
+        //     offset,
+        //     limit
+        //   }
         }
       );
       return response.data;
