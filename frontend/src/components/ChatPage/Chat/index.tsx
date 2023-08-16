@@ -43,12 +43,20 @@ export default function ChatScreen({
   const [showChat, setShowChat] = useState(true)
   const [scrollToNewMessage, setScrollToNewMessage] = useState<boolean>(false)
 
+  useEffect(() => {
+    setConversationState(initialConversationState)
+  }, [initialConversationState])
+
   // search state
   const [isInputActive, setInputActive] = useState(false)
   const handleInputFocus = () => setInputActive(true)
   const handleInputBlur = () => setInputActive(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const divRef = useRef<HTMLDivElement | null>(null)
+
+  console.log("in chatScreen, initialConversationState: ", initialConversationState)
+
+  console.log("in chatScreen, conversationState: ", conversationState)
 
   // hooks
   const {createConversation, queryConversation, queryConversationMessages, createMessage, generateCloneMessage, queryCurrentRevisions} = useConversations();
@@ -97,7 +105,8 @@ export default function ChatScreen({
     let updatedMessages = [newMessage, ...messages]
 
     // TODO: figure out 423
-    //let sentMsg = await createMessage(conversationId, message);
+    // TODO: add this in 
+    let sentMsg = await createMessage(conversationId, message);
     setMessages(updatedMessages)
     const message_copy = message
     setMessage('')

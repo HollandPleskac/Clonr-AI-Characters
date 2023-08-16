@@ -2,7 +2,7 @@
 
 import Characters from '@/components/ChatPage/Characters'
 import ChatScreen from '@/components/ChatPage/Chat'
-import { Character } from '@/types'
+import { Character, CharacterChat } from '@/types'
 import useClones from '@/hooks/useClones'
 import useConversations from '@/hooks/useConversations'
 import { useEffect, useState } from 'react'
@@ -35,29 +35,48 @@ export default async function ChatPage({
 }) {
 
   const [character, setCharacter] = useState<Character>(null);
-  const [characterChats, setCharacterChats] = useState([]);
+  const [characterChats, setCharacterChats] = useState<CharacterChat[]>([]);
   const [initialMessages, setInitialMessages] = useState([]);
+  const [initialConversationState, setInitialConversationState] = useState('undecided');
+  //const [initial]
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log("HERE...")
-        console.log("THIS IS PARAMS: ", params)
         const charDetails = await queryCloneById(params.characterId);
-        console.log("BASE PAGE, this is charDetails: ", charDetails)
         setCharacter(charDetails);
+
+        console.log("this is charDetails -> ", charDetails)
+        console.log("this is character -> ", character)
 
         const chats = await getCharacterPastChats(
           params.characterId,
           params.conversationId
         );
-        setCharacterChats(chats);
+
+        const characterChat = {
+          character: charDetails,
+          lastMessage: 'test last msg',
+          lastConversationId: params.conversationId,
+        }
+        
+        setCharacterChats([characterChat]);
 
         const messages = await getCharacterPastChats(
           params.characterId,
           params.conversationId
         );
         setInitialMessages(messages);
+        
+        const conversation = await queryConversation(params.conversationId);
+        setInitialConversationState(conversation.memory_strategy);
+        console.log("this is conversation: ", conversation)
+        // if (conversation) {
+        //   setInitialConversationState(conversation.memory_strategy);
+        //   console.log("inital conversation state: ", initialConversationState)
+        // }
+
+
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -65,9 +84,6 @@ export default async function ChatPage({
 
     fetchData();
   }, [params.characterId, params.conversationId]); 
-
-  console.log("In BASE PAGE, this is character: ", character);
-
 
   // fetch previous 20 messages for chat screen
   // fetch 10 previous chats for character screen
@@ -94,7 +110,10 @@ export default async function ChatPage({
           initialMessages={initialMessages}
           conversationId={params.conversationId}
           initialConversationState={
-            'undecided'
+            initialConversationState
+            //'undecided'
+            //'short_term'
+            //'undecided'
             //'short term'
             //character && character.name === 'Barack Obama' ? 'undecided' : 'short term'
           }

@@ -12,6 +12,7 @@ const Character: React.FC<MyComponentProps> = ({
   characterChat,
   currentCharacterId,
 }) => {
+  console.log("in Character, this is characterChat: ", characterChat)
   return (
     <Link
       href={`/chat/${characterChat.character.id}/${characterChat.lastConversationId}`}
@@ -27,7 +28,7 @@ const Character: React.FC<MyComponentProps> = ({
           <div className='flex items-center'>
             <Image
               key={0}
-              src='/dummy-char.png' // Change to your image path
+              src={characterChat.character.avatar_uri} 
               alt={`Character Profile Picture ${0 + 1}`} // Change to your alt text
               width={40}
               height={40}

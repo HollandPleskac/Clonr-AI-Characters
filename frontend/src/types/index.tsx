@@ -72,6 +72,7 @@ export type Character = {
 }
 
 // TODO: EDIT
+// TODO: make call for this 
 export type CharacterChat = {
   character: Character
   lastMessage: string

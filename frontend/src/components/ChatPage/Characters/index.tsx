@@ -22,6 +22,8 @@ export default function Characters({
     initialCharacterChats
   )
 
+  console.log("in Characters, initialCharacterChats -> ", initialCharacterChats)
+
   // OPTIONAL: FETCH initialCharacterChats client side here
   // type: CharacterChat (see @/types)
   // want to sync this type up with backend
@@ -34,6 +36,8 @@ export default function Characters({
   const handleInputBlur = () => setInputActive(false)
 
   const sidebarRef = useRef<HTMLDivElement | null>(null)
+
+  if (!characterChats) return <div> Loading CharacterChats.. </div>
 
   return (
     <div
@@ -102,7 +106,7 @@ export default function Characters({
       </div>
 
       <div className='sticky top-[154px] overflow-auto transition-all duration-100 h-full'>
-        {characterChats.map((charChat) => (
+        {initialCharacterChats.map((charChat) => (
           <CharacterComponent
             key={charChat.character.id}
             characterChat={charChat}
