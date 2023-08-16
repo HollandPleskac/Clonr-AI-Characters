@@ -32,7 +32,6 @@ async function createCharacterConversation(
     clone_id: characterId,
   }
   const conversationId = await createConversation(conversationCreateData)
-  console.log("createCharacterConversation() conversationId: ", conversationId)
   return conversationId
 }
 
@@ -94,15 +93,10 @@ const ChooseChatExperience = ({characterId, character, setConversationState, set
             onClick={async () => {
               setConversationState('short term')
               const conversationId = await createCharacterConversation(characterId, 'short_term')
-              console.log("this is conversationId: ", conversationId)
               // setConversationID(conversationId)
               // setConvoID(conversationId)
-              //console.log("this is conversationID: ", conversationID)
               const new_url = `http://localhost:3000/chat/${characterId}/${conversationId}`
-              console.log("NEW URL: ", new_url)
               router.push(new_url)
-              //window.location.href = new_url
-              //history.push(`/chat/${characterId}/${conversationId}`);
             }}
             className='flex items-center justify-between w-full py-2 px-4 inline-flex bg-purple-500 rounded-lg hover:bg-purple-600 text-white'
           >
@@ -112,12 +106,10 @@ const ChooseChatExperience = ({characterId, character, setConversationState, set
             onClick={async () => {
               setConversationState('long term')
               const conversationId = await createCharacterConversation(characterId, 'long_term')
-              setConversationID(conversationId)
-              setConvoID(conversationId)
+              // setConversationID(conversationId)
+              // setConvoID(conversationId)
               const new_url = `http://localhost:3000/chat/${characterId}/${conversationId}`
               router.push(new_url)
-              //window.location.href = new_url
-              //history.push(`/chat/${characterId}/${conversationId}`);
             }}
             className='mt-2 flex items-center justify-between w-full py-2 px-4 inline-flex bg-purple-500 rounded-lg hover:bg-purple-600 text-white'
           >

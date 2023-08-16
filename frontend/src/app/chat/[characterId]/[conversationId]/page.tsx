@@ -46,9 +46,6 @@ export default async function ChatPage({
         const charDetails = await queryCloneById(params.characterId);
         setCharacter(charDetails);
 
-        console.log("this is charDetails -> ", charDetails)
-        console.log("this is character -> ", character)
-
         const chats = await getCharacterPastChats(
           params.characterId,
           params.conversationId
@@ -56,10 +53,10 @@ export default async function ChatPage({
 
         const characterChat = {
           character: charDetails,
-          lastMessage: 'test last msg',
+          lastMessage: chats[chats.length - 1].content,
           lastConversationId: params.conversationId,
         }
-        
+
         setCharacterChats([characterChat]);
 
         const messages = await getCharacterPastChats(
@@ -70,11 +67,6 @@ export default async function ChatPage({
         
         const conversation = await queryConversation(params.conversationId);
         setInitialConversationState(conversation.memory_strategy);
-        console.log("this is conversation: ", conversation)
-        // if (conversation) {
-        //   setInitialConversationState(conversation.memory_strategy);
-        //   console.log("inital conversation state: ", initialConversationState)
-        // }
 
 
       } catch (error) {

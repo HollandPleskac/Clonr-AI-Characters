@@ -52,7 +52,6 @@ export default function useConversations() {
               withCredentials: true
             }
           );
-          console.log("response: ", response)
 
           return response.data.id;
         } catch (error) {

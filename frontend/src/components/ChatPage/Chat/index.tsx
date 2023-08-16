@@ -54,10 +54,6 @@ export default function ChatScreen({
   const inputRef = useRef<HTMLInputElement>(null)
   const divRef = useRef<HTMLDivElement | null>(null)
 
-  console.log("in chatScreen, initialConversationState: ", initialConversationState)
-
-  console.log("in chatScreen, conversationState: ", conversationState)
-
   // hooks
   const {createConversation, queryConversation, queryConversationMessages, createMessage, generateCloneMessage, queryCurrentRevisions} = useConversations();
 
