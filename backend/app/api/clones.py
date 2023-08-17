@@ -167,7 +167,8 @@ async def query_clones(
     if user is not None and user.is_superuser:
         query = query.where(models.Clone.is_active).where(models.Clone.is_public)
     if tags is not None:
-        query = query.where(models.Clone.tags.in_(tags))
+        # TODO: edit
+        query = query.where(models.Clone.tags.any(models.Tag.name.in_(tags)))
     if name is not None:
         query = query.where(models.Clone.case_insensitive_name.ilike(f"%{name}%"))
         # This doesn't seem to work well for short names. Looks like it's better on long ones

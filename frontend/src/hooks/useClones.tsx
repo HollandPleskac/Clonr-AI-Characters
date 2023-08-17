@@ -74,30 +74,31 @@ export default function useClones() {
     }
   };
 
-  const queryClones = async (queryParams) => {
+  const queryClones = async (queryParams: any) => {
     const {
-        tags,
-        name,
-        sort,
-        similar,
+        tags = null,
+        name = null,
+        sort = 'top',
+        similar = null,
         offset = 0,
-        limit = 10
+        limit = 20
     } = queryParams;
     try {
       const response = await axios.get<Character[]>(
         `http://localhost:8000/clones/`,
         {
           withCredentials: true,
-        //   params: {
-        //     tags,
-        //     name,
-        //     sort,
-        //     similar,
-        //     offset,
-        //     limit
-        //   }
+          params: {
+            tags,
+            name,
+            sort,
+            similar,
+            offset,
+            limit
+          }
         }
       );
+      console.log("Response from queryClones(): ", response)
       return response.data;
     } catch (error) {
       throw new Error('Error fetching clone: ' + error.message);
