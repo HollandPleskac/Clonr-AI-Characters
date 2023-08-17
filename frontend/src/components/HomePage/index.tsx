@@ -41,6 +41,8 @@ export default function HomeScreen({
   const duration = 500
   const { queryClones, queryCloneById } = useClones()
 
+  console.log("home screen, this is top characters: ", topCharacters)
+
   useEffect(() => {
     require('preline')
   }, [])
@@ -49,7 +51,52 @@ export default function HomeScreen({
   const [searchInput, setSearchInput] = useState('')
   const [searchedCharacters, setSearchedCharacters] = useState<Character[]>([])
   const [hasMoreData, setHasMoreData] = useState(true)
+  const [topChars, setTopChars] = useState<Character[]>([])
+  const [continueChars, setContinueChars] = useState<Character[]>([])
+  const [trendingChars, setTrendingChars] = useState<Character[]>([])
 
+  const fetchCharacters = async (queryParams, stateSetter) => {
+    const data = await queryClones(queryParams);
+    stateSetter(data);
+    return data;
+  };
+
+  const fetchTopCharacters = () => {
+    const queryParams = {
+      sort: 'top',
+      offset: 0,
+      limit: 20,
+    };
+    return fetchCharacters(queryParams, setTopChars);
+  };
+
+  // TODO: edit
+  const fetchContinueCharacters = () => {
+    const queryParams = {
+      sort: 'hot',
+      offset: 0,
+      limit: 20,
+    };
+    return fetchCharacters(queryParams, setContinueChars);
+  };
+  
+  const fetchTrendingCharacters = () => {
+    const queryParams = {
+      sort: 'hot',
+      offset: 0,
+      limit: 20,
+    };
+    return fetchCharacters(queryParams, setTrendingChars);
+  };
+
+
+  useEffect(() => {
+    fetchTopCharacters()
+    fetchContinueCharacters()
+    fetchTrendingCharacters()
+  }, [])
+
+  
   const fetchMoreGridData = () => {
     // Simulate fetching 50 more characters from a server or other data source
     const newCharacter: Character[] = Array.from(
@@ -122,6 +169,12 @@ export default function HomeScreen({
     }
   }, [searchInput])
 
+  if (topChars.length === 0 || continueChars.length === 0 || trendingChars.length === 0) {
+    return (
+        <div> Loading chars... </div>
+    )
+}
+
   return (
     <div className='pb-[75px]'>
       <AlertBar />
@@ -144,20 +197,20 @@ export default function HomeScreen({
         <ScaleFadeIn loaded={!searchInput} duration={duration}>
           {/* <StripeCheckoutButton /> */}
           <Carousel
-            characters={topCharacters}
+            characters={topChars}
             name='Top Characters'
             isBigCarousel={true}
             zIndex={40}
           />
           {/* <StatBar /> */}
           <Carousel
-            characters={continueChatting}
+            characters={continueChars}
             name='Continue Chatting'
             isBigCarousel={false}
             zIndex={30}
           />
           <Carousel
-            characters={trending}
+            characters={trendingChars}
             name='Trending'
             isBigCarousel={false}
             zIndex={20}

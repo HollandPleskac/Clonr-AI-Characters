@@ -13,6 +13,7 @@ import TopBar from '@/components/TopBar'
 import AlertBar from '@/components/AlertBar'
 import { Character, Tag } from '@/types'
 import useClones from '@/hooks/useClones'
+import useTags from '@/hooks/useTags'
 import AuthModal from '../AuthModal'
 import SearchGrid from '@/components/HomePage/SearchGrid'
 import TagComponent from './Tag'
@@ -28,133 +29,7 @@ const dummyTags = [
         updated_at: 'string',
         name: 'Anime',
         color_code: '#848282'
-    },
-    {
-        id: 'test1',
-        created_at: 'string',
-        updated_at: 'string',
-        name: 'Gaming',
-        color_code: '#848282'
-    },
-    {
-        id: 'test3',
-        created_at: 'string',
-        updated_at: 'string',
-        name: 'Movies',
-        color_code: '#848282'
-    },
-    {
-        id: 'testasdf',
-        created_at: 'string',
-        updated_at: 'string',
-        name: 'Male',
-        color_code: '#848282'
-    },
-    {
-        id: 'test5324',
-        created_at: 'string',
-        updated_at: 'string',
-        name: 'Female',
-        color_code: '#848282'
-    },
-    {
-        id: 'test53dvfsgd2afd4',
-        created_at: 'string',
-        updated_at: 'string',
-        name: 'Hero',
-        color_code: '#848282'
-    },
-    {
-        id: 'teserrherhrasdft5324',
-        created_at: 'string',
-        updated_at: 'string',
-        name: 'Villan',
-        color_code: '#848282'
-    },
-    {
-        id: 'testhererhasdf324',
-        created_at: 'string',
-        updated_at: 'string',
-        name: 'Celebrities',
-        color_code: '#848282'
-    },
-    {
-        id: 'teasdfeeest5324',
-        created_at: 'string',
-        updated_at: 'string',
-        name: 'Horror',
-        color_code: '#848282'
-    },
-    {
-        id: 'teasdfrrrst5324',
-        created_at: 'string',
-        updated_at: 'string',
-        name: 'Vampire',
-        color_code: '#848282'
-    },
-    {
-        id: 'teasdfsthhh5324',
-        created_at: 'string',
-        updated_at: 'string',
-        name: 'Demon',
-        color_code: '#848282'
-    },
-    {
-        id: 'teasdfcccst5324',
-        created_at: 'string',
-        updated_at: 'string',
-        name: 'Alien',
-        color_code: '#848282'
-    },
-    {
-        id: 'teasdfgggst5324',
-        created_at: 'string',
-        updated_at: 'string',
-        name: 'History',
-        color_code: '#848282'
-    },
-    {
-        id: 'teadddsdfst5324',
-        created_at: 'string',
-        updated_at: 'string',
-        name: 'Twitch',
-        color_code: '#848282'
-    },
-    {
-        id: 'teasdfsffft5324',
-        created_at: 'string',
-        updated_at: 'string',
-        name: 'VTuber',
-        color_code: '#848282'
-    },
-    {
-        id: 'teasdffdsaast5324',
-        created_at: 'string',
-        updated_at: 'string',
-        name: 'Non-English',
-        color_code: '#848282'
-    },
-    {
-        id: 'tefdasasdfst5324',
-        created_at: 'string',
-        updated_at: 'string',
-        name: 'Books',
-        color_code: '#848282'
-    },
-    {
-        id: 'teasfddfsasdft5324',
-        created_at: 'string',
-        updated_at: 'string',
-        name: 'Elf',
-        color_code: '#848282'
-    },
-    {
-        id: 'teasdfst5adsf324',
-        created_at: 'string',
-        updated_at: 'string',
-        name: 'Orc',
-        color_code: '#848282'
-    },
+    }
 ]
 
 interface BrowsePageProps {
@@ -170,6 +45,8 @@ export default function BrowsePage({
     const duration = 500
     const { queryClones, queryCloneById } = useClones()
 
+    const { queryTags } = useTags()
+
     // search input state
     const [searchInput, setSearchInput] = useState('')
     const [isInputActive, setInputActive] = useState(false)
@@ -181,7 +58,7 @@ export default function BrowsePage({
     const didMountRef = useRef(false);
 
     // tags state
-    const [tags, setTags] = useState<Tag[]>(dummyTags)
+    const [tags, setTags] = useState<Tag[]>([])
     const [activeTag, setActiveTag] = useState<Tag | null>()
 
     // Sort state
@@ -191,6 +68,19 @@ export default function BrowsePage({
     const [searchedCharacters, setSearchedCharacters] = useState<Character[]>(initialCharacters)
     const [doneSearching, setDoneSearching] = useState(true)
     const [hasMoreData, setHasMoreData] = useState(true)
+
+    const fetchTags = async () => {
+        try {
+            const currTags = await queryTags()
+            setTags(currTags)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    useEffect(() => {
+        fetchTags();
+    }, []);
 
     const fetchMoreGridData = () => {
         // Simulate fetching 50 more characters from a server or other data source
@@ -228,15 +118,16 @@ export default function BrowsePage({
     const handleCloneSearch = async () => {
         setLoading(true)
         setError(null)
-        console.log("DONE SEARCHINGgg")
+        console.log("SEARCHING... this is searchInput: ", searchInput)
         try {
+            // TODO: edit
             const queryParams = {
-                tags: tags ? tags.map((tag) => tag.id).join(',') : null,
-                name: searchInput,
+                tags: null, // tags ? tags.map((tag) => tag.id).join(',') : null,
+                name: searchInput != '' ? searchInput : null,
                 sort: 'top',
-                similar: searchInput,
+                similar: searchInput != '' ? searchInput : null,
                 offset: 0,
-                limit: 10
+                limit: 20
             }
             const data = await queryClones(queryParams)
             setSearchedCharacters(data)
@@ -272,6 +163,13 @@ export default function BrowsePage({
         console.log("sort", sort)
         setActiveSort(sort)
     }
+
+    if (tags.length === 0) {
+        return (
+            <div> Loading tags... </div>
+        )
+    }
+    
 
     return (
         <div className=''>

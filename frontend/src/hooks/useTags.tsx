@@ -1,21 +1,22 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { Tag } from '@/types';
 
 interface TagCreate {
     name: string;
     color_code: string;
 }
 
-interface Tag {
-  id: string;
-  created_at: string;
-  updated_at: string;
-  name: string;
-  color_code: string;
-}
+// interface Tag {
+//   id: string;
+//   created_at: string;
+//   updated_at: string;
+//   name: string;
+//   color_code: string;
+// }
 
 export default function useTags() {
-    const queryTags = async (searchInput: string) => {
+    const queryTags = async (): Promise<Tag[]> => {
       try {
         const response = await axios.get<Tag[]>(
           'http://localhost:8000/tags',

@@ -65,15 +65,14 @@ const ChooseChatExperience = ({characterId, character, setConversationState, set
             {character.num_conversations} Chats
           </h2>
           <div className='flex flex-wrap gap-2'>
-            <button className='px-2 py-1 text-sm text-gray-600 border-2 border-gray-700 rounded-lg rounder-gray-800 hover:border-gray-700 hover:text-gray-600'>
-              President
-            </button>
-            <button className='px-2 py-1 text-sm text-gray-600 border-2 border-gray-700 rounded-lg rounder-gray-800 hover:border-gray-700 hover:text-gray-600'>
-              Male
-            </button>
-            <button className='px-2 py-1 text-sm text-gray-600 border-2 border-gray-700 rounded-lg rounder-gray-800 hover:border-gray-700 hover:text-gray-600'>
-              Politician
-            </button>
+            {character.tags.map((tag, index) => (
+              <button
+                key={index}
+                className='px-2 py-1 text-sm text-gray-600 border-2 border-gray-700 rounded-lg rounder-gray-800 hover:border-gray-700 hover:text-gray-600'
+              >
+                {tag.name}
+              </button>
+            ))}
           </div>
         </div>
         <div className='w-1/3 flex flex-col justify-start'>
@@ -84,11 +83,8 @@ const ChooseChatExperience = ({characterId, character, setConversationState, set
             {character.short_description}{' '}
           </p>
           <h2 className='text-lg sm:text-xl font-semibold mb-2 text-white'>
-            Long Description
+            {character.long_description}{' '}
           </h2>
-          <p className='mb-5 text-gray-400 lime-clamp-3'>
-            TODO: include long description in route
-          </p>
           <button
             onClick={async () => {
               setConversationState('short term')
