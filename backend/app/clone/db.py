@@ -1,4 +1,7 @@
 import uuid
+import time
+from functools import wraps
+from typing import Callable, Sequence
 from datetime import datetime
 
 import numpy as np
@@ -8,7 +11,7 @@ from fastapi.exceptions import HTTPException
 from opentelemetry import metrics, trace
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import models
+from app import models, settings
 from app.embedding import EmbeddingClient
 from clonr.data_structures import Dialogue, Document, Memory, Message, Monologue, Node
 from clonr.tokenizer import Tokenizer
@@ -19,17 +22,34 @@ from .cache import CloneCache
 
 tracer = trace.get_tracer(__name__)
 
-
 # TODO (Kevin or Jonny): Run this for all of our query
 # methods. Track if it's vsearch, rerank, or gen-agents querying
 # get the duration, and number of query characters
-meter = metrics.get_meter(__name__)
+meter = metrics.get_meter(settings.APP_NAME)
 
 query_processing_time_meter = meter.create_histogram(
     name="query_processing_time",
     description="Time spent querying",
     unit="s",
 )
+
+subroutine_duration = meter.create_histogram(
+    name="clonedb_subroutine_duration",
+    description="Measures the time spent for each subroutine of clonedb",
+)
+
+
+def report_duration(fn: Callable):
+    @wraps(fn)
+    def inner(self, *args, **kwargs):
+        attributes = dict(subroutine=fn.__name__)
+        start = time.perf_counter()
+        result = fn(self, *args, **kwargs)
+        duration = time.perf_counter() - start
+        subroutine_duration.record(amount=duration, attributes=attributes)
+        return result
+
+    return inner
 
 
 INF = 1_000_000
@@ -75,6 +95,7 @@ class CloneDB:
         self.user_id = user_id
 
     @tracer.start_as_current_span("add_document")
+    @report_duration
     async def add_document(self, doc: Document, nodes: list[Node]) -> models.Document:
         # don't re-do work if it's already there?
         if await self.db.scalar(
@@ -189,9 +210,10 @@ class CloneDB:
             await self.db.commit()
 
     @tracer.start_as_current_span("add_monologues")
+    @report_duration
     async def add_monologues(
         self, monologues: list[Monologue]
-    ) -> list[models.Monologue]:
+    ) -> Sequence[models.Monologue]:
         monologue_models: list[models.Monologue] = []
         hashes = [m.hash for m in monologues]
         r = await self.db.execute(
@@ -223,7 +245,8 @@ class CloneDB:
         return monologue_models
 
     @tracer.start_as_current_span("add_memories")
-    async def add_memories(self, memories: list[Memory]) -> list[models.Memory]:
+    @report_duration
+    async def add_memories(self, memories: list[Memory]) -> Sequence[models.Memory]:
         # batch embed
         embs = await self.embedding_client.encode_passage([x.content for x in memories])
         embedding_model = await self.embedding_client.encoder_name()
@@ -340,9 +363,10 @@ class CloneDB:
         return obj
 
     @tracer.start_as_current_span("query_nodes")
+    @report_duration
     async def query_nodes(
         self, query: str, params: retrieval.VectorSearchParams
-    ) -> list[QueryNodeResult]:
+    ) -> Sequence[QueryNodeResult]:
         return await retrieval.vector_search(
             query=query,
             model=models.Node,
@@ -354,9 +378,10 @@ class CloneDB:
         )
 
     @tracer.start_as_current_span("query_nodes_with_rerank")
+    @report_duration
     async def query_nodes_with_rerank(
         self, query: str, params: retrieval.ReRankSearchParams
-    ) -> list[QueryNodeReRankResult]:
+    ) -> Sequence[QueryNodeReRankResult]:
         return await retrieval.rerank_search(
             query=query,
             model=models.Node,
@@ -368,9 +393,10 @@ class CloneDB:
         )
 
     @tracer.start_as_current_span("query_monologues")
+    @report_duration
     async def query_monologues(
         self, query: str, params: retrieval.VectorSearchParams
-    ) -> list[QueryMonologueResult]:
+    ) -> Sequence[QueryMonologueResult]:
         return await retrieval.vector_search(
             query=query,
             model=models.Monologue,
@@ -382,9 +408,10 @@ class CloneDB:
         )
 
     @tracer.start_as_current_span("query_monologues_with_rerank")
+    @report_duration
     async def query_monologues_with_rerank(
         self, query: str, params: retrieval.ReRankSearchParams
-    ) -> list[QueryMonologueReRankResult]:
+    ) -> Sequence[QueryMonologueReRankResult]:
         return await retrieval.rerank_search(
             query=query,
             model=models.Monologue,
@@ -396,12 +423,13 @@ class CloneDB:
         )
 
     @tracer.start_as_current_span("query_memories")
+    @report_duration
     async def query_memories(
         self,
         query: str,
         params: retrieval.GenAgentsSearchParams,
         update_access_date: bool,
-    ) -> list[QueryMemoryResult]:
+    ) -> Sequence[QueryMemoryResult]:
         # We filter to retrieve either private memories for the conversation, or public memories
         # shared across all conversations
         is_public = sa.and_(
@@ -437,9 +465,10 @@ class CloneDB:
 
     # get operations
     @tracer.start_as_current_span("get_messages")
+    @report_duration
     async def get_messages(
         self, num_messages: int | None = None, num_tokens: int | None = None
-    ) -> list[models.Message]:
+    ) -> Sequence[models.Message]:
         """Returns the recent messages in chronological order, i.e.
         [newest, ..., oldest]"""
         if self.conversation_id is None:
@@ -474,9 +503,10 @@ class CloneDB:
         return messages
 
     @tracer.start_as_current_span("get_memories")
+    @report_duration
     async def get_memories(
         self, num_messages: int | None = None, num_tokens: int | None = None
-    ) -> list[models.Memory]:
+    ) -> Sequence[models.Memory]:
         # There is no last_accessed_at update for just getting memories, that only changes
         # when queried as part of a reflection or conversation
         if self.conversation_id is None:
@@ -505,9 +535,10 @@ class CloneDB:
         return memories
 
     @tracer.start_as_current_span("get_monologues")
+    @report_duration
     async def get_monologues(
         self, num_messages: int | None = None, num_tokens: int | None = None
-    ) -> list[models.Message]:
+    ) -> Sequence[models.Message]:
         if num_messages is None or num_messages < 1:
             num_messages = INF
         if num_tokens is None or num_tokens < 1:
@@ -518,23 +549,24 @@ class CloneDB:
             .order_by(models.Message.created_at.desc())
             .limit(num_messages)
         )
-        msg_itr = await self.db.scalars(q)
+        monologue_itr = await self.db.scalars(q)
 
         if num_tokens >= INF:
-            return msg_itr.all()
+            return monologue_itr.all()
 
-        messages: list[models.Message] = []
-        for msg in msg_itr:
-            num_tokens -= self.tokenizer.length(msg.content)
+        messages: list[models.Monologue] = []
+        for monologue in monologue_itr:
+            num_tokens -= self.tokenizer.length(monologue.content)
             if num_tokens < 0:
                 break
-            messages.append(msg)
+            messages.append(monologue)
         return messages
 
     @tracer.start_as_current_span("get_entity_context_summary")
+    @report_duration
     async def get_entity_context_summary(
         self, entity_name: str, n: int = 1
-    ) -> list[models.EntityContextSummary]:
+    ) -> Sequence[models.EntityContextSummary]:
         if self.conversation_id is None:
             raise ValueError(
                 "Retrieving entity context summary requires conversation_id."
@@ -550,7 +582,8 @@ class CloneDB:
         return summaries.all()
 
     @tracer.start_as_current_span("get_agent_summary")
-    async def get_agent_summary(self, n: int = 1) -> list[models.AgentSummary]:
+    @report_duration
+    async def get_agent_summary(self, n: int = 1) -> Sequence[models.AgentSummary]:
         if self.conversation_id is None:
             raise ValueError("Retrieving agent summary requires conversation_id.")
         q = (
@@ -641,9 +674,10 @@ class CloneDB:
         return None
 
     @tracer.start_as_current_span("get_message_ancestors")
+    @report_duration
     async def get_message_ancestors(
         self, message_id: uuid.UUID
-    ) -> list[models.Message]:
+    ) -> Sequence[models.Message]:
         getter = (
             sa.select(models.Message)
             .where(models.Message.id == message_id)
@@ -663,9 +697,10 @@ class CloneDB:
     # (Jonny): is a flat list the best data structure to return here?
     # maybe like a hierarchical dict would be better?
     @tracer.start_as_current_span("get_message_descendants")
+    @report_duration
     async def get_message_descendants(
         self, message_id: uuid.UUID
-    ) -> list[models.Message]:
+    ) -> Sequence[models.Message]:
         getter = (
             sa.select(models.Message)
             .where(models.Message.id == message_id)

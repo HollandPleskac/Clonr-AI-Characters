@@ -294,7 +294,7 @@ class ConversationCreate(BaseModel):
         description="The display name that the user wants to use for the conversation. This cannot be changed once you start the conversation. If your user name collides with the clone name, then an additional digit will be added",
     )
     memory_strategy: MemoryStrategy = Field(
-        default=MemoryStrategy.none,
+        default=MemoryStrategy.zero,
         description="Whether to turn off memory (old messages removed at context length limit), use short-term memory, or use the advanced Clonr long-term memory",
     )
     information_strategy: InformationStrategy = Field(

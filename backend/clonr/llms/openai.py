@@ -4,7 +4,7 @@ import textwrap
 import time
 import uuid
 from functools import wraps
-from typing import AsyncGenerator, Generator
+from typing import AsyncGenerator, Generator, Callable
 
 import aiohttp
 import openai
@@ -33,10 +33,13 @@ from .schemas import (
     OpenAIModelEnum,
     OpenAIResponse,
     OpenAIStreamResponse,
-    StreamDelta,
+    FinishReason,
+    RoleEnum,
 )
+from app.settings import settings
 
-meter = metrics.get_meter(__name__)
+
+meter = metrics.get_meter(settings.APP_NAME)
 
 exc_meter = meter.create_counter(
     name="llm_exceptions_total",
@@ -48,7 +51,7 @@ reqs_in_progress_meter = meter.create_up_down_counter(
 )
 
 
-def retry_decorator(fn: callable):
+def retry_decorator(fn: Callable):
     @retry(
         retry=retry_if_exception_type(
             (
@@ -211,20 +214,18 @@ class OpenAI(LLM):
         matches = re.findall(pattern, prompt, re.DOTALL)
 
         if not matches:
-            return [Message(**{"role": "user", "content": prompt.strip()})]
+            return [Message(role=RoleEnum.user, content=prompt.strip())]
 
         for match in matches:
             role, content = match
             content = content.strip()  # should we do this?
-            messages.append({"role": role, "content": content})
-
-        messages = [Message(**m) for m in messages]
+            messages.append(Message(role=role, content=content))
 
         return messages
 
     @classmethod
     def messages_to_prompt(cls, messages: list[Message]) -> str:
-        return "\n".join(m.to_prompt() for m in messages)
+        return "\n".join(m.to_prompt(cls) for m in messages)
 
     @retry_decorator
     async def agenerate(
@@ -278,7 +279,7 @@ class OpenAI(LLM):
             created_at=out.created,
             usage=out.usage,
             duration=round(total_time, 3),
-            finish_reason=out.choices[0].finish_reason,
+            finish_reason=FinishReason(out.choices[0].finish_reason),
             role=out.choices[0].message.role,
             tokens_per_second=round((out.usage.total_tokens) / total_time, 2),
             input_prompt=input_prompt,
@@ -304,7 +305,7 @@ class OpenAI(LLM):
         prompt_or_messages: str | list[Message],
         params: GenerationParams | None = None,
         **kwargs,
-    ) -> AsyncGenerator[StreamDelta, None]:
+    ) -> AsyncGenerator[OpenAIStreamResponse, None]:
         params = params or GenerationParams()
 
         for c in self.callbacks:
@@ -346,7 +347,7 @@ class OpenAI(LLM):
         self,
         prompt_or_messages: str | list[Message],
         params: GenerationParams | None = None,
-    ) -> Generator[StreamDelta, None, None]:
+    ) -> Generator[OpenAIStreamResponse, None, None]:
         params = params or GenerationParams()
         if isinstance(prompt_or_messages, str):
             messages = self.prompt_to_messages(prompt=prompt_or_messages)

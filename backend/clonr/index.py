@@ -3,6 +3,7 @@ import json
 import uuid
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Any
 
 from loguru import logger
 from pydantic import BaseModel, validator
@@ -249,11 +250,11 @@ class TreeIndex(Index):
     def tokens_processed(self):
         return self._tokens_processed
 
-    def estimate_llm_tokens(self, doc: Document):
+    def estimate_llm_tokens(self, doc: Document, max_tokens: int = 4096):
         # the entire document is ultimately processed
         llm_call_tokens = 0
         depth = 0
-        sum_size = self.gen_params.max_tokens
+        sum_size = max_tokens
         prompt_size = self._prompt_len
         nodes = create_leaf_nodes(doc=doc, splitter=self.splitter)
         chunks = [x.content for x in nodes]
@@ -261,10 +262,10 @@ class TreeIndex(Index):
         for _ in range(1_000):
             if len(chunks) <= 1:
                 break
-            groups = aggregate_by_length(
+            group_chunks = aggregate_by_length(
                 chunks, max_size=self.max_group_size, length_fn=self.tokenizer.length
             )
-            groups = ["".join(x) for x in groups]
+            groups = ["".join(x) for x in group_chunks]
             for i, g in enumerate(groups):
                 llm_call_tokens += self.tokenizer.length(g) + sum_size + prompt_size
                 groups[i] = "x " * (sum_size - 1)
@@ -294,11 +295,13 @@ class TreeIndex(Index):
         path = Path(path)
         if path.exists() and not overwrite:
             raise FileExistsError()
-        data = {str(k): v.json() for k, v in self._index.items()}
+        data: dict[str, Any] = {
+            str(k): v.model_dump_json() for k, v in self._index.items()
+        }
         extras = dict(
             max_group_size=self.max_group_size,
             _tokens_processed=self._tokens_processed,
-            root=self.root.json(),
+            root=None if self.root is None else self.root.model_dump_json(),
         )
         data["extras"] = extras
         with open(path, "w") as f:
@@ -331,10 +334,10 @@ class TreeIndex(Index):
         def length_fn(node: Node):
             return self.tokenizer.length(node.content)
 
-        groups: list[Node] = aggregate_by_length(
+        groups: list[list[Node]] = aggregate_by_length(
             nodes, max_size=self.max_group_size, length_fn=length_fn
         )
-        nodes = []
+        return_nodes: list[Node] = []
         for i, g in enumerate(groups):
             content = "".join(x.content for x in g)
             kwargs["depth"] = depth
@@ -350,11 +353,14 @@ class TreeIndex(Index):
                 child_ids=[],
             )
             for nd in g:
-                node.child_ids.append(nd.id)
+                if node.child_ids is None:
+                    node.child_ids = [nd.id]
+                else:
+                    node.child_ids.append(nd.id)
                 nd.parent_id = node.id
-            nodes.append(node)
+            return_nodes.append(node)
             self._index[str(node.id)] = node
-        return nodes
+        return return_nodes
 
     async def abuild(self, doc: Document, **kwargs) -> list[Node]:
         logger.info(f"Building {self.__class__.__name__} on doc_id: {str(doc.id)}.")
@@ -362,16 +368,18 @@ class TreeIndex(Index):
         if not nodes:
             return []
         depth = 1
-        for _ in range(len(nodes)):
+        max_iter = len(nodes)
+        while len(nodes) > 1 and max_iter > 0:
             for node in nodes:
                 self._index[str(node.id)] = node
-            if len(nodes) <= 1:
-                self.root = nodes[0]
-                break
             nodes = await self._process_level(
                 nodes=nodes, depth=depth, doc=doc, **kwargs
             )
             depth += 1
+            max_iter -= 1
+        if not nodes:
+            raise ValueError("Somehow we reduced past a single node!")
+        self.root = nodes[0]
         doc.index_type = self.type
         r = list(self._index.values())
         self._index = {}  # TODO (Jonny): trying to make this stateless!

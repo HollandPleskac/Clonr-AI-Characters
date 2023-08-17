@@ -15,13 +15,6 @@ load_dotenv()
 intents = discord.Intents.default()
 intents.message_content = True
 
-bot = Bot(
-    command_prefix=commands.when_mentioned_or("!"),
-    intents=intents,
-    help_command=None,
-)
-
-
 history = []
 
 
@@ -72,7 +65,14 @@ file_handler.setFormatter(file_handler_formatter)
 # Add the handlers
 logger.addHandler(console_handler)
 logger.addHandler(file_handler)
-bot.logger = logger
+
+
+bot = Bot(
+    command_prefix=commands.when_mentioned_or("!"),
+    intents=intents,
+    help_command=None,
+    logger=logger,
+)
 
 
 bot.config = {"token": os.environ["DISCORD_TOKEN"], "prefix": "!"}

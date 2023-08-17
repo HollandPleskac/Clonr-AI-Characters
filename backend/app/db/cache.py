@@ -12,7 +12,7 @@ from app.settings import settings
 RedisInstrumentor().instrument()
 
 
-def redis_connection(host: str | None = None, port: str | None = None):
+def redis_connection(host: str | None = None, port: int | None = None):
     return redis.Redis(
         host=host or settings.REDIS_HOST,
         port=port or settings.REDIS_PORT,
@@ -23,8 +23,8 @@ def redis_connection(host: str | None = None, port: str | None = None):
 @retry(
     stop=stop_after_attempt(20),
     wait=wait_exponential(multiplier=1, min=1, max=5),
-    before=before_log(logger, logging.INFO),
-    after=after_log(logger, logging.WARN),
+    before=before_log(logger, logging.INFO),  # type: ignore
+    after=after_log(logger, logging.WARN),  # type: ignore
 )
 async def wait_for_redis():
     r = redis_connection()

@@ -10,13 +10,13 @@ INF = int(1e10)
 
 
 class MemoryStrategy(str, enum.Enum):
-    none = "none"
+    zero = "zero"
     short_term = "short_term"
     long_term = "long_term"
 
 
 class InformationStrategy(str, enum.Enum):
-    none = "none"
+    zero = "zero"
     internal = "internal"
     external = "external"
 

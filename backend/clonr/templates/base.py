@@ -1,4 +1,5 @@
 from abc import ABC, abstractclassmethod
+from typing import Any
 
 import jinja2
 
@@ -8,6 +9,7 @@ env = jinja2.Environment(
 
 
 class Template(ABC):
-    @abstractclassmethod
-    def render(cls, *args, **kwargs) -> str:
-        raise NotImplementedError()
+    pass
+    # @abstractclassmethod
+    # def render(cls, *args: Any, **kwargs: Any) -> str:
+    #     raise NotImplementedError()

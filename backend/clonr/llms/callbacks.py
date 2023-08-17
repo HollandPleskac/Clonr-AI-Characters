@@ -8,6 +8,7 @@ from opentelemetry import metrics
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
+from app.settings import settings
 from app.clone.cache import CloneCache
 from app.external.moderation import openai_moderation_check
 from clonr.llms.base import LLM
@@ -18,7 +19,7 @@ from clonr.llms.schemas import (
     OpenAIStreamResponse,
 )
 
-meter = metrics.get_meter(__name__)
+meter = metrics.get_meter(settings.APP_NAME)
 
 req_meter = meter.create_counter(
     name="llm_requests_total",
@@ -211,9 +212,11 @@ class ModerationCallback(LLMCallback):
         params: GenerationParams | None,
         **kwargs,
     ):
-        prompt = prompt_or_messages
-        if not isinstance(prompt_or_messages, str):
-            prompt = [x.to_str() for x in prompt_or_messages]
+        if isinstance(prompt_or_messages, str):
+            prompt = prompt_or_messages
+        else:
+            # For moderation, we only need the content, not the special characters
+            prompt = "\n".join([x.content for x in prompt_or_messages])
         response = await openai_moderation_check(prompt)
         if response.flagged:
             await self.increment_flagged_counter()
@@ -249,29 +252,29 @@ class OTLPMetricsCallback(LLMCallback):
         params: GenerationParams | None,
         **kwargs,
     ):
-        attributes = dict(
+        attributes: dict[str, str | int] = dict(
             model=llm.model,
             model_type=llm.model_type,
-            clone_id=self.clone_id,
-            user_id=self.user_id,
-            conversation_id=self.conversation_id,
-            retry_attempt=kwargs.get("retry_attempt"),
-            http_retry_attempt=kwargs.get("http_retry_attempt"),
-            subroutine=kwargs.get("subroutine"),
+            clone_id=str(self.clone_id),
+            user_id=str(self.user_id),
+            conversation_id=self.conversation_id or "",
+            retry_attempt=int(kwargs.get("retry_attempt", -1)),
+            http_retry_attempt=int(kwargs.get("http_retry_attempt", -1)),
+            subroutine=str(kwargs.get("subroutine", "")),
         )
         req_meter.add(amount=1, attributes=attributes)
 
     async def on_generate_end(self, llm: LLM, llm_response: LLMResponse, **kwargs):
         r = llm_response
-        attributes = dict(
+        attributes: dict[str, str | int] = dict(
             model=llm.model,
             model_type=llm.model_type,
-            clone_id=self.clone_id,
-            user_id=self.user_id,
-            conversation_id=self.conversation_id,
-            retry_attempt=kwargs.get("retry_attempt"),
-            http_retry_attempt=kwargs.get("http_retry_attempt"),
-            subroutine=kwargs.get("subroutine"),
+            clone_id=str(self.clone_id),
+            user_id=str(self.user_id),
+            conversation_id=self.conversation_id or "",
+            retry_attempt=int(kwargs.get("retry_attempt", -1)),
+            http_retry_attempt=int(kwargs.get("http_retry_attempt", -1)),
+            subroutine=str(kwargs.get("subroutine", "")),
         )
         resp_meter.add(amount=1, attributes=attributes)
         req_processing_time_meter.record(amount=r.duration, attributes=attributes)

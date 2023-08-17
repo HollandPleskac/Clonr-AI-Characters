@@ -12,7 +12,12 @@ from fastapi_users.db import (
 from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.ext.hybrid import Comparator, hybrid_property
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    mapped_column,
+    relationship,
+)
 
 from clonr.utils.formatting import DateFormat
 
@@ -22,11 +27,19 @@ class CaseInsensitiveComparator(Comparator[str]):
     def __eq__(self, other: Any) -> sa.ColumnElement[bool]:  # type: ignore[override]  # noqa: E501
         return sa.func.lower(self.__clause_element__()) == sa.func.lower(other)
 
-    def ilike(self, other: Any, **kwargs) -> sa.ColumnElement[bool]:
-        return sa.func.lower(self.__clause_element__()).ilike(other.lower(), **kwargs)
+    def ilike(
+        self, other: Any, escape: str | None = None, **kwargs
+    ) -> sa.BinaryExpression[bool]:
+        return sa.func.lower(self.__clause_element__()).ilike(
+            other.lower(), escape=escape, **kwargs
+        )
 
-    def like(self, other: Any, **kwargs) -> sa.ColumnElement[bool]:
-        return sa.func.lower(self.__clause_element__()).like(other.lower(), **kwargs)
+    def like(
+        self, other: Any, escape: str | None = None, **kwargs
+    ) -> sa.BinaryExpression[bool]:
+        return sa.func.lower(self.__clause_element__()).like(
+            other.lower(), escape=escape, **kwargs
+        )
 
     def levenshtein(self, other: Any, **kwargs) -> sa.ColumnElement[int]:
         return sa.func.levenshtein(
@@ -48,9 +61,7 @@ class CaseInsensitiveComparator(Comparator[str]):
             other.lower(), sa.func.lower(self.__clause_element__()), **kwargs
         )
 
-    def operate(
-        self, op: sa.sql.expression.ColumnOperators, *other: Any, **kwargs: Any
-    ) -> sa.Operators:
+    def operate(self, op: Any, *other: Any, **kwargs: Any) -> sa.ColumnElement[Any]:
         return sa.func.lower(self.__clause_element__()).operate(op, *other, **kwargs)
 
 
@@ -73,9 +84,7 @@ class CommonMixin:
 
 
 class OAuthAccount(SQLAlchemyBaseOAuthAccountTableUUID, Base):
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
-    )
+    pass
 
 
 # Each created clone can have many users talking to it

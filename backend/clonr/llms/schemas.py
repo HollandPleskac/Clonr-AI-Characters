@@ -143,9 +143,9 @@ class LLMResponse(BaseModel):
     usage: Usage
     duration: float
     input_prompt: str
+    tokens_per_second: float
     finish_reason: FinishReason | None = None
     role: str | None = None
-    tokens_per_second: float | None = None
 
     @validator("tokens_per_second", always=True)
     def compute_tok_per_sec(cls, v, values):

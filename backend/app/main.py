@@ -41,6 +41,22 @@ from app.settings import settings
 #     traces_sample_rate=1.0,
 # )
 
+from opentelemetry import metrics
+
+meter = metrics.get_meter(settings.APP_NAME)
+
+req_meter = meter.create_counter(
+    name="io_requests_total",
+    description="Total count of requests by method and path.",
+    unit="responses",
+)
+
+hist_meter = meter.create_histogram(
+    name="jonny_time_requests_total",
+    description="Total count of requests by method and path.",
+    unit="responses",
+)
+
 
 async def run_async_upgrade():
     cmd = "alembic upgrade head"
@@ -165,6 +181,12 @@ def health_check():
 
 
 # Below are temporary just for running Locust
+def box_muller():
+    R = math.sqrt(-2 * math.log(random.random()))
+    theta = 2 * math.py * random.random()
+    return R * math.abs(math.cos(theta))
+
+
 @app.get("/")
 async def read_root():
     logging.error("Hello World")
@@ -173,19 +195,25 @@ async def read_root():
 
 @app.get("/items/{item_id}")
 async def read_item(item_id: int, q: Optional[str] = None):
+    hist_meter.record(amount=box_muller(), attributes=dict(path="items"))
     logging.error("items")
     return {"item_id": item_id, "q": q}
+
+
+import math
 
 
 @app.get("/io_task")
 async def io_task():
     time.sleep(1)
+    hist_meter.record(amount=box_muller(), attributes=dict(path="io"))
     logging.error("io task")
     return "IO bound task finish!"
 
 
 @app.get("/cpu_task")
 async def cpu_task():
+    req_meter.add(amount=1, attributes=dict(path="cpu_task"))
     for i in range(1000):
         i * i * i
     logging.error("cpu task")
@@ -194,6 +222,7 @@ async def cpu_task():
 
 @app.get("/random_status")
 async def random_status(response: Response):
+    req_meter.add(amount=1, attributes=dict(path="random_status"))
     response.status_code = random.choice([200, 200, 300, 400, 500])
     logging.error("random status")
     return {"path": "/random_status"}
@@ -201,6 +230,7 @@ async def random_status(response: Response):
 
 @app.get("/random_sleep")
 async def random_sleep(response: Response):
+    req_meter.add(amount=1, attributes=dict(path="random_sleep"))
     time.sleep(random.randint(0, 5))
     logging.error("random sleep")
     return {"path": "/random_sleep"}

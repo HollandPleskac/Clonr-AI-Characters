@@ -1,8 +1,11 @@
-from abc import ABC, abstractproperty
+from abc import ABC, abstractproperty, abstractmethod
+from .schemas import Message, GenerationParams, LLMResponse
 
 
 class LLM(ABC):
     is_chat_model: bool
+    model: str
+    model_type: str
 
     @abstractproperty
     def user_start(self):
@@ -34,4 +37,17 @@ class LLM(ABC):
 
     @abstractproperty
     def context_length(self) -> int:
+        pass
+
+    @abstractmethod
+    async def agenerate(
+        self,
+        prompt_or_messages: str | list[Message],
+        params: GenerationParams | None = None,
+        **kwargs,
+    ) -> LLMResponse:
+        pass
+
+    @abstractmethod
+    def num_tokens(self, inp: list[Message] | str) -> int:
         pass

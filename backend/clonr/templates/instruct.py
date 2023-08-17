@@ -1,4 +1,4 @@
-from clonr.llms import LLM, OpenAIGenerationParams
+from clonr.llms import LLM, GenerationParams
 
 from .base import Template, env
 
@@ -25,7 +25,7 @@ Below is an instruction that describes a task. Write a response that appropriate
 """
     )
 
-    default_gen_params = OpenAIGenerationParams(
+    default_gen_params = GenerationParams(
         temperature=0.8, top_p=0.95, frequency_penalty=0.2, max_tokens=256
     )
 

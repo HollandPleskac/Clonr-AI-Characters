@@ -464,22 +464,25 @@ async def get_monologue_by_id(
     return monologue
 
 
+# TODO (Jonny): check the auth on this one
 @router.post(
     "/{clone_id}/monologues",
-    response_model=schemas.Monologue,
+    response_model=list[schemas.Monologue],
     status_code=status.HTTP_201_CREATED,
 )
 async def create_monologue(
-    monologue_create: schemas.MonologueCreate,
+    monologue_create: list[schemas.MonologueCreate],
     clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
 ):
-    monologue = Monologue(**monologue_create.model_dump(exclude_none=True))
-    m = await clonedb.add_monologues([monologue])
+    monologues = [
+        Monologue(**m.model_dump(exclude_none=True)) for m in monologue_create
+    ]
+    m = await clonedb.add_monologues(monologues)
     if not m:
         raise HTTPException(
             status_code=status.HTTP_304_NOT_MODIFIED, detail="Monologue already exists."
         )
-    return m[0]
+    return m
 
 
 @router.get("/{clone_id}/monologues", response_model=list[schemas.Monologue])

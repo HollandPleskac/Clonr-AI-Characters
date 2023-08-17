@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str
     LLM: str
     OTEL_EXPORTER_OTLP_ENDPOINT: str
+    APP_NAME: str = "clonr.server"
 
 
 settings = Settings()

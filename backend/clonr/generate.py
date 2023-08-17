@@ -1,11 +1,12 @@
-import inspect
 import json
 import re
 
 from loguru import logger
+from opentelemetry import trace, metrics
 from pydantic import BaseModel, ValidationError
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_random
 
+from app import settings
 from clonr import templates
 from clonr.data_structures import (
     Document,
@@ -25,6 +26,15 @@ MAX_RETRIES = 3
 RETRY_MIN = 0.1
 RETRY_MAX = 1
 MIN_CHUNK_SIZE = 256
+
+
+tracer = trace.get_tracer(__name__)
+meter = metrics.get_meter(settings.APP_NAME)
+
+output_parsing_exception_meter = meter.create_counter(
+    name="llm_output_parsing_exceptions",
+    description="The number of times we could not properly parse the output of an LLM call",
+)
 
 
 class OutputParserError(Exception):
@@ -85,9 +95,12 @@ def _max_chunk_size_formula(
     return chunk_size
 
 
+@tracer.start_as_current_span("auto_chunk_size_long_desc")
 def auto_chunk_size_long_desc(
-    llm: LLM, summary_size: int = Params.long_description.max_tokens
+    llm: LLM, summary_size: int | None = Params.long_description.max_tokens
 ) -> int:
+    if summary_size is None:
+        summary_size = 512
     assert summary_size > 0, "Must have positive summary size"
     if llm.is_chat_model:
         prompt = templates.LongDescription.render(
@@ -111,6 +124,7 @@ def auto_chunk_size_long_desc(
     return chunk_size
 
 
+@tracer.start_as_current_span("auto_chunk_size_summarize")
 def auto_chunk_size_summarize(
     llm: LLM, summary_size: int = Params.summarize.max_tokens
 ) -> int:
@@ -128,10 +142,11 @@ def auto_chunk_size_summarize(
     return chunk_size
 
 
+@tracer.start_as_current_span("agent_summary")
 async def agent_summary(
     llm: LLM,
     char: str,
-    memories: list[str] | list[Memory],
+    memories: list[Memory],
     questions: list[str] | None = None,
     long_description: str | None = None,
     short_description: str | None = None,
@@ -157,9 +172,7 @@ async def agent_summary(
             questions=questions,
         )
     kwargs["template"] = templates.AgentSummary.__name__
-    kwargs["subroutine"] = kwargs.get(
-        "subroutine", inspect.currentframe().f_code.co_name
-    )
+    kwargs["subroutine"] = agent_summary.__name__
     r = await llm.agenerate(
         prompt_or_messages=prompt, params=Params.agent_summary, **kwargs
     )
@@ -171,6 +184,7 @@ async def agent_summary(
     return summary.strip()
 
 
+@tracer.start_as_current_span("long_description_create")
 async def long_description_create(
     llm: LLM, short_description: str, docs: list[Document], **kwargs
 ) -> str:
@@ -194,9 +208,7 @@ async def long_description_create(
                 current_description=current_description,
             )
             kwargs["template"] = templates.LongDescription.__name__
-            kwargs["subroutine"] = kwargs.get(
-                "subroutine", inspect.currentframe().f_code.co_name
-            )
+            kwargs["subroutine"] = long_description_create.__name__
             kwargs["document_id"] = str(doc.id)
             kwargs["chunk_index"] = i
             r = await llm.agenerate(prompt, params=Params.long_description, **kwargs)
@@ -204,11 +216,12 @@ async def long_description_create(
     return current_description
 
 
+@tracer.start_as_current_span("entity_context_create")
 async def entity_context_create(
     llm: LLM,
     char: str,
     entity: str,
-    statements: list[str],
+    statements: list[Memory],
     system_prompt: str | None = None,
     prev_entity_summary: str | None = None,
     **kwargs,
@@ -230,9 +243,7 @@ async def entity_context_create(
             prev_entity_summary=prev_entity_summary,
         )
     kwargs["template"] = templates.EntityContextCreate.__name__
-    kwargs["subroutine"] = kwargs.get(
-        "subroutine", inspect.currentframe().f_code.co_name
-    )
+    kwargs["subroutine"] = entity_context_create.__name__
     r = await llm.agenerate(
         prompt_or_messages=prompt, params=Params.entity_context_create, **kwargs
     )
@@ -244,6 +255,7 @@ async def entity_context_create(
     return summary.strip()
 
 
+@tracer.start_as_current_span("rate_memory")
 @retry(
     stop=stop_after_attempt(MAX_RETRIES),
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
@@ -270,15 +282,18 @@ async def rate_memory(
             examples=examples,
         )
     kwargs["template"] = templates.MemoryRating.__name__
-    kwargs["subroutine"] = kwargs.get(
-        "subroutine", inspect.currentframe().f_code.co_name
-    )
+    kwargs["subroutine"] = rate_memory.__name__
     kwargs["retry_attempt"] = rate_memory.retry.statistics["attempt_number"] - 1
     params = GenerationParams(**templates.MemoryRating.get_constraints(llm=llm))
     r = await llm.agenerate(prompt_or_messages=prompt, params=params, **kwargs)
     try:
         return int(r.content.strip()) + 1
     except ValueError:
+        attributes = dict(
+            subroutine=kwargs["subroutine"], model=llm.model, model_type=llm.model_type
+        )
+        output_parsing_exception_meter.add(amount=1, attributes=attributes)
+
         if isinstance(llm, MockLLM):
             return 4
         err_msg = f"Could not parse output to an integer. Output: {r.content.strip()}"
@@ -286,6 +301,7 @@ async def rate_memory(
         raise OutputParserError(err_msg)
 
 
+@tracer.start_as_current_span("message_queries_create")
 @retry(
     stop=stop_after_attempt(MAX_RETRIES),
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
@@ -298,7 +314,7 @@ async def message_queries_create(
     agent_summary: str,
     entity_context_summary: str,
     entity_name: str,
-    messages: list[str] | list[Message],
+    messages: list[Message],
     num_results: int = 3,
     system_prompt: str | None = None,
     **kwargs,
@@ -319,9 +335,7 @@ async def message_queries_create(
     else:
         raise NotImplementedError("Instruct not implemented for MessageQuery template")
     kwargs["template"] = templates.MessageQuery.__name__
-    kwargs["subroutine"] = kwargs.get(
-        "subroutine", inspect.currentframe().f_code.co_name
-    )
+    kwargs["subroutine"] = message_queries_create.__name__
     kwargs["retry_attempt"] = (
         message_queries_create.retry.statistics["attempt_number"] - 1
     )
@@ -335,6 +349,10 @@ async def message_queries_create(
     try:
         queries = json.loads(text)
     except json.JSONDecodeError:
+        attributes = dict(
+            subroutine=kwargs["subroutine"], model=llm.model, model_type=llm.model_type
+        )
+        output_parsing_exception_meter.add(amount=1, attributes=attributes)
         # if isinstance(llm, MockLLM):
         #     return ["foo", "bar", "baz"]
 
@@ -360,10 +378,15 @@ async def message_queries_create(
     try:
         QueryList(arr=queries)
     except ValidationError as e:
+        attributes = dict(
+            subroutine=kwargs["subroutine"], model=llm.model, model_type=llm.model_type
+        )
+        output_parsing_exception_meter.add(amount=1, attributes=attributes)
         raise OutputParserError(e)
     return queries
 
 
+@tracer.start_as_current_span("question_and_answer")
 async def question_and_answer(
     llm: LLM,
     question: str,
@@ -384,15 +407,14 @@ async def question_and_answer(
             excerpts=excerpts,
         )
     kwargs["template"] = templates.QuestionAndAnswer.__name__
-    kwargs["subroutine"] = kwargs.get(
-        "subroutine", inspect.currentframe().f_code.co_name
-    )
+    kwargs["subroutine"] = question_and_answer.__name__
     r = await llm.agenerate(
         prompt_or_messages=prompt, params=Params.question_and_answer, **kwargs
     )
     return r.content.strip()
 
 
+@tracer.start_as_current_span("reflection_queries_create")
 @retry(
     stop=stop_after_attempt(MAX_RETRIES),
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
@@ -418,7 +440,7 @@ async def reflection_queries_create(
             memories=memories, num_questions=num_questions
         )
     kwargs["template"] = templates.ReflectionQuestions.__name__
-    kwargs["subroutine"] = kwargs.get("subroutine", "reflections")
+    kwargs["subroutine"] = reflection_queries_create.__name__
     kwargs["retry_attempt"] = (
         reflection_queries_create.retry.statistics["attempt_number"] - 1
     )
@@ -429,6 +451,11 @@ async def reflection_queries_create(
     try:
         queries = json.loads(text)
     except json.JSONDecodeError:
+        attributes = dict(
+            subroutine=kwargs["subroutine"], model=llm.model, model_type=llm.model_type
+        )
+        output_parsing_exception_meter.add(amount=1, attributes=attributes)
+
         if isinstance(llm, MockLLM):
             return ["What do I stand for?", "Where was I?"]
 
@@ -445,10 +472,16 @@ async def reflection_queries_create(
     try:
         QueryList(arr=queries)
     except ValidationError as e:
+        attributes = dict(
+            subroutine=kwargs["subroutine"], model=llm.model, model_type=llm.model_type
+        )
+        output_parsing_exception_meter.add(amount=1, attributes=attributes)
+
         raise OutputParserError(e)
     return queries
 
 
+@tracer.start_as_current_span("reflections_create")
 @retry(
     stop=stop_after_attempt(MAX_RETRIES),
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
@@ -472,7 +505,7 @@ async def reflections_create(
             statements=memories,
         )
     kwargs["template"] = templates.ReflectionInsights.__name__
-    kwargs["subroutine"] = kwargs.get("subroutine", "reflections")
+    kwargs["subroutine"] = reflections_create.__name__
     kwargs["retry_attempt"] = reflections_create.retry.statistics["attempt_number"] - 1
 
     index_to_memory = {i + 1: m for i, m in enumerate(memories)}
@@ -493,18 +526,31 @@ async def reflections_create(
                 ReflectionItem(insight="this is also an insight", memories=[1, 2]),
             ]
         else:
+            attributes = dict(
+                subroutine=kwargs["subroutine"],
+                model=llm.model,
+                model_type=llm.model_type,
+            )
+            output_parsing_exception_meter.add(amount=1, attributes=attributes)
+
             err_msg = (
                 f"Unable to convert reflections_create output to JSON. Output: {text}"
             )
             logger.error(err_msg)
             raise OutputParserError(err_msg)
 
-    reflections: list[Memory] = []
+    reflections: list[MemoryWithoutRating] = []
     for x in refls:
         try:
             child_indexes = x.memories
             children = [index_to_memory[z] for z in child_indexes]
         except IndexError as e:
+            attributes = dict(
+                subroutine=kwargs["subroutine"],
+                model=llm.model,
+                model_type=llm.model_type,
+            )
+            output_parsing_exception_meter.add(amount=1, attributes=attributes)
             err_msg = (
                 "Parsing failure. Reflection memory dependencies do not point "
                 f"to valid indexes: {e}"
@@ -512,6 +558,13 @@ async def reflections_create(
             logger.error(err_msg)
             raise OutputParserError(err_msg)
         except Exception as e:
+            attributes = dict(
+                subroutine=kwargs["subroutine"],
+                model=llm.model,
+                model_type=llm.model_type,
+            )
+            output_parsing_exception_meter.add(amount=1, attributes=attributes)
+
             err_msg = f"Unknown parsing error. {e}"
             logger.error(err_msg)
             raise OutputParserError(err_msg)
@@ -526,6 +579,7 @@ async def reflections_create(
     return reflections
 
 
+@tracer.start_as_current_span("summarize")
 async def summarize(
     llm: LLM,
     passage: str,
@@ -543,15 +597,14 @@ async def summarize(
             passage=passage,
         )
     kwargs["template"] = templates.Summarize.__name__
-    kwargs["subroutine"] = kwargs.get(
-        "subroutine", inspect.currentframe().f_code.co_name
-    )
+    kwargs["subroutine"] = summarize.__name__
     r = await llm.agenerate(
         prompt_or_messages=prompt, params=Params.summarize, **kwargs
     )
     return r.content.strip()
 
 
+@tracer.start_as_current_span("online_summarize")
 async def online_summarize(
     llm: LLM,
     nodes: list[Node],
@@ -567,9 +620,7 @@ async def online_summarize(
         msg = "Are you sure you want to online summarize with {len(nodes)} nodes? (y/n)"
         assert input(msg) == "y", "Fuck that noise"
     kwargs["template"] = templates.Summarize.__name__
-    kwargs["subroutine"] = kwargs.get(
-        "subroutine", inspect.currentframe().f_code.co_name
-    )
+    kwargs["subroutine"] = online_summarize.__name__
     calls: list[LLMResponse] = []
     prev_summary = "No summary yet."
     for i, node in enumerate(nodes):
@@ -594,6 +645,7 @@ async def online_summarize(
     return calls
 
 
+@tracer.start_as_current_span("generate_zero_memory_message")
 async def generate_zero_memory_message(
     llm: LLM,
     char: str,
@@ -620,15 +672,14 @@ async def generate_zero_memory_message(
         use_timestamps=use_timestamps,
     )
     kwargs["template"] = templates.ZeroMemoryMessage.__name__
-    kwargs["subroutine"] = kwargs.get(
-        "subroutine", inspect.currentframe().f_code.co_name
-    )
+    kwargs["subroutine"] = generate_long_term_memory_message.__name__
     r = await llm.agenerate(
         prompt_or_messages=prompt, params=Params.generate_zero_memory_message, **kwargs
     )
     return r.content.strip()
 
 
+@tracer.start_as_current_span("generate_long_term_memory_message")
 async def generate_long_term_memory_message(
     llm: LLM,
     char: str,
@@ -661,9 +712,7 @@ async def generate_long_term_memory_message(
         use_timestamps=use_timestamps,
     )
     kwargs["template"] = templates.LongTermMemoryMessage.__name__
-    kwargs["subroutine"] = kwargs.get(
-        "subroutine", inspect.currentframe().f_code.co_name
-    )
+    kwargs["subroutine"] = generate_long_term_memory_message.__name__
     r = await llm.agenerate(
         prompt_or_messages=prompt,
         params=Params.generate_long_term_memory_message,
