@@ -9,7 +9,7 @@ import 'swiper/css/scrollbar'
 
 const axios = require('axios').default
 
-import TopBar from '@/components/TopBar'
+import TopBarStatic from '@/components/TopBarStatic'
 import AlertBar from '@/components/AlertBar'
 import { Character, Tag } from '@/types'
 import useClones from '@/hooks/useClones'
@@ -175,10 +175,7 @@ export default function BrowsePage({
         <div className=''>
             <AlertBar />
 
-            <TopBar
-                searchInput={searchInput}
-                onSearchInput={(x) => setSearchInput(x)}
-                clearSearchInput={() => setSearchInput('')}
+            <TopBarStatic
             />
 
             <div className='flex w-full justify-center items-center gap-x-4' >

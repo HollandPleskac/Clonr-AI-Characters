@@ -128,7 +128,7 @@ export default function TopBar({
           </div>
           <div
             id='navbar-collapse-with-animation'
-            className='hs-collapse hidden overflow-hidden transition-all duration-300 basis-full grow lg:block'
+            className='pb-1 hs-collapse hidden overflow-hidden transition-all duration-300 basis-full grow lg:block'
           >
             <div className='flex mt-5 lg:items-center lg:justify-between lg:mt-0 lg:pl-5'>
               <div className='flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-start'>
@@ -153,7 +153,16 @@ export default function TopBar({
                 >
                   Pricing
                 </Link>
-
+                <Link
+                  href='/browse'
+                  className={`transition duration-200 ${
+                    pathname === '/browse'
+                      ? 'text-white font-semibold'
+                      : 'text-[#e5e5e5] hover:text-[#979797]'
+                  } translate-y-[6px]`}
+                >
+                  Browse
+                </Link>
                 <Link
                   href='#'
                   className={`transition duration-200 ${
@@ -165,6 +174,26 @@ export default function TopBar({
                   <span>
                     Create <sup className=''>Coming Soon</sup>
                   </span>
+                </Link>
+                <Link
+                  href='/browse'
+                  className={`transition duration-200 ${
+                    pathname === '/account'
+                      ? 'text-white font-semibold'
+                      : 'text-[#e5e5e5] hover:text-[#979797]'
+                  } translate-y-[6px] block lg:hidden`}
+                >
+                  Manage Account
+                </Link>
+                <Link
+                  href='/browse'
+                  className={`transition duration-200 ${
+                    pathname === '/account'
+                      ? 'text-white font-semibold'
+                      : 'text-[#e5e5e5] hover:text-[#979797]'
+                  } translate-y-[6px] block lg:hidden`}
+                >
+                  Logout
                 </Link>
               </div>
               <div className='hidden lg:flex items-center gap-x-4 text-white'>
