@@ -177,6 +177,7 @@ class CloneSearchResult(CommonMixin, BaseModel):
     creator_id: uuid.UUID
     name: str
     short_description: str
+    long_description: str
     avatar_uri: str | None = (
         None  # TODO (Jonny) make sure we don't throw errors here and un None it
     )
