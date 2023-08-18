@@ -64,7 +64,7 @@ const Message: React.FC<MessageProps> = ({ message, clone_avatar_uri, isLast }) 
       <div className='flex flex-col shrink-0 w-[40px] justify-between items-center'>
         <Image
           key={0}
-          src={message.sender_name == 'Test User' ? '/dummy-char.png' : clone_avatar_uri}
+          src={message.sender_name == 'Test User' ? '/user-profile.png' : clone_avatar_uri}
           alt={message.sender_name}
           width={40}
           height={40}

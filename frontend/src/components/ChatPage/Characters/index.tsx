@@ -8,6 +8,8 @@ import CharacterDropdown from './CharacterDropdown'
 import { CharacterChat } from '@/types'
 import { formatDate } from '@/utils/formatDate'
 import Link from 'next/link'
+import InfiniteScroll from 'react-infinite-scroll-component'
+
 
 interface CharactersProps {
   initialCharacterChats: CharacterChat[]
@@ -24,11 +26,10 @@ export default function Characters({
 
   console.log("in Characters, initialCharacterChats -> ", initialCharacterChats)
 
-  // OPTIONAL: FETCH initialCharacterChats client side here
-  // type: CharacterChat (see @/types)
-  // want to sync this type up with backend
-  // useEffect(() => {
-  // },[])
+  useEffect(() => {
+    setCharacterChats(initialCharacterChats)
+  }, [initialCharacterChats])
+
 
   // search state
   const [isInputActive, setInputActive] = useState(false)
@@ -36,6 +37,16 @@ export default function Characters({
   const handleInputBlur = () => setInputActive(false)
 
   const sidebarRef = useRef<HTMLDivElement | null>(null)
+
+  const fetchMoreData = () => {
+    // FETCH A LIST OF CHARACTER CHAT OBJECTS HERE
+
+    // Add the new conversations to the end of the existing conversations
+    // setCharacterChats((prevCharChats) => [
+    //   ...prevCharChats,
+    //   ...newCharChats,
+    // ])
+  }
 
   if (!characterChats) return <div> Loading CharacterChats.. </div>
 
@@ -88,10 +99,9 @@ export default function Characters({
         <div className='relative w-full'>
           <div className='absolute left-4 top-3'>
             <SearchIcon
-              strokeClasses={`${
-                isInputActive ? 'stroke-[#5848BC]' : 'stroke-[#515151]'
-              } transition duration-100`}
-              // strokeClasses='stroke-[#515151]'
+              strokeClasses={`${isInputActive ? 'stroke-[#5848BC]' : 'stroke-[#515151]'
+                } transition duration-100`}
+            // strokeClasses='stroke-[#515151]'
             />
           </div>
           <input
@@ -104,8 +114,41 @@ export default function Characters({
           />
         </div>
       </div>
+      <div
+        className='overflow-auto transition-all duration-100'
+        id='scrollableDiv'
+        style={{
+          height: 'calc(100vh - 144px)',
+          overflow: 'auto',
+          scrollBehavior: 'smooth',
+        }}
+      >
+        <InfiniteScroll
+          dataLength={characterChats.length}
+          next={fetchMoreData}
+          hasMore={true}
+          loader={<h4>Loading...</h4>}
+          scrollableTarget='scrollableDiv'
+          className='flex flex-col'
+        >
+         
+          {characterChats.map((charChat, index) => (
+            <CharacterComponent
+            key={charChat.character.id}
+            characterChat={charChat}
+            currentCharacterId={currentCharacterId}
+          />
+          ))}
+        </InfiniteScroll>
+      </div>
+    </div>
+  )
+}
 
-      <div className='sticky top-[154px] overflow-auto transition-all duration-100 h-full'>
+
+{/* <div className='overflow-auto transition-all duration-100 bg-red-400'
+        style={{ height: 'calc(100vh - 144px)' }}
+      >
         {initialCharacterChats.map((charChat) => (
           <CharacterComponent
             key={charChat.character.id}
@@ -113,7 +156,4 @@ export default function Characters({
             currentCharacterId={currentCharacterId}
           />
         ))}
-      </div>
-    </div>
-  )
-}
+      </div> */}

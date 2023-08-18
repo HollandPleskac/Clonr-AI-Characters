@@ -26,6 +26,7 @@ interface ChatScreenProps {
   initialConversationState: string
 }
 
+
 export default function ChatScreen({
   characterId,
   conversationId,
@@ -55,7 +56,7 @@ export default function ChatScreen({
   const divRef = useRef<HTMLDivElement | null>(null)
 
   // hooks
-  const {createConversation, queryConversation, queryConversationMessages, createMessage, generateCloneMessage, queryCurrentRevisions} = useConversations();
+  const { createConversation, queryConversation, queryConversationMessages, createMessage, generateCloneMessage, queryCurrentRevisions } = useConversations();
 
   // OPTIONAL: FETCH initialMessages client side here
   // type: Message (see @/types)
@@ -121,7 +122,7 @@ export default function ChatScreen({
       if (serverMessage) {
         console.log('Server Message:', serverMessage.content)
       }
-      
+
       setMessages((messages) => [serverMessage, ...messages])
     } catch (error) {
       console.error(error)
@@ -228,8 +229,8 @@ export default function ChatScreen({
                   >
                     <div
                       className={`${isFetching
-                          ? 'text-white flex'
-                          : 'text-transparent hidden'
+                        ? 'text-white flex'
+                        : 'text-transparent hidden'
                         } w-full py-4 h-[56px]`}
                     >
                       <ThreeDots
@@ -243,14 +244,14 @@ export default function ChatScreen({
                       />
                     </div>
                     {messages.map((message, index) => (
-                        <MessageComponent
-                          message={message}
-                          clone_avatar_uri={character.avatar_uri}
-                          isLast={
-                            message.is_clone && index === 0 ? true : false
-                          }
-                          key={message.id}
-                        />
+                      <MessageComponent
+                        message={message}
+                        clone_avatar_uri={character.avatar_uri}
+                        isLast={
+                          message.is_clone && index === 0 ? true : false
+                        }
+                        key={message.id}
+                      />
 
                     ))}
                   </InfiniteScroll>
