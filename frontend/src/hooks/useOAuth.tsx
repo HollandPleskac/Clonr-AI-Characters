@@ -1,5 +1,8 @@
+'use client';
+
 import { useState } from 'react';
 import axios from 'axios';
+import { useRouter } from 'next/navigation';
 
 interface User {
   id: string;
@@ -21,12 +24,17 @@ interface OAuthConfig {
 export const useOAuth = (config: OAuthConfig) => {
   const [user, setUser] = useState<User | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
+  const router = useRouter();
 
   const loginWithOAuth = async () => {
     setAuthError(null);
 
+    const response = await axios.get<{ authorization_url: string }>(
+      config.authorizeUrl
+    );
+    
     try {
-      window.location.href = config.authorizeUrl;
+      router.push(response.data.authorization_url);
     } catch (error) {
       setAuthError(`${config.provider} authentication failed, please try again!`);
       console.error(error);
@@ -40,6 +48,8 @@ export const useOAuth = (config: OAuthConfig) => {
       );
 
       setUser(response.data.user);
+      router.push('/account');
+
     } catch (error) {
       setAuthError(`${config.provider} authentication failed, please try again!`);
       console.error(error);
