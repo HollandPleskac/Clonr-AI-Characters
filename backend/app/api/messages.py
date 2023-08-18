@@ -27,8 +27,8 @@ class MsgSortType(str, enum.Enum):
 
 async def get_message(
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
-    user: Annotated[models.Creator, Depends(deps.get_current_active_user)],
-    message_id: Annotated[uuid.UUID, Path()] = None,
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
+    message_id: Annotated[uuid.UUID, Path()],
 ) -> models.Message:
     msg = await db.get(models.Message, message_id)
     if not msg or (not msg.is_active and not user.is_superuser):
@@ -48,10 +48,12 @@ async def get_message(
 async def get_messages(
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
     embedding_client: Annotated[EmbeddingClient, Depends(deps.get_embedding_client)],
-    user: Annotated[models.Creator, Depends(deps.get_current_active_user)],
-    conversation_id: Annotated[str | None, Query(min_length=36, max_length=36)] = None,
-    clone_id: Annotated[str | None, Query(min_length=36, max_length=36)] = None,
-    user_id: Annotated[str | None, Query(min_length=36, max_length=36)] = None,
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
+    conversation_id: Annotated[
+        uuid.UUID | None, Query(min_length=36, max_length=36)
+    ] = None,
+    clone_id: Annotated[uuid.UUID | None, Query(min_length=36, max_length=36)] = None,
+    user_id: Annotated[uuid.UUID | None, Query(min_length=36, max_length=36)] = None,
     q: Annotated[str | None, Query(max_length=512)] = None,
     sort: Annotated[MsgSortType, Query()] = MsgSortType.newest,
     sent_after: Annotated[datetime.datetime | None, Query()] = None,

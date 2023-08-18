@@ -184,7 +184,7 @@ RATING: \
         return dict(logit_bias=logit_bias, max_tokens=max_tokens, temperature=0.0)
 
 
-class MemoryRatingWithContext(MemoryRating):
+class MemoryRatingWithContext:
     chat_template = env.from_string(
         """\
 {{ llm.system_start -}}
@@ -275,7 +275,7 @@ RATING: \
         if system_prompt is None:
             system_prompt = llm.default_system_prompt
         if examples is None:
-            examples = DEFAULT_MEMORY_RATING_EXAMPLES
+            examples = DEFAULT_MEMORY_RATING_WITH_CONTEXT_EXAMPLES
         if isinstance(memory, Memory):
             memory = memory.content
         return cls.chat_template.render(
@@ -284,10 +284,16 @@ RATING: \
 
     @classmethod
     def render_instruct(
-        cls, memory: str | Memory, examples: list[MemoryExample] | None = None
+        cls,
+        memory: str | Memory,
+        examples: list[MemoryExampleWithContext] | None = None,
     ):
         if isinstance(memory, Memory):
             memory = memory.content
         if examples is None:
-            examples = DEFAULT_MEMORY_RATING_EXAMPLES
+            examples = DEFAULT_MEMORY_RATING_WITH_CONTEXT_EXAMPLES
         return cls.instruct_template.render(memory=memory, examples=examples)
+
+    @classmethod
+    def get_constraints(cls, llm: LLM):
+        return MemoryRating.get_constraints(llm=llm)

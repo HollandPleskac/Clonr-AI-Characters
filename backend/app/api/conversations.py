@@ -51,7 +51,7 @@ class MsgSortType(str, enum.Enum):
 async def get_conversation(
     conversation_id: Annotated[uuid.UUID, Path()],
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
-    user: Annotated[models.Creator, Depends(deps.get_paying_user)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
 ) -> models.Conversation:
     convo = await db.get(models.Conversation, conversation_id)
     if not convo or not convo.is_active:
@@ -162,7 +162,7 @@ async def get_messages(
     conversation_id: Annotated[uuid.UUID, Path()],
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
     embedding_client: Annotated[EmbeddingClient, Depends(deps.get_embedding_client)],
-    user: Annotated[models.Creator, Depends(deps.get_current_active_user)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
     q: Annotated[str | None, Query(max_length=512)] = None,
     sort: Annotated[MsgSortType, Query()] = MsgSortType.newest,
     sent_after: Annotated[datetime.datetime | None, Query()] = None,
@@ -281,7 +281,7 @@ async def generate_clone_message(
 ):
     if (
         msg_gen.is_revision
-        and controller.conversation.memory_strategy != MemoryStrategy.none
+        and controller.conversation.memory_strategy != MemoryStrategy.zero
     ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -332,7 +332,7 @@ async def delete_message(
     message_id: Annotated[uuid.UUID, Path()],
     conversation_id: Annotated[uuid.UUID, Path()],
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
-    user: Annotated[models.Creator, Depends(deps.get_current_active_user)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
 ):
     msg = await db.get(models.Message, message_id)
     if not msg:
@@ -355,7 +355,7 @@ async def delete_message(
             models.Conversation.id == conversation_id
         )
     )
-    if memory_strategy != MemoryStrategy.none:
+    if memory_strategy != MemoryStrategy.zero:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Message deletion is not allowed for anything but the Zero Memory Strategy",
@@ -376,7 +376,7 @@ async def get_message_by_id(
     message_id: Annotated[uuid.UUID, Path()],
     conversation_id: Annotated[uuid.UUID, Path()],
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
-    user: Annotated[models.Creator, Depends(deps.get_current_active_user)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
 ):
     msg = await db.get(models.Message, message_id)
     if (
@@ -403,7 +403,7 @@ async def set_revision_as_main(
     message_id: Annotated[uuid.UUID, Path()],
     controller: Annotated[Controller, Depends(deps.get_controller)],
 ):
-    if controller.conversation.memory_strategy != MemoryStrategy.none:
+    if controller.conversation.memory_strategy != MemoryStrategy.zero:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Message regeneration is not allowed for anything but the Zero Memory Strategy",

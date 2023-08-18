@@ -11,10 +11,10 @@ def increment_clone_num_messages(
 ):
     db = Session(bind=connection)
     try:
-        clone = db.get(models.Clone, target.clone_id)
-        clone.num_messages += 1
-        db.add(clone)
-        db.commit()
+        if clone := db.get(models.Clone, target.clone_id):
+            clone.num_messages += 1
+            db.add(clone)
+            db.commit()
     except Exception as e:
         db.rollback()
         logger.exception(e)
@@ -29,10 +29,10 @@ def decrement_clone_num_messages(
 ):
     db = Session(bind=connection)
     try:
-        clone = db.get(models.Clone, target.clone_id)
-        clone.num_messages -= 1
-        db.add(clone)
-        db.commit()
+        if clone := db.get(models.Clone, target.clone_id):
+            clone.num_messages -= 1
+            db.add(clone)
+            db.commit()
     except Exception as e:
         db.rollback()
         logger.exception(e)
@@ -47,10 +47,10 @@ def increment_clone_num_conversations(
 ):
     db = Session(bind=connection)
     try:
-        clone = db.get(models.Clone, target.clone_id)
-        clone.num_conversations += 1
-        db.add(clone)
-        db.commit()
+        if clone := db.get(models.Clone, target.clone_id):
+            clone.num_conversations += 1
+            db.add(clone)
+            db.commit()
     except Exception as e:
         db.rollback()
         logger.exception(e)
@@ -65,10 +65,10 @@ def decrement_clone_num_conversations(
 ):
     db = Session(bind=connection)
     try:
-        clone = db.get(models.Clone, target.clone_id)
-        clone.num_conversations -= 1
-        db.add(clone)
-        db.commit()
+        if clone := db.get(models.Clone, target.clone_id):
+            clone.num_conversations -= 1
+            db.add(clone)
+            db.commit()
     except Exception as e:
         db.rollback()
         logger.exception(e)

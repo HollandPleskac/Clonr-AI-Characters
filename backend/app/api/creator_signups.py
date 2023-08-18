@@ -5,8 +5,7 @@ from fastapi.routing import APIRouter
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import models, schemas
-from app.db import get_async_session
+from app import deps, models, schemas
 
 router = APIRouter(
     prefix="/creators",
@@ -18,7 +17,7 @@ router = APIRouter(
 @router.post("/", response_model=schemas.CreatorPartnerProgramSignup)
 async def create(
     obj: schemas.CreatorPartnerProgramSignupCreate,
-    db: Annotated[AsyncSession, Depends(get_async_session)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
 ):
     signup = models.CreatorPartnerProgramSignup(**obj.dict())
     db.add(signup)
@@ -29,7 +28,7 @@ async def create(
 
 @router.get("/", response_model=list[schemas.CreatorPartnerProgramSignup])
 async def get_signups(
-    db: Annotated[AsyncSession, Depends(get_async_session)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
     limit: int = 10,
     offset: int = 0,
 ):

@@ -1,6 +1,7 @@
 import datetime
 import enum
 from dataclasses import dataclass
+from typing import Generic, TypeVar
 
 from pydantic import BaseModel, Field
 from sqlalchemy.orm.attributes import InstrumentedAttribute
@@ -10,13 +11,13 @@ INF = int(1e10)
 
 
 class MemoryStrategy(str, enum.Enum):
-    none = "none"
+    zero = "zero"
     short_term = "short_term"
     long_term = "long_term"
 
 
 class InformationStrategy(str, enum.Enum):
-    none = "none"
+    zero = "zero"
     internal = "internal"
     external = "external"
 
@@ -33,7 +34,7 @@ class VectorSearchable(DeclarativeAttributeIntercept):
 
 
 class GenAgentsSearchable(DeclarativeAttributeIntercept):
-    embedding: InstrumentedAttribute
+    embedding: InstrumentedAttribute  # list[float]
     content: str
     importance: InstrumentedAttribute  # int
     last_accessed_at: datetime.datetime
@@ -56,21 +57,28 @@ class MetricType(str, enum.Enum):
     euclidean: str = "euclidean"
 
 
+T = TypeVar("T", bound=VectorSearchable)
+S = TypeVar("S", bound=GenAgentsSearchable)
+
+
 @dataclass
-class VectorSearchResult:
-    model: VectorSearchable
+class VectorSearchResult(Generic[T]):
+    model: T
     distance: float
     metric: MetricType
 
 
 @dataclass
-class ReRankResult(VectorSearchResult):
+class ReRankResult(Generic[T]):
+    model: T
+    distance: float
+    metric: MetricType
     rerank_score: float
 
 
 @dataclass
-class GenAgentsSearchResult:
-    model: GenAgentsSearchable
+class GenAgentsSearchResult(Generic[S]):
+    model: S
     recency_score: float
     relevance_score: float
     importance_score: float

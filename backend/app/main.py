@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import math
 import random
 import time
 from contextlib import asynccontextmanager
@@ -12,9 +13,8 @@ from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
+from opentelemetry import metrics
 
-# import tracing first so no meters are uninitialized!
-from app.tracing import setup_tracing  # isort: skip
 from app import api, deps, models, schemas
 from app.auth.users import (
     auth_backend,
@@ -34,12 +34,28 @@ from app.db import (
 from app.deps.users import fastapi_users
 from app.embedding import wait_for_embedding
 from app.settings import settings
+from app.tracing import setup_tracing
 
 # import sentry_sdk
 # sentry_sdk.init(
 #     dsn="https://foo@sentry.io/123",
 #     traces_sample_rate=1.0,
 # )
+
+
+meter = metrics.get_meter(settings.APP_NAME)
+
+req_meter = meter.create_counter(
+    name="io_requests_total",
+    description="Total count of requests by method and path.",
+    unit="responses",
+)
+
+hist_meter = meter.create_histogram(
+    name="jonny_time_requests_total",
+    description="Total count of requests by method and path.",
+    unit="responses",
+)
 
 
 async def run_async_upgrade():
@@ -165,6 +181,12 @@ def health_check():
 
 
 # Below are temporary just for running Locust
+def box_muller():
+    R = math.sqrt(-2 * math.log(random.random()))
+    theta = 2 * math.py * random.random()
+    return R * math.abs(math.cos(theta))
+
+
 @app.get("/")
 async def read_root():
     logging.error("Hello World")
@@ -173,6 +195,7 @@ async def read_root():
 
 @app.get("/items/{item_id}")
 async def read_item(item_id: int, q: Optional[str] = None):
+    hist_meter.record(amount=box_muller(), attributes=dict(path="items"))
     logging.error("items")
     return {"item_id": item_id, "q": q}
 
@@ -180,12 +203,14 @@ async def read_item(item_id: int, q: Optional[str] = None):
 @app.get("/io_task")
 async def io_task():
     time.sleep(1)
+    hist_meter.record(amount=box_muller(), attributes=dict(path="io"))
     logging.error("io task")
     return "IO bound task finish!"
 
 
 @app.get("/cpu_task")
 async def cpu_task():
+    req_meter.add(amount=1, attributes=dict(path="cpu_task"))
     for i in range(1000):
         i * i * i
     logging.error("cpu task")
@@ -194,6 +219,7 @@ async def cpu_task():
 
 @app.get("/random_status")
 async def random_status(response: Response):
+    req_meter.add(amount=1, attributes=dict(path="random_status"))
     response.status_code = random.choice([200, 200, 300, 400, 500])
     logging.error("random status")
     return {"path": "/random_status"}
@@ -201,6 +227,7 @@ async def random_status(response: Response):
 
 @app.get("/random_sleep")
 async def random_sleep(response: Response):
+    req_meter.add(amount=1, attributes=dict(path="random_sleep"))
     time.sleep(random.randint(0, 5))
     logging.error("random sleep")
     return {"path": "/random_sleep"}
@@ -217,7 +244,7 @@ setup_tracing(app=app)
 
 if __name__ == "__main__":
     p = Path(__file__).parent.parent
-    reload_dirs = [(p / x).resolve() for x in ["app", "clonr"]]
+    reload_dirs = [str((p / x).resolve()) for x in ["app", "clonr"]]
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",

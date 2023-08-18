@@ -43,7 +43,7 @@ class WikiQuotesParser(Parser):
             for segment in SPLITTER.split(q)
             if len(segment) < 256
         ]
-        monologues = [Monologue(content=q, source="wikiquotes") for q in quotes]
+        monologues = [Monologue(content=q.strip(), source="wikiquotes") for q in quotes]
         return monologues
 
     def extract(self, character_name: str, max_quotes: int = 2_000) -> list[Monologue]:

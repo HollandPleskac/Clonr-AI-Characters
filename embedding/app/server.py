@@ -18,7 +18,8 @@ OTLP_ENDPOINT = os.environ.get("OTLP_ENDPOINT")
 
 APP_NAME = "embeddings.server"
 
-meter = metrics.get_meter(__name__)
+meter = metrics.get_meter(APP_NAME)
+
 info_meter = meter.create_up_down_counter(
     name="embedding_app_info", description="FastAPI application information."
 )
@@ -47,12 +48,12 @@ class EmbedServicer(embed_pb2_grpc.EmbedServicer):
     async def EncodeQueries(
         self, request: embed_pb2.EncodeQueryRequest, unused_context
     ) -> embed_pb2.EmbeddingResponse:
-        bsz = len(request.text)
+        bsz = len(request.text) or 1
         chars = sum(len(x) for x in request.text)
         logger.info(f"EncodeQueries request. Batch size: {bsz}. Chars: {chars}")
 
         st = time.perf_counter()
-        attributes = dict(
+        attributes: dict[str, str | int] = dict(
             method="EncodeQueries", batch_size=bsz, n_chars=chars, app_name=APP_NAME
         )
         req_meter.add(amount=1, attributes=attributes)
@@ -76,7 +77,7 @@ class EmbedServicer(embed_pb2_grpc.EmbedServicer):
         logger.info(f"EncodePassages request. Batch size: {bsz}. Chars: {chars}")
 
         st = time.perf_counter()
-        attributes = dict(
+        attributes: dict[str, str | int] = dict(
             method="EncodePassages", batch_size=bsz, n_chars=chars, app_name=APP_NAME
         )
         req_meter.add(amount=1, attributes=attributes)
@@ -105,7 +106,7 @@ class EmbedServicer(embed_pb2_grpc.EmbedServicer):
         )
 
         st = time.perf_counter()
-        attributes = dict(
+        attributes: dict[str, str | int] = dict(
             method="GetRankingScores", batch_size=bsz, n_chars=chars, app_name=APP_NAME
         )
         req_meter.add(amount=1, attributes=attributes)

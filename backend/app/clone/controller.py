@@ -6,14 +6,15 @@ import uuid
 import sqlalchemy as sa
 from fastapi import BackgroundTasks, HTTPException, status
 from loguru import logger
-from opentelemetry import trace
+from opentelemetry import metrics, trace
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models, schemas
 from app.embedding import EmbeddingClient
+from app.settings import settings
 from clonr import generate, templates
-from clonr.data_structures import Memory, Message, Monologue
+from clonr.data_structures import Document, IndexType, Memory, Message, Monologue
 from clonr.llms import LLM
 from clonr.tokenizer import Tokenizer
 
@@ -31,6 +32,12 @@ from .types import (
 )
 
 tracer = trace.get_tracer(__name__)
+meter = metrics.get_meter(settings.APP_NAME)
+
+special_subroutine_meter = meter.create_up_down_counter(
+    name="controller_current_special_subroutines",
+    description="Which control branches of controller are curently executing, such as memory addition, reflections, entity context summarization and agent summarization",
+)
 
 # the Gen Agents paper uses a threshold of 150 (that's what he said during the talk)
 # min memory importance is 1 and max is 10, so a score of 100 ~ 20 memories on avg.
@@ -94,15 +101,15 @@ class Controller:
 
     @property
     def memory_strategy(self) -> schemas.MemoryStrategy:
-        return self.conversation.memory_strategy
+        return MemoryStrategy(self.conversation.memory_strategy)
 
     @property
     def information_strategy(self) -> schemas.InformationStrategy:
-        return self.conversation.information_strategy
+        return InformationStrategy(self.conversation.information_strategy)
 
     @property
     def adaptation_strategy(self) -> schemas.AdaptationStrategy:
-        return self.conversation.adaptation_strategy
+        return AdaptationStrategy(self.conversation.adaptation_strategy)
 
     @property
     def user_name(self) -> str:
@@ -157,7 +164,7 @@ class Controller:
         await clonedb.set_agent_summary_count(0)
         await clonedb.set_entity_context_count(0)
 
-        if convo.memory_strategy != MemoryStrategy.none:
+        if convo.memory_strategy != MemoryStrategy.zero:
             # add seed memories
             # TODO (Jonny): Should we make this something like "I am eager to learn more about {{user}}?"
             # in order to drive the conversation, or make this configurable to creators?
@@ -174,7 +181,7 @@ class Controller:
         )
         await clonedb.add_message(greeting_message)
 
-        if convo.memory_strategy != MemoryStrategy.none:
+        if convo.memory_strategy != MemoryStrategy.zero:
             # NOTE (Jonny): to make things easier, we don't count the greeting message towards any of the
             # memory-based counters. We can assume things start at zero.
             mem_content = f'I messaged {convo.user_name}, "{greeting_message.content}"'
@@ -185,11 +192,19 @@ class Controller:
 
     @tracer.start_as_current_span("add_private_memory")
     async def _add_private_memory(self, content: str) -> models.Memory:
-        if self.memory_strategy == MemoryStrategy.none:
+        if self.memory_strategy == MemoryStrategy.zero:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Cannot add memories with memory strategy {self.memory_strategy}",
             )
+
+        attributes = dict(
+            subroutine="add_private_memory",
+            clone_id=str(self.clone.id),
+            memory_strategy=self.memory_strategy,
+            adaptation_strategy=self.adaptation_strategy,
+        )
+        special_subroutine_meter.add(amount=1, attributes=attributes)
 
         importance = await generate.rate_memory(llm=self.llm, memory=content)
 
@@ -224,6 +239,8 @@ class Controller:
                 self.background_tasks.add_task(self._entity_context_compute)
                 await self.clonedb.set_entity_context_count(0)
 
+        special_subroutine_meter.add(amount=-1, attributes=attributes)
+
         return memory[0]
 
     @tracer.start_as_current_span("add_user_message")
@@ -244,7 +261,7 @@ class Controller:
         )
         msg = await self.clonedb.add_message(msg_struct)
 
-        if self.memory_strategy != MemoryStrategy.none:
+        if self.memory_strategy != MemoryStrategy.zero:
             mem_content = f'{msg.sender_name} messaged me, "{msg.content}"'
             self.background_tasks.add_task(
                 self._add_private_memory, content=mem_content
@@ -271,15 +288,7 @@ class Controller:
         # not need to track (like agent_summaries and entity_context). Note we do not
         # trigger reflections, as we don't want to surge LLM calls for popular clones
         cache = CloneCache(conn=conn)
-        clonedb = CloneDB(
-            db=db,
-            cache=cache,
-            tokenizer=tokenizer,
-            embedding_client=embedding_client,
-            clone_id=clone.clone_id,
-            conversation_id=None,
-            user_id=None,
-        )
+
         # add to the database
         if mem_create.importance is None:
             mem_create.importance = await generate.rate_memory(
@@ -287,15 +296,19 @@ class Controller:
             )
         data = mem_create.model_dump(exclude_unset=True)
         memory_struct = Memory(is_shared=True, **data)
-        memory = await clonedb.add_memories([memory_struct])
-
+        memory = await CloneDB.add_public_memories(
+            db=db,
+            embedding_client=embedding_client,
+            clone_id=clone.id,
+            memories=[memory_struct],
+        )[0]
         # update all of the counters
         r = await db.scalars(
             sa.select(models.Conversation.id).where(
                 models.Conversation.clone_id == clone.id
             )
         )
-        conversation_ids = r.all()
+        conversation_ids: list[uuid.UUID] = list(r.all())
         await cache.increment_all_counters(
             conversation_ids=conversation_ids, importance=memory.importance
         )
@@ -303,6 +316,14 @@ class Controller:
 
     @tracer.start_as_current_span("reflect")
     async def _reflect(self, num_memories: int) -> list[models.Memory]:
+        attributes = dict(
+            subroutine="reflect",
+            clone_id=str(self.clone.id),
+            memory_strategy=self.memory_strategy,
+            adaptation_strategy=self.adaptation_strategy,
+        )
+        special_subroutine_meter.add(amount=1, attributes=attributes)
+
         # typical value is 100 memories. the query template is 112 tokens so we have lots of room here
         # assume a max output of 512 tokens for questions
         num_tokens = self.llm.context_length - 512 - 120
@@ -333,23 +354,49 @@ class Controller:
             retrieved_memories.extend([c.model for c in cur])
         retrieved_memories.sort(key=lambda x: x.timestamp)
 
+        mem_structs = [
+            Memory(
+                id=m.id,
+                content=m.content,
+                timestamp=m.timestamp,
+                last_accessed_at=m.last_accessed_at,
+                is_shared=m.is_shared,
+                embedding=[],
+                embedding_model="",
+                depth=m.depth,
+                importance=m.importance,
+            )
+            for m in retrieved_memories
+        ]
         reflections_without_ratings = await generate.reflections_create(
-            llm=self.llm, memories=retrieved_memories
+            llm=self.llm, memories=mem_structs
         )
         reflections: list[Memory] = []
         for r in reflections_without_ratings:
             data = r.model_dump()
-            data["importance"] = await generate.rate_memory
+            data["importance"] = await generate.rate_memory(
+                llm=self.llm, memory=r.content
+            )
             refl = Memory(**data)
             reflections.append(refl)
 
         mems = await self.clonedb.add_memories(reflections)
         await self.clonedb.set_reflection_count(0)
 
+        special_subroutine_meter.add(amount=-1, attributes=attributes)
+
         return mems
 
     @tracer.start_as_current_span("agent_summary_compute")
     async def _agent_summary_compute(self) -> models.AgentSummary:
+        attributes = dict(
+            subroutine="agent_summary_compute",
+            clone_id=str(self.clone.id),
+            memory_strategy=self.memory_strategy,
+            adaptation_strategy=self.adaptation_strategy,
+        )
+        special_subroutine_meter.add(amount=1, attributes=attributes)
+
         # NOTE (Jonny): the queries are from clonr/templates/agent_summary
         # the default questions. In this step.
         # We use I/my since it's better for similarity search here.
@@ -375,6 +422,7 @@ class Controller:
 
         char = self.clone.name
         short_description = self.clone.short_description
+        long_description: str | None = None
 
         match self.adaptation_strategy:
             case AdaptationStrategy.dynamic:
@@ -392,19 +440,44 @@ class Controller:
                     detail=f"Adaptation strategy ({self.adaptation_strategy}) is not compatible with agent summaries.",
                 )
 
+        # NOTE (Jonny): we don't require embeddings or hierarchical relationships for templates. Hopefull this doesn't become a breaking change
+        mem_structs = [
+            Memory(
+                id=m.id,
+                content=m.content,
+                timestamp=m.timestamp,
+                last_accessed_at=m.last_accessed_at,
+                is_shared=m.is_shared,
+                embedding=[],
+                embedding_model="",
+                depth=m.depth,
+                importance=m.importance,
+            )
+            for m in retrieved_memories
+        ]
         content = await generate.agent_summary(
             llm=self.llm,
             char=char,
-            memories=retrieved_memories,
+            memories=mem_structs,
             short_description=short_description,
             long_description=long_description,
         )
         agent_summary = await self.clonedb.add_agent_summary(content=content)
 
+        special_subroutine_meter.add(amount=-1, attributes=attributes)
+
         return agent_summary
 
     @tracer.start_as_current_span("entity_context_compute")
-    async def _entity_context_compute(self):
+    async def _entity_context_compute(self) -> models.EntityContextSummary:
+        attributes = dict(
+            subroutine="entity_context_compute",
+            clone_id=str(self.clone.id),
+            memory_strategy=self.memory_strategy,
+            adaptation_strategy=self.adaptation_strategy,
+        )
+        special_subroutine_meter.add(amount=1, attributes=attributes)
+
         logger.info(
             f"Entity context compute triggered for conversation {self.conversation.id}"
         )
@@ -437,6 +510,21 @@ class Controller:
             statements.extend([c.model for c in cur])
         statements.sort(key=lambda x: x.timestamp)
 
+        statement_structs = [
+            Memory(
+                id=m.id,
+                content=m.content,
+                timestamp=m.timestamp,
+                last_accessed_at=m.last_accessed_at,
+                is_shared=m.is_shared,
+                embedding=[],
+                embedding_model="",
+                depth=m.depth,
+                importance=m.importance,
+            )
+            for m in statements
+        ]
+
         char = self.clone.name
         entity = self.user_name
 
@@ -444,12 +532,14 @@ class Controller:
             llm=self.llm,
             char=char,
             entity=entity,
-            statements=statements,
+            statements=statement_structs,
             prev_entity_summary=prev_entity_summary,
         )
         entity_summary = await self.clonedb.add_entity_context_summary(
             content=content, entity_name=entity
         )
+
+        special_subroutine_meter.add(amount=-1, attributes=attributes)
 
         return entity_summary
 
@@ -506,23 +596,34 @@ class Controller:
     async def _generate_msg_queries(
         self, num_messges: int | None, num_tokens: int | None
     ) -> list[str]:
-        recent_msgs = await self.clonedb.get_messages(
+        recent_msgs: list[models.Message] = await self.clonedb.get_messages(
             num_messages=num_messges, num_tokens=num_tokens
         )
         recent_msgs_reversed = list(reversed(recent_msgs))
+        msg_structs = [
+            Message(
+                id=m.id,
+                sender_name=m.sender_name,
+                content=m.content,
+                timestamp=m.timestamp,
+                is_clone=m.is_clone,
+                parent_id=m.parent_id,
+            )
+            for m in recent_msgs_reversed
+        ]
         entity_name = self.user_name
-        agent_summary = None
-        entity_context_summary = None
+        agent_summary: str | None = None
+        entity_context_summary: str | None = None
 
         if self.memory_strategy == MemoryStrategy.long_term:
-            agent_summary = await self.clonedb.get_agent_summary(n=1)
-            entity_context_summary = await self.clonedb.get_entity_context_summary(
+            agent_summaries = await self.clonedb.get_agent_summary(n=1)
+            entity_context_summaries = await self.clonedb.get_entity_context_summary(
                 entity_name=entity_name, n=1
             )
-            if not agent_summary:
-                agent_summary = None
-            if not entity_context_summary:
-                entity_context_summary = None
+            if agent_summaries:
+                agent_summary = agent_summaries[0].content
+            if entity_context_summaries:
+                entity_context_summary = entity_context_summaries[0].content
 
         # This should always return a value, we catch any exceptions in the generate
         # function and default to returning the entire output as a query
@@ -533,13 +634,13 @@ class Controller:
             agent_summary=agent_summary,
             entity_context_summary=entity_context_summary,
             entity_name=entity_name,
-            messages=recent_msgs_reversed,
+            messages=msg_structs,
         )
 
         # NOTE (Jonny): add in the last messages as a query too!
         # pull at most 2 messages
         token_budget = 128
-        last_msgs: str = []
+        last_msgs: list[str] = []
         for m in recent_msgs[:2]:
             token_budget -= self.clonedb.tokenizer.length(m.content) + 4
             if token_budget < 0:
@@ -562,7 +663,10 @@ class Controller:
     ) -> models.Message:
         msg_to_unset: models.Message | None = None
         if msg_gen.is_revision:
-            if not (last_messages := await self.clonedb.get_messages(num_messages=1)):
+            last_messages: list[models.Message] = await self.clonedb.get_messages(
+                num_messages=1
+            )
+            if not last_messages:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail="There are no current messages in the conversation.",
@@ -578,6 +682,7 @@ class Controller:
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Revisions on the greeting message are not allowed.",
                 )
+        facts: list[str] | None = None
         if self.information_strategy == InformationStrategy.internal:
             queries = await self._generate_msg_queries(
                 num_messges=NUM_RECENT_MSGS_FOR_QUERY,
@@ -602,7 +707,7 @@ class Controller:
             # NOTE (Jonny): the odds of duplicates are low for info-extraction, so
             # do the higher accuracy info retrieval step. Weird we take str and not nodes.
             # whatever, not gonna redo it.
-            facts: list[str] = []
+            facts = []
             vis: set[uuid.UUID] = set([])
             for q in queries:
                 cur = await self.clonedb.query_nodes_with_rerank(
@@ -638,7 +743,13 @@ class Controller:
         )
         tokens_remaining = self.llm.context_length
         tokens_remaining -= self.llm.num_tokens(cur_prompt)
-        tokens_remaining -= generate.Params.generate_zero_memory_message.max_tokens
+        if (
+            max_tokens := generate.Params.generate_zero_memory_message.max_tokens
+        ) is None:
+            raise ValueError(
+                "Internal error. Default params must set max tokens for generate_zero_memory_message."
+            )
+        tokens_remaining -= max_tokens
 
         recent_msgs = await self.clonedb.get_messages(num_tokens=tokens_remaining)
         if msg_to_unset:
@@ -678,7 +789,9 @@ class Controller:
     ) -> models.Message:
         msg_to_unset: models.Message | None = None
         if msg_gen.is_revision:
-            if not (last_messages := await self.clonedb.get_messages(num_messages=1)):
+            _tmp_last_msgs = await self.clonedb.get_messages(num_messages=1)
+            last_messages: list[models.Message] = list(_tmp_last_msgs)
+            if not last_messages:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail="There are no current messages in the conversation.",
@@ -816,7 +929,12 @@ class Controller:
         )
         tokens_remaining = self.llm.context_length
         tokens_remaining -= self.llm.num_tokens(cur_prompt)
-        tokens_remaining -= generate.Params.generate_long_term_memory_message.max_tokens
+        max_tokens = generate.Params.generate_long_term_memory_message.max_tokens
+        if max_tokens is None:
+            raise TypeError(
+                "Internal error, the default params should have max_tokens defined."
+            )
+        tokens_remaining -= max_tokens
 
         # we should have 4096 - (560_long + 250_mono + 300_fact + 300_mem)
         # - 512_gen - 1024_dyn ~ 1100 remaining for past messages.
@@ -874,7 +992,7 @@ class Controller:
         # TODO (Jonny): Add a telemetry packet here with things like prompt size, n_msgs,
         # n_memories, n_pruned_memories, n_facts, fact_chars, mem_chars, etc.
         match self.memory_strategy:
-            case MemoryStrategy.none:
+            case MemoryStrategy.zero:
                 return await self._generate_zero_memory_message(msg_gen=msg_gen)
             case MemoryStrategy.short_term | MemoryStrategy.long_term:
                 # the only diff is in adaptation strategy I guess, so it's
@@ -907,8 +1025,25 @@ class Controller:
             "you hot swapped for a mock llm here. don't forget to change back"
         )
 
+        doc_structs = [
+            Document(
+                id=doc.id,
+                content=doc.content,
+                name=doc.name,
+                description=doc.description,
+                type=doc.type,
+                url=doc.url,
+                index_type=IndexType(
+                    doc.index_type.value
+                ),  # FixMe (Jonny): we had to duplicate IndexType for some reason.
+                embedding=doc.embedding,
+                embedding_model=doc.embedding_model,
+                hash=doc.hash,
+            )
+            for doc in docs
+        ]
         long_desc = await generate.long_description_create(
-            llm=MockLLM(), short_description=clone.short_description, docs=docs
+            llm=MockLLM(), short_description=clone.short_description, docs=doc_structs
         )
         # A stateful edit seems like a bad idea
         # clone.long_description = long_desc

@@ -24,14 +24,15 @@ DATABASE_URL = (
 engine = create_async_engine(DATABASE_URL)
 SQLAlchemyInstrumentor().instrument(engine=engine.sync_engine)
 
-async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+# FixMe (Jonny): why is sqlalchemy typing fucked on async sessionmaker
+async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)  # type: ignore
 
 
 @retry(
     stop=stop_after_attempt(20),
     wait=wait_exponential(multiplier=1, min=1, max=5),
-    before=before_log(logger, logging.INFO),
-    after=after_log(logger, logging.WARN),
+    before=before_log(logger, logging.INFO),  # type: ignore
+    after=after_log(logger, logging.WARN),  # type: ignore
 )
 async def wait_for_db():
     async with async_session_maker() as conn:
