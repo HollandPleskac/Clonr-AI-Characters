@@ -12,10 +12,10 @@ from .schemas import (
     GenerationParams,
     LLMResponse,
     Message,
-    Usage,
+    RoleEnum,
     StreamChoice,
     StreamDelta,
-    RoleEnum,
+    Usage,
 )
 
 

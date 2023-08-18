@@ -1,4 +1,5 @@
 import json
+import uuid
 from abc import ABC, abstractmethod
 
 from fastapi import status
@@ -8,9 +9,9 @@ from opentelemetry import metrics
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
-from app.settings import settings
 from app.clone.cache import CloneCache
 from app.external.moderation import openai_moderation_check
+from app.settings import settings
 from clonr.llms.base import LLM
 from clonr.llms.schemas import (
     GenerationParams,
@@ -144,9 +145,9 @@ class AddToPostgresCallback(LLMCallback):
     def __init__(
         self,
         db: AsyncSession,
-        clone_id: str,
-        user_id: str,
-        conversation_id: str | None = None,
+        clone_id: uuid.UUID,
+        user_id: uuid.UUID,
+        conversation_id: uuid.UUID | None = None,
     ):
         self.db = db
         self.clone_id = clone_id
@@ -234,9 +235,9 @@ class ModerationCallback(LLMCallback):
 class OTLPMetricsCallback(LLMCallback):
     def __init__(
         self,
-        clone_id: str,
-        user_id: str,
-        conversation_id: str | None = None,
+        clone_id: uuid.UUID,
+        user_id: uuid.UUID,
+        conversation_id: uuid.UUID | None = None,
     ):
         self.clone_id = clone_id
         self.user_id = user_id
@@ -252,12 +253,13 @@ class OTLPMetricsCallback(LLMCallback):
         params: GenerationParams | None,
         **kwargs,
     ):
+        convo_id = str(self.conversation_id) if self.conversation_id else ""
         attributes: dict[str, str | int] = dict(
             model=llm.model,
             model_type=llm.model_type,
             clone_id=str(self.clone_id),
             user_id=str(self.user_id),
-            conversation_id=self.conversation_id or "",
+            conversation_id=convo_id,
             retry_attempt=int(kwargs.get("retry_attempt", -1)),
             http_retry_attempt=int(kwargs.get("http_retry_attempt", -1)),
             subroutine=str(kwargs.get("subroutine", "")),
@@ -266,12 +268,13 @@ class OTLPMetricsCallback(LLMCallback):
 
     async def on_generate_end(self, llm: LLM, llm_response: LLMResponse, **kwargs):
         r = llm_response
+        convo_id = str(self.conversation_id) if self.conversation_id else ""
         attributes: dict[str, str | int] = dict(
             model=llm.model,
             model_type=llm.model_type,
             clone_id=str(self.clone_id),
             user_id=str(self.user_id),
-            conversation_id=self.conversation_id or "",
+            conversation_id=convo_id,
             retry_attempt=int(kwargs.get("retry_attempt", -1)),
             http_retry_attempt=int(kwargs.get("http_retry_attempt", -1)),
             subroutine=str(kwargs.get("subroutine", "")),

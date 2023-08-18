@@ -4,7 +4,7 @@ import textwrap
 import time
 import uuid
 from functools import wraps
-from typing import AsyncGenerator, Generator, Callable
+from typing import AsyncGenerator, Callable, Generator
 
 import aiohttp
 import openai
@@ -20,12 +20,14 @@ from tenacity import (
     wait_exponential,
 )
 
+from app.settings import settings
 from clonr.tokenizer import Tokenizer
 
 from .base import LLM
 from .callbacks import LLMCallback
 from .schemas import (
     ChatCompletionRequest,
+    FinishReason,
     GenerationParams,
     LLMResponse,
     Message,
@@ -33,11 +35,8 @@ from .schemas import (
     OpenAIModelEnum,
     OpenAIResponse,
     OpenAIStreamResponse,
-    FinishReason,
     RoleEnum,
 )
-from app.settings import settings
-
 
 meter = metrics.get_meter(settings.APP_NAME)
 

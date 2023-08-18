@@ -1,5 +1,6 @@
-from abc import ABC, abstractproperty, abstractmethod
-from .schemas import Message, GenerationParams, LLMResponse
+from abc import ABC, abstractmethod, abstractproperty
+
+from .schemas import GenerationParams, LLMResponse, Message
 
 
 class LLM(ABC):

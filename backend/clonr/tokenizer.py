@@ -89,18 +89,18 @@ class Tokenizer(ABC):
         pass
 
     @classmethod
-    def from_openai(cls, model: str | OpenAIModelEnum):
+    def from_openai(cls, model: str | OpenAIModelEnum) -> "OpenAITokenizer":
         return OpenAITokenizer(model=model)
 
     @classmethod
-    def from_huggingface(cls, model: str):
+    def from_huggingface(cls, model: str) -> "HuggingFaceTokenizer":
         return HuggingFaceTokenizer(model=model)
 
     @classmethod
     def from_llama_cpp(cls, *args, **kwargs):
         raise NotImplementedError("Sorry, not gonna implement this one")
 
-    def length(self, text: str):
+    def length(self, text: str) -> int:
         return len(self.encode(text))
 
 

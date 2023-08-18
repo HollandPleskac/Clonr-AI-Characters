@@ -240,7 +240,7 @@ class TreeIndex(Index):
                 raise ValueError("Max group size should be an int or auto.")
             max_group_size = auto_chunk_size_summarize(llm=llm)
         self.max_group_size = max_group_size
-        self.root = None
+        self.root: Node | None = None
 
     @property
     def num_nodes(self):
@@ -298,10 +298,13 @@ class TreeIndex(Index):
         data: dict[str, Any] = {
             str(k): v.model_dump_json() for k, v in self._index.items()
         }
+        root: str | None = None
+        if self.root is not None:
+            root = self.root.model_dump_json()
         extras = dict(
             max_group_size=self.max_group_size,
             _tokens_processed=self._tokens_processed,
-            root=None if self.root is None else self.root.model_dump_json(),
+            root=root,
         )
         data["extras"] = extras
         with open(path, "w") as f:
@@ -319,8 +322,8 @@ class TreeIndex(Index):
             data = json.load(f)
         for k, v in data.pop("extras").items():
             setattr(self, k, v)
-        if self.root is not None:
-            self.root = Node(**json.loads(self.root))
+        # if self.root is not None:
+        #     self.root = Node(**json.loads(self.root))
         self._index = {k: Node(**json.loads(v)) for k, v in data.items()}
 
     def leaves(self):

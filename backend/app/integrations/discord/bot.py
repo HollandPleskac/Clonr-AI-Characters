@@ -1,3 +1,4 @@
+# type: ignore
 import asyncio
 import logging
 import os
@@ -71,10 +72,8 @@ bot = Bot(
     command_prefix=commands.when_mentioned_or("!"),
     intents=intents,
     help_command=None,
-    logger=logger,
 )
-
-
+bot.logger = logger
 bot.config = {"token": os.environ["DISCORD_TOKEN"], "prefix": "!"}
 
 

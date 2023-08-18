@@ -38,7 +38,7 @@ def is_docker() -> bool:
 async def get_controller(
     conversation_id: Annotated[uuid.UUID, Path()],
     db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[models.Creator, Depends(get_current_active_user)],
+    user: Annotated[models.User, Depends(get_current_active_user)],
     embedding_client: Annotated[EmbeddingClient, Depends(get_embedding_client)],
     conn: Annotated[Redis, Depends(get_async_redis)],
     background_tasks: BackgroundTasks,
@@ -56,7 +56,11 @@ async def get_controller(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User does not have access to this conversation.",
         )
-    clone = await db.get(models.Clone, conversation.clone_id)
+    if (clone := await db.get(models.Clone, conversation.clone_id)) is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Clone with does not exist. ID: {conversation.clone_id}.",
+        )
 
     # LLM. We have to repeat the code from get_llm, since this runs before the conversation has
     # been created. This could use a refactor

@@ -1,8 +1,10 @@
-import uuid
+# FixMe (Jonny): ASAP try to fix this. It's fucking impossible to properly type the goddamn retrieval functions.
 import time
-from functools import wraps
-from typing import Callable, Sequence
+import uuid
+from dataclasses import dataclass
 from datetime import datetime
+from functools import wraps
+from typing import Callable, Sequence, TypeVar
 
 import numpy as np
 import sqlalchemy as sa
@@ -10,15 +12,18 @@ from fastapi import status
 from fastapi.exceptions import HTTPException
 from opentelemetry import metrics, trace
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing_extensions import ParamSpec
 
-from app import models, settings
+from app import models
 from app.embedding import EmbeddingClient
+from app.settings import settings
 from clonr.data_structures import Dialogue, Document, Memory, Message, Monologue, Node
 from clonr.tokenizer import Tokenizer
 from clonr.utils import get_current_datetime
 
 from . import retrieval
 from .cache import CloneCache
+from .types import MetricType
 
 tracer = trace.get_tracer(__name__)
 
@@ -38,10 +43,13 @@ subroutine_duration = meter.create_histogram(
     description="Measures the time spent for each subroutine of clonedb",
 )
 
+P = ParamSpec("P")
+T = TypeVar("T")
 
-def report_duration(fn: Callable):
+
+def report_duration(fn: Callable[P, T]):
     @wraps(fn)
-    def inner(self, *args, **kwargs):
+    def inner(self, *args: P.args, **kwargs: P.kwargs) -> T:
         attributes = dict(subroutine=fn.__name__)
         start = time.perf_counter()
         result = fn(self, *args, **kwargs)
@@ -55,27 +63,47 @@ def report_duration(fn: Callable):
 INF = 1_000_000
 
 
-class QueryNodeResult(retrieval.VectorSearchResult):
+@dataclass
+class QueryNodeResult:
     model: models.Node
+    metric: MetricType
+    distance: float
 
 
-class QueryNodeReRankResult(retrieval.ReRankResult):
+@dataclass
+class QueryNodeReRankResult:
     model: models.Node
+    metric: MetricType
+    distance: float
+    rerank_score: float
 
 
-class QueryMonologueResult(retrieval.VectorSearchResult):
+@dataclass
+class QueryMonologueResult:
     model: models.Monologue
+    metric: MetricType
+    distance: float
 
 
-class QueryMonologueReRankResult(retrieval.ReRankResult):
+@dataclass
+class QueryMonologueReRankResult:
     model: models.Monologue
+    metric: MetricType
+    distance: float
+    rerank_score: float
 
 
-class QueryMemoryResult(retrieval.GenAgentsSearchResult):
+@dataclass
+class QueryMemoryResult:
     model: models.Memory
+    recency_score: float
+    relevance_score: float
+    importance_score: float
+    score: float
+    metric: MetricType
 
 
-class CloneDB:
+class CreatorCloneDB:
     def __init__(
         self,
         db: AsyncSession,
@@ -83,20 +111,20 @@ class CloneDB:
         tokenizer: Tokenizer,
         embedding_client: EmbeddingClient,
         clone_id: str | uuid.UUID,
-        conversation_id: str | uuid.UUID,
-        user_id: str | uuid.UUID,
     ):
         self.embedding_client = embedding_client
         self.db = db
         self.cache = cache
         self.tokenizer = tokenizer
         self.clone_id = clone_id
-        self.conversation_id = conversation_id
-        self.user_id = user_id
 
     @tracer.start_as_current_span("add_document")
     @report_duration
-    async def add_document(self, doc: Document, nodes: list[Node]) -> models.Document:
+    async def add_document(
+        self,
+        doc: Document,
+        nodes: list[Node],
+    ) -> models.Document:
         # don't re-do work if it's already there?
         if await self.db.scalar(
             sa.select(models.Document.hash)
@@ -114,9 +142,10 @@ class CloneDB:
         for i, node in enumerate(nodes):
             node.embedding = embs[i]
             node.embedding_model = encoder_name
-        doc.embedding = np.array([node.embedding for node in nodes]).mean(0).tolist()
+        arr = np.array([node.embedding for node in nodes]).mean(0)
         if await self.embedding_client.is_normalized():
-            doc.embedding /= np.linalg.norm(doc.embedding)
+            arr /= np.linalg.norm(arr)
+        doc.embedding = arr.tolist()
         doc.embedding_model = await self.embedding_client.encoder_name()
 
         # Add together to prevent inconsistency, or out-of-order addition
@@ -151,7 +180,8 @@ class CloneDB:
 
         # this will work for trees where each node has at most one parent!
         for node in nodes:
-            node_models[node.id].parent = node_models.get(node.parent_id)
+            if node.parent_id and (parent := node_models.get(node.parent_id)):
+                node_models[node.id].parent = parent
 
         self.db.add(doc_model)
         self.db.add_all(node_models.values())
@@ -160,7 +190,10 @@ class CloneDB:
         return doc_model
 
     @tracer.start_as_current_span("add_dialogues")
-    async def add_dialogues(self, dialogues: list[Dialogue]):
+    async def add_dialogues(
+        self,
+        dialogues: list[Dialogue],
+    ):
         """Requires that the dialogues have messages inside of them!"""
         embedding_model = await self.embedding_client.encoder_name()
         for dialogue in dialogues:
@@ -176,9 +209,10 @@ class CloneDB:
 
             # we compute the dialogue embedding by averaging each of its messages
             # maybe good, maybe bad, fuck if I know.
-            dialogue.embedding = np.array(embs).mean(0).tolist()
+            arr = np.array(embs).mean(0)
             if await self.embedding_client.is_normalized():
-                dialogue.embedding /= np.linalg.norm(dialogue.embedding)
+                arr /= np.linalg.norm(arr)
+            dialogue.embedding = arr.tolist()
             dialogue.embedding_model = embedding_model
 
             # Actually add the dialogues now. I haven't checked this since the updates.
@@ -212,7 +246,8 @@ class CloneDB:
     @tracer.start_as_current_span("add_monologues")
     @report_duration
     async def add_monologues(
-        self, monologues: list[Monologue]
+        self,
+        monologues: list[Monologue],
     ) -> Sequence[models.Monologue]:
         monologue_models: list[models.Monologue] = []
         hashes = [m.hash for m in monologues]
@@ -221,7 +256,7 @@ class CloneDB:
             .where(models.Monologue.hash.in_(hashes))
             .where(models.Monologue.clone_id == self.clone_id)
         )
-        redundant_hashes = set(r.all())
+        redundant_hashes = set(list(r.all()))
         monologues = [m for m in monologues if m.hash not in redundant_hashes]
         if not monologues:
             return []
@@ -242,6 +277,258 @@ class CloneDB:
             monologue_models.append(m1)
         self.db.add_all(monologue_models)
         await self.db.commit()
+        return monologue_models
+
+    @tracer.start_as_current_span("add_public_memories")
+    @report_duration
+    async def add_public_memories(
+        self,
+        memories: list[Memory],
+    ) -> Sequence[models.Memory]:
+        # batch embed
+        embs = await self.embedding_client.encode_passage([x.content for x in memories])
+        embedding_model = await self.embedding_client.encoder_name()
+
+        # in-place update
+        for m, emb in zip(memories, embs):
+            m.embedding = emb
+            m.embedding_model = embedding_model
+
+        # add all of the memories
+        mem_models: list[models.Memory] = []
+        for memory in memories:
+            # This is unique to us, memories can be hierarchical (i.e. reflections)
+            # and so we must pull all children that they depend on
+            children: list[models.Memory] = []
+            if memory.child_ids:
+                r = await self.db.scalars(
+                    sa.select(models.Memory).where(
+                        models.Memory.id.in_(tuple(memory.child_ids))
+                    )
+                )
+                children = list(r.all())
+            mem = models.Memory(
+                content=memory.content,
+                embedding=memory.embedding,
+                embedding_model=memory.embedding_model,
+                timestamp=memory.timestamp,
+                last_accessed_at=memory.last_accessed_at,
+                importance=memory.importance,
+                is_shared=memory.is_shared,
+                depth=memory.depth,
+                children=children,
+                conversation_id=None,
+                clone_id=self.clone_id,
+            )
+            self.db.add(mem)
+            mem_models.append(mem)
+        # NOTE (Jonny): is it going to be an issue that we don't refresh these?
+        await self.db.commit()
+        return mem_models
+
+    @tracer.start_as_current_span("delete_document")
+    async def delete_document(self, doc: models.Document) -> None:
+        await self.db.delete(doc)
+        await self.db.commit()
+        return None
+
+    @tracer.start_as_current_span("delete_monologue")
+    async def delete_monologue(self, monologue: models.Monologue) -> None:
+        await self.db.delete(monologue)
+        await self.db.commit()
+        return None
+
+
+class CloneDB:
+    def __init__(
+        self,
+        db: AsyncSession,
+        cache: CloneCache,
+        tokenizer: Tokenizer,
+        embedding_client: EmbeddingClient,
+        clone_id: str | uuid.UUID,
+        conversation_id: str | uuid.UUID,
+        user_id: str | uuid.UUID,
+    ):
+        self.embedding_client = embedding_client
+        self.db = db
+        self.cache = cache
+        self.tokenizer = tokenizer
+        self.clone_id = clone_id
+        self.conversation_id = conversation_id
+        self.user_id = user_id
+
+    @tracer.start_as_current_span("add_document")
+    @report_duration
+    @classmethod
+    async def add_document(
+        cls,
+        db: AsyncSession,
+        embedding_client: EmbeddingClient,
+        clone_id: uuid.UUID,
+        doc: Document,
+        nodes: list[Node],
+    ) -> models.Document:
+        # don't re-do work if it's already there?
+        if await db.scalar(
+            sa.select(models.Document.hash)
+            .where(models.Document.hash == doc.hash)
+            .where(models.Document.clone_id == clone_id)
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Document with the provided content already exists!",
+            )
+
+        # Add embedding stuff. Doc embeddings are just the mean of all node embeddings
+        embs = await embedding_client.encode_passage([x.content for x in nodes])
+        encoder_name = await embedding_client.encoder_name()
+        for i, node in enumerate(nodes):
+            node.embedding = embs[i]
+            node.embedding_model = encoder_name
+        arr = np.array([node.embedding for node in nodes]).mean(0)
+        if await embedding_client.is_normalized():
+            arr /= np.linalg.norm(arr)
+        doc.embedding = arr.tolist()
+        doc.embedding_model = await embedding_client.encoder_name()
+
+        # Add together to prevent inconsistency, or out-of-order addition
+        doc_model = models.Document(
+            id=doc.id,
+            content=doc.content,
+            hash=doc.hash,
+            name=doc.name,
+            description=doc.description,
+            type=doc.type,
+            url=doc.url,
+            index_type=doc.index_type,
+            embedding=doc.embedding,
+            embedding_model=doc.embedding_model,
+            clone_id=clone_id,
+        )
+        node_models = {
+            node.id: models.Node(
+                id=node.id,
+                index=node.index,
+                content=node.content,
+                context=node.context,
+                embedding=node.embedding,
+                embedding_model=node.embedding_model,
+                is_leaf=node.is_leaf,
+                depth=node.depth,
+                document_id=node.document_id,
+                clone_id=clone_id,
+            )
+            for node in nodes
+        }
+
+        # this will work for trees where each node has at most one parent!
+        for node in nodes:
+            if node.parent_id and (parent := node_models.get(node.parent_id)):
+                node_models[node.id].parent = parent
+
+        db.add(doc_model)
+        db.add_all(node_models.values())
+        await db.commit()
+        await db.refresh(doc_model)
+        return doc_model
+
+    @tracer.start_as_current_span("add_dialogues")
+    @classmethod
+    async def add_dialogues(
+        cls,
+        db: AsyncSession,
+        embedding_client: EmbeddingClient,
+        clone_id: uuid.UUID,
+        dialogues: list[Dialogue],
+    ):
+        """Requires that the dialogues have messages inside of them!"""
+        embedding_model = await embedding_client.encoder_name()
+        for dialogue in dialogues:
+            # batch encode
+            embs = await embedding_client.encode_passage(
+                [x.content for x in dialogue.messages]
+            )
+
+            # update the messages in place
+            for m, emb in zip(dialogue.messages, embs):
+                m.embedding = emb
+                m.embedding_model = embedding_model
+
+            # we compute the dialogue embedding by averaging each of its messages
+            # maybe good, maybe bad, fuck if I know.
+            arr = np.array(embs).mean(0)
+            if await embedding_client.is_normalized():
+                arr /= np.linalg.norm(arr)
+            dialogue.embedding = arr.tolist()
+            dialogue.embedding_model = embedding_model
+
+            # Actually add the dialogues now. I haven't checked this since the updates.
+            # But since dialogues are a V2 feature, hopefully this shouldn't matter too much.
+            msgs: list[models.ExampleDialogueMessage] = []
+            for m in dialogue.messages:
+                if not (x := await db.get(models.ExampleDialogueMessage, m.id)):
+                    x = models.ExampleDialogueMessage(
+                        index=m.index,
+                        content=m.content,
+                        sender_name=m.sender_name,
+                        is_clone=m.is_clone,
+                        embedding=m.embedding,
+                        embedding_model=m.embedding_model,
+                        dialogue_id=m.dialogue_id,
+                        clone_id=clone_id,
+                    )
+                msgs.append(x)
+            dlg = models.ExampleDialogue(
+                source=dialogue.source,
+                messages=msgs,
+                embedding=dialogue.embedding,
+                embedding_model=dialogue.embedding_model,
+                clone_id=clone_id,
+            )
+
+            db.add_all(msgs)
+            db.add(dlg)
+            await db.commit()
+
+    @tracer.start_as_current_span("add_monologues")
+    @report_duration
+    @classmethod
+    async def add_monologues(
+        cls,
+        db: AsyncSession,
+        embedding_client: EmbeddingClient,
+        clone_id: uuid.UUID,
+        monologues: list[Monologue],
+    ) -> Sequence[models.Monologue]:
+        monologue_models: list[models.Monologue] = []
+        hashes = [m.hash for m in monologues]
+        r = await db.execute(
+            sa.select(models.Monologue.hash)
+            .where(models.Monologue.hash.in_(hashes))
+            .where(models.Monologue.clone_id == clone_id)
+        )
+        redundant_hashes = set(list(r.all()))
+        monologues = [m for m in monologues if m.hash not in redundant_hashes]
+        if not monologues:
+            return []
+        embeddings = await embedding_client.encode_passage(
+            [m.content for m in monologues]
+        )
+        embedding_model = await embedding_client.encoder_name()
+        for m, emb in zip(monologues, embeddings):
+            m1 = models.Monologue(
+                id=m.id,
+                content=m.content,
+                source=m.source,
+                embedding=emb,
+                embedding_model=embedding_model,
+                hash=m.hash,
+                clone_id=clone_id,
+            )
+            monologue_models.append(m1)
+        db.add_all(monologue_models)
+        await db.commit()
         return monologue_models
 
     @tracer.start_as_current_span("add_memories")
@@ -268,7 +555,7 @@ class CloneDB:
                         models.Memory.id.in_(tuple(memory.child_ids))
                     )
                 )
-                children = r.all()
+                children = list(list(r.all()))
             mem = models.Memory(
                 content=memory.content,
                 embedding=memory.embedding,
@@ -286,6 +573,57 @@ class CloneDB:
             mem_models.append(mem)
         # NOTE (Jonny): is it going to be an issue that we don't refresh these?
         await self.db.commit()
+        return mem_models
+
+    @tracer.start_as_current_span("add_public_memories")
+    @report_duration
+    @classmethod
+    async def add_public_memories(
+        cls,
+        clone_id: uuid.UUID,
+        db: AsyncSession,
+        embedding_client: EmbeddingClient,
+        memories: list[Memory],
+    ) -> Sequence[models.Memory]:
+        # batch embed
+        embs = await embedding_client.encode_passage([x.content for x in memories])
+        embedding_model = await embedding_client.encoder_name()
+
+        # in-place update
+        for m, emb in zip(memories, embs):
+            m.embedding = emb
+            m.embedding_model = embedding_model
+
+        # add all of the memories
+        mem_models: list[models.Memory] = []
+        for memory in memories:
+            # This is unique to us, memories can be hierarchical (i.e. reflections)
+            # and so we must pull all children that they depend on
+            children: list[models.Memory] = []
+            if memory.child_ids:
+                r = await db.scalars(
+                    sa.select(models.Memory).where(
+                        models.Memory.id.in_(tuple(memory.child_ids))
+                    )
+                )
+                children = list(r.all())
+            mem = models.Memory(
+                content=memory.content,
+                embedding=memory.embedding,
+                embedding_model=memory.embedding_model,
+                timestamp=memory.timestamp,
+                last_accessed_at=memory.last_accessed_at,
+                importance=memory.importance,
+                is_shared=memory.is_shared,
+                depth=memory.depth,
+                children=children,
+                conversation_id=None,
+                clone_id=clone_id,
+            )
+            db.add(mem)
+            mem_models.append(mem)
+        # NOTE (Jonny): is it going to be an issue that we don't refresh these?
+        await db.commit()
         return mem_models
 
     @tracer.start_as_current_span("add_message")
@@ -366,8 +704,8 @@ class CloneDB:
     @report_duration
     async def query_nodes(
         self, query: str, params: retrieval.VectorSearchParams
-    ) -> Sequence[QueryNodeResult]:
-        return await retrieval.vector_search(
+    ) -> list[QueryNodeResult]:
+        retrieved_nodes = await retrieval.vector_search(  # type: ignore
             query=query,
             model=models.Node,
             params=params,
@@ -376,13 +714,17 @@ class CloneDB:
             tokenizer=self.tokenizer,
             filters=[models.Node.clone_id == self.clone_id],
         )
+        return [
+            QueryNodeResult(model=x.model, distance=x.distance, metric=x.metric)  # type: ignore
+            for x in retrieved_nodes
+        ]
 
     @tracer.start_as_current_span("query_nodes_with_rerank")
     @report_duration
     async def query_nodes_with_rerank(
         self, query: str, params: retrieval.ReRankSearchParams
-    ) -> Sequence[QueryNodeReRankResult]:
-        return await retrieval.rerank_search(
+    ) -> list[QueryNodeReRankResult]:
+        retrieved_nodes = await retrieval.rerank_search(  # type: ignore
             query=query,
             model=models.Node,
             params=params,
@@ -391,13 +733,22 @@ class CloneDB:
             tokenizer=self.tokenizer,
             filters=[models.Node.clone_id == self.clone_id],
         )
+        return [
+            QueryNodeReRankResult(
+                model=x.model,  # type: ignore
+                distance=x.distance,
+                metric=x.metric,
+                rerank_score=x.rerank_score,
+            )
+            for x in retrieved_nodes
+        ]
 
     @tracer.start_as_current_span("query_monologues")
     @report_duration
     async def query_monologues(
         self, query: str, params: retrieval.VectorSearchParams
-    ) -> Sequence[QueryMonologueResult]:
-        return await retrieval.vector_search(
+    ) -> list[QueryMonologueResult]:
+        retrieved_monologues = await retrieval.vector_search(  # type: ignore
             query=query,
             model=models.Monologue,
             params=params,
@@ -406,13 +757,17 @@ class CloneDB:
             tokenizer=self.tokenizer,
             filters=[models.Monologue.clone_id == self.clone_id],
         )
+        return [
+            QueryMonologueResult(model=x.model, distance=x.distance, metric=x.metric)  # type: ignore
+            for x in retrieved_monologues
+        ]
 
     @tracer.start_as_current_span("query_monologues_with_rerank")
     @report_duration
     async def query_monologues_with_rerank(
         self, query: str, params: retrieval.ReRankSearchParams
-    ) -> Sequence[QueryMonologueReRankResult]:
-        return await retrieval.rerank_search(
+    ) -> list[QueryMonologueReRankResult]:
+        retrieved_monologues = await retrieval.rerank_search(  # type: ignore
             query=query,
             model=models.Monologue,
             params=params,
@@ -421,6 +776,15 @@ class CloneDB:
             tokenizer=self.tokenizer,
             filters=[models.Monologue.clone_id == self.clone_id],
         )
+        return [
+            QueryMonologueReRankResult(
+                model=x.model,  # type: ignore
+                distance=x.distance,
+                metric=x.metric,
+                rerank_score=x.rerank_score,
+            )
+            for x in retrieved_monologues
+        ]
 
     @tracer.start_as_current_span("query_memories")
     @report_duration
@@ -429,7 +793,7 @@ class CloneDB:
         query: str,
         params: retrieval.GenAgentsSearchParams,
         update_access_date: bool,
-    ) -> Sequence[QueryMemoryResult]:
+    ) -> list[QueryMemoryResult]:
         # We filter to retrieve either private memories for the conversation, or public memories
         # shared across all conversations
         is_public = sa.and_(
@@ -443,7 +807,7 @@ class CloneDB:
 
         filters = [sa.or_(is_public, is_private)]
 
-        memory_results = await retrieval.gen_agents_search(
+        retrieved_memories = await retrieval.gen_agents_search(  # type: ignore
             query=query,
             model=models.Memory,
             params=params,
@@ -457,9 +821,21 @@ class CloneDB:
         # time they are retrieved from the database
         if update_access_date:
             timestamp = get_current_datetime()
-            for r in memory_results:
+            for r in retrieved_memories:
                 r.model.last_accessed_at = timestamp
             await self.db.commit()
+
+        memory_results = [
+            QueryMemoryResult(
+                model=x.model,  # type: ignore
+                recency_score=x.recency_score,
+                relevance_score=x.relevance_score,
+                importance_score=x.importance_score,
+                metric=x.metric,
+                score=x.score,
+            )
+            for x in retrieved_memories
+        ]
 
         return memory_results
 
@@ -488,7 +864,7 @@ class CloneDB:
         msg_itr = await self.db.scalars(q)
 
         if num_tokens >= INF:
-            return msg_itr.all()
+            return list(msg_itr.all())
 
         messages: list[models.Message] = []
         for msg in msg_itr:
@@ -524,7 +900,7 @@ class CloneDB:
         mem_itr = await self.db.scalars(q)
 
         if num_tokens >= INF:
-            return mem_itr.all()
+            return list(mem_itr.all())
 
         memories: list[models.Memory] = []
         for mem in mem_itr:
@@ -538,7 +914,7 @@ class CloneDB:
     @report_duration
     async def get_monologues(
         self, num_messages: int | None = None, num_tokens: int | None = None
-    ) -> Sequence[models.Message]:
+    ) -> list[models.Monologue]:
         if num_messages is None or num_messages < 1:
             num_messages = INF
         if num_tokens is None or num_tokens < 1:
@@ -552,15 +928,16 @@ class CloneDB:
         monologue_itr = await self.db.scalars(q)
 
         if num_tokens >= INF:
-            return monologue_itr.all()
+            return list(monologue_itr.all())
 
-        messages: list[models.Monologue] = []
+        monologues: list[models.Monologue] = []
         for monologue in monologue_itr:
-            num_tokens -= self.tokenizer.length(monologue.content)
+            dec = self.tokenizer.length(monologue.content)
+            num_tokens -= dec
             if num_tokens < 0:
                 break
-            messages.append(monologue)
-        return messages
+            monologues.append(monologue)
+        return monologues
 
     @tracer.start_as_current_span("get_entity_context_summary")
     @report_duration
@@ -661,18 +1038,6 @@ class CloneDB:
             conversation_id=self.conversation_id
         ).set(value=value)
 
-    @tracer.start_as_current_span("delete_document")
-    async def delete_document(self, doc: models.Document) -> None:
-        await self.db.delete(doc)
-        await self.db.commit()
-        return None
-
-    @tracer.start_as_current_span("delete_monologue")
-    async def delete_monologue(self, monologue: models.Monologue) -> None:
-        await self.db.delete(monologue)
-        await self.db.commit()
-        return None
-
     @tracer.start_as_current_span("get_message_ancestors")
     @report_duration
     async def get_message_ancestors(
@@ -692,7 +1057,7 @@ class CloneDB:
             with_recursive.join(models.Message, join_condition)
         )
         r = await self.db.scalars(final_query)
-        return r.all()
+        return list(r.all())
 
     # (Jonny): is a flat list the best data structure to return here?
     # maybe like a hierarchical dict would be better?
@@ -715,4 +1080,4 @@ class CloneDB:
             with_recursive.join(models.Message, join_condition)
         )
         r = await self.db.scalars(final_query)
-        return r.all()
+        return list(r.all())

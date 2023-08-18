@@ -1,5 +1,4 @@
-from abc import ABC, abstractclassmethod
-from typing import Any
+from abc import ABC
 
 import jinja2
 

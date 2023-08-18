@@ -1,3 +1,4 @@
+# type: ignore
 # TODO (Jonny): API Keys are a V2 features, so this goes to the backlog for now.
 
 from typing import Annotated, Optional

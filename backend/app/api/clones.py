@@ -5,6 +5,7 @@ from typing import Annotated
 
 import sqlalchemy as sa
 from fastapi import Depends, HTTPException, Path, Query, status
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import Response
 from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,7 +13,7 @@ from sqlalchemy.orm import joinedload
 
 from app import deps, models, schemas
 from app.clone.controller import Controller
-from app.clone.db import CloneDB
+from app.clone.db import CloneDB, CreatorCloneDB
 from app.clone.shared import DynamicTextSplitter
 from app.embedding import EmbeddingClient
 from clonr.data_structures import Document, Monologue
@@ -209,13 +210,13 @@ async def get_clone_by_id(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Clone does not exist."
         )
-    response = schemas.Clone.model_dump(clone)
-    if not clone.is_long_description_public:
-        response.long_description = None
+    response = jsonable_encoder(clone)
     if not clone.is_short_description_public:
-        response.short_description = None
+        response["short_description"] = ""
+    if not clone.is_long_description_public:
+        response["long_description"] = ""
     if not clone.is_greeting_message_public:
-        response.greeting_message = None
+        response["greeting_message"] = ""
     return response
 
 
@@ -313,19 +314,15 @@ async def view_generated_long_descs(
 async def create_document(
     doc_create: schemas.DocumentCreate,
     clone_id: Annotated[uuid.UUID, Path()],
-    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
+    clonedb: Annotated[CreatorCloneDB, Depends(deps.get_creator_clonedb)],
     tokenizer: Annotated[Tokenizer, Depends(deps.get_tokenizer)],
     splitter: Annotated[DynamicTextSplitter, Depends(deps.get_text_splitter)],
 ):
-    if z := await clonedb.db.scalar(
+    if await clonedb.db.scalar(
         sa.select(models.Document.id)
         .where(models.Document.name == doc_create.name)
         .where(models.Document.clone_id == clone_id)
     ):
-        from loguru import logger
-
-        logger.exception(z)
-        raise ValueError("fuck everything and fuck this world")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Document with name {doc_create.name} already exists.",
@@ -335,15 +332,16 @@ async def create_document(
     )
     index = ListIndex(tokenizer=tokenizer, splitter=splitter)
     nodes = await index.abuild(doc=doc)
-    doc_model = await clonedb.add_document(doc=doc, nodes=nodes)
+    doc_model = await clonedb.add_document(
+        doc=doc,
+        nodes=nodes,
+    )
     return doc_model
 
 
 @router.get("/{clone_id}/documents", response_model=list[schemas.Document])
 async def get_documents(
-    user: Annotated[models.User, Depends(deps.get_current_active_user)],
-    clone: Annotated[models.Clone, Depends(get_clone)],
-    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    clonedb: Annotated[CreatorCloneDB, Depends(deps.get_creator_clonedb)],
     offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
     limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
     description: Annotated[str | None, Query()] = None,
@@ -351,9 +349,7 @@ async def get_documents(
     created_after: Annotated[datetime | None, Query()] = None,
     created_before: Annotated[datetime | None, Query()] = None,
 ):
-    if not user.is_superuser and not user.id == clone.creator_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-    q = sa.select(models.Document).where(models.Document.clone_id == clone.id)
+    q = sa.select(models.Document).where(models.Document.clone_id == clonedb.clone_id)
     if description is not None:
         q = q.where(
             sa.and_(
@@ -377,7 +373,7 @@ async def get_documents(
         .limit(limit=limit)
         .order_by(models.Document.created_at.desc())
     )
-    docs = await db.scalars(q)
+    docs = await clonedb.db.scalars(q)
     return docs.unique().all()
 
 
@@ -385,9 +381,7 @@ async def get_documents(
 async def update_document(
     doc_update: schemas.DocumentUpdate,
     doc: Annotated[models.Document, Depends(get_document)],
-    clonedb: Annotated[
-        CloneDB, Depends(deps.get_clonedb)
-    ],  # used only for auth, to make sure that user has access to edit this clone
+    clonedb: Annotated[CreatorCloneDB, Depends(deps.get_creator_clonedb)],
 ):
     data = doc_update.model_dump(exclude_unset=True)
     not_modified = True
@@ -409,16 +403,19 @@ async def update_document(
 )
 async def delete_document(
     doc: Annotated[models.Document, Depends(get_document)],
-    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
+    clonedb: Annotated[CreatorCloneDB, Depends(deps.get_creator_clonedb)],
 ):
     await clonedb.delete_document(doc=doc)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.get("/{clone_id}/documents/{document_id}", response_model=schemas.Document)
+@router.get(
+    "/{clone_id}/documents/{document_id}",
+    response_model=schemas.Document,
+    dependencies=[Depends(deps.get_creator_clonedb)],
+)
 async def get_document_by_id(
     doc: Annotated[models.Document, Depends(get_document)],
-    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
 ):
     return doc
 
@@ -428,9 +425,7 @@ async def get_document_by_id(
 async def update_monologue(
     monologue_update: schemas.DocumentUpdate,
     monologue: Annotated[models.Monologue, Depends(get_monologue)],
-    clonedb: Annotated[
-        CloneDB, Depends(deps.get_clonedb)
-    ],  # used only for auth, to make sure that user has access to edit this clone
+    clonedb: Annotated[CreatorCloneDB, Depends(deps.get_creator_clonedb)],
 ):
     data = monologue_update.model_dump(exclude_unset=True)
     not_modified = True
@@ -450,16 +445,19 @@ async def update_monologue(
 @router.delete("/{clone_id}/monologues/{monologue_id}")
 async def delete_monologue(
     monologue: Annotated[models.Monologue, Depends(get_monologue)],
-    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
+    clonedb: Annotated[CreatorCloneDB, Depends(deps.get_creator_clonedb)],
 ):
     await clonedb.delete_monologue(monologue=monologue)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@router.get("/{clone_id}/monologues/{monologue_id}", response_model=schemas.Monologue)
+@router.get(
+    "/{clone_id}/monologues/{monologue_id}",
+    response_model=schemas.Monologue,
+    dependencies=[Depends(deps.get_creator_clonedb)],
+)
 async def get_monologue_by_id(
     monologue: Annotated[models.Document, Depends(get_monologue)],
-    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
 ):
     return monologue
 
@@ -472,7 +470,7 @@ async def get_monologue_by_id(
 )
 async def create_monologue(
     monologue_create: list[schemas.MonologueCreate],
-    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
+    clonedb: Annotated[CreatorCloneDB, Depends(deps.get_creator_clonedb)],
 ):
     monologues = [
         Monologue(**m.model_dump(exclude_none=True)) for m in monologue_create
@@ -480,16 +478,15 @@ async def create_monologue(
     m = await clonedb.add_monologues(monologues)
     if not m:
         raise HTTPException(
-            status_code=status.HTTP_304_NOT_MODIFIED, detail="Monologue already exists."
+            status_code=status.HTTP_304_NOT_MODIFIED,
+            detail="Monologues already exists.",
         )
     return m
 
 
 @router.get("/{clone_id}/monologues", response_model=list[schemas.Monologue])
 async def get_monologues(
-    user: Annotated[models.User, Depends(deps.get_current_active_user)],
-    clone: Annotated[models.Clone, Depends(get_clone)],
-    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    clonedb: Annotated[CreatorCloneDB, Depends(deps.get_creator_clonedb)],
     offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
     limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
     content: Annotated[str | None, Query()] = None,
@@ -497,21 +494,19 @@ async def get_monologues(
     created_after: Annotated[datetime | None, Query()] = None,
     created_before: Annotated[datetime | None, Query()] = None,
 ):
-    if not user.is_superuser and not user.id == clone.creator_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-    q = sa.select(models.Monologue).where(models.Monologue.clone_id == clone.id)
+    q = sa.select(models.Monologue).where(models.Monologue.clone_id == clonedb.clone_id)
     if content is not None:
         q = q.where(
             sa.and_(
-                models.Monologue.description.is_not(None),
-                sa.func.lower(models.Monologue.description).ilike(content.lower()),
+                models.Monologue.content.is_not(None),
+                sa.func.lower(models.Monologue.content).ilike(content.lower()),
             )
         )
     if source is not None:
         q = q.where(
             sa.and_(
-                models.Monologue.name.is_not(None),
-                sa.func.lower(models.Monologue.name).ilike(source.lower()),
+                models.Monologue.source.is_not(None),
+                sa.func.lower(models.Monologue.source).ilike(source.lower()),
             )
         )
     if created_before is not None:
@@ -523,7 +518,7 @@ async def get_monologues(
         .limit(limit=limit)
         .order_by(models.Monologue.created_at.desc())
     )
-    m = await db.scalars(q)
+    m = await clonedb.db.scalars(q)
     return m.unique().all()
 
 

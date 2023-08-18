@@ -2,6 +2,7 @@ import json
 import uuid
 
 from fastapi.encoders import jsonable_encoder
+from redis.asyncio import Redis
 
 from app import models
 
@@ -25,7 +26,7 @@ class CacheCounter:
 
 class CloneCache:
     # TODO (Jonny): Should this be instantiated with `clone_id`?
-    def __init__(self, conn):
+    def __init__(self, conn: Redis):
         self.conn = conn
 
     def _clone_key(self, clone_id: str | uuid.UUID) -> str:
@@ -60,7 +61,7 @@ class CloneCache:
         )
 
     async def increment_all_counters(
-        self, conversation_ids: list[str | uuid.UUID], importance: int
+        self, conversation_ids: list[uuid.UUID], importance: int
     ):
         if isinstance(conversation_ids, (str, uuid.UUID)):
             conversation_ids = [conversation_ids]
@@ -72,18 +73,20 @@ class CloneCache:
                 p.incrby(f"{k}::entity_context_counter", importance)
             await p.execute()
 
-    async def add_clone(self, clone: models.Clone) -> bool:
+    async def add_clone(self, clone: models.Clone) -> bool | None:
         key = self._clone_key(clone.id)
         value = json.dumps(jsonable_encoder(clone)).encode()
         return await self.conn.set(key, value)
 
-    async def delete_clone(self, clone_id: str) -> str:
+    async def delete_clone(self, clone_id: str) -> int:
         key = self._clone_key(clone_id)
         return await self.conn.delete(key)
 
-    async def get_clone(self, clone_id: str) -> models.Clone:
+    async def get_clone(self, clone_id: str) -> models.Clone | None:
         key = self._clone_key(clone_id)
         r = await self.conn.get(key)
+        if not r:
+            return None
         data = json.loads(r.decode("utf-8"))
         return models.Clone(**data)
 
@@ -96,41 +99,3 @@ class CloneCache:
     async def add_moderation_violations(self, user_id: str | uuid.UUID, count: int = 1):
         moderation_counter = self.moderation_violations_counter(user_id)
         await moderation_counter.increment(count)
-
-    # Note (Jonny): Decided against using Redis to retrieve messages. These
-    # will grow the cache quickly and could cause problems, and setting a smart eviction
-    # policy that handles all edge cases is really not obvious
-    # async def add_message(self, message: models.Message) -> bool:
-    #     key = self._conversation_key(message.conversation_id)
-    #     score = message.timestamp.timestamp()
-    #     value = json.dumps(jsonable_encoder(message))
-    #     # (redis docs): nx forces ZADD to only create new elements and not to update scores for elements that already exist.
-    #     # this makes a sorted set on key, where elements are value and they sort according to score.
-    #     return await self.conn.zadd(key, {value: score}, nx=True)
-
-    # async def get_messages(
-    #     self, conversation_id: str, offset: int = 0, limit: int = 20
-    # ) -> list[models.Message]:
-    #     key = self._conversation_key(conversation_id)
-    #     values = await self.conn.zrevrange(key, offset, limit)
-    #     return [models.Message(**json.loads(m.decode("utf-8"))) for m in values]
-
-    # async def count_messages(self, conversation_id: str) -> int:
-    #     key = self._conversation_key(conversation_id)
-    #     n = await self.conn.zcard(key)
-    #     n = n or 0
-    #     return int(n)
-
-    # async def delete_message(self, message: models.Message) -> int:
-    #     key = self._conversation_key(message.conversation_id)
-    #     value = json.dumps(jsonable_encoder(message))
-    #     n = await self.conn.zrem(key, value)
-    #     return int(n)
-
-    # async def conversation_delete(
-    #     self,
-    #     conversation_id: str,
-    # ) -> list[models.Message]:
-    #     key = self._conversation_key(conversation_id)
-    #     res = await self.conn.delete(key)
-    #     return res

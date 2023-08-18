@@ -20,8 +20,6 @@ from starlette.types import ASGIApp
 
 from app.settings import settings
 
-settings.APP_NAME = "clonr-server"
-
 # Default value is http://localhost:4317, and described here:
 # https://opentelemetry.io/docs/concepts/sdk-configuration/otlp-exporter-configuration/
 # and it creates routes at /v1/metrics, /v1/traces. /v1/logs

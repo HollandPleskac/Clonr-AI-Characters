@@ -12,12 +12,7 @@ from fastapi_users.db import (
 from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.ext.hybrid import Comparator, hybrid_property
-from sqlalchemy.orm import (
-    DeclarativeBase,
-    Mapped,
-    mapped_column,
-    relationship,
-)
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from clonr.utils.formatting import DateFormat
 
@@ -84,7 +79,11 @@ class CommonMixin:
 
 
 class OAuthAccount(SQLAlchemyBaseOAuthAccountTableUUID, Base):
-    pass
+    # FixMe: (Jonny) I remember this being an issue during migrations, where we have to edit the first db
+    # migration to use fastapi_users GUID, but I cannot figure out how to solve this type issue
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
 
 
 # Each created clone can have many users talking to it
@@ -608,7 +607,7 @@ class Memory(CommonMixin, Base):
     embedding_model: Mapped[str]
     timestamp: Mapped[datetime.datetime] = mapped_column(sa.DateTime(timezone=True))
     last_accessed_at: Mapped[datetime.datetime] = mapped_column(
-        sa.DateTime(timezone=True)
+        sa.DateTime(timezone=True),
     )
     importance: Mapped[int]
     is_shared: Mapped[bool] = mapped_column(default=False)
@@ -825,41 +824,38 @@ class LongDescription(CommonMixin, Base):
 # ### Signups
 
 
-# class CreatorPartnerProgramSignup(Base):
-#     __tablename__ = "creator_partner_signups"
+class CreatorPartnerProgramSignup(CommonMixin, Base):
+    __tablename__ = "creator_partner_signups"
 
-#     id: Mapped[uuid.UUID] = mapped_column(
-#         primary_key=True, server_default=sa.text("gen_random_uuid()")
-#     )
-#     user_id: Mapped[uuid.UUID] = mapped_column(
-#         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
-#     )
-#     name: Mapped[str] = mapped_column(sa.String, nullable=False)
-#     email: Mapped[str] = mapped_column(sa.String, nullable=False)
-#     phone: Mapped[str] = mapped_column(sa.String, nullable=False)
-#     social_media_handles: Mapped[str] = mapped_column(sa.String, nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(nullable=False)
+    email: Mapped[str] = mapped_column(nullable=False)
+    phone: Mapped[str] = mapped_column(nullable=False)
+    social_media_handles: Mapped[str] = mapped_column(nullable=False)
 
-#     user = relationship("User", back_populates="creator_partner_signup")
+    # user: Mapped["User"] = relationship("User", back_populates="creator_partner_signup")
 
-#     def __repr__(self):
-#         return f"CreatorPartnerSignup(id={self.id}, user_id={self.user_id}, name='{self.name}', email='{self.email}')"
+    def __repr__(self):
+        return f"CreatorPartnerSignup(id={self.id}, user_id={self.user_id}, name='{self.name}', email='{self.email}')"
 
 
-# class NSFWSignup(CommonMixin, Base):
-#     __tablename__ = "nsfw_signups"
+class NSFWSignup(CommonMixin, Base):
+    __tablename__ = "nsfw_signups"
 
-#     user_id: Mapped[uuid.UUID] = mapped_column(
-#         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
-#     )
-#     name: Mapped[str] = mapped_column(sa.String, nullable=False)
-#     email: Mapped[str] = mapped_column(sa.String, nullable=False)
-#     phone: Mapped[str] = mapped_column(sa.String, nullable=False)
-#     social_media_handles: Mapped[str] = mapped_column(sa.String, nullable=False)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(nullable=False)
+    email: Mapped[str] = mapped_column(nullable=False)
+    phone: Mapped[str] = mapped_column(nullable=False)
+    social_media_handles: Mapped[str] = mapped_column(nullable=False)
 
-#     user = relationship("User", back_populates="nsfw_signup")
+    # user: Mapped["user"] = relationship("User", back_populates="nsfw_signup")
 
-#     def __repr__(self):
-#         return f"NSFWSignup(id={self.id}, user_id={self.user_id}, name='{self.name}', email='{self.email}')"
+    def __repr__(self):
+        return f"NSFWSignup(id={self.id}, user_id={self.user_id}, name='{self.name}', email='{self.email}')"
 
 
 # ------------- API Keys ------------- #

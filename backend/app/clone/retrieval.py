@@ -1,4 +1,4 @@
-from typing import Iterator
+from typing import Any, Iterator, TypeVar
 
 import numpy as np
 import sqlalchemy as sa
@@ -22,16 +22,19 @@ from .types import (
 INF = int(1e6)
 DEFAULT_RERANK_FIRST_PASS_MAX_ITEMS = 20
 
+T = TypeVar("T", bound=VectorSearchable)
+S = TypeVar("S", bound=GenAgentsSearchable)
+
 
 async def vector_search(
     query: str,
-    model: VectorSearchable,
+    model: T,
     params: VectorSearchParams,
     db: AsyncSession,
     embedding_client: EmbeddingClient,
     tokenizer: Tokenizer,
     filters: list[sa.SQLColumnExpression] | None = None,
-) -> list[VectorSearchResult]:
+) -> list[VectorSearchResult[T]]:
     q = (await embedding_client.encode_query(query))[0]
 
     if params.metric == MetricType.cosine:
@@ -79,13 +82,13 @@ async def vector_search(
 
 async def rerank_search(
     query: str,
-    model: VectorSearchable,
+    model: T,
     params: ReRankSearchParams,
     db: AsyncSession,
     embedding_client: EmbeddingClient,
     tokenizer: Tokenizer,
     filters: list[sa.SQLColumnExpression] | None = None,
-) -> list[ReRankResult]:
+) -> list[ReRankResult[T]]:
     # If max items is not passed, defaults to pulling 20 results
     # else, it's max items * multiplier
     first_pass_max_items = int(
@@ -139,13 +142,13 @@ async def rerank_search(
 
 async def gen_agents_search(
     query: str,
-    model: GenAgentsSearchable,
+    model: S,
     params: GenAgentsSearchParams,
     db: AsyncSession,
     embedding_client: EmbeddingClient,
     tokenizer: Tokenizer,
-    filters: list[sa.SQLColumnExpression] | None = None,
-) -> list[GenAgentsSearchResult]:
+    filters: list[sa.ColumnElement[Any]] | None = None,
+) -> list[GenAgentsSearchResult[S]]:
     alpha_sum = params.alpha_relevance + params.alpha_importance + params.alpha_recency
     time_decay = 0.5 ** (1 / params.half_life_seconds)  # Eq: gamma^t = 1/2
 

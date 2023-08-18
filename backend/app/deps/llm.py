@@ -1,6 +1,6 @@
 import os
 import uuid
-from typing import Annotated
+from typing import Annotated, AsyncGenerator
 
 import sqlalchemy as sa
 from fastapi import Depends, Path
@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
 from app.settings import settings
-from clonr.llms import LLM, LlamaCpp, MockLLM, OpenAI
+from clonr.llms import LLM, LlamaCpp, MockLLM, OpenAI, OpenAIModelEnum
 from clonr.llms.callbacks import (
     AddToPostgresCallback,
     LLMCallback,
@@ -35,20 +35,28 @@ def _get_llm(
     model_name: str, tokenizer: Tokenizer, callbacks: list[LLMCallback]
 ) -> LLM:
     if model_name == "mock":
-        llm = MockLLM(callbacks=callbacks)
+        return MockLLM(callbacks=callbacks)
     elif model_name == "llamacpp":
         model = model_name
         if is_docker():
             # https://stackoverflow.com/questions/24319662/from-inside-of-a-docker-container-how-do-i-connect-to-the-localhost-of-the-mach
             # If we are running llama cpp locally, localhost won't work from inside the container.
+            # FixMe (Jonny): these are temporary for testing, until we start running our own LLM servers
             api_base = "http://host.docker.internal:8100/v1"
         else:
             api_base = "http://localhost:8100/v1"
+        return LlamaCpp(
+            model=model,
+            api_base=api_base,
+            api_key="",
+            tokenizer=tokenizer,
+            callbacks=callbacks,
+        )
     elif model_name == "colab":
         api_base = "<NGROK URL HERE>/v1"
         model = "<MODEL NAME HERE. MUST ALIGN WITH SERVER>"
         # model = "wizardlm-1.0-uncensored-llama2-13b"
-        llm = LlamaCpp(
+        return LlamaCpp(
             model=model,
             api_base=api_base,
             api_key="none",
@@ -56,31 +64,34 @@ def _get_llm(
             callbacks=callbacks,
         )
     elif model_name.startswith("gpt"):
-        llm = OpenAI(
-            model=model_name,
+        return OpenAI(
+            model=OpenAIModelEnum(model_name),
             api_key=settings.OPENAI_API_KEY,
             tokenizer=tokenizer,
             callbacks=callbacks,
         )
     else:
         raise ValueError("Invalid model name:" + model_name)
-    return llm
 
 
 # no auth done here, it's assumed to have been done in the clonedb
 async def get_llm_with_convo_id(
     db: Annotated[AsyncSession, Depends(get_async_session)],
     clone_id: Annotated[uuid.UUID | None, Path()],
-    user: Annotated[str, Depends(get_current_active_user)],
+    user: Annotated[models.User, Depends(get_current_active_user)],
     tokenizer: Annotated[Tokenizer, Depends(get_tokenizer)],
     conversation_id: Annotated[uuid.UUID, Path()],
-) -> LLM:
+) -> AsyncGenerator[LLM, None]:
     if clone_id is None:
         clone_id = await db.scalar(
             sa.select(models.Conversation.clone_id).where(
                 models.Conversation.id == conversation_id
             )
         )
+        if clone_id is None:
+            raise ValueError(
+                f"Internal server error. Conversation {conversation_id} is attached to non-existent clone"
+            )
     callbacks: list[LLMCallback] = [
         LoggingCallback(),
         AddToPostgresCallback(
@@ -97,9 +108,9 @@ async def get_llm_with_convo_id(
 async def get_llm_with_clone_id(
     db: Annotated[AsyncSession, Depends(get_async_session)],
     clone_id: Annotated[uuid.UUID, Path()],
-    user: Annotated[str, Depends(get_current_active_user)],
+    user: Annotated[models.User, Depends(get_current_active_user)],
     tokenizer: Annotated[Tokenizer, Depends(get_tokenizer)],
-) -> LLM:
+) -> AsyncGenerator[LLM, None]:
     callbacks: list[LLMCallback] = [
         LoggingCallback(),
         AddToPostgresCallback(

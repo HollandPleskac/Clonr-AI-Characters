@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     DISCORD_CLIENT_SECRET: str
     PORT: int
     REDIS_PASSWORD: str
-    REDIS_PORT: str
+    REDIS_PORT: int
     REDIS_HOST: str
     EMBEDDINGS_GRPC_HOST: str
     EMBEDDINGS_GRPC_PORT: int

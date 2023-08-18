@@ -1,22 +1,12 @@
-# from typing import Annotated
+from fastapi.routing import APIRouter
 
-# import stripe
-# from fastapi import Depends, Request, status
-# from fastapi.routing import APIRouter
-# from sqlalchemy.ext.asyncio import AsyncSession
+# from app.models import Subscription
 
-# from app import models
-# from app.deps.db import get_async_session
-# from app.deps.users import get_current_active_user
-
-# # from app.models import Subscription
-# from app.settings import settings
-
-# router = APIRouter(
-#     prefix="/stripe",
-#     tags=["stripe"],
-#     responses={404: {"description": "Not found"}},
-# )
+router = APIRouter(
+    prefix="/stripe",
+    tags=["stripe"],
+    responses={404: {"description": "Not found"}},
+)
 
 
 # # class WebHookData(BaseModel):

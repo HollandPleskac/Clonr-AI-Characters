@@ -2,11 +2,11 @@ import json
 import re
 
 from loguru import logger
-from opentelemetry import trace, metrics
+from opentelemetry import metrics, trace
 from pydantic import BaseModel, ValidationError
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_random
 
-from app import settings
+from app.settings import settings
 from clonr import templates
 from clonr.data_structures import (
     Document,
@@ -125,9 +125,13 @@ def auto_chunk_size_long_desc(
 
 
 @tracer.start_as_current_span("auto_chunk_size_summarize")
-def auto_chunk_size_summarize(
-    llm: LLM, summary_size: int = Params.summarize.max_tokens
-) -> int:
+def auto_chunk_size_summarize(llm: LLM, summary_size: int | None = None) -> int:
+    if summary_size is None:
+        summary_size = Params.summarize.max_tokens
+        if summary_size is None:
+            raise ValueError(
+                "Internal error. Default summarize max_tokens param should be set"
+            )
     assert summary_size > 0, "Must have positive summary size"
     if llm.is_chat_model:
         prompt = templates.Summarize.render(passage="", llm=llm)
@@ -283,7 +287,8 @@ async def rate_memory(
         )
     kwargs["template"] = templates.MemoryRating.__name__
     kwargs["subroutine"] = rate_memory.__name__
-    kwargs["retry_attempt"] = rate_memory.retry.statistics["attempt_number"] - 1
+    # FixMe (Jonny): figure out how to properly tell mypy the required type exists here.
+    kwargs["retry_attempt"] = rate_memory.retry.statistics["attempt_number"] - 1  # type: ignore
     params = GenerationParams(**templates.MemoryRating.get_constraints(llm=llm))
     r = await llm.agenerate(prompt_or_messages=prompt, params=params, **kwargs)
     try:
@@ -311,10 +316,10 @@ async def message_queries_create(
     llm: LLM,
     char: str,
     short_description: str,
-    agent_summary: str,
-    entity_context_summary: str,
     entity_name: str,
     messages: list[Message],
+    agent_summary: str | None = None,
+    entity_context_summary: str | None = None,
     num_results: int = 3,
     system_prompt: str | None = None,
     **kwargs,
@@ -337,7 +342,7 @@ async def message_queries_create(
     kwargs["template"] = templates.MessageQuery.__name__
     kwargs["subroutine"] = message_queries_create.__name__
     kwargs["retry_attempt"] = (
-        message_queries_create.retry.statistics["attempt_number"] - 1
+        message_queries_create.retry.statistics["attempt_number"] - 1  # type: ignore
     )
     r = await llm.agenerate(
         prompt_or_messages=prompt, params=Params.message_queries_create, **kwargs
@@ -442,7 +447,7 @@ async def reflection_queries_create(
     kwargs["template"] = templates.ReflectionQuestions.__name__
     kwargs["subroutine"] = reflection_queries_create.__name__
     kwargs["retry_attempt"] = (
-        reflection_queries_create.retry.statistics["attempt_number"] - 1
+        reflection_queries_create.retry.statistics["attempt_number"] - 1  # type: ignore
     )
     r = await llm.agenerate(
         prompt_or_messages=prompt, params=Params.reflection_queries_create, **kwargs
@@ -506,7 +511,7 @@ async def reflections_create(
         )
     kwargs["template"] = templates.ReflectionInsights.__name__
     kwargs["subroutine"] = reflections_create.__name__
-    kwargs["retry_attempt"] = reflections_create.retry.statistics["attempt_number"] - 1
+    kwargs["retry_attempt"] = reflections_create.retry.statistics["attempt_number"] - 1  # type: ignore
 
     index_to_memory = {i + 1: m for i, m in enumerate(memories)}
 

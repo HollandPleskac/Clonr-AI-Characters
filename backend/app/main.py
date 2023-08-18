@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import math
 import random
 import time
 from contextlib import asynccontextmanager
@@ -12,9 +13,8 @@ from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
+from opentelemetry import metrics
 
-# import tracing first so no meters are uninitialized!
-from app.tracing import setup_tracing  # isort: skip
 from app import api, deps, models, schemas
 from app.auth.users import (
     auth_backend,
@@ -34,6 +34,7 @@ from app.db import (
 from app.deps.users import fastapi_users
 from app.embedding import wait_for_embedding
 from app.settings import settings
+from app.tracing import setup_tracing
 
 # import sentry_sdk
 # sentry_sdk.init(
@@ -41,7 +42,6 @@ from app.settings import settings
 #     traces_sample_rate=1.0,
 # )
 
-from opentelemetry import metrics
 
 meter = metrics.get_meter(settings.APP_NAME)
 
@@ -200,9 +200,6 @@ async def read_item(item_id: int, q: Optional[str] = None):
     return {"item_id": item_id, "q": q}
 
 
-import math
-
-
 @app.get("/io_task")
 async def io_task():
     time.sleep(1)
@@ -247,7 +244,7 @@ setup_tracing(app=app)
 
 if __name__ == "__main__":
     p = Path(__file__).parent.parent
-    reload_dirs = [(p / x).resolve() for x in ["app", "clonr"]]
+    reload_dirs = [str((p / x).resolve()) for x in ["app", "clonr"]]
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",

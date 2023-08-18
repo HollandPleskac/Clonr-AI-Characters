@@ -36,8 +36,9 @@ async def get_current_active_creator(
     user: Annotated[models.User, Depends(get_current_active_user)],
     db: Annotated[AsyncSession, Depends(get_async_session)],
 ) -> models.Creator:
-    if (creator := await db.get(models.Creator, user.id)).is_active:
-        return creator
+    if creator := await db.get(models.Creator, user.id):
+        if creator.is_active:
+            return creator
     raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST,
         detail="Current user is not signed up as a creator or is not active.",

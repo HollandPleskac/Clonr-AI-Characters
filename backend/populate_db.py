@@ -1,17 +1,16 @@
 import asyncio
 import json
 import random
-import textwrap
-from fastapi.encoders import jsonable_encoder
-from clonr.data.parsers import WikipediaParser, WikiQuotesParser
 from pathlib import Path
 
 import aiohttp
 import requests
 import tqdm.asyncio
+from fastapi.encoders import jsonable_encoder
 
 from app.schemas import CloneCreate, DocumentCreate, MonologueCreate
 from app.settings import settings
+from clonr.data.parsers import WikipediaParser, WikiQuotesParser
 
 wiki_parser = WikipediaParser()
 quote_parser = WikiQuotesParser()
@@ -42,7 +41,7 @@ async def create_makima(headers: dict[str, str]):
         headers=headers,
         json=clone_create.model_dump(exclude_unset=True, exclude={"tags"}),
     )
-    assert r.status_code == 201
+    assert r.status_code == 201, r.json()
     clone_id = str(r.json()["id"])
 
     # upload documents
@@ -51,7 +50,7 @@ async def create_makima(headers: dict[str, str]):
         json=doc_create.model_dump(),
         headers=headers,
     )
-    assert r.status_code == 201
+    assert r.status_code == 201, r.json()
 
     # upload monologues
     monologues = [MonologueCreate(content=m).model_dump() for m in monologues]
@@ -65,6 +64,7 @@ async def create_makima(headers: dict[str, str]):
 async def create_feynman(headers):
     base = "http://localhost:8000"
     doc = wiki_parser.extract(title="Richard_Feynman")
+    doc.content = doc.content.split("== Bibliography")[0]
     monologues = quote_parser.extract(
         character_name="Richard_Feynman", max_quotes=2000
     )[:653]
@@ -161,7 +161,7 @@ async def main():
     async with aiohttp.TCPConnector(limit=64) as tcp_connection:
         async with aiohttp.ClientSession(connector=tcp_connection) as session:
             tasks = []
-            for x in clone_data[:5]:
+            for x in clone_data[:100]:
                 try:
                     task = session.post(
                         url="http://localhost:8000/clones", json=x, headers=headers
