@@ -9,8 +9,7 @@ from loguru import logger
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import models, schemas
-from app.deps import get_async_redis, get_async_session, get_superuser
+from app import deps, models, schemas
 
 router = APIRouter(
     prefix="/tags",
@@ -20,10 +19,12 @@ router = APIRouter(
 
 
 # See the doc suggestion output schema for what would be returned
-@router.post("/", response_model=schemas.Tag, dependencies=[Depends(get_superuser)])
+@router.post(
+    "/", response_model=schemas.Tag, dependencies=[Depends(deps.get_superuser)]
+)
 async def create_tag(
     tag_create: schemas.TagCreate,
-    db: Annotated[AsyncSession, Depends(get_async_session)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
 ):
     if await db.scalar(
         sa.select(models.Tag.name).where(models.Tag.name == tag_create.name)
@@ -42,8 +43,8 @@ async def create_tag(
 
 @router.get("/", response_model=list[schemas.Tag])
 async def get_tags(
-    db: Annotated[AsyncSession, Depends(get_async_session)],
-    conn: Annotated[Redis, Depends(get_async_redis)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    conn: Annotated[Redis, Depends(deps.get_async_redis)],
 ):
     if tag_bytes := await conn.get("tags"):
         tags = json.loads(tag_bytes.decode("utf-8"))
@@ -59,7 +60,7 @@ async def get_tags(
 @router.get("/{name}", response_model=schemas.Tag)
 async def check_tag_by_name(
     name: Annotated[uuid.UUID, Path()],
-    db: Annotated[AsyncSession, Depends(get_async_session)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
 ):
     if tag := await db.scalar(sa.select(models.Tag).where(models.Tag.name == name)):
         return tag
@@ -70,11 +71,11 @@ async def check_tag_by_name(
 
 # See the doc suggestion output schema for what would be returned
 @router.delete(
-    "/{tag_id}", response_class=Response, dependencies=[Depends(get_superuser)]
+    "/{tag_id}", response_class=Response, dependencies=[Depends(deps.get_superuser)]
 )
 async def delete_tag(
     tag_id: Annotated[uuid.UUID, Path()],
-    db: Annotated[AsyncSession, Depends(get_async_session)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
 ):
     if not (tag := await db.get(models.Tag, tag_id)):
         raise HTTPException(
@@ -87,12 +88,12 @@ async def delete_tag(
 
 
 @router.patch(
-    "/{tag_id}", response_model=schemas.Tag, dependencies=[Depends(get_superuser)]
+    "/{tag_id}", response_model=schemas.Tag, dependencies=[Depends(deps.get_superuser)]
 )
 async def patch_tag(
     tag_update: schemas.TagUpdate,
     tag_id: Annotated[uuid.UUID, Path()],
-    db: Annotated[AsyncSession, Depends(get_async_session)],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
 ):
     if not (tag := await db.get(models.Tag, tag_id)):
         raise HTTPException(

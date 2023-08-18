@@ -1,4 +1,5 @@
 import json
+import uuid
 from abc import ABC, abstractmethod
 
 from fastapi import status
@@ -10,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app import models
 from app.clone.cache import CloneCache
 from app.external.moderation import openai_moderation_check
+from app.settings import settings
 from clonr.llms.base import LLM
 from clonr.llms.schemas import (
     GenerationParams,
@@ -18,7 +20,7 @@ from clonr.llms.schemas import (
     OpenAIStreamResponse,
 )
 
-meter = metrics.get_meter(__name__)
+meter = metrics.get_meter(settings.APP_NAME)
 
 req_meter = meter.create_counter(
     name="llm_requests_total",
@@ -143,9 +145,9 @@ class AddToPostgresCallback(LLMCallback):
     def __init__(
         self,
         db: AsyncSession,
-        clone_id: str,
-        user_id: str,
-        conversation_id: str | None = None,
+        clone_id: uuid.UUID,
+        user_id: uuid.UUID,
+        conversation_id: uuid.UUID | None = None,
     ):
         self.db = db
         self.clone_id = clone_id
@@ -211,9 +213,11 @@ class ModerationCallback(LLMCallback):
         params: GenerationParams | None,
         **kwargs,
     ):
-        prompt = prompt_or_messages
-        if not isinstance(prompt_or_messages, str):
-            prompt = [x.to_str() for x in prompt_or_messages]
+        if isinstance(prompt_or_messages, str):
+            prompt = prompt_or_messages
+        else:
+            # For moderation, we only need the content, not the special characters
+            prompt = "\n".join([x.content for x in prompt_or_messages])
         response = await openai_moderation_check(prompt)
         if response.flagged:
             await self.increment_flagged_counter()
@@ -231,9 +235,9 @@ class ModerationCallback(LLMCallback):
 class OTLPMetricsCallback(LLMCallback):
     def __init__(
         self,
-        clone_id: str,
-        user_id: str,
-        conversation_id: str | None = None,
+        clone_id: uuid.UUID,
+        user_id: uuid.UUID,
+        conversation_id: uuid.UUID | None = None,
     ):
         self.clone_id = clone_id
         self.user_id = user_id
@@ -249,29 +253,31 @@ class OTLPMetricsCallback(LLMCallback):
         params: GenerationParams | None,
         **kwargs,
     ):
-        attributes = dict(
+        convo_id = str(self.conversation_id) if self.conversation_id else ""
+        attributes: dict[str, str | int] = dict(
             model=llm.model,
             model_type=llm.model_type,
-            clone_id=self.clone_id,
-            user_id=self.user_id,
-            conversation_id=self.conversation_id,
-            retry_attempt=kwargs.get("retry_attempt"),
-            http_retry_attempt=kwargs.get("http_retry_attempt"),
-            subroutine=kwargs.get("subroutine"),
+            clone_id=str(self.clone_id),
+            user_id=str(self.user_id),
+            conversation_id=convo_id,
+            retry_attempt=int(kwargs.get("retry_attempt", -1)),
+            http_retry_attempt=int(kwargs.get("http_retry_attempt", -1)),
+            subroutine=str(kwargs.get("subroutine", "")),
         )
         req_meter.add(amount=1, attributes=attributes)
 
     async def on_generate_end(self, llm: LLM, llm_response: LLMResponse, **kwargs):
         r = llm_response
-        attributes = dict(
+        convo_id = str(self.conversation_id) if self.conversation_id else ""
+        attributes: dict[str, str | int] = dict(
             model=llm.model,
             model_type=llm.model_type,
-            clone_id=self.clone_id,
-            user_id=self.user_id,
-            conversation_id=self.conversation_id,
-            retry_attempt=kwargs.get("retry_attempt"),
-            http_retry_attempt=kwargs.get("http_retry_attempt"),
-            subroutine=kwargs.get("subroutine"),
+            clone_id=str(self.clone_id),
+            user_id=str(self.user_id),
+            conversation_id=convo_id,
+            retry_attempt=int(kwargs.get("retry_attempt", -1)),
+            http_retry_attempt=int(kwargs.get("http_retry_attempt", -1)),
+            subroutine=str(kwargs.get("subroutine", "")),
         )
         resp_meter.add(amount=1, attributes=attributes)
         req_processing_time_meter.record(amount=r.duration, attributes=attributes)

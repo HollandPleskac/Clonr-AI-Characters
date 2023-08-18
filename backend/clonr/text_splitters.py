@@ -50,10 +50,10 @@ T = TypeVar("T")
 class DEFAULTS:
     max_chunk_size_chars: int = 512
     min_chunk_size_chars: int = 64
-    max_chunk_size_tokens: int = 128
+    max_chunk_size_tokens: int = 64
     min_chunk_size_tokens: int = 16
     overlap_chars: int = 128
-    overlap_tokens: int = 32
+    overlap_tokens: int = 16
 
 
 def _is_asian_language(s: str):

@@ -25,8 +25,8 @@ class ModerationResponse(BaseModel):
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_random(min=0, max=1),
-    before_sleep=before_sleep_log(logger, logging.INFO),
-    after=after_log(logger, logging.WARN),
+    before_sleep=before_sleep_log(logger, logging.INFO),  # type: ignore
+    after=after_log(logger, logging.WARN),  # type: ignore
 )
 async def openai_moderation_check(text: str) -> ModerationResult:
     headers = {

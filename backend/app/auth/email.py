@@ -47,7 +47,7 @@ async def register_user(
     email: str = Query(..., regex=r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
 ):
     token = serializer.dumps(email)
-    send_verification_email(email, token)
+    send_verification_email(email, str(token))
     return JSONResponse(content={"message": "Verification email sent successfully."})
 
 

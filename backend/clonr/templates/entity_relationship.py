@@ -1,4 +1,4 @@
-from app import models
+from clonr.data_structures import Memory
 from clonr.llms import LLM
 from clonr.templates.base import Template, env
 
@@ -81,7 +81,7 @@ Your answer should be concise yet contain all of the necessary information to pr
         llm: LLM,
         char: str,
         entity: str,
-        statements: list[models.Memory],
+        statements: list[Memory],
         prev_entity_summary: str | None = None,
         system_prompt: str | None = None,
     ):
@@ -101,7 +101,7 @@ Your answer should be concise yet contain all of the necessary information to pr
         cls,
         char: str,
         entity: str,
-        statements: list[models.Memory],
+        statements: list[Memory],
         prev_entity_summary: str | None = None,
     ):
         return cls.instruct_template.render(

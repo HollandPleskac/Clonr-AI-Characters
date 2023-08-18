@@ -17,7 +17,7 @@ def test_monologues(client: TestClient, makima: tuple[dict[str, str], str]):
     ).model_dump()
     for d in [m1_create, m2_create]:
         r = client.post(
-            f"/clones/{clone_id}/monologues", json=d, headers=makima_headers
+            f"/clones/{clone_id}/monologues", json=[d], headers=makima_headers
         )
         data = r.json()
         assert r.status_code == 201, data

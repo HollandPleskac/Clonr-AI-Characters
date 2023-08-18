@@ -85,7 +85,7 @@ class CreatorCreate(BaseModel):
     is_public: bool = False
 
 
-class CreatorPatch(CreatorCreate):
+class CreatorPatch(BaseModel):
     username: str | None = Field(
         default=None,
         pattern=r"^[a-zA-Z][a-zA-Z0-9_]{2,29}$",
@@ -111,7 +111,7 @@ class TagCreate(BaseModel):
     )
 
 
-class TagUpdate(TagCreate):
+class TagUpdate(BaseModel):
     name: str | None = None
     color_code: Annotated[str | None, AfterValidator(is_valid_hex_code)] = Field(
         default=None,
@@ -162,9 +162,26 @@ class CloneUpdate(BaseModel):
     tags: list[str] | None = None
 
 
-class Clone(CommonMixin, CloneCreate):
+# NOTE (Jonny): have to duplicate the code since Liskov sub error says Tags can't change the inherited list[str] return type
+class Clone(CommonMixin):
     model_config = ConfigDict(from_attributes=True)
 
+    name: Annotated[str, AfterValidator(special_char_validator)] = Field(min_length=2)
+    short_description: Annotated[str, AfterValidator(special_char_validator)] = Field(
+        min_length=3
+    )
+    long_description: Annotated[str | None, AfterValidator(sanitize_text)] = Field(
+        default=None, min_length=32
+    )
+    greeting_message: Annotated[
+        str | None, AfterValidator(special_char_validator)
+    ] = None
+    avatar_uri: str | None = None
+    is_active: bool = True
+    is_public: bool = False
+    is_short_description_public: bool = True
+    is_long_description_public: bool = False
+    is_greeting_message_public: bool = True
     creator_id: uuid.UUID
     num_messages: int
     num_conversations: int
@@ -295,7 +312,7 @@ class ConversationCreate(BaseModel):
         description="The display name that the user wants to use for the conversation. This cannot be changed once you start the conversation. If your user name collides with the clone name, then an additional digit will be added",
     )
     memory_strategy: MemoryStrategy = Field(
-        default=MemoryStrategy.none,
+        default=MemoryStrategy.zero,
         description="Whether to turn off memory (old messages removed at context length limit), use short-term memory, or use the advanced Clonr long-term memory",
     )
     information_strategy: InformationStrategy = Field(
@@ -393,6 +410,51 @@ class LongDescription(CommonMixin, BaseModel):
     documents: list[Document]
 
 
+class CreatorPartnerProgramSignupBase(BaseModel):
+    name: str
+    email: str
+    phone_number: str | None = None
+    social_media_handles: str | None = None
+
+
+class CreatorPartnerProgramSignupCreate(CreatorPartnerProgramSignupBase):
+    pass
+
+
+class CreatorPartnerProgramSignupUpdate(CreatorPartnerProgramSignupBase):
+    pass
+
+
+class CreatorPartnerProgramSignup(CommonMixin, CreatorPartnerProgramSignupBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    user_id: uuid.UUID
+
+
+class NSFWSignupBase(BaseModel):
+    name: str
+    email: str
+    phone_number: str | None = None
+    social_media_handles: str | None = None
+
+
+class NSFWSignupCreate(NSFWSignupBase):
+    pass
+
+
+class NSFWSignupUpdate(NSFWSignupBase):
+    pass
+
+
+class NSFWSignup(NSFWSignupBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    user_id: uuid.UUID
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+
+
 # ------------ Below here is unused ------------ #
 
 # class APIKeyCreate(BaseModel):
@@ -411,53 +473,3 @@ class LongDescription(CommonMixin, BaseModel):
 
 # class APIKeyOnce(APIKey):
 #     key: str
-
-
-# class CreatorPartnerProgramSignupBase(BaseModel):
-#     name: str
-#     email: str
-#     phone_number: Optional[str] = None
-#     social_media_handles: Optional[str] = None
-
-
-# class CreatorPartnerProgramSignupCreate(CreatorPartnerProgramSignupBase):
-#     pass
-
-
-# class CreatorPartnerProgramSignupUpdate(CreatorPartnerProgramSignupBase):
-#     pass
-
-
-# class CreatorPartnerProgramSignup(CreatorPartnerProgramSignupBase):
-#     id: uuid.UUID
-#     user_id: uuid.UUID
-#     created_at: datetime.datetime
-#     updated_at: datetime.datetime
-
-#     class Config:
-#         orm_mode = True
-
-
-# class NSFWSignupBase(BaseModel):
-#     name: str
-#     email: str
-#     phone_number: Optional[str] = None
-#     social_media_handles: Optional[str] = None
-
-
-# class NSFWSignupCreate(NSFWSignupBase):
-#     pass
-
-
-# class NSFWSignupUpdate(NSFWSignupBase):
-#     pass
-
-
-# class NSFWSignup(NSFWSignupBase):
-#     id: uuid.UUID
-#     user_id: uuid.UUID
-#     created_at: datetime.datetime
-#     updated_at: datetime.datetime
-
-#     class Config:
-#         orm_mode = True

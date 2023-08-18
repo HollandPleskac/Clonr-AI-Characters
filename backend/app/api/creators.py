@@ -73,7 +73,7 @@ async def delete_by_id(
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
 ):
     if creator := await db.get(models.Creator, id):
-        db.delete(creator)
+        await db.delete(creator)
         await db.commit()
         return Response(status_code=status.HTTP_204_NO_CONTENT)
     raise HTTPException(
