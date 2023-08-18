@@ -163,7 +163,7 @@ class Creator(Base):
 clones_to_tags = sa.Table(
     "clones_to_tags",
     Base.metadata,
-    sa.Column("tag", sa.Uuid, sa.ForeignKey("tags.id"), primary_key=True),
+    sa.Column("tag_id", sa.Uuid, sa.ForeignKey("tags.id"), primary_key=True),
     sa.Column("clone_id", sa.Uuid, sa.ForeignKey("clones.id"), primary_key=True),
 )
 
@@ -176,6 +176,9 @@ class Tag(CommonMixin, Base):
     clones: Mapped[list["Clone"]] = relationship(
         secondary=clones_to_tags, back_populates="tags"
     )
+
+    def __repr__(self):
+        return f"Tag(id={self.id}, name={self.name}, color_code={self.color_code})"
 
 
 class Clone(CommonMixin, Base):

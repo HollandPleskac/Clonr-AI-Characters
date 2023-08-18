@@ -155,7 +155,7 @@ async def query_clones(
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
     user: Annotated[models.User | None, Depends(deps.get_optional_current_active_user)],
     embedding_client: Annotated[EmbeddingClient, Depends(deps.get_embedding_client)],
-    tags: Annotated[list[str] | None, Query()] = None,
+    tags: Annotated[list[uuid.UUID] | None, Query()] = None,
     name: Annotated[str | None, Query()] = None,
     sort: Annotated[CloneSortType, Query()] = CloneSortType.top,
     similar: Annotated[str | None, Query()] = None,
@@ -167,9 +167,6 @@ async def query_clones(
     query = sa.select(models.Clone)
     if user is not None and user.is_superuser:
         query = query.where(models.Clone.is_active).where(models.Clone.is_public)
-    if tags is not None:
-        # TODO: edit
-        query = query.where(models.Clone.tags.any(models.Tag.name.in_(tags)))
     if name is not None:
         query = query.where(models.Clone.case_insensitive_name.ilike(f"%{name}%"))
         # This doesn't seem to work well for short names. Looks like it's better on long ones
@@ -189,6 +186,15 @@ async def query_clones(
         )  # it must have an embedding!
     else:
         query = clone_sort_selectable(query=query, sort=sort)
+    if tags is not None:
+        subquery = (
+            sa.select(models.clones_to_tags.c.clone_id)
+            .where(models.clones_to_tags.c.tag_id.in_(tags))
+            .group_by(models.clones_to_tags.c.clone_id)
+            .having(sa.func.count(models.clones_to_tags.c.clone_id) == 2)
+            .subquery()
+        )
+        query = query.join(subquery, models.Clone.id == subquery.c.clone_id)
     query = query.offset(offset=offset).limit(limit=limit)
     clones = await db.scalars(query)
     return clones.unique().all()
