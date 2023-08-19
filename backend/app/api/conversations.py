@@ -13,7 +13,8 @@ from slowapi.util import get_remote_address
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import deps, models, schemas
-from app.clone.controller import Controller, MemoryStrategy
+from app.clone.controller import Controller
+from app.clone.types import AdaptationStrategy, InformationStrategy, MemoryStrategy
 from app.embedding import EmbeddingClient
 from clonr.tokenizer import Tokenizer
 
@@ -47,6 +48,13 @@ class MsgSortType(str, enum.Enum):
     embedding: str = "embedding"
 
 
+class ConvoSortType(str, enum.Enum):
+    newest: str = "newest"
+    oldest: str = "oldest"
+    most_messages: str = "most_messages"
+    fewest_messages: str = "fewest_messages"
+
+
 # TODO (Jonny): put a paywall behind this dependency
 async def get_conversation(
     conversation_id: Annotated[uuid.UUID, Path()],
@@ -62,6 +70,68 @@ async def get_conversation(
     if not user.is_superuser and not convo.user_id == user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     return convo
+
+
+@router.get("/", response_model=list[schemas.Conversation], status_code=200)
+async def get_queried_convos(
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
+    tags: Annotated[list[int] | None, Query()] = None,
+    clone_name: Annotated[str | None, Query()] = None,
+    clone_id: Annotated[uuid.UUID | None, Query()] = None,
+    sort: Annotated[ConvoSortType, Query()] = ConvoSortType.newest,
+    memory_strategy: Annotated[MemoryStrategy | None, Query()] = None,
+    adaptation_strategy: Annotated[AdaptationStrategy | None, Query()] = None,
+    information_strategy: Annotated[InformationStrategy | None, Query()] = None,
+    updated_after: Annotated[datetime.datetime | None, Query()] = None,
+    updated_before: Annotated[datetime.datetime | None, Query()] = None,
+    offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
+    limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
+):
+    query = sa.select(models.Conversation).where(models.Conversation.user_id == user.id)
+    if clone_name is not None:
+        query = query.where(
+            models.Conversation.case_insensitive_clone_name.ilike(f"%{clone_name}%")
+        )
+    if clone_id is not None:
+        query = query.where(models.Conversation.clone_id == clone_id)
+    if updated_after is not None:
+        query = query.where(models.Conversation.updated_at >= updated_after)
+    if updated_before is not None:
+        query = query.where(models.Conversation.updated_at <= updated_before)
+    if adaptation_strategy is not None:
+        query = query.where(
+            models.Conversation.adaptation_strategy == adaptation_strategy
+        )
+    if memory_strategy is not None:
+        query = query.where(models.Conversation.memory_strategy == memory_strategy)
+    if information_strategy is not None:
+        query = query.where(
+            models.Conversation.information_strategy == information_strategy
+        )
+    if tags is not None:
+        subquery = (
+            sa.select(models.clones_to_tags.c.clone_id)
+            .where(models.clones_to_tags.c.tag_id.in_(tags))
+            .group_by(models.clones_to_tags.c.clone_id)
+            .having(sa.func.count(models.clones_to_tags.c.clone_id) == len(tags))
+            .subquery()
+        )
+        query = query.join(
+            subquery, models.Conversation.clone_id == subquery.c.clone_id
+        )
+    match sort:
+        case ConvoSortType.newest:
+            query = query.order_by(models.Conversation.updated_at.desc())
+        case ConvoSortType.oldest:
+            query = query.order_by(models.Conversation.updated_at.asc())
+        case ConvoSortType.most_messages:
+            query = query.order_by(models.Conversation.num_messages_ever.desc())
+        case ConvoSortType.fewest_messages:
+            query = query.order_by(models.Conversation.num_messages_ever.asc())
+    query = query.offset(offset=offset).limit(limit=limit)
+    convos = await db.scalars(query)
+    return convos.unique().all()
 
 
 # TODO (Jonny): put a paywall behind this endpoint after X messages, need to add user permissions
@@ -83,7 +153,7 @@ async def create_conversation(
             detail=f"Clone ({obj.clone_id}) not found.",
         )
     if not user.is_subscribed:
-        user.num_free_messages_sent += 1
+        user.num_free_messages_sent = user.num_free_messages_sent + 1
 
     # NOTE (Jonny): not sure if this is a security risk. Indirectly exposing the
     # UUID of a private clone, by getting a different status code.
@@ -110,7 +180,7 @@ async def create_conversation(
         tokenizer=tokenizer,
         embedding_client=embedding_client,
     )
-
+    await db.refresh(convo)
     return convo
 
 

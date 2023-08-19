@@ -150,7 +150,8 @@ class CloneCreate(BaseModel):
 
 
 class CloneUpdate(BaseModel):
-    name: Annotated[str | None, AfterValidator(special_char_validator)] = None
+    # If we let creators change the name once there are already active conversations, that could be bad.
+    # name: Annotated[str | None, AfterValidator(special_char_validator)] = None
     short_description: Annotated[
         str | None, AfterValidator(special_char_validator)
     ] = None
@@ -166,7 +167,7 @@ class CloneUpdate(BaseModel):
     is_short_description_public: bool | None = None
     is_long_description_public: bool | None = None
     is_greeting_message_public: bool | None = None
-    tags: list[str] | None = None
+    tags: list[int] | None = None
 
 
 # NOTE (Jonny): have to duplicate the code since Liskov sub error says Tags can't change the inherited list[str] return type
@@ -359,6 +360,13 @@ class Conversation(CommonMixin, ConversationCreate):
     user_id: uuid.UUID = Field(description="The user that will chat with this clone")
     is_active: bool
     clone_id: uuid.UUID
+    num_messages_ever: int
+    last_message: str | None
+    clone_name: str
+
+
+class ConversationWithMessages(Conversation):
+    messages: list["Message"]
 
 
 # NOTE (Jonny): We don't allow users to change outputs of the clones, so is_clone.

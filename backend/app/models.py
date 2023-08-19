@@ -291,6 +291,11 @@ class Conversation(CommonMixin, Base):
     reflection_threshold: Mapped[int] = mapped_column(nullable=True)
     entity_context_threshold: Mapped[int] = mapped_column(nullable=True)
     adaptation_strategy: Mapped[str] = mapped_column(nullable=True)
+    # NOTE (Jonny): data redundancy, but it will allow us to not perform an expensive join on messages when fetching convos
+    # this serves 2 purposes: (1) eliminates a join (2) by updating this, is auto triggers the last_updated_at field on this model!
+    last_message: Mapped[str] = mapped_column(nullable=True)
+    # total num messages ever sent/received, including inactive ones
+    num_messages_ever: Mapped[int] = mapped_column(default=0)
     user_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
@@ -298,6 +303,9 @@ class Conversation(CommonMixin, Base):
     # on message update to recompute the number of messages that are active. Too complicated for now
     # num_messages: Mapped[int] = mapped_column(default=0)
     user: Mapped["User"] = relationship("User", back_populates="conversations")
+    # NOTE (Jonny): data redundancy, but it will allow us to not perform an expensive join when fetching convos
+    # since users cannot change a clone name without deleting, there should be no worry about this being in sync
+    clone_name: Mapped[str]
     clone_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )
@@ -318,8 +326,17 @@ class Conversation(CommonMixin, Base):
         "LLMCall", back_populates="conversation", passive_deletes=True
     )
 
+    @hybrid_property
+    def case_insensitive_clone_name(self) -> str:
+        return self.clone_name.lower()
+
+    @case_insensitive_clone_name.inplace.comparator
+    @classmethod
+    def _case_insensitive_comparator(cls) -> CaseInsensitiveComparator:
+        return CaseInsensitiveComparator(cls.clone_name)
+
     def __repr__(self):
-        return f"Conversation(name={self.name}, user_id={self.user_id} clone_id={self.clone_id})"
+        return f"Conversation(clone_name={self.clone_name}, user_name={self.user_name}, user_id={self.user_id} clone_id={self.clone_id})"
 
 
 # class Temp(Base):

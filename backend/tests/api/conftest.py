@@ -3,6 +3,7 @@ import os
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import BaseModel
+from redis import Redis
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -25,6 +26,13 @@ def db_fixture():
     SessionLocal = sessionmaker(engine, class_=Session, expire_on_commit=False)
     with SessionLocal() as session:
         yield session
+
+
+@pytest.fixture(name="cache", scope="function")
+def redis_fixture():
+    host = os.environ["POSTGRES_HOST"]
+    r = Redis(host=host, password=settings.REDIS_PASSWORD, port=settings.REDIS_PORT)
+    yield r
 
 
 @pytest.fixture(name="client", scope="session")

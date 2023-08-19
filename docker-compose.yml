@@ -121,7 +121,7 @@ services:
 
   # Collector
   otel-collector:
-    image: ${OTELCOL_IMG}
+    image: otel/opentelemetry-collector-contrib:0.82.0
     restart: always
     command: ["--config=/etc/otel-collector-config.yaml", "${OTELCOL_ARGS}"]
     volumes:

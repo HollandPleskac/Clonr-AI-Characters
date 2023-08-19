@@ -55,7 +55,7 @@ def test_browse_clones_by_tag(client: TestClient, superuser_headers: dict[str, s
     tags = r.json()
     assert r.status_code == 200, tags
     tag_ids = [x["id"] for x in tags]
-    print(tags)
+    print(tag_ids)
 
     # create some clones with these tags
     name = "test-clone"

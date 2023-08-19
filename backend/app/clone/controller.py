@@ -139,7 +139,7 @@ class Controller:
         embedding_client: EmbeddingClient,
     ) -> models.Conversation:
         data = obj.model_dump(exclude_none=True)
-        convo = models.Conversation(**data, user_id=user.id)
+        convo = models.Conversation(**data, user_id=user.id, clone_name=clone.name)
         if obj.adaptation_strategy != AdaptationStrategy.static:
             convo.agent_summary_threshold = AGENT_SUMMARY_THRESHOLD
             convo.entity_context_threshold = ENTITY_CONTEXT_THRESHOLD
