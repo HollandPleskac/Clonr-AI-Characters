@@ -259,12 +259,12 @@ async def entity_context_create(
     return summary.strip()
 
 
-@tracer.start_as_current_span("rate_memory")
 @retry(
     stop=stop_after_attempt(MAX_RETRIES),
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
     retry=retry_if_exception_type(OutputParserError),
 )
+@tracer.start_as_current_span("rate_memory")
 async def rate_memory(
     llm: LLM,
     memory: str,
@@ -306,12 +306,12 @@ async def rate_memory(
         raise OutputParserError(err_msg)
 
 
-@tracer.start_as_current_span("message_queries_create")
 @retry(
     stop=stop_after_attempt(MAX_RETRIES),
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
     retry=retry_if_exception_type(OutputParserError),
 )
+@tracer.start_as_current_span("message_queries_create")
 async def message_queries_create(
     llm: LLM,
     char: str,
@@ -419,12 +419,12 @@ async def question_and_answer(
     return r.content.strip()
 
 
-@tracer.start_as_current_span("reflection_queries_create")
 @retry(
     stop=stop_after_attempt(MAX_RETRIES),
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
     retry=retry_if_exception_type(OutputParserError),
 )
+@tracer.start_as_current_span("reflection_queries_create")
 async def reflection_queries_create(
     llm: LLM,
     memories: list[Memory],
@@ -486,12 +486,12 @@ async def reflection_queries_create(
     return queries
 
 
-@tracer.start_as_current_span("reflections_create")
 @retry(
     stop=stop_after_attempt(MAX_RETRIES),
     wait=wait_random(min=RETRY_MIN, max=RETRY_MAX),
     retry=retry_if_exception_type(OutputParserError),
 )
+@tracer.start_as_current_span("reflections_create")
 async def reflections_create(
     llm: LLM,
     memories: list[Memory],

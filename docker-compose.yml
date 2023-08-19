@@ -39,8 +39,6 @@ services:
     build: './embedding'
     env_file:
       - .env
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
     volumes:
       - ./embedding/app:/app
       - ./artifacts:/artifacts
@@ -51,9 +49,6 @@ services:
     build: './backend'
     env_file:
       - .env
-    environment:
-      - PORT=8000
-      - OTEL_EXPORTER_OTLP_ENDPOINT=otel-collector:4317
     volumes:
       - ./backend/app:/app
       - ./backend/clonr:/clonr

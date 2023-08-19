@@ -43,10 +43,12 @@ def generate_hex_code():
     return "".join(random.choice(s) for _ in range(6))
 
 
-def is_valid_hex_code(s: str | None):
+def validate_hex_code(s: str | None):
     if s is None:
         return True
-    return all(x in "1234567890ABCDEF" for x in s)
+    if not all(x in "1234567890ABCDEFabcdef" for x in s):
+        raise ValueError(f"Invalid hexcode: {s}")
+    return s
 
 
 class UserRead(BaseUser[uuid.UUID]):
@@ -105,7 +107,7 @@ class Creator(CreatorCreate):
 
 class TagCreate(BaseModel):
     name: str
-    color_code: Annotated[str, AfterValidator(is_valid_hex_code)] = Field(
+    color_code: Annotated[str, AfterValidator(validate_hex_code)] = Field(
         default_factory=generate_hex_code,
         detail="Color hex code for displaying tag on the frontend",
     )
@@ -113,13 +115,16 @@ class TagCreate(BaseModel):
 
 class TagUpdate(BaseModel):
     name: str | None = None
-    color_code: Annotated[str | None, AfterValidator(is_valid_hex_code)] = Field(
+    color_code: Annotated[str | None, AfterValidator(validate_hex_code)] = Field(
         default=None,
         detail="Color hex code for displaying tag on the frontend",
     )
 
 
-class Tag(CommonMixin, BaseModel):
+class Tag(BaseModel):
+    id: int
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
     name: str
     color_code: str
 
@@ -129,9 +134,9 @@ class CloneCreate(BaseModel):
     short_description: Annotated[str, AfterValidator(special_char_validator)] = Field(
         min_length=3
     )
-    long_description: Annotated[str | None, AfterValidator(sanitize_text)] = Field(
-        default=None, min_length=32
-    )
+    long_description: Annotated[
+        str | None, AfterValidator(text_sanitation_validator)
+    ] = Field(default=None, min_length=32)
     greeting_message: Annotated[
         str | None, AfterValidator(special_char_validator)
     ] = None
@@ -141,7 +146,7 @@ class CloneCreate(BaseModel):
     is_short_description_public: bool = True
     is_long_description_public: bool = False
     is_greeting_message_public: bool = True
-    tags: list[str] | None = None
+    tags: list[int] | None = None
 
 
 class CloneUpdate(BaseModel):
@@ -149,7 +154,9 @@ class CloneUpdate(BaseModel):
     short_description: Annotated[
         str | None, AfterValidator(special_char_validator)
     ] = None
-    long_description: Annotated[str | None, AfterValidator(sanitize_text)] = None
+    long_description: Annotated[
+        str | None, AfterValidator(text_sanitation_validator)
+    ] = None
     greeting_message: Annotated[
         str | None, AfterValidator(special_char_validator)
     ] = None
@@ -170,9 +177,9 @@ class Clone(CommonMixin):
     short_description: Annotated[str, AfterValidator(special_char_validator)] = Field(
         min_length=3
     )
-    long_description: Annotated[str | None, AfterValidator(sanitize_text)] = Field(
-        default=None, min_length=32
-    )
+    long_description: Annotated[
+        str | None, AfterValidator(text_sanitation_validator)
+    ] = Field(default=None, min_length=32)
     greeting_message: Annotated[
         str | None, AfterValidator(special_char_validator)
     ] = None
@@ -193,8 +200,8 @@ class CloneSearchResult(CommonMixin, BaseModel):
 
     creator_id: uuid.UUID
     name: str
-    short_description: str
-    long_description: str
+    short_description: str | None
+    long_description: str | None
     avatar_uri: str | None = (
         None  # TODO (Jonny) make sure we don't throw errors here and un None it
     )

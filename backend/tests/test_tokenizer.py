@@ -18,6 +18,6 @@ def test_huggingface_tokenizer():
 
 
 def test_instantiations():
-    name = "hf-internal-testing/llama-tokenize"
+    name = "hf-internal-testing/llama-tokenizer"
     assert isinstance(Tokenizer.from_openai("gpt-3.5-turbo"), OpenAITokenizer)
     assert isinstance(Tokenizer.from_huggingface(name), HuggingFaceTokenizer)

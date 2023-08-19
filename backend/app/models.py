@@ -163,14 +163,23 @@ class Creator(Base):
 clones_to_tags = sa.Table(
     "clones_to_tags",
     Base.metadata,
-    sa.Column("tag_id", sa.Uuid, sa.ForeignKey("tags.id"), primary_key=True),
+    sa.Column("tag_id", sa.Integer, sa.ForeignKey("tags.id"), primary_key=True),
     sa.Column("clone_id", sa.Uuid, sa.ForeignKey("clones.id"), primary_key=True),
 )
 
 
-class Tag(CommonMixin, Base):
+class Tag(Base):
     __tablename__ = "tags"
 
+    id: Mapped[int] = mapped_column(autoincrement=True, primary_key=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        sa.DateTime(timezone=True), server_default=sa.func.now()
+    )
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        server_default=sa.func.now(),
+        onupdate=sa.func.current_timestamp(),
+    )
     name: Mapped[str] = mapped_column(unique=True)
     color_code: Mapped[str] = mapped_column(nullable=True)
     clones: Mapped[list["Clone"]] = relationship(
