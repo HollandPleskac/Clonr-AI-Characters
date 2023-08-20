@@ -12,15 +12,14 @@ const axios = require('axios').default
 import TopBarStatic from '@/components/TopBarStatic'
 import AlertBar from '@/components/AlertBar'
 import { Character, Tag } from '@/types'
-import useClones from '@/hooks/useClones'
-import useTags from '@/hooks/useTags'
 import AuthModal from '../AuthModal'
 import SearchGrid from '@/components/HomePage/SearchGrid'
 import TagComponent from './Tag'
 import SearchIcon from '../SearchIcon'
 import XIcon from '../XIcon'
 import Dropdown from './Dropdown'
-
+import { useQueryTags } from '@/hooks/useTags'
+import { useQueryClones } from '@/hooks/useClones'
 
 const dummyTags = [
     {
@@ -43,9 +42,6 @@ export default function BrowsePage({
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
     const duration = 500
-    const { queryClones, queryCloneById } = useClones()
-
-    const { queryTags } = useTags()
 
     // search input state
     const [searchInput, setSearchInput] = useState('')
@@ -69,18 +65,15 @@ export default function BrowsePage({
     const [doneSearching, setDoneSearching] = useState(true)
     const [hasMoreData, setHasMoreData] = useState(true)
 
-    const fetchTags = async () => {
-        try {
-            const currTags = await queryTags()
-            setTags(currTags)
-        } catch (error) {
-            console.log(error)
-        }
-    }
+    const {data: tagsData, error: tagsError, isLoading: isLoadingTags} = useQueryTags();
 
     useEffect(() => {
-        fetchTags();
-    }, []);
+        if(!isLoadingTags && tagsData) {
+            setTags(tagsData)
+            setDoneSearching(true)
+            setLoading(false)
+        }
+    }, [tagsData, isLoadingTags])
 
     const fetchMoreGridData = () => {
         // Simulate fetching 50 more characters from a server or other data source
@@ -115,43 +108,23 @@ export default function BrowsePage({
         require('preline')
     }, [])
 
-    const handleCloneSearch = async () => {
-        setLoading(true)
-        setError(null)
-        console.log("SEARCHING... this is searchInput: ", searchInput)
-        try {
-            // TODO: edit
-            const queryParams = {
-                tags: null, // tags ? tags.map((tag) => tag.id).join(',') : null,
-                name: searchInput != '' ? searchInput : null,
-                sort: 'top',
-                similar: searchInput != '' ? searchInput : null,
-                offset: 0,
-                limit: 20
-            }
-            const data = await queryClones(queryParams)
-            setSearchedCharacters(data)
-            setDoneSearching(searchInput !== '')
-            console.log("success")
-        } catch (err: any) {
-            setError(err.message)
-            console.log("ERROR", err.message)
-        } finally {
-            setLoading(false)
-        }
+    const searchQueryParams = {
+        tags: '',
+        name: searchInput,
+        sort: 'top',
+        similar: searchInput,
+        offset: 0,
+        limit: 20
     }
+    const {data: searchData, isLoading: isLoadingSearch} = useQueryClones(searchQueryParams);
 
     useEffect(() => {
-        if (!didMountRef.current) {
-            didMountRef.current = true;
-            return;
+        if(!isLoadingSearch && searchData && searchData.length > 0) {
+            setSearchedCharacters(searchData)
+            setDoneSearching(true)
+            setLoading(false)
         }
-
-        const debounceTimeout = setTimeout(handleCloneSearch, 500)
-        return () => {
-            clearTimeout(debounceTimeout)
-        }
-    }, [searchInput])
+      }, [searchInput, isLoadingSearch]) 
 
     function handleTagClick(tag: Tag) {
         setActiveTag(tag)
@@ -242,5 +215,4 @@ export default function BrowsePage({
         </div>
     )
 }
-
 

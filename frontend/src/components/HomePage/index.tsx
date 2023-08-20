@@ -16,9 +16,8 @@ import { Character } from '@/types'
 import SearchGrid from './SearchGrid'
 import StatBar from '../Statistics/StatBar'
 import ScaleFadeIn from '../Transitions/ScaleFadeIn'
-import useClones from '@/hooks/useClones'
+import { useQueryClones } from '@/hooks/useClones'
 import AuthModal from '../AuthModal'
-// import StripeCheckoutButton from '@/components/Stripe/StripeCheckoutButton';
 
 interface HomeScreenProps {
   topCharacters: Character[]
@@ -39,14 +38,21 @@ export default function HomeScreen({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const duration = 500
-  const { queryClones, queryCloneById } = useClones()
-
-  console.log("home screen, this is top characters: ", topCharacters)
 
   useEffect(() => {
     require('preline')
   }, [])
 
+  const queryParams = {
+    sort: 'top',
+    offset: 0,
+    limit: 20
+  }
+
+  // Regular clone data
+  const {data, isLoading} = useQueryClones(queryParams);
+
+  
   // search grid characters state
   const [searchInput, setSearchInput] = useState('')
   const [searchedCharacters, setSearchedCharacters] = useState<Character[]>([])
@@ -55,47 +61,27 @@ export default function HomeScreen({
   const [continueChars, setContinueChars] = useState<Character[]>([])
   const [trendingChars, setTrendingChars] = useState<Character[]>([])
 
-  const fetchCharacters = async (queryParams, stateSetter) => {
-    const data = await queryClones(queryParams);
-    stateSetter(data);
-    return data;
-  };
+  const searchQueryParams = {
+    tags: '',
+    name: searchInput,
+    sort: 'top',
+    similar: searchInput,
+    offset: 0,
+    limit: 20
+  }
 
-  const fetchTopCharacters = () => {
-    const queryParams = {
-      sort: 'top',
-      offset: 0,
-      limit: 20,
-    };
-    return fetchCharacters(queryParams, setTopChars);
-  };
-
-  // TODO: edit
-  const fetchContinueCharacters = () => {
-    const queryParams = {
-      sort: 'hot',
-      offset: 0,
-      limit: 20,
-    };
-    return fetchCharacters(queryParams, setContinueChars);
-  };
+  // Searched chars data
+  const {data: searchData, isLoading: isLoadingSearch} = useQueryClones(searchQueryParams);
   
-  const fetchTrendingCharacters = () => {
-    const queryParams = {
-      sort: 'hot',
-      offset: 0,
-      limit: 20,
-    };
-    return fetchCharacters(queryParams, setTrendingChars);
-  };
-
+  useEffect(() => {
+    setTopChars(data)
+    setContinueChars(data)
+    setTrendingChars(data)
+  }, [isLoading])
 
   useEffect(() => {
-    fetchTopCharacters()
-    fetchContinueCharacters()
-    fetchTrendingCharacters()
-  }, [])
-
+    setSearchedCharacters(searchData)
+  }, [isLoadingSearch])
   
   const fetchMoreGridData = () => {
     // Simulate fetching 50 more characters from a server or other data source
@@ -125,36 +111,6 @@ export default function HomeScreen({
     setHasMoreData(false)
 }
 
-  const handleCloneSearch = async () => {
-    setLoading(true)
-    setError(null)
-
-    try {
-      const queryParams = {
-        tags: '',
-        name: searchInput,
-        sort: 'top',
-        similar: searchInput,
-        offset: 0,
-        limit: 10
-      }
-      const data = await queryClones(queryParams)
-      setSearchedCharacters(data)
-      setDoneSearching(searchInput !== '')
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    const debounceTimeout = setTimeout(handleCloneSearch, 500)
-    return () => {
-      clearTimeout(debounceTimeout)
-    }
-  }, [searchInput])
-
   useEffect(() => {
     if (searchInput === '') {
       setShowSearchGrid(false)
@@ -169,7 +125,7 @@ export default function HomeScreen({
     }
   }, [searchInput])
 
-  if (topChars.length === 0 || continueChars.length === 0 || trendingChars.length === 0) {
+  if (!topChars || topChars.length === 0 || continueChars.length === 0 || trendingChars.length === 0) {
     return (
         <div> Loading chars... </div>
     )

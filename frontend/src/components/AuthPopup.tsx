@@ -1,10 +1,59 @@
+'use client';
+
 import Link from 'next/link'
 import React from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useOAuth } from '../hooks/useOAuth'
 
 const AuthPopup = () => {
   const router = useRouter()
   const [isSignIn, setIsSignIn] = React.useState(true)
+  const [oauthCode, setOAuthCode] = useState<string | null>(null);
+
+  const { user: googleUser, authError: googleAuthError, loginWithOAuth: loginWithGoogleOAuth, handleOAuthCallback: handleGoogleOAuthCallback } = useOAuth({
+    provider: 'Google',
+    authorizeUrl: 'http://localhost:8000/auth/google/authorize',
+    callbackUrl: 'http://localhost:8000/auth/google/callback',
+  });
+
+  const { user: discordUser, authError: discordAuthError, loginWithOAuth: loginWithDiscordOAuth, handleOAuthCallback: handleDiscordOAuthCallback } = useOAuth({
+    provider: 'Discord',
+    authorizeUrl: 'http://localhost:8000/auth/discord/authorize',
+    callbackUrl: 'http://localhost:8000/auth/discord/callback',
+  });
+
+  const { user: facebookUser, authError: facebookAuthError, loginWithOAuth: loginWithFacebookOAuth, handleOAuthCallback: handleFacebookOAuthCallback } = useOAuth({
+    provider: 'Facebook',
+    authorizeUrl: 'http://localhost:8000/auth/facebook/authorize',
+    callbackUrl: 'http://localhost:8000/auth/facebook/callback',
+  });
+
+  const { user: redditUser, authError: redditAuthError, loginWithOAuth: loginWithRedditOAuth, handleOAuthCallback: handleRedditOAuthCallback } = useOAuth({
+    provider: 'Reddit',
+    authorizeUrl: 'http://localhost:8000/auth/reddit/authorize',
+    callbackUrl: 'http://localhost:8000/auth/reddit/callback',
+  });
+
+  useEffect(() => {
+    // TODO: edit
+    const url = new URL(window.location.href);
+    const code = url.searchParams.get('code');
+    if (code) {
+      const provider = url.searchParams.get('provider');
+      if (provider === 'google') {
+        handleGoogleOAuthCallback(code);
+      } else if (provider === 'discord') {
+        handleDiscordOAuthCallback(code);
+      } else if (provider === 'facebook') {
+        handleFacebookOAuthCallback(code);
+      } else if (provider === 'reddit') {
+        handleRedditOAuthCallback(code);
+      } else {
+        console.error('Unknown OAuth provider');
+      }
+    }
+  }, []);
 
   return (
     <div className='p-4 sm:p-7'>
@@ -45,6 +94,7 @@ const AuthPopup = () => {
           </div>
         )}
         <button
+          onClick={loginWithGoogleOAuth}
           type='button'
           className='w-full py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-600 transition-all text-sm bg-gray-800 hover:bg-slate-800 dark:border-gray-700 text-gray-400 hover:text-white focus:ring-offset-gray-800'
         >
@@ -76,6 +126,7 @@ const AuthPopup = () => {
         </button>
 
         <button
+          onClick={loginWithDiscordOAuth}
           type='button'
           className='w-full py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-600 transition-all text-sm bg-gray-800 hover:bg-slate-800 dark:border-gray-700 text-gray-400 hover:text-white focus:ring-offset-gray-800'
         >
@@ -95,6 +146,7 @@ const AuthPopup = () => {
         </button>
 
         <button
+          onClick={loginWithFacebookOAuth}
           type='button'
           className='w-full py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-600 transition-all text-sm bg-gray-800 hover:bg-slate-800 dark:border-gray-700 text-gray-400 hover:text-white focus:ring-offset-gray-800'
         >
@@ -112,6 +164,7 @@ const AuthPopup = () => {
         </button>
 
         <button
+          onClick={loginWithRedditOAuth}
           type='button'
           className='w-full py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-600 transition-all text-sm bg-gray-800 hover:bg-slate-800 dark:border-gray-700 text-gray-400 hover:text-white focus:ring-offset-gray-800'
         >
