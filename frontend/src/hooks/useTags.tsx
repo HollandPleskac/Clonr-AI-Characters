@@ -1,19 +1,30 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { Tag } from '@/types';
+import useSWR from 'swr';
 
 interface TagCreate {
     name: string;
     color_code: string;
 }
 
-// interface Tag {
-//   id: string;
-//   created_at: string;
-//   updated_at: string;
-//   name: string;
-//   color_code: string;
-// }
+export function useQueryTags() {
+  const fetcher = async (url: string) => {
+    const response = await axios.get<Tag[]>(url, { withCredentials: true });
+    return response.data;
+  };
+
+  const url = `http://localhost:8000/tags?offset=0&limit=50`;
+
+  const { data, error } = useSWR(url, fetcher);
+
+  return {
+    data: data,
+    isLoading: !error && !data,
+    error: error,
+  };
+}
+
 
 export default function useTags() {
     const queryTags = async (): Promise<Tag[]> => {

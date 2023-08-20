@@ -41,6 +41,17 @@ export default function SearchGrid({
     }
   }
 
+  // if characters is undefined, spinner with loading
+  // if characters is empty, no matches
+
+  if (!characters) {
+    return (
+      <div>
+        <p>Loading...</p>
+      </div>
+    )
+  }
+
   return (
     <div className=''>
       {!doneSearching && (

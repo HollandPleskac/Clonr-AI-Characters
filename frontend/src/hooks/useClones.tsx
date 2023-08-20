@@ -1,6 +1,8 @@
+
 import { useState } from 'react';
 import axios from 'axios';
 import { Character } from '@/types';
+import useSWR from 'swr';
 
 interface Tag {
   id: string;
@@ -57,6 +59,53 @@ interface Document {
   updated_at: string;
   clone_id: string;
 }
+
+interface CloneQueryParams {
+  tags?: string;
+  name?: string;
+  sort?: string;
+  similar?: string;
+  offset?: number;
+  limit?: number;
+} 
+
+export function useQueryClones(queryParams: CloneQueryParams) {
+  
+  const fetcher = async (url: string) => {
+    const response = await axios.get(url, { withCredentials: true});
+    return response.data;
+  };
+
+  const {
+      tags , 
+      name,
+      sort,
+      similar,
+      offset,
+      limit
+  } = queryParams;
+
+  const params = new URLSearchParams();
+  
+  if (tags) params.append('tags', tags);
+  if (name) params.append('name', name);
+  if (sort) params.append('sort', sort);
+  if (similar) params.append('similar', similar);
+  if (offset !== undefined) params.append('offset', offset.toString());
+  if (limit !== undefined) params.append('limit', limit.toString());
+
+  const queryString = params.toString();
+  const url = `http://localhost:8000/clones/?${queryString}`;
+
+  const { data, error } = useSWR(url, fetcher);
+
+  return {
+    data: data,
+    isLoading: !error && !data,
+    error: error,
+  };
+}
+
 
 export default function useClones() {
   const createClone = async (cloneData: CloneCreate) => {
