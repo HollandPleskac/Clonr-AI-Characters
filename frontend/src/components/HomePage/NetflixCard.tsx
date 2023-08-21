@@ -41,7 +41,8 @@ export default function Cards({
           alt='img'
           className={`absolute ${styles.cardPoster}`}
         />
-        <div className='absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black to-transparent opacity-20 rounded-[6px]'></div>
+        {/* bg used to be black */}
+        <div className='absolute top-0 left-0 w-full h-full bg-gradient-to-t from-[rgba(37,37,37)] from-0% to-transparent to-50% opacity-80 rounded-t-[6px]'></div>
         <strong className='text-white absolute bottom-1 left-2 line-clamp-1'>
           {name}
         </strong>

@@ -54,6 +54,7 @@
 
   &:hover {
     transform: scale(1.2) translateY(-2rem);
+    // transition-delay: 200ms;
     box-shadow: 0 0 1rem rgba(0, 0, 0, 0.6), 0 6px 6px rgba(0, 0, 0, 0.5);
     z-index: 5;
 

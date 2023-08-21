@@ -3,8 +3,11 @@ import MagnifyingGlass from '@/svg/ChatPage/Chat/magnify.svg'
 import Paperclip from '@/svg/ChatPage/Chat/paperclip.svg'
 import ChatDropdown from './Dropdown'
 import Image from 'next/image'
-import { Character } from '@/types'
+import { Character, CharacterChat } from '@/types'
 import Link from 'next/link'
+import SmallNav from '../Characters/SmallSidebar'
+
+
 type ChatTopBarProps = {
   character: Character
   inputRef: React.RefObject<HTMLInputElement>
@@ -13,6 +16,8 @@ type ChatTopBarProps = {
   handleInputBlur: () => void
   toggleChatState: () => void
   showChat: boolean
+  initialCharacterChats: CharacterChat[],
+  currentCharacterId: string
 }
 
 const ChatTopBar = ({
@@ -23,10 +28,14 @@ const ChatTopBar = ({
   handleInputFocus,
   toggleChatState,
   showChat,
+  initialCharacterChats,
+  currentCharacterId,
 }: ChatTopBarProps) => {
   return (
     <div className='flex h-[122px] w-full items-center justify-between border-b border-[#252525] px-10'>
       <div className='flex items-center'>
+        <SmallNav initialCharacterChats={initialCharacterChats} currentCharacterId={currentCharacterId}  />
+
         <Image
           key={0}
           src={character.avatar_uri}
@@ -38,18 +47,18 @@ const ChatTopBar = ({
 
         {character ? (
           <div className='flex flex-col ml-6 gap-y-3'>
-          <h3 className='text-3xl font-bold leading-5 text-white'>
-            {character.name}
-          </h3>
-          <p className='text-gray-400 text-sm line-clamp-1'>
-            {character.short_description}
-          </p>
-        </div>
+            <h3 className='text-3xl font-bold leading-5 text-white'>
+              {character.name}
+            </h3>
+            <p className='text-gray-400 text-sm line-clamp-1'>
+              {character.short_description}
+            </p>
+          </div>
         ) : (
           <p>Loading character</p>
         )}
 
-        
+
       </div>
       {showChat && (
         <div className='flex items-center gap-x-4'>
@@ -62,8 +71,8 @@ const ChatTopBar = ({
               }}
               className='group absolute peer left-[10px] top-2 peer cursor-default'
             >
-              <MagnifyingGlass/>
-              
+              <MagnifyingGlass />
+
             </button>
             <input
               ref={inputRef}

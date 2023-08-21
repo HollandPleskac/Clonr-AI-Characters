@@ -11,12 +11,13 @@ import SendIcon from '@/svg/ChatPage/Chat/SendIcon'
 import axios from 'axios'
 import { ThreeDots } from 'react-loader-spinner'
 
-import { Character, Message } from '@/types'
+import { Character, CharacterChat, Message } from '@/types'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import ChooseChatExperience from './ChooseChatExperience'
 import PreviousConversations from './PreviousConversations'
 import ChatTopBar from './ChatTopBar'
 import useConversations from '@/hooks/useConversations'
+import SmallNav from '@/components/ChatPage/Characters/SmallSidebar'
 
 interface ChatScreenProps {
   characterId: string
@@ -24,6 +25,8 @@ interface ChatScreenProps {
   character: Character
   initialMessages: Message[]
   initialConversationState: string
+  initialCharacterChats: CharacterChat[],
+  currentCharacterId: string
 }
 
 
@@ -33,6 +36,8 @@ export default function ChatScreen({
   character,
   initialMessages,
   initialConversationState,
+  initialCharacterChats,
+  currentCharacterId
 }: ChatScreenProps) {
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
@@ -187,6 +192,9 @@ export default function ChatScreen({
           character={character}
           setConversationState={handleSetConversationState}
           setConvoID={handleSetConvoID}
+          initialCharacterChats={initialCharacterChats}
+          currentCharacterId={currentCharacterId}
+
         />
       )}
 
@@ -200,6 +208,9 @@ export default function ChatScreen({
             inputRef={inputRef}
             toggleChatState={() => setShowChat((prevState) => !prevState)}
             showChat={showChat}
+            initialCharacterChats={initialCharacterChats}
+            currentCharacterId={currentCharacterId}
+
           />
           {!showChat && <PreviousConversations />}
           {showChat && (

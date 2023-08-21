@@ -1,6 +1,6 @@
 'use client'
 
-import Characters from '@/components/ChatPage/Characters'
+import CharactersSidebar from '@/components/ChatPage/Characters/Sidebar'
 import ChatScreen from '@/components/ChatPage/Chat'
 import { Character, CharacterChat } from '@/types'
 import useClones from '@/hooks/useClones'
@@ -89,7 +89,7 @@ export default async function ChatPage({
         className='bg-gray-900 w-full flex justify-center items-center overflow-hidden'
         style={{ height: 'calc(100vh)' }}
       >
-        <Characters
+        <CharactersSidebar
           initialCharacterChats={characterChats}
           currentCharacterId={params.characterId}
         />
@@ -109,6 +109,8 @@ export default async function ChatPage({
             //'short term'
             //character && character.name === 'Barack Obama' ? 'undecided' : 'short term'
           }
+          initialCharacterChats={characterChats}
+          currentCharacterId={params.characterId}
         />
       </div>
     </div>
