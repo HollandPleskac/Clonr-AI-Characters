@@ -7,7 +7,7 @@ import useClones from '@/hooks/useClones'
 import useConversations from '@/hooks/useConversations'
 import { useEffect, useState } from 'react'
 
-const { queryClones, queryCloneById } = useClones()
+const { queryCloneById } = useClones()
 
 const {createConversation, queryConversation, queryConversationMessages, createMessage, generateCloneMessage, queryCurrentRevisions} = useConversations();
 

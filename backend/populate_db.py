@@ -103,7 +103,7 @@ async def create_feynman(headers):
     print(f"\033[1mRichard Feynman CloneID\033[0m: {clone_id}")
 
 
-async def main():
+async def main(n: int):
     print("Getting Superuser credentials")
     r = requests.post(
         "http://localhost:8000/auth/cookies/login",
@@ -128,7 +128,6 @@ async def main():
         r = requests.post(
             "http://localhost:8000/tags/", headers=headers, json=dict(name=k)
         )
-        r.raise_for_status()
         TAGS.append(k)
     r = requests.get(
         "http://localhost:8000/tags", headers=headers, params=dict(limit=2)
@@ -153,7 +152,7 @@ async def main():
                 avatar_uri=avatar_uri,
                 long_description=long_description,
                 is_public=True,
-                tags=[tag, random.choice(TAGS)],
+                tags=[tag, random.choice(TAGS), TAGS[10]],
             )
             clone_data.append(x.model_dump())
 
@@ -161,7 +160,7 @@ async def main():
     async with aiohttp.TCPConnector(limit=64) as tcp_connection:
         async with aiohttp.ClientSession(connector=tcp_connection) as session:
             tasks = []
-            for x in clone_data[:100]:
+            for x in clone_data[:n]:
                 try:
                     task = session.post(
                         url="http://localhost:8000/clones", json=x, headers=headers
@@ -171,9 +170,15 @@ async def main():
                     print("Error: ", e)
             await tqdm.asyncio.tqdm_asyncio.gather(*tasks)
 
-    await create_makima(headers=headers)
-    await create_feynman(headers=headers)
+    # await create_makima(headers=headers)
+    # await create_feynman(headers=headers)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    import sys
+
+    try:
+        n = int(sys.argv[1])
+    except Exception:
+        n = 100
+    asyncio.run(main(n))

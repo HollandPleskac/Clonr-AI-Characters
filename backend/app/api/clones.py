@@ -13,7 +13,7 @@ from sqlalchemy.orm import joinedload
 
 from app import deps, models, schemas
 from app.clone.controller import Controller
-from app.clone.db import CloneDB, CreatorCloneDB
+from app.clone.db import CreatorCloneDB
 from app.clone.shared import DynamicTextSplitter
 from app.embedding import EmbeddingClient
 from clonr.data_structures import Document, Monologue
@@ -120,15 +120,15 @@ async def create_clone(
 ):
     data = obj.model_dump(exclude_none=True)
     if obj.tags:
-        r = await db.scalars(sa.select(models.Tag).where(models.Tag.name.in_(obj.tags)))
+        r = await db.scalars(sa.select(models.Tag).where(models.Tag.id.in_(obj.tags)))
         tags = r.all()
         if len(tags) != len(obj.tags):
-            for t in obj.tags:
-                if t not in tags:
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail=f"Tag {t} is not a valid tag.",
-                    )
+            found_tags = set(t.id for t in tags)
+            received_tags = set(obj.tags)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Tags {received_tags-found_tags} are/is not a valid tag(s).",
+            )
         data["tags"] = tags
 
     clone = models.Clone(**data, creator_id=creator.user_id)
@@ -155,7 +155,7 @@ async def query_clones(
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
     user: Annotated[models.User | None, Depends(deps.get_optional_current_active_user)],
     embedding_client: Annotated[EmbeddingClient, Depends(deps.get_embedding_client)],
-    tags: Annotated[list[str] | None, Query()] = None,
+    tags: Annotated[list[int] | None, Query()] = None,
     name: Annotated[str | None, Query()] = None,
     sort: Annotated[CloneSortType, Query()] = CloneSortType.top,
     similar: Annotated[str | None, Query()] = None,
@@ -167,9 +167,6 @@ async def query_clones(
     query = sa.select(models.Clone)
     if user is not None and user.is_superuser:
         query = query.where(models.Clone.is_active).where(models.Clone.is_public)
-    if tags is not None:
-        # TODO: edit
-        query = query.where(models.Clone.tags.any(models.Tag.name.in_(tags)))
     if name is not None:
         query = query.where(models.Clone.case_insensitive_name.ilike(f"%{name}%"))
         # This doesn't seem to work well for short names. Looks like it's better on long ones
@@ -189,6 +186,15 @@ async def query_clones(
         )  # it must have an embedding!
     else:
         query = clone_sort_selectable(query=query, sort=sort)
+    if tags is not None:
+        subquery = (
+            sa.select(models.clones_to_tags.c.clone_id)
+            .where(models.clones_to_tags.c.tag_id.in_(tags))
+            .group_by(models.clones_to_tags.c.clone_id)
+            .having(sa.func.count(models.clones_to_tags.c.clone_id) == len(tags))
+            .subquery()
+        )
+        query = query.join(subquery, models.Clone.id == subquery.c.clone_id)
     query = query.offset(offset=offset).limit(limit=limit)
     clones = await db.scalars(query)
     return clones.unique().all()
@@ -213,11 +219,11 @@ async def get_clone_by_id(
         )
     response = jsonable_encoder(clone)
     if not clone.is_short_description_public:
-        response["short_description"] = ""
+        response["short_description"] = None
     if not clone.is_long_description_public:
-        response["long_description"] = ""
+        response["long_description"] = None
     if not clone.is_greeting_message_public:
-        response["greeting_message"] = ""
+        response["greeting_message"] = None
     return response
 
 
@@ -280,7 +286,7 @@ async def delete(
 async def generate_long_desc(
     llm: Annotated[LLM, Depends(deps.get_llm_with_clone_id)],
     clone: Annotated[models.Clone, Depends(get_clone)],
-    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
+    clonedb: Annotated[CreatorCloneDB, Depends(deps.get_creator_clonedb)],
 ):
     long_desc = await Controller.generate_long_description(
         llm=llm, clone=clone, clonedb=clonedb
@@ -294,7 +300,7 @@ async def generate_long_desc(
 )
 async def view_generated_long_descs(
     clone: Annotated[models.Clone, Depends(get_clone)],
-    clonedb: Annotated[CloneDB, Depends(deps.get_clonedb)],
+    clonedb: Annotated[CreatorCloneDB, Depends(deps.get_creator_clonedb)],
 ):
     r = await clonedb.db.scalars(
         sa.select(models.LongDescription)

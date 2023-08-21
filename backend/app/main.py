@@ -183,7 +183,7 @@ def health_check():
 # Below are temporary just for running Locust
 def box_muller():
     R = math.sqrt(-2 * math.log(random.random()))
-    theta = 2 * math.py * random.random()
+    theta = 2 * math.pi * random.random()
     return R * math.abs(math.cos(theta))
 
 

@@ -15,13 +15,14 @@ def test_monologues(client: TestClient, makima: tuple[dict[str, str], str]):
         content="nickelback is the greatest band ever.",
         name="nickelback",
     ).model_dump()
-    for d in [m1_create, m2_create]:
-        r = client.post(
-            f"/clones/{clone_id}/monologues", json=[d], headers=makima_headers
-        )
-        data = r.json()
-        assert r.status_code == 201, data
-        monologue_id = data["id"]
+    r = client.post(
+        f"/clones/{clone_id}/monologues",
+        json=[m1_create, m2_create],
+        headers=makima_headers,
+    )
+    data = r.json()
+    assert r.status_code == 201, data
+    monologue_id = data[1]["id"]
 
     # test get monologue
     r = client.get(

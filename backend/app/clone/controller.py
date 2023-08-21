@@ -21,7 +21,7 @@ from clonr.tokenizer import Tokenizer
 # TODO (Jonny): protect the route?
 # from app.external.moderation import openai_moderation_check
 from .cache import CloneCache
-from .db import CloneDB
+from .db import CloneDB, CreatorCloneDB
 from .types import (
     AdaptationStrategy,
     GenAgentsSearchParams,
@@ -139,7 +139,7 @@ class Controller:
         embedding_client: EmbeddingClient,
     ) -> models.Conversation:
         data = obj.model_dump(exclude_none=True)
-        convo = models.Conversation(**data, user_id=user.id)
+        convo = models.Conversation(**data, user_id=user.id, clone_name=clone.name)
         if obj.adaptation_strategy != AdaptationStrategy.static:
             convo.agent_summary_threshold = AGENT_SUMMARY_THRESHOLD
             convo.entity_context_threshold = ENTITY_CONTEXT_THRESHOLD
@@ -270,8 +270,8 @@ class Controller:
         return msg
 
     # TODO (Jonny): ensure auth happens further up the chain at the route level
-    @tracer.start_as_current_span("add_public_memory")
     @classmethod
+    @tracer.start_as_current_span("add_public_memory")
     async def add_public_memory(
         cls,
         mem_create: schemas.SharedMemoryCreate,
@@ -1004,10 +1004,10 @@ class Controller:
                     detail=f"Invalid memory strategy: {self.memory_strategy}",
                 )
 
-    @tracer.start_as_current_span("generate_long_description")
     @classmethod
+    @tracer.start_as_current_span("generate_long_description")
     async def generate_long_description(
-        cls, llm: LLM, clone: models.Clone, clonedb: CloneDB
+        cls, llm: LLM, clone: models.Clone, clonedb: CreatorCloneDB
     ) -> models.LongDescription:
         # This can be an expensive computation as it will cost roughly
         # the number of tokens in all documents combined, plus some
