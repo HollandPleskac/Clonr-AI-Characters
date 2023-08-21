@@ -365,6 +365,11 @@ class Conversation(CommonMixin, ConversationCreate):
     clone_name: str
 
 
+class ConversationInSidebar(Conversation):
+    rank: int
+    group_updated_at: datetime.datetime
+
+
 class ConversationWithMessages(Conversation):
     messages: list["Message"]
 

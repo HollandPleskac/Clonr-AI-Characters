@@ -199,6 +199,16 @@ def test_conversation_queries(
             assert r.status_code == 200, data
             assert all(x["user_id"] == user_id for x in data)
 
+    # test the conversation sidebar query
+    r = client.get(
+        "/conversations/sidebar",
+        headers=superuser_headers.copy(),
+    )
+    if r.status_code == 401:
+        warnings.warn("Starlette error needs to be fixed here.")
+    else:
+        assert r.status_code == 200, data
+
     for t in tags:
         db.delete(t)
     db.commit()

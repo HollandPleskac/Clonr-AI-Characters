@@ -8,8 +8,9 @@ from fastapi import Depends, HTTPException, Path, Query, status
 from fastapi.responses import Response
 from fastapi.routing import APIRouter
 from redis.asyncio import Redis
-from slowapi import Limiter
-from slowapi.util import get_remote_address
+
+# from slowapi import Limiter
+# from slowapi.util import get_remote_address
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import deps, models, schemas
@@ -24,21 +25,15 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+
 FREE_MESSAGE_LIMIT = 10
 
 
-# TODO (Jonny): set the actual number here
-limiter = Limiter(
-    key_func=get_remote_address,
-    default_limits=["5/minute"],
-    storage_uri="redis://localhost:6379",
-)
-
-
-# def calculate_dynamic_rate_limit(request: Request):
-#     print("TODO")
-#     # raise error for now
-#     raise HTTPException(status_code=400, detail="Not implemented")
+# limiter = Limiter(
+#     key_func=get_remote_address,
+#     default_limits=["5/minute"],
+#     storage_uri=f"async+redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}",
+# )
 
 
 class MsgSortType(str, enum.Enum):
@@ -132,6 +127,57 @@ async def get_queried_convos(
     query = query.offset(offset=offset).limit(limit=limit)
     convos = await db.scalars(query)
     return convos.unique().all()
+
+
+@router.get(
+    "/sidebar", response_model=list[schemas.ConversationInSidebar], status_code=200
+)
+async def get_sidebar_conversations(
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
+    convo_limit: Annotated[
+        int, Query(title="Number of conversations to return per clone", ge=1, le=5)
+    ] = 3,
+    offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
+    limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 30,
+):
+    # Rank from newest to oldest
+    rank = (
+        sa.func.rank()
+        .over(
+            order_by=models.Conversation.updated_at.desc(),
+            partition_by=models.Conversation.clone_id,
+        )
+        .label("rank")
+    )
+
+    # Use this as a filter to sort the final list
+    group_updated_at = (
+        sa.func.max(models.Conversation.updated_at)
+        .over(partition_by=models.Conversation.clone_id)
+        .label("group_updated_at")
+    )
+
+    # Run a subquery to fill in the partition values
+    subquery = (
+        sa.select(models.Conversation, rank, group_updated_at)
+        .where(models.Conversation.user_id == user.id)
+        .subquery()
+    )
+
+    # Keep only the top ranking convos in terms of recency
+    query = (
+        sa.select(subquery)
+        .where(subquery.c.rank <= convo_limit)
+        .order_by(subquery.c.group_updated_at, subquery.c.rank, subquery.c.name)
+    )
+
+    query = query.offset(offset).limit(limit)
+
+    # Get back row-objects, which need to be converted to the schemas
+    rows = await db.execute(query)
+    convos = [schemas.ConversationInSidebar.model_validate(x) for x in rows.unique()]
+    return convos
 
 
 # TODO (Jonny): put a paywall behind this endpoint after X messages, need to add user permissions
@@ -328,6 +374,15 @@ async def receive_message(
         # if not user.nsfw_enabled:
         #     if (r := await openai_moderation_check(msg_create.content)).flagged:
         #         reasons = [k for k, v in r.categories.items() if v]
+        #         violation = models.ContentViolation(
+        #             content=msg_create.content,
+        #             reasons=json.dumps(reasons),
+        #             clone_id=controller.clone.id,
+        #             conversation_id=controller.conversation.id,
+        #             user_id=controller.conversation.user_id,
+        #         )
+        #         controller.clonedb.db.add(violation)
+        #         await controller.clonedb.db.commit()
         #         detail = (
         #             "The received message violates the following content moderation rules:"
         #             f" {reasons}. Please upgrade to the NSFW plan for unmoderated chat."
