@@ -61,13 +61,64 @@ interface Document {
 }
 
 interface CloneQueryParams {
-  tags?: string;
+  tags?: number[] | null;
   name?: string;
   sort?: string;
   similar?: string;
   offset?: number;
   limit?: number;
 } 
+
+// interface CloneQueryParams {
+//   tags?: number[] | null;
+//   name?: string;
+//   sort?: CloneSortType;
+//   similar?: string;
+//   offset?: number;
+//   limit?: number;
+// } 
+
+// import { ClonesService } from '@/client/services/ClonesService'
+// import { CloneSearchResult } from '@/client/models/CloneSearchResult'
+// import { CloneSortType } from '@/client/models/CloneSortType'
+
+
+// export function useQueryClones(queryParams: CloneQueryParams) {
+//   const {
+//     tags,
+//     name,
+//     sort,
+//     similar,
+//     offset,
+//     limit
+//   } = queryParams;
+
+//   const fetchClones = async () => {
+//     try {
+//       const response = await ClonesService.queryClonesClonesGet(
+//         tags,
+//         name,
+//         sort,
+//         similar,
+//         null, // createdAfter
+//         null, // createdBefore
+//         offset,
+//         limit
+//       );
+//       return response;
+//     } catch (error) {
+//       throw new Error('Error fetching clones: ' + error.message);
+//     }
+//   };
+
+//   const { data, error } = useSWR('clones', fetchClones);
+
+//   return {
+//     data: data,
+//     isLoading: !error && !data,
+//     error: error
+//   };
+// }
 
 export function useQueryClones(queryParams: CloneQueryParams) {
   
@@ -77,7 +128,7 @@ export function useQueryClones(queryParams: CloneQueryParams) {
   };
 
   const {
-      tags , 
+      tags, 
       name,
       sort,
       similar,
