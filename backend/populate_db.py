@@ -1,6 +1,5 @@
 import asyncio
 import json
-import random
 from pathlib import Path
 
 import aiohttp
@@ -10,6 +9,7 @@ from fastapi.encoders import jsonable_encoder
 
 from app.schemas import CloneCreate, DocumentCreate, MonologueCreate
 from app.settings import settings
+
 from clonr.data.parsers import WikipediaParser, WikiQuotesParser
 
 wiki_parser = WikipediaParser()
@@ -119,8 +119,6 @@ async def main(n: int):
     with open("../scrapers/results.json", "r") as f:
         data = json.load(f)
 
-    # print("this is data: ", data)
-
     print("Creating default Tags")
     TAGS: list[str] = []
     for k in data["characters_by_curated_category"]:
@@ -128,7 +126,8 @@ async def main(n: int):
         r = requests.post(
             "http://localhost:8000/tags/", headers=headers, json=dict(name=k)
         )
-        TAGS.append(k)
+        json_res = json.loads(r.content)
+        TAGS.append(json_res)
     r = requests.get(
         "http://localhost:8000/tags", headers=headers, params=dict(limit=2)
     )
@@ -138,6 +137,7 @@ async def main(n: int):
     print("Preparing c.ai clones")
     clone_data = []
     for tag, items in data["characters_by_curated_category"].items():
+        tag_id = next((t["id"] for t in TAGS if t["name"] == tag), None)
         for item in items:
             avatar_uri = f"https://characterai.io/i/400/static/avatars/{item['avatar_file_name']}"
             long_description = item["title"] + "\n" + item["greeting"]
@@ -152,7 +152,7 @@ async def main(n: int):
                 avatar_uri=avatar_uri,
                 long_description=long_description,
                 is_public=True,
-                tags=[tag, random.choice(TAGS), TAGS[10]],
+                tags=[tag_id],  # tags=[tag, random.choice(TAGS), TAGS[10]],
             )
             clone_data.append(x.model_dump())
 

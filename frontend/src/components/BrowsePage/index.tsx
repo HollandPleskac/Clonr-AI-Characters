@@ -21,16 +21,6 @@ import Dropdown from './Dropdown'
 import { useQueryTags } from '@/hooks/useTags'
 import { useQueryClones } from '@/hooks/useClones'
 
-const dummyTags = [
-    {
-        id: 'test',
-        created_at: 'string',
-        updated_at: 'string',
-        name: 'Anime',
-        color_code: '#848282'
-    }
-]
-
 interface BrowsePageProps {
     initialCharacters: Character[]
 }
@@ -59,6 +49,7 @@ export default function BrowsePage({
 
     // Sort state
     const [activeSort, setActiveSort] = useState<string>("Trending")
+    const [activeSortType, setActiveSortType] = useState<string>("top")
 
     // search grid characters state
     const [searchedCharacters, setSearchedCharacters] = useState<Character[]>(initialCharacters)
@@ -76,31 +67,7 @@ export default function BrowsePage({
     }, [tagsData, isLoadingTags])
 
     const fetchMoreGridData = () => {
-        // Simulate fetching 50 more characters from a server or other data source
-        const newCharacter: Character[] = Array.from(
-            { length: 50 },
-            (_, index) => (
-                {
-                    id: 'test' + index,
-                    created_at: 'string',
-                    updated_at: 'string',
-                    creator_id: 'string',
-                    name: 'string',
-                    short_description: 'ring',
-                    avatar_uri: 'https://image.tmdb.org/t/p/w500/rktDFPbfHfUbArZ6OOOKsXcv0Bm.jpg',
-                    num_messages: 34234,
-                    num_conversations: 34,
-                    tags: []
-                }
-            )
-        )
-
-        // Add the new characters to the end of the existing characters
-        setSearchedCharacters((prevCharacters) => [
-            ...prevCharacters,
-            ...newCharacter,
-        ])
-        setHasMoreData(false)
+        // TODO: edit, incorporate useSWRInfinite on infinite scroll side
     }
 
 
@@ -109,9 +76,9 @@ export default function BrowsePage({
     }, [])
 
     const searchQueryParams = {
-        tags: '',
+        tags: activeTag ? activeTag.id : '',
         name: searchInput,
-        sort: 'top',
+        sort: activeSortType,
         similar: searchInput,
         offset: 0,
         limit: 20
@@ -119,12 +86,14 @@ export default function BrowsePage({
     const {data: searchData, isLoading: isLoadingSearch} = useQueryClones(searchQueryParams);
 
     useEffect(() => {
-        if(!isLoadingSearch && searchData && searchData.length > 0) {
+        if(!isLoadingSearch && searchData) {
             setSearchedCharacters(searchData)
             setDoneSearching(true)
             setLoading(false)
         }
-      }, [searchInput, isLoadingSearch]) 
+      }, [searchInput, isLoadingSearch, activeTag, activeSortType]) 
+
+
 
     function handleTagClick(tag: Tag) {
         setActiveTag(tag)
@@ -132,9 +101,27 @@ export default function BrowsePage({
         // can update searched characters here
     }
 
+    function mapSortClickToSortType(sort: string) {
+        switch (sort) {
+            case "Trending":
+                return "top"
+            case "Newest":
+                return "newest"
+            case "Oldest":
+                return "oldest"
+            case "Most Chats":
+                return "hot"
+            default:
+                return "top"
+        }
+    }
+
     function handleSortClick(sort: string) {
         console.log("sort", sort)
+        const sort_type = mapSortClickToSortType(sort)
+        console.log("sort_type: ", sort_type)
         setActiveSort(sort)
+        setActiveSortType(sort_type)
     }
 
     if (tags.length === 0) {

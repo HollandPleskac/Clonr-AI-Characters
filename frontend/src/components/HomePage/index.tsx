@@ -61,7 +61,7 @@ export default function HomeScreen({
   const [continueChars, setContinueChars] = useState<Character[]>([])
   const [trendingChars, setTrendingChars] = useState<Character[]>([])
 
-  const searchQueryParams = {
+  const topSearchQueryParams = {
     tags: '',
     name: searchInput,
     sort: 'top',
@@ -70,45 +70,28 @@ export default function HomeScreen({
     limit: 20
   }
 
+  const trendingQueryParams = {
+    sort: 'hot',
+    offset: 0,
+    limit: 20
+  }
+
   // Searched chars data
-  const {data: searchData, isLoading: isLoadingSearch} = useQueryClones(searchQueryParams);
-  
+  const {data: topSearchData, isLoading: isTopLoadingSearch} = useQueryClones(topSearchQueryParams);
+  const {data: trendingData, isLoading: isTrendingLoading} = useQueryClones(trendingQueryParams);
+
   useEffect(() => {
     setTopChars(data)
     setContinueChars(data)
-    setTrendingChars(data)
-  }, [isLoading])
+    setTrendingChars(trendingData)
+  }, [isLoading, isTopLoadingSearch, isTrendingLoading])
 
   useEffect(() => {
-    setSearchedCharacters(searchData)
-  }, [isLoadingSearch])
+    setSearchedCharacters(topSearchData)
+  }, [isTopLoadingSearch])
   
   const fetchMoreGridData = () => {
-    // Simulate fetching 50 more characters from a server or other data source
-    const newCharacter: Character[] = Array.from(
-        { length: 50 },
-        (_, index) => (
-            {
-                id: 'test' + index,
-                created_at: 'string',
-                updated_at: 'string',
-                creator_id: 'string',
-                name: 'string',
-                short_description: 'ring',
-                avatar_uri: 'https://image.tmdb.org/t/p/w500/rktDFPbfHfUbArZ6OOOKsXcv0Bm.jpg',
-                num_messages: 34234,
-                num_conversations: 34,
-                tags: []
-            }
-        )
-    )
-
-    // Add the new characters to the end of the existing characters
-    setSearchedCharacters((prevCharacters) => [
-        ...prevCharacters,
-        ...newCharacter,
-    ])
-    setHasMoreData(false)
+    // TODO: edit, incorporate useSWRInfinite on infinite scroll side
 }
 
   useEffect(() => {
