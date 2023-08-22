@@ -17,22 +17,30 @@ const Character: React.FC<MyComponentProps> = ({
       href={`/chat/${characterChat.character.id}/${characterChat.lastConversationId}`}
     >
       <div
-        className={`${
-          characterChat.character.id === currentCharacterId
+        className={`${characterChat.character.id === currentCharacterId
             ? ' border-[#252525] bg-[#282348]'
             : 'border-[#252525] bg-[#121212]'
-        } border-r-none cursor-pointer border-b px-0`}
+          } border-r-none cursor-pointer border-b px-0`}
       >
         <div className='flex items-center justify-between px-4 py-[22px]'>
           <div className='flex items-center'>
-            <Image
+            {/* <Image
               key={0}
               src={characterChat.character.avatar_uri} 
-              alt={`Character Profile Picture ${0 + 1}`} // Change to your alt text
+              alt={`Character Profile Picture ${0 + 1}`}
               width={40}
               height={40}
               className='rounded-full'
-            />
+            /> */}
+            <div className='h-[55px] w-[55px] relative'>
+              <Image
+                src={characterChat.character.avatar_uri}
+                alt='Character Profile Picture'
+                layout='fill'
+                objectFit='cover'
+                className='rounded-full'
+              />
+            </div>
             <div className='ml-3 flex flex-col'>
               <div className='mb-1 flex items-center'>
                 <h3 className='mr-2 text-[16px] font-bold leading-[22px]'>

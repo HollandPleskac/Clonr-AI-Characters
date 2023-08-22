@@ -34,25 +34,34 @@ const ChatTopBar = ({
   return (
     <div className='flex h-[122px] w-full items-center justify-between border-b border-[#252525] px-10'>
       <div className='flex items-center'>
-        <SmallNav initialCharacterChats={initialCharacterChats} currentCharacterId={currentCharacterId}  />
+        <SmallNav initialCharacterChats={initialCharacterChats} currentCharacterId={currentCharacterId} />
 
-        <Image
+        {/* <Image
           key={0}
           src={character.avatar_uri}
           alt={`Character Profile Picture ${0 + 1}`}
           width={55}
           height={55}
           className='rounded-full'
-        />
+        /> */}
+        <div className='h-[55px] w-[55px] relative'>
+          <Image
+            src={character.avatar_uri}
+            alt='Character Profile Picture'
+            layout='fill'
+            objectFit='cover'
+            className='rounded-full'
+          />
+        </div>
 
         {character ? (
           <div className='flex flex-col ml-6 gap-y-3'>
             <h3 className='text-3xl font-bold leading-5 text-white'>
               {character.name}
             </h3>
-            <p className='text-gray-400 text-sm line-clamp-1'>
+            {/* <p className='text-gray-400 text-sm line-clamp-1'>
               {character.short_description}
-            </p>
+            </p> */}
           </div>
         ) : (
           <p>Loading character</p>

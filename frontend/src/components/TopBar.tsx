@@ -238,6 +238,44 @@ export default function TopBar({
                 </Link>
               </div>
               <div className='hidden lg:flex items-center gap-x-4 text-white'>
+                
+                <div
+                  className='relative group'
+                  onClick={() => {
+                    console.log('active')
+                    if (inputRefLg.current) {
+                      inputRefLg.current.focus()
+                    }
+                  }}
+                >
+                  <button className='group absolute peer left-[10px] top-2 peer cursor-default'>
+                    <SearchIcon
+                      strokeClasses={` group-focus:stroke-[#5848BC] ${isInputActive ? 'stroke-[#5848BC]' : 'stroke-[#515151]'
+                        } transition duration-100`}
+                    />
+                  </button>
+                  <input
+                    ref={inputRefLg}
+                    value={searchInput}
+                    onChange={(e) => onSearchInput(e.target.value)}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
+                    className={`${isInputActive
+                      ? 'w-[300px] cursor-auto bg-[#1E1E1E]'
+                      : 'w-[44px] cursor-default bg-black'
+                      } focus:cursor-auto peer py-auto h-[40px]  transition-all  duration-500 rounded-full border-none  pr-0 pl-[44px] text-[15px] font-light leading-6 text-[#979797] focus:ring-1 focus:ring-transparent`}
+                    type='text'
+                    placeholder='Search'
+                    style={{ outline: 'none', resize: 'none' }}
+                  />
+                  <button
+                    className={`absolute right-[10px] top-3 ${searchInput === '' ? 'hidden' : 'flex'
+                      }`}
+                    onClick={clearSearchInput}
+                  >
+                    <XIcon />
+                  </button>
+                </div>
                 <div className='space-x-2'>
                   <a
                     className='inline-flex justify-center items-center w-8 h-8 text-center text-gray-500 hover:bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2 focus:ring-offset-white transition dark:text-[#515151] dark:hover:text-gray-200 dark:hover:bg-gray-800 dark:focus:ring-offset-slate-900'
@@ -286,44 +324,6 @@ export default function TopBar({
                     </svg>
                   </a>
                 </div>
-                <div
-                  className='relative group'
-                  onClick={() => {
-                    console.log('active')
-                    if (inputRefLg.current) {
-                      inputRefLg.current.focus()
-                    }
-                  }}
-                >
-                  <button className='group absolute peer left-[10px] top-2 peer cursor-default'>
-                    <SearchIcon
-                      strokeClasses={` group-focus:stroke-[#5848BC] ${isInputActive ? 'stroke-[#5848BC]' : 'stroke-[#515151]'
-                        } transition duration-100`}
-                    />
-                  </button>
-                  <input
-                    ref={inputRefLg}
-                    value={searchInput}
-                    onChange={(e) => onSearchInput(e.target.value)}
-                    onFocus={handleInputFocus}
-                    onBlur={handleInputBlur}
-                    className={`${isInputActive
-                      ? 'w-[300px] cursor-auto bg-[#1E1E1E]'
-                      : 'w-[44px] cursor-default bg-black'
-                      } focus:cursor-auto peer py-auto h-[40px]  transition-all  duration-500 rounded-full border-none  pr-0 pl-[44px] text-[15px] font-light leading-6 text-[#979797] focus:ring-1 focus:ring-transparent`}
-                    type='text'
-                    placeholder='Search'
-                    style={{ outline: 'none', resize: 'none' }}
-                  />
-                  <button
-                    className={`absolute right-[10px] top-3 ${searchInput === '' ? 'hidden' : 'flex'
-                      }`}
-                    onClick={clearSearchInput}
-                  >
-                    <XIcon />
-                  </button>
-                </div>
-
                 <AccountDropdown />
               </div>
             </div>

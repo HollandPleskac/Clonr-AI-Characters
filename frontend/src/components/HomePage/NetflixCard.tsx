@@ -6,6 +6,7 @@ import { Character } from '@/types'
 import styles from '@/styles/Cards.module.scss'
 import { formatNumber } from '@/utils/formatNumber'
 import { Tag } from '@/types'
+import TagsComponent from './Tags'
 
 interface CardsProps {
   defaultCard?: boolean
@@ -61,29 +62,10 @@ export default function Cards({
               {short_description}
             </span>
           </div>
-          <GenreComponent tags={tags} />
+          <TagsComponent tags={tags} />
         </div>
       </div>
     </div>
   )
 }
 
-type GenreProps = {
-  tags: Tag[]
-}
-
-const GenreComponent: React.FC<GenreProps> = ({ tags }) => {
-  return (
-    <div className={`${styles.row} gap-x-1`}>
-      {tags.map((tag, index) => {
-        const isLast = index === tags.length - 1
-        return (
-          <div key={index} className={styles.row}>
-            <span className={styles.regularText} style={{color: "#" + tag.color_code}}>{tag.name}</span>
-            {!isLast && <div className={styles.dot}>&bull;</div>}
-          </div>
-        )
-      })}
-    </div>
-  )
-}

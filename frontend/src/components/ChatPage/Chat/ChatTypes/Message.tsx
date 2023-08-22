@@ -15,7 +15,7 @@ const Message: React.FC<MessageProps> = ({ message, clone_avatar_uri, isLast }) 
   const [messages, setMessages] = useState<Message[]>([message])
 
 
-  
+
   function formatTime(date: Date): string {
     let hours = date.getHours()
     const minutes = date.getMinutes().toString().padStart(2, '0') // Pads with 0 if needed to get 2 digits
@@ -51,39 +51,48 @@ const Message: React.FC<MessageProps> = ({ message, clone_avatar_uri, isLast }) 
   }
 
   function handleRightArrow() {
-    
-    if (currentIndex === messages.length-1){
+
+    if (currentIndex === messages.length - 1) {
       generateNewMessage()
     }
-    setCurrentIndex(prevState=>prevState+1)
+    setCurrentIndex(prevState => prevState + 1)
   }
-  
+
 
   return (
     <div className='relative flex flex-grow w-full items-stretch py-4'>
       <div className='flex flex-col shrink-0 w-[40px] justify-between items-center'>
-        <Image
+        {/* <Image
           key={0}
           src={message.sender_name == 'Test User' ? '/user-profile.png' : clone_avatar_uri}
           alt={message.sender_name}
           width={40}
           height={40}
           className='rounded-full'
-        />
+        /> */}
+        <div className='h-[40px] w-[40px] relative'>
+          <Image
+            src={message.sender_name == 'Test User' ? '/user-profile.png' : clone_avatar_uri}
+            alt={message.sender_name}
+            layout='fill'
+            objectFit='cover'
+            className='rounded-full'
+          />
+        </div>
         {
           (isLast && messages.length > 1 && currentIndex !== 0) && (
             <button
-            className='mt-6 w-full flex justify-center'
-            onClick={() => {
-              setCurrentIndex(prevState=>prevState-1)
-            }} >
+              className='mt-6 w-full flex justify-center'
+              onClick={() => {
+                setCurrentIndex(prevState => prevState - 1)
+              }} >
               <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M15 6L9 12L15 18" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
           )
         }
-        {isLast && currentIndex === 0 && 
+        {isLast && currentIndex === 0 &&
           <div className='h-[48px] w-8' ></div>
         }
 
@@ -105,8 +114,8 @@ const Message: React.FC<MessageProps> = ({ message, clone_avatar_uri, isLast }) 
         {
           isLast && (
             <button
-            className='mt-6 w-full flex justify-center'
-            onClick={handleRightArrow} >
+              className='mt-6 w-full flex justify-center'
+              onClick={handleRightArrow} >
               <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M9 6L15 12L9 18" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>

@@ -13,9 +13,8 @@ import ChatPopover from './ChatPopover'
 import MagnifyingGlass from '@/svg/ChatPage/Chat/magnify.svg'
 import SmallNav from '../Characters/SmallSidebar'
 import { initScriptLoader } from 'next/script'
-
+import TagsComponent from '@/components/HomePage/Tags'
 const { createConversation, queryConversation, queryConversationMessages, createMessage, generateCloneMessage, queryCurrentRevisions } = useConversations();
-
 
 type ChooseChatExperienceProps = {
   characterId: string
@@ -25,6 +24,29 @@ type ChooseChatExperienceProps = {
   initialCharacterChats: CharacterChat[],
   currentCharacterId: string
 }
+
+const tags = [
+  {
+    id: '1',
+    created_at: new Date(),
+    updated_at: new Date(),
+    color_code: '48FF83',
+    name: "Anime"
+  }, {
+    id: '2',
+    created_at: new Date(),
+    updated_at: new Date(),
+    color_code: 'FF0392',
+    name: "Warrior"
+  },
+  , {
+    id: '2',
+    created_at: new Date(),
+    updated_at: new Date(),
+    color_code: 'DD04FF',
+    name: "Female"
+  }
+]
 
 async function createCharacterConversation(
   characterId: string,
@@ -42,7 +64,7 @@ async function createCharacterConversation(
   return conversationId
 }
 
-const ChooseChatExperience = ({ characterId, character, setConversationState, setConvoID,initialCharacterChats, currentCharacterId }: ChooseChatExperienceProps) => {
+const ChooseChatExperience = ({ characterId, character, setConversationState, setConvoID, initialCharacterChats, currentCharacterId }: ChooseChatExperienceProps) => {
   if (!character) {
     return <div>Loading character..</div>
   }
@@ -56,24 +78,34 @@ const ChooseChatExperience = ({ characterId, character, setConversationState, se
     >
       <div className='flex h-[122px] w-full items-center justify-between border-b border-[#252525] px-10'>
         <div className='flex items-center'>
-        <SmallNav initialCharacterChats={initialCharacterChats} currentCharacterId={currentCharacterId} />
-          <Image
+          <SmallNav initialCharacterChats={initialCharacterChats} currentCharacterId={currentCharacterId} />
+          {/* <Image
             key={0}
             src={character.avatar_uri}
             alt={`Character Profile Picture ${0 + 1}`}
             width={55}
             height={55}
             className='rounded-full'
-          />
+          /> */}
+
+          <div className='h-[55px] w-[55px] relative'>
+            <Image
+              src={character.avatar_uri}
+              alt='Character Profile Picture'
+              layout='fill'
+              objectFit='cover'
+              className='rounded-full'
+            />
+          </div>
 
           {character ? (
             <div className='flex flex-col ml-6 gap-y-3'>
               <h3 className='text-3xl font-bold leading-5 text-white'>
                 {character.name}
               </h3>
-              <p className='text-gray-400 text-sm line-clamp-1'>
+              {/* <p className='text-gray-400 text-sm line-clamp-1'>
                 {character.short_description}
-              </p>
+              </p> */}
             </div>
           ) : (
             <p>Loading character</p>
@@ -151,9 +183,9 @@ const ChooseChatExperience = ({ characterId, character, setConversationState, se
 
 
 
-      <div className='flex gap-x-[50px] justify-center my-auto'>
-        <div className='w-[300px] flex flex-col'>
-          <div className='h-[300px] w-[300px] relative'>
+      <div className='overflow-auto pb-[40px] md:pb-0 flex flex-col md:flex-row gap-x-[48px] items-center md:items-start md:justify-center my-auto mt-[80px] md:mt-auto'>
+        <div className='w-[50%] md:w-[240px] flex flex-col mb-8 md:mb-0'>
+          <div className='h-[240px] w-full md:w-[240px] relative'>
             <Image
               src={character.avatar_uri}
               alt='logo'
@@ -162,38 +194,11 @@ const ChooseChatExperience = ({ characterId, character, setConversationState, se
               className='rounded-lg mb-5'
             />
           </div>
-          <h2 className='text-xl text-left my-4 font-semibold text-gray-500'>
+
+          <h2 className='text-lg text-center text-left my-4 font-light text-gray-500'>
             {character.num_conversations} Chats
           </h2>
-          <div className='flex flex-wrap gap-2'>
-            {character.tags.map((tag, index) => (
-              <button
-                key={index}
-                className='px-2 py-1 text-sm text-gray-600 border-2 border-gray-700 rounded-lg rounder-gray-800 hover:border-gray-700 hover:text-gray-600'
-              >
-                {tag.name}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className='w-1/3 flex flex-col justify-start'>
-          <h2 className='text-lg sm:text-4xl font-semibold mb-4 text-white'>
-            {character.name}
-          </h2>
-          <p className='mb-4 text-lg text-gray-400'>
-            {character.short_description}{' '}
-          </p>
-          <h2 className='text-lg sm:text-xl font-semibold mb-4 text-white flex justify-start gap-x-2  items-center'>
-            Long Description
-            <svg className='cursor-pointer' fill="#fff" width="22px" height="22px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" stroke="#fff">
-              <g id="SVGRepo_bgCarrier" stroke-width="0" />
-              <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" />
-              <g id="SVGRepo_iconCarrier"> <title>popout</title> <path d="M15.694 13.541l2.666 2.665 5.016-5.017 2.59 2.59 0.004-7.734-7.785-0.046 2.526 2.525-5.017 5.017zM25.926 16.945l-1.92-1.947 0.035 9.007-16.015 0.009 0.016-15.973 8.958-0.040-2-2h-7c-1.104 0-2 0.896-2 2v16c0 1.104 0.896 2 2 2h16c1.104 0 2-0.896 2-2l-0.074-7.056z" /> </g>
-            </svg>
-          </h2>
-          <p className='text-gray-400 text-lg  line-clamp-3 mb-5' >
-            {character.long_description}{' '}
-          </p>
+
           <button
             onClick={async () => {
               setConversationState('short term')
@@ -205,7 +210,7 @@ const ChooseChatExperience = ({ characterId, character, setConversationState, se
             }}
             className='flex items-center justify-between w-full py-2 px-4 inline-flex bg-purple-500 rounded-lg hover:bg-purple-600 text-white'
           >
-            Start Short Term Memory Chat
+            Short Term Memory Chat
             <ChatPopover />
           </button>
           <button
@@ -217,9 +222,42 @@ const ChooseChatExperience = ({ characterId, character, setConversationState, se
             }}
             className='mt-2 flex items-center justify-between w-full py-2 px-4 inline-flex bg-purple-500 rounded-lg hover:bg-purple-600 text-white'
           >
-            Start Long Term Memory Chat
+            Long Term Memory Chat
             <ChatPopover />
           </button>
+        </div>
+        <div className='w-[50%] md:w-1/3 flex flex-col justify-start'>
+          <h2 className='text-lg sm:text-4xl font-semibold mb-4 text-white'>
+            {character.name}
+          </h2>
+          <TagsComponent tags={tags} />
+          <p className='mb-4 mt-4 text-lg text-gray-400'>
+            {character.short_description}{' '}
+          </p>
+
+          <h2 className='text-lg mb-2 sm:text-xl font-semibold text-white flex justify-start gap-x-2  items-center'>
+            Long Description
+            <svg className='cursor-pointer' fill="#fff" width="22px" height="22px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" stroke="#fff">
+              <g id="SVGRepo_bgCarrier" stroke-width="0" />
+              <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" />
+              <g id="SVGRepo_iconCarrier"> <title>popout</title> <path d="M15.694 13.541l2.666 2.665 5.016-5.017 2.59 2.59 0.004-7.734-7.785-0.046 2.526 2.525-5.017 5.017zM25.926 16.945l-1.92-1.947 0.035 9.007-16.015 0.009 0.016-15.973 8.958-0.040-2-2h-7c-1.104 0-2 0.896-2 2v16c0 1.104 0.896 2 2 2h16c1.104 0 2-0.896 2-2l-0.074-7.056z" /> </g>
+            </svg>
+          </h2>
+          <p className='text-gray-400 line-clamp-3' >
+            {character.long_description}{' '}
+          </p>
+          <h2 className='text-lg mb-2 mt-4 sm:text-xl font-semibold text-white flex justify-start gap-x-2  items-center'>
+            Greeting Message
+            <svg className='cursor-pointer' fill="#fff" width="22px" height="22px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" stroke="#fff">
+              <g id="SVGRepo_bgCarrier" stroke-width="0" />
+              <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" />
+              <g id="SVGRepo_iconCarrier"> <title>popout</title> <path d="M15.694 13.541l2.666 2.665 5.016-5.017 2.59 2.59 0.004-7.734-7.785-0.046 2.526 2.525-5.017 5.017zM25.926 16.945l-1.92-1.947 0.035 9.007-16.015 0.009 0.016-15.973 8.958-0.040-2-2h-7c-1.104 0-2 0.896-2 2v16c0 1.104 0.896 2 2 2h16c1.104 0 2-0.896 2-2l-0.074-7.056z" /> </g>
+            </svg>
+          </h2>
+          <p className='text-gray-400 line-clamp-3' >
+            {character.long_description}{' '}
+          </p>
+
         </div>
       </div>
     </div>
