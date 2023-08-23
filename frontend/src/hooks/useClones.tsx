@@ -78,84 +78,84 @@ interface CloneQueryParams {
 //   limit?: number;
 // } 
 
-// import { ClonesService } from '@/client/services/ClonesService'
-// import { CloneSearchResult } from '@/client/models/CloneSearchResult'
-// import { CloneSortType } from '@/client/models/CloneSortType'
+import { ClonesService } from '@/client/services/ClonesService'
+import { CloneSearchResult } from '@/client/models/CloneSearchResult'
+import { CloneSortType } from '@/client/models/CloneSortType'
 
-
-// export function useQueryClones(queryParams: CloneQueryParams) {
-//   const {
-//     tags,
-//     name,
-//     sort,
-//     similar,
-//     offset,
-//     limit
-//   } = queryParams;
-
-//   const fetchClones = async () => {
-//     try {
-//       const response = await ClonesService.queryClonesClonesGet(
-//         tags,
-//         name,
-//         sort,
-//         similar,
-//         null, // createdAfter
-//         null, // createdBefore
-//         offset,
-//         limit
-//       );
-//       return response;
-//     } catch (error) {
-//       throw new Error('Error fetching clones: ' + error.message);
-//     }
-//   };
-
-//   const { data, error } = useSWR('clones', fetchClones);
-
-//   return {
-//     data: data,
-//     isLoading: !error && !data,
-//     error: error
-//   };
-// }
 
 export function useQueryClones(queryParams: CloneQueryParams) {
-  
-  const fetcher = async (url: string) => {
-    const response = await axios.get(url, { withCredentials: true});
-    return response.data;
-  };
-
   const {
-      tags, 
-      name,
-      sort,
-      similar,
-      offset,
-      limit
+    tags,
+    name,
+    sort,
+    similar,
+    offset,
+    limit
   } = queryParams;
 
-  const params = new URLSearchParams();
-  
-  if (tags) params.append('tags', tags);
-  if (name) params.append('name', name);
-  if (sort) params.append('sort', sort);
-  if (similar) params.append('similar', similar);
-  if (offset !== undefined) params.append('offset', offset.toString());
-  if (limit !== undefined) params.append('limit', limit.toString());
+  const fetchClones = async () => {
+    try {
+      const response = await ClonesService.queryClonesClonesGet(
+        tags,
+        name,
+        sort,
+        similar,
+        null, // createdAfter
+        null, // createdBefore
+        offset,
+        limit
+      );
+      return response;
+    } catch (error) {
+      throw new Error('Error fetching clones: ' + error.message);
+    }
+  };
 
-  const queryString = params.toString();
-  const url = `http://localhost:8000/clones/?${queryString}`;
-
-  const { data, error } = useSWR(url, fetcher);
+  const { data, error } = useSWR('clones', fetchClones);
 
   return {
     data: data,
     isLoading: !error && !data,
-    error: error,
+    error: error
   };
 }
+
+// export function useQueryClones(queryParams: CloneQueryParams) {
+  
+//   const fetcher = async (url: string) => {
+//     const response = await axios.get(url, { withCredentials: true});
+//     return response.data;
+//   };
+
+//   const {
+//       tags, 
+//       name,
+//       sort,
+//       similar,
+//       offset,
+//       limit
+//   } = queryParams;
+
+//   const params = new URLSearchParams();
+  
+//   if (tags) params.append('tags', tags);
+//   if (name) params.append('name', name);
+//   if (sort) params.append('sort', sort);
+//   if (similar) params.append('similar', similar);
+//   if (offset !== undefined) params.append('offset', offset.toString());
+//   if (limit !== undefined) params.append('limit', limit.toString());
+
+//   const queryString = params.toString();
+//   const url = `http://localhost:8000/clones/?${queryString}`;
+
+//   const { data, error } = useSWR(url, fetcher);
+
+//   return {
+//     data: data,
+//     isLoading: !error && !data,
+//     error: error,
+//   };
+// }
 
 
 export default function useClones() {
