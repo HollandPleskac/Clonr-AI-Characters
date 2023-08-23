@@ -355,7 +355,14 @@ async def get_messages(
 
 
 @router.post(
-    "/{conversation_id}/messages", response_model=schemas.Message, status_code=201
+    "/{conversation_id}/messages",
+    response_model=schemas.Message,
+    status_code=201,
+    dependencies=[
+        Depends(
+            user_id_cookie_fixed_window_ratelimiter("5/minute"),
+        )  # TODO (Jonny): This needs another ratelimit for long-term mem since it incurs LLM costs
+    ],
 )
 async def receive_message(
     msg_create: schemas.MessageCreate,
@@ -402,7 +409,15 @@ async def receive_message(
 
 
 @router.post(
-    "/{conversation_id}/generate", response_model=schemas.Message, status_code=201
+    "/{conversation_id}/generate",
+    response_model=schemas.Message,
+    status_code=201,
+    dependencies=[
+        Depends(
+            user_id_cookie_fixed_window_ratelimiter("3000/month"),
+            user_id_cookie_fixed_window_ratelimiter("300/day"),
+        )
+    ],
 )
 async def generate_clone_message(
     msg_gen: schemas.MessageGenerate,
