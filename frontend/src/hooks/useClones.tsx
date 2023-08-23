@@ -1,3 +1,4 @@
+'use client';
 
 import { useState } from 'react';
 import axios from 'axios';
@@ -61,48 +62,57 @@ interface Document {
 }
 
 interface CloneQueryParams {
-  tags?: string;
+  tags?: number[] | null;
   name?: string;
-  sort?: string;
+  sort?: CloneSortType;
   similar?: string;
   offset?: number;
   limit?: number;
 } 
 
-export function useQueryClones(queryParams: CloneQueryParams) {
-  
-  const fetcher = async (url: string) => {
-    const response = await axios.get(url, { withCredentials: true});
-    return response.data;
-  };
+import { ClonesService } from '@/client/services/ClonesService'
+import { CloneSearchResult } from '@/client/models/CloneSearchResult'
+import { CloneSortType } from '@/client/models/CloneSortType'
 
+
+export function useQueryClones(queryParams: CloneQueryParams) {
   const {
-      tags , 
-      name,
-      sort,
-      similar,
-      offset,
-      limit
+    tags,
+    name,
+    sort,
+    similar,
+    offset,
+    limit
   } = queryParams;
 
-  const params = new URLSearchParams();
-  
-  if (tags) params.append('tags', tags);
-  if (name) params.append('name', name);
-  if (sort) params.append('sort', sort);
-  if (similar) params.append('similar', similar);
-  if (offset !== undefined) params.append('offset', offset.toString());
-  if (limit !== undefined) params.append('limit', limit.toString());
+  console.log("queryParams: ", queryParams)
 
-  const queryString = params.toString();
-  const url = `http://localhost:8000/clones/?${queryString}`;
+  const fetcher = async () => {
+    try {
+      const response = await ClonesService.queryClonesClonesGet(
+        tags,
+        name,
+        sort,
+        similar,
+        null, // createdAfter
+        null, // createdBefore
+        offset,
+        limit
+      );
+      return response;
+    } catch (error) {
+      throw new Error('Error fetching clones: ' + error.message);
+    }
+  };
 
-  const { data, error } = useSWR(url, fetcher);
+  const { data, error } = useSWR('clones', fetcher);
+
+  console.log("data is: ", data);
 
   return {
     data: data,
     isLoading: !error && !data,
-    error: error,
+    error: error
   };
 }
 

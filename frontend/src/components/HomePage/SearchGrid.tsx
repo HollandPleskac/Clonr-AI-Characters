@@ -16,7 +16,7 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 
 
 interface SearchGridProps {
-  characters: Character[]
+  characters: any[]
   doneSearching: boolean
   fetchMoreData: () => void
   hasMoreData: boolean
