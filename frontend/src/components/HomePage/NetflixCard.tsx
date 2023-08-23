@@ -7,10 +7,11 @@ import styles from '@/styles/Cards.module.scss'
 import { formatNumber } from '@/utils/formatNumber'
 import { Tag } from '@/types'
 import TagsComponent from './Tags'
+import { CloneSearchResult } from '@/client/models/CloneSearchResult'
 
 interface CardsProps {
   defaultCard?: boolean
-  item: Character
+  item: CloneSearchResult
   edgeCard?: 'left' | 'right' | undefined
 }
 
@@ -38,7 +39,7 @@ export default function Cards({
     >
       <div className={styles.cardPoster}>
         <img
-          src={avatar_uri}
+          src={avatar_uri ? avatar_uri : '/img/avatars/avatar-1.jpg'}
           alt='img'
           className={`absolute ${styles.cardPoster}`}
         />

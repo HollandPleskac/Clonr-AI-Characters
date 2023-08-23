@@ -9,13 +9,14 @@ import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import 'swiper/css/scrollbar'
 import { Swiper, SwiperSlide } from 'swiper/react'
+import { CloneSearchResult } from '@/client/models/CloneSearchResult'
 
 import NetflixCard from './NetflixCard'
 import { Character } from '@/types'
 import { Navigation, Pagination, Scrollbar } from 'swiper/modules'
 
 interface CarouselProps {
-  characters: Character[]
+  characters: CloneSearchResult[]
   name: String
   isBigCarousel: boolean
   zIndex: number

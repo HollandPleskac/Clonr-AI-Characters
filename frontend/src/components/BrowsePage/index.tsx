@@ -20,6 +20,7 @@ import XIcon from '../XIcon'
 import Dropdown from './Dropdown'
 import { useQueryTags } from '@/hooks/useTags'
 import { useQueryClones } from '@/hooks/useClones'
+import { CloneSortType } from '@/client/models/CloneSortType'
 
 interface BrowsePageProps {
     initialCharacters: Character[]
@@ -49,10 +50,10 @@ export default function BrowsePage({
 
     // Sort state
     const [activeSort, setActiveSort] = useState<string>("Trending")
-    const [activeSortType, setActiveSortType] = useState<string>("top")
+    const [activeSortType, setActiveSortType] = useState<string>("TOP")
 
     // search grid characters state
-    const [searchedCharacters, setSearchedCharacters] = useState<Character[]>(initialCharacters)
+    const [searchedCharacters, setSearchedCharacters] = useState<any[]>(initialCharacters)
     const [doneSearching, setDoneSearching] = useState(true)
     const [hasMoreData, setHasMoreData] = useState(true)
 
@@ -76,9 +77,9 @@ export default function BrowsePage({
     }, [])
 
     const searchQueryParams = {
-        tags: activeTag ? activeTag.id : '',
+        tags: activeTag ? [activeTag.id] : null,
         name: searchInput,
-        sort: activeSortType,
+        sort: CloneSortType[activeSortType],
         similar: searchInput,
         offset: 0,
         limit: 20
@@ -87,15 +88,18 @@ export default function BrowsePage({
 
     useEffect(() => {
         if(!isLoadingSearch && searchData) {
+            console.log("this is activeTag: ", activeTag)
             setSearchedCharacters(searchData)
             setDoneSearching(true)
             setLoading(false)
+            console.log("this is searchData: ", searchData)
         }
       }, [searchInput, isLoadingSearch, activeTag, activeSortType]) 
 
 
 
     function handleTagClick(tag: Tag) {
+        console.log("clicked tag: ", tag)
         setActiveTag(tag)
         setSearchInput('')
         // can update searched characters here
@@ -104,15 +108,15 @@ export default function BrowsePage({
     function mapSortClickToSortType(sort: string) {
         switch (sort) {
             case "Trending":
-                return "top"
+                return "HOT"
             case "Newest":
-                return "newest"
+                return "NEWEST"
             case "Oldest":
-                return "oldest"
+                return "OLDEST"
             case "Most Chats":
-                return "hot"
+                return "TOP"
             default:
-                return "top"
+                return "TOP"
         }
     }
 

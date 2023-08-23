@@ -1,3 +1,4 @@
+'use client';
 
 import { useState } from 'react';
 import axios from 'axios';
@@ -63,20 +64,11 @@ interface Document {
 interface CloneQueryParams {
   tags?: number[] | null;
   name?: string;
-  sort?: string;
+  sort?: CloneSortType;
   similar?: string;
   offset?: number;
   limit?: number;
 } 
-
-// interface CloneQueryParams {
-//   tags?: number[] | null;
-//   name?: string;
-//   sort?: CloneSortType;
-//   similar?: string;
-//   offset?: number;
-//   limit?: number;
-// } 
 
 import { ClonesService } from '@/client/services/ClonesService'
 import { CloneSearchResult } from '@/client/models/CloneSearchResult'
@@ -93,7 +85,9 @@ export function useQueryClones(queryParams: CloneQueryParams) {
     limit
   } = queryParams;
 
-  const fetchClones = async () => {
+  console.log("queryParams: ", queryParams)
+
+  const fetcher = async () => {
     try {
       const response = await ClonesService.queryClonesClonesGet(
         tags,
@@ -111,7 +105,9 @@ export function useQueryClones(queryParams: CloneQueryParams) {
     }
   };
 
-  const { data, error } = useSWR('clones', fetchClones);
+  const { data, error } = useSWR('clones', fetcher);
+
+  console.log("data is: ", data);
 
   return {
     data: data,
@@ -119,43 +115,6 @@ export function useQueryClones(queryParams: CloneQueryParams) {
     error: error
   };
 }
-
-// export function useQueryClones(queryParams: CloneQueryParams) {
-  
-//   const fetcher = async (url: string) => {
-//     const response = await axios.get(url, { withCredentials: true});
-//     return response.data;
-//   };
-
-//   const {
-//       tags, 
-//       name,
-//       sort,
-//       similar,
-//       offset,
-//       limit
-//   } = queryParams;
-
-//   const params = new URLSearchParams();
-  
-//   if (tags) params.append('tags', tags);
-//   if (name) params.append('name', name);
-//   if (sort) params.append('sort', sort);
-//   if (similar) params.append('similar', similar);
-//   if (offset !== undefined) params.append('offset', offset.toString());
-//   if (limit !== undefined) params.append('limit', limit.toString());
-
-//   const queryString = params.toString();
-//   const url = `http://localhost:8000/clones/?${queryString}`;
-
-//   const { data, error } = useSWR(url, fetcher);
-
-//   return {
-//     data: data,
-//     isLoading: !error && !data,
-//     error: error,
-//   };
-// }
 
 
 export default function useClones() {

@@ -37,9 +37,9 @@ export enum MediaType {
 }
 
 export type Tag = {
-  id: string
-  created_at: Date
-  updated_at: Date
+  id: number
+  created_at: string
+  updated_at: string
   color_code: string
   name: string
 }

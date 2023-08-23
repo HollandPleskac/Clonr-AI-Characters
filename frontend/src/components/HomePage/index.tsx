@@ -13,6 +13,7 @@ import Carousel from './Carousel'
 import TopBar from '@/components/TopBar'
 import AlertBar from '@/components/AlertBar'
 import { Character } from '@/types'
+import { CloneSearchResult } from '@/client/models/CloneSearchResult'
 import SearchGrid from './SearchGrid'
 import StatBar from '../Statistics/StatBar'
 import ScaleFadeIn from '../Transitions/ScaleFadeIn'
@@ -44,7 +45,6 @@ export default function HomeScreen({
   }, [])
 
   const queryParams = {
-    sort: 'top',
     offset: 0,
     limit: 20
   }
@@ -52,14 +52,15 @@ export default function HomeScreen({
   // Regular clone data
   const {data, isLoading} = useQueryClones(queryParams);
 
+  console.log("THIS IS DATA: ", data)
   
   // search grid characters state
   const [searchInput, setSearchInput] = useState('')
-  const [searchedCharacters, setSearchedCharacters] = useState<Character[]>([])
+  const [searchedCharacters, setSearchedCharacters] = useState<any>([])
   const [hasMoreData, setHasMoreData] = useState(true)
-  const [topChars, setTopChars] = useState<Character[]>([])
-  const [continueChars, setContinueChars] = useState<Character[]>([])
-  const [trendingChars, setTrendingChars] = useState<Character[]>([])
+  const [topChars, setTopChars] = useState<any>([])
+  const [continueChars, setContinueChars] = useState<any>([])
+  const [trendingChars, setTrendingChars] = useState<any>([])
 
   const topSearchQueryParams = {
     tags: '',
@@ -154,12 +155,12 @@ export default function HomeScreen({
             isBigCarousel={false}
             zIndex={20}
           />
-          <Carousel
+          {/* <Carousel
             characters={anime}
             name='Anime'
             isBigCarousel={false}
             zIndex={10}
-          />
+          /> */}
         </ScaleFadeIn>
       )}
       <AuthModal />
