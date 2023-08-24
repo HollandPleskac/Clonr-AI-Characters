@@ -21,7 +21,7 @@ from .db import get_async_redis, get_async_session
 from .embedding import get_embedding_client
 from .llm import _get_llm
 from .text import get_tokenizer
-from .users import get_current_active_user
+from .users import get_current_active_user, get_free_or_paying_user
 
 
 @lru_cache(maxsize=1)
@@ -38,7 +38,7 @@ def is_docker() -> bool:
 async def get_controller(
     conversation_id: Annotated[uuid.UUID, Path()],
     db: Annotated[AsyncSession, Depends(get_async_session)],
-    user: Annotated[models.User, Depends(get_current_active_user)],
+    user: Annotated[models.User, Depends(get_free_or_paying_user)],
     embedding_client: Annotated[EmbeddingClient, Depends(get_embedding_client)],
     conn: Annotated[Redis, Depends(get_async_redis)],
     background_tasks: BackgroundTasks,
@@ -88,6 +88,7 @@ async def get_controller(
 
     controller = Controller(
         llm=llm,
+        user=user,
         clone=clone,
         clonedb=clonedb,
         conversation=conversation,

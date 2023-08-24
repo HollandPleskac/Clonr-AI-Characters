@@ -34,20 +34,6 @@ router = APIRouter(
 # since we expect the bot lifecycle to refresh slower than reddit's post lifecycle
 HOT_TIME: float = 60 * 60 * 12
 
-# TODO (Jonny): the query stuff doesn't properly filter out column-level is_public flags
-# we should maybe just make a class to only return like name, short_desc, prof_pic, num_messages, num_convos
-
-# TODO (Kevin or Jonny): Run this for all of our query
-# methods, and test latency on similarity search/embedding search
-# get the duration, and number of query characters
-# meter = metrics.get_meter(__name__)
-
-# query_processing_time_meter = meter.create_histogram(
-#     name="query_processing_time",
-#     description="Time spent querying",
-#     unit="s",
-# )
-
 
 class CloneSortType(str, Enum):
     hot: str = "hot"
@@ -148,8 +134,6 @@ async def create_clone(
     return clone
 
 
-# TODO (Jonny): add routes for top clones, trending, and recent
-# TODO (Jonny): add an order by for these queries
 @router.get("/", response_model=list[schemas.CloneSearchResult])
 async def query_clones(
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
@@ -165,7 +149,7 @@ async def query_clones(
     limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 10,
 ):
     query = sa.select(models.Clone)
-    if user is not None and user.is_superuser:
+    if user is None or not user.is_superuser:
         query = query.where(models.Clone.is_active).where(models.Clone.is_public)
     if name is not None:
         query = query.where(models.Clone.case_insensitive_name.ilike(f"%{name}%"))
@@ -213,10 +197,12 @@ async def get_clone_by_id(
         and (user.is_superuser or clone.creator_id == user.id)
     ):
         return clone
+
     if not clone.is_public:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Clone does not exist."
         )
+    # Hide non-public fields
     response = jsonable_encoder(clone)
     if not clone.is_short_description_public:
         response["short_description"] = None
@@ -235,29 +221,25 @@ async def patch_clone(
     user: Annotated[models.User, Depends(deps.get_current_active_user)],
     embedding_client: Annotated[EmbeddingClient, Depends(deps.get_embedding_client)],
 ):
-    if user.is_superuser or clone.creator_id == user.id:
-        not_modified = True
-        for k, v in obj.model_dump(exclude_unset=True).items():
-            if getattr(clone, k) == v:
-                continue
-            not_modified = False
-            setattr(clone, k, v)
-            # TODO (Jonny): combine with the create endpoint
-            if k == "long_description" and len(v) > 16:
-                clone.embedding = (
-                    await embedding_client.encode_passage(clone.long_description)
-                )[0]
-                clone.embedding_model = await embedding_client.encoder_name()
-        if not_modified:
-            raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
-        else:
-            db.add(clone)
-            await db.commit()
-            await db.refresh(clone)
-            return clone
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED, detail="Insufficient privileges"
-    )
+    if not user.is_superuser and clone.creator_id != user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    not_modified = True
+    for k, v in obj.model_dump(exclude_unset=True).items():
+        if getattr(clone, k) == v:
+            continue
+        not_modified = False
+        setattr(clone, k, v)
+        clone.embedding = (
+            await embedding_client.encode_passage(clone.long_description)
+        )[0]
+        clone.embedding_model = await embedding_client.encoder_name()
+    if not_modified:
+        raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
+    else:
+        db.add(clone)
+        await db.commit()
+        await db.refresh(clone)
+        return clone
 
 
 # (Jonny): We can't delete a clone, because that will cause a cascade that
@@ -275,19 +257,26 @@ async def delete(
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-# # ------------ Long Description ------------ #
-# Lol the similarity of an expensive route vs a cheap route low-key scares me.
+# ------------ Long Description ------------ #
 @router.post(
     "/{clone_id}/generate_long_description",
     response_model=schemas.LongDescription,
-    dependencies=[Depends(deps.get_superuser)],
     status_code=201,
 )
 async def generate_long_desc(
+    creator: Annotated[models.Creator, Depends(deps.get_current_active_creator)],
     llm: Annotated[LLM, Depends(deps.get_llm_with_clone_id)],
     clone: Annotated[models.Clone, Depends(get_clone)],
     clonedb: Annotated[CreatorCloneDB, Depends(deps.get_creator_clonedb)],
 ):
+    # CreatorCloneDB is authenticated, but this route is still unavailable since it
+    # will incur a cost. We will likely need some kind of credits solution for creators
+    user = creator.user
+    if not user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
+            detail="Auto generated long descriptions for Creators is not yet enabled. Please contact us for more information.",
+        )
     long_desc = await Controller.generate_long_description(
         llm=llm, clone=clone, clonedb=clonedb
     )
@@ -334,6 +323,8 @@ async def create_document(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Document with name {doc_create.name} already exists.",
         )
+    # TODO (Jonny): When moving to TreeIndex or other LLM based indices, make sure
+    # that we gate these with credits for creators or something again
     doc = Document(
         index_type=IndexType.list, **doc_create.model_dump(exclude_unset=True)
     )
@@ -527,7 +518,3 @@ async def get_monologues(
     )
     m = await clonedb.db.scalars(q)
     return m.unique().all()
-
-
-# TODO (Jonny): Create a route for generating the long description. This is a function in clonr.generate
-# we just need to run some checks (like auth and making sure docs exist) and set this up.

@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     LLM: str
     OTEL_EXPORTER_OTLP_ENDPOINT: str
     APP_NAME: str = "clonr.server"
+    DEV: bool = False
+    IP_ADDR_RATE_LIMIT: str
+    OAUTH_REDIRECT_URL: str
+    HOST: str
 
 
 settings = Settings()

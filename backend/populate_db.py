@@ -9,11 +9,11 @@ from fastapi.encoders import jsonable_encoder
 
 from app.schemas import CloneCreate, DocumentCreate, MonologueCreate
 from app.settings import settings
-
-from clonr.data.parsers import WikipediaParser, WikiQuotesParser
+from clonr.data.parsers import WikipediaParser, WikiQuotesParser, FandomParser
 
 wiki_parser = WikipediaParser()
 quote_parser = WikiQuotesParser()
+fandom_parser = FandomParser()
 
 
 async def create_makima(headers: dict[str, str]):
@@ -23,7 +23,7 @@ async def create_makima(headers: dict[str, str]):
 
     monologues = makima_data["monologues"]
 
-    clone_create = CloneCreate(**makima_data, is_public=True, tags=["Anime"])
+    clone_create = CloneCreate(**makima_data, is_public=True, tags=[tag2int["Anime"]])
     clone_create.greeting_message = "Jonny-kun, have you been a good dog?"
 
     with open(Path("integration_tests") / "makima-document.txt", "r") as f:
@@ -80,7 +80,7 @@ async def create_feynman(headers):
         long_description="""Richard Feynman was a Jewish American theoretical physicist known for his contributions to theoretical physics and his ability to popularize complex scientific concepts. He was known for his love of jokes, his laid back attitude, and his knack for quickly understanding the physical world at extraordinarily deep level. In addition to his academic achievements, Feynman was known for his empathy, compassion, and ability to understand and share the feelings of others. His communication style was characterized by his New York accent and his ability to express complex scientific concepts in a relatable manner. Feynman's core characteristics included his curiosity, sense of humor, and ability to reflect on himself, emotions, and thoughts. He was also known for his resilience and personal growth, as evidenced by his ability to cope with stress, challenges, and setbacks. He was born on May 11, 1918, in Queens, New York City, and was heavily influenced by his father's encouragement to challenge orthodox thinking and his mother's sense of humor. Feynman showed early signs of his aptitude for theoretical physics during his childhood, and he had a talent for engineering. He attended Far Rockaway High School and later studied at the Massachusetts Institute of Technology and Princeton University, where he received his PhD in 1942. During his time at Los Alamos, Feynman made significant contributions to the Manhattan Project, including his work on the Bethe-Feynman formula for calculating the yield of a fission bomb. He also developed a series of safety recommendations for the handling of enriched uranium. Feynman's dedication to his work was evident in his decision to immerse himself in his research even after the death of his wife, Arline. His work on the project culminated in his presence at the Trinity nuclear test. After his time at Los Alamos, Feynman accepted a position at Cornell University, where he continued his research in theoretical physics. He played a key role in the development of quantum electrodynamics, introducing the use of Feynman diagrams to simplify complex calculations. His work revolutionized the field and had a lasting impact on the study of quantum mechanics. Overall, Richard Feynman was a brilliant physicist with a passion for understanding the world around him. His core characteristics, including his empathy, resilience, and self-awareness, shaped his approach to both his scientific work and his interactions with others.""",
         is_public=True,
         greeting_message="Nobody ever figures out what life is all about, and it doesn't matter. Explore the world. Nearly everything is really interesting if you go into it deeply enough.",
-        tags=["Famous People", "History"],
+        tags=[tag2int[x] for x in ["Famous People", "History"]],
         avatar_uri="https://upload.wikimedia.org/wikipedia/en/4/42/Richard_Feynman_Nobel.jpg",
     )
 
@@ -101,6 +101,63 @@ async def create_feynman(headers):
         headers=headers,
     )
     print(f"\033[1mRichard Feynman CloneID\033[0m: {clone_id}")
+
+
+async def create_miles_moralse(headers):
+    base = "http://localhost:8000"
+    doc = fandom_parser.extract(
+        url="https://marvel.fandom.com/wiki/Miles_Morales_(Earth-1610)/Expanded_History"
+    )
+
+    monologues = [
+        MonologueCreate(content=content, source="wikiquotes")
+        for content in [
+            "I think you're gonna be a bad teacher",
+            "You can teach me to be Spider-Man!",
+            "Bro, how many more Spider-people are there?",
+            "When will I know I'm ready?",
+            "I’ll always have my family ya know?",
+            "Officer, I love you 😂"
+            "Okay, let's do this one last time, yeah? For real this time. This is it.",
+            "Cause I'm Spider-Man, and I'm not the only one, not by a long shot.",
+            "hahaha what's good my man?",
+            "maaan are you for real tho? Psssht that can't be true",
+            "You're using words longer than 'Crush' and 'Smash' very unexpected",
+        ]
+    ]
+
+    doc_create = DocumentCreate(
+        **doc.model_dump(exclude={"name"}),
+        name="Miles Morales fandom",
+    )
+
+    clone_create = CloneCreate(
+        name="Miles Morales2",
+        short_description="The biracial teenage son of an African-American father and a Puerto Rican mother, Miles Morales is the second Spider-Man to appear in Ultimate Marvel.",
+        long_description="""In an alternate reality, Miles Morales follows in the footsteps of the slain Peter Parker to become the masked Super Hero known as Spider-Man. Splitting his time between fighting crime and managing his teenage personal life, Morales has to hide his identity from his parents, but confides in his best friend Ganke and other trustworthy members of the Super Hero community. Where the original Spider-Man lived by his Uncle Ben's maxim, "With great power comes great responsibility," Miles Morales adds the addendum, "What would Peter Parker do?" Miles is an outgoing, curious teenager, often seen with a pair of beats headphones around his neck listening to the latest hip hop tracks. He's excited to step into the role as the new spiderman, but anxious about carrying on the legacy. With a fierce love for his city of New York, he knows the subways and alleys like the back of his hand. He's fun, drives the conversation forward when appropriate, has a quick wit for teasing people, and eager to meet new people; also, doesn't mind telling people he's spiderman. He does not repeat himself, and knows when not to ask questions. Miles replies in the style of a text message conversation, with no more than 30 words per response.""",
+        is_public=True,
+        greeting_message="Yo, maybe you've heard of me before, I've got a large web presence.. but like not on the internet haha",
+        tags=[3, 8],
+        avatar_uri="https://upload.wikimedia.org/wikipedia/en/1/1f/Spider-Man_%28Miles_Morales%29.jpg",
+    )
+
+    r = requests.post(
+        base + "/clones/",
+        headers=headers,
+        json=clone_create.model_dump(exclude_unset=True, exclude={"tags"}),
+    )
+    clone_id = r.json()["id"]
+    r = requests.post(
+        base + f"/clones/{clone_id}/documents",
+        json=doc_create.model_dump(),
+        headers=headers,
+    )
+    r = requests.post(
+        base + f"/clones/{clone_id}/monologues",
+        json=jsonable_encoder(monologues),
+        headers=headers,
+    )
+    print(f"\033[1mMiles Morales CloneID\033[0m: {clone_id}")
 
 
 async def main(n: int):
@@ -132,6 +189,8 @@ async def main(n: int):
         "http://localhost:8000/tags", headers=headers, params=dict(limit=2)
     )
     r.raise_for_status()
+    global tag2int
+    tag2int = {x["name"]: x["id"] for x in r.json()}
     assert r.status_code == 200
 
     print("Preparing c.ai clones")
@@ -152,7 +211,7 @@ async def main(n: int):
                 avatar_uri=avatar_uri,
                 long_description=long_description,
                 is_public=True,
-                tags=[tag_id],  # tags=[tag, random.choice(TAGS), TAGS[10]],
+                tags=[tag2int[tag]],
             )
             clone_data.append(x.model_dump())
 
@@ -170,8 +229,9 @@ async def main(n: int):
                     print("Error: ", e)
             await tqdm.asyncio.tqdm_asyncio.gather(*tasks)
 
-    # await create_makima(headers=headers)
-    # await create_feynman(headers=headers)
+    await create_makima(headers=headers)
+    await create_feynman(headers=headers)
+    await create_miles_moralse(headers=headers)
 
 
 if __name__ == "__main__":

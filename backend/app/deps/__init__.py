@@ -7,9 +7,8 @@ from .text import get_text_splitter, get_tokenizer
 from .users import (
     get_current_active_creator,
     get_current_active_user,
-    get_free_limit_user,
+    get_free_or_paying_user,
     get_optional_current_active_user,
-    get_paying_user,
     get_superuser,
     get_user_db,
     get_user_manager,

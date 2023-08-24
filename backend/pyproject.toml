@@ -44,6 +44,7 @@ opentelemetry-instrumentation-redis = "^0.40b0"
 opentelemetry-instrumentation-logging = "^0.40b0"
 opentelemetry-exporter-otlp = "^1.19.0"
 beautifulsoup4 = "^4.12.2"
+coredis = "^4.15.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
