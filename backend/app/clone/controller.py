@@ -11,6 +11,7 @@ from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models, schemas
+from app.deps.users import Plan
 from app.embedding import EmbeddingClient
 from app.settings import settings
 from clonr import generate, templates
@@ -92,6 +93,7 @@ class Controller:
         clone: models.Clone,
         user: models.User,
         conversation: models.Conversation,
+        subscription_plan: Plan,
         background_tasks: BackgroundTasks,
     ):
         self.llm = llm
@@ -100,6 +102,7 @@ class Controller:
         self.user = user
         self.conversation = conversation
         self.background_tasks = background_tasks
+        self.subscription_plan = subscription_plan
 
     @property
     def memory_strategy(self) -> schemas.MemoryStrategy:

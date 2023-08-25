@@ -7,6 +7,8 @@ ENV PYTHONUNBUFFERED=true \
   PIP_DEFAULT_TIMEOUT=100 \
   DEBIAN_FRONTEND=noninteractive
 
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
 RUN python -m pip install --no-cache-dir --upgrade pip
 
 RUN pip install poetry
@@ -15,12 +17,11 @@ COPY ./pyproject.toml ./poetry.lock* ./
 
 RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
 
-RUN --mount=type=cache,target=/root/.cache/pip python3.10 -m pip install --no-cache-dir --upgrade -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip python -m pip install --no-cache-dir --upgrade -r requirements.txt
 
 RUN python -c "import nltk; nltk.download('punkt')"
 
 # To test, run: docker exec -it <container-id-here> pytest -v--disable-warnings ./tests
-RUN pip install opentelemetry-sdk && pip install opentelemetry-exporter-otlp-proto-grpc
 
 COPY ./alembic.ini /alembic.ini
 COPY ./migrations /migrations
@@ -34,6 +35,5 @@ COPY ./clonr /clonr
 # RUN python -c "from clonr.tokenizer import Tokenizer; Tokenizer.from_huggingface('hf-internal-testing/llama-tokenizer')"
 # COPY ./tests /tests
 # COPY ./.env.dev /.env
-
 
 ENTRYPOINT [ "python", "-m", "app.main"]

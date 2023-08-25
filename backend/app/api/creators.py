@@ -1,11 +1,13 @@
+import uuid
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Path, status
 from fastapi.responses import Response
 from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import deps, models, schemas
+from app.settings import settings
 
 router = APIRouter(
     prefix="/creators",
@@ -59,6 +61,34 @@ async def get_by_id(
     )
 
 
+@router.patch("/{creator_id}", response_model=schemas.Creator)
+async def patch_creator_as_superuser(
+    obj: schemas.CreatorPatch,
+    creator_id: Annotated[uuid.UUID, Path()],
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    user: Annotated[models.User, Depends(deps.get_superuser)],
+):
+    if not (creator := await db.get(models.Creator, creator_id)):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Creator does not exist."
+        )
+    not_modified = True
+    for k, v in obj.model_dump(exclude_unset=True).items():
+        if v != getattr(creator, k):
+            not_modified = False
+            setattr(creator, k, v)
+    if not_modified:
+        raise HTTPException(
+            status_code=status.HTTP_304_NOT_MODIFIED,
+            detail="No modifications made to creator.",
+        )
+    else:
+        db.add(creator)
+        await db.commit()
+        await db.refresh(creator)
+        return creator
+
+
 @router.delete(
     "/{id}",
     dependencies=[Depends(deps.get_superuser)],
@@ -84,7 +114,7 @@ async def create(
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
     user: Annotated[models.User, Depends(deps.get_current_active_user)],
 ):
-    if not user.is_superuser:
+    if not settings.DEV and not user.is_superuser:
         # redirect to our signup page?
         # NOTE (Jonny): lol idk if this status is being used correctly
         raise HTTPException(

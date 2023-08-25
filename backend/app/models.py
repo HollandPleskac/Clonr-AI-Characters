@@ -114,7 +114,6 @@ class User(Base, SQLAlchemyBaseUserTableUUID):
     is_banned: Mapped[bool] = mapped_column(default=False)
     # Whether user is subscribed to premium plan, i.e. is paid
     stripe_customer_id: Mapped[str] = mapped_column(nullable=True)
-    is_subscribed: Mapped[bool] = mapped_column(default=False)
     nsfw_enabled: Mapped[bool] = mapped_column(default=False)
     # Number of free msgs sent
     num_free_messages_sent: Mapped[int] = mapped_column(default=0)
@@ -133,6 +132,9 @@ class User(Base, SQLAlchemyBaseUserTableUUID):
     creator: Mapped["Creator"] = relationship("Creator", back_populates="user")
     llm_calls: Mapped[list["LLMCall"]] = relationship(
         "LLMCall", back_populates="user", passive_deletes=True
+    )
+    subscriptions: Mapped[list["Subscription"]] = relationship(
+        "Subscription", back_populates="user"
     )
 
     def __repr__(self):
@@ -820,32 +822,34 @@ class LongDescription(CommonMixin, Base):
 
 
 # ------------- Stripe ------------- #
-# class UsageRecord(CommonMixin, Base):
-#     __tablename__ = "usage_records"
-
-#     user_id: Mapped[uuid.UUID] = mapped_column(
-#         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
-#     )
-#     subscription_id: Mapped[uuid.UUID] = mapped_column(
-#         sa.ForeignKey("subscriptions.id", ondelete="cascade"), nullable=False
-#     )
-#     quantity: Mapped[int] = mapped_column(sa.Integer, nullable=False)
-#     timestamp: Mapped[datetime.datetime] = mapped_column(nullable=True)
-
-
-# TODO: edit
 class Subscription(CommonMixin, Base):
     __tablename__ = "subscriptions"
 
-    # Should match Stripe's subscription id
-    subscription_id: Mapped[str] = mapped_column(nullable=False)
-    customer_id: Mapped[str] = mapped_column(nullable=False)
-    stripe_status: Mapped[str] = mapped_column(nullable=False)
-    stripe_created: Mapped[datetime.datetime]
-    stripe_current_period_start: Mapped[datetime.datetime]
-    stripe_current_period_end: Mapped[datetime.datetime]
-    stripe_cancel_at_period_end: Mapped[bool]
-    stripe_canceled_at: Mapped[datetime.datetime]
+    stripe_subscription_id: Mapped[str] = mapped_column(
+        nullable=False, primary_key=True
+    )
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        sa.DateTime(timezone=True), server_default=sa.func.now()
+    )
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        server_default=sa.func.now(),
+        onupdate=sa.func.current_timestamp(),
+    )
+    amount: Mapped[int]
+    currency: Mapped[str]
+    interval: Mapped[str]
+    stripe_customer_id: Mapped[str]
+    stripe_subscription_id: Mapped[str]
+    stripe_status: Mapped[str]
+    stripe_created: Mapped[int]
+    stripe_current_period_start: Mapped[int]
+    stripe_current_period_end: Mapped[int]
+    stripe_quantity: Mapped[int]
+    stripe_price_id: Mapped[str]
+    stripe_price_lookup_key: Mapped[str]
+    stripe_product_id: Mapped[str]
+    stripe_product_name: Mapped[str]
     user_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
