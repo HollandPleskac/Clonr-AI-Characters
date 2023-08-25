@@ -1,28 +1,24 @@
 import datetime
 import enum
-import uuid
 import json
+import uuid
 from typing import Annotated
 
 import sqlalchemy as sa
 from fastapi import Depends, HTTPException, Path, Query, status
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import Response
 from fastapi.routing import APIRouter
 from redis.asyncio import Redis
-from fastapi.encoders import jsonable_encoder
-
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.external.moderation import openai_moderation_check
+
 from app import deps, models, schemas
 from app.clone.controller import Controller
 from app.clone.types import AdaptationStrategy, InformationStrategy, MemoryStrategy
+from app.deps.limiter import user_id_cookie_fixed_window_ratelimiter
 from app.embedding import EmbeddingClient
+from app.external.moderation import openai_moderation_check
 from clonr.tokenizer import Tokenizer
-from app.deps.limiter import (
-    ip_addr_moving_ratelimiter,
-    user_id_cookie_fixed_window_ratelimiter,
-)
-
 
 router = APIRouter(
     prefix="/conversations",
@@ -413,10 +409,10 @@ async def receive_message(
     response_model=schemas.Message,
     status_code=201,
     dependencies=[
+        Depends(user_id_cookie_fixed_window_ratelimiter("3000/month")),
         Depends(
-            user_id_cookie_fixed_window_ratelimiter("3000/month"),
             user_id_cookie_fixed_window_ratelimiter("300/day"),
-        )
+        ),
     ],
 )
 async def generate_clone_message(

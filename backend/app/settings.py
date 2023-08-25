@@ -44,6 +44,8 @@ class Settings(BaseSettings):
     IP_ADDR_RATE_LIMIT: str
     OAUTH_REDIRECT_URL: str
     HOST: str
+    JWT_SECRET_KEY: str
+    JWT_ALGORITHM: str
 
 
 settings = Settings()

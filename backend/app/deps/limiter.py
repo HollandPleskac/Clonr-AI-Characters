@@ -1,5 +1,4 @@
 import time
-from loguru import logger
 from typing import Annotated, Awaitable
 
 from fastapi import Cookie, Depends, Request
@@ -7,8 +6,8 @@ from fastapi.exceptions import HTTPException
 from limits import parse
 from limits.aio.storage import RedisStorage
 from limits.aio.strategies import FixedWindowRateLimiter, MovingWindowRateLimiter
+from loguru import logger
 
-from app import deps
 from app.auth.users import AUTH_KEY_PREFIX
 from app.settings import settings
 
@@ -36,7 +35,7 @@ def user_id_cookie_fixed_window_ratelimiter(
     window: str,
 ) -> Awaitable:
     try:
-        window_obj = parse(window)
+        parse(window)
     except Exception as e:
         logger.error(e)
         raise HTTPException(status_code=500, detail=str(e))

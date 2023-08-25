@@ -9,10 +9,10 @@ from pydantic import (
     AfterValidator,
     BaseModel,
     ConfigDict,
+    EmailStr,
     Field,
     ValidationInfo,
     model_validator,
-    EmailStr,
 )
 
 from app.clone.types import AdaptationStrategy, InformationStrategy, MemoryStrategy

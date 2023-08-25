@@ -9,7 +9,7 @@ from fastapi.encoders import jsonable_encoder
 
 from app.schemas import CloneCreate, DocumentCreate, MonologueCreate
 from app.settings import settings
-from clonr.data.parsers import WikipediaParser, WikiQuotesParser, FandomParser
+from clonr.data.parsers import FandomParser, WikipediaParser, WikiQuotesParser
 
 wiki_parser = WikipediaParser()
 quote_parser = WikiQuotesParser()
@@ -196,7 +196,7 @@ async def main(n: int):
     print("Preparing c.ai clones")
     clone_data = []
     for tag, items in data["characters_by_curated_category"].items():
-        tag_id = next((t["id"] for t in TAGS if t["name"] == tag), None)
+        # tag_id = next((t["id"] for t in TAGS if t["name"] == tag), None)
         for item in items:
             avatar_uri = f"https://characterai.io/i/400/static/avatars/{item['avatar_file_name']}"
             long_description = item["title"] + "\n" + item["greeting"]

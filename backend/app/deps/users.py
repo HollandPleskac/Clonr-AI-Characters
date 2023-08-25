@@ -9,8 +9,8 @@ from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
-from app.settings import settings
 from app.auth.users import AUTH_KEY_PREFIX, UserManager, auth_backend
+from app.settings import settings
 
 from .db import get_async_redis, get_async_session
 
@@ -55,14 +55,13 @@ async def get_free_or_paying_user(
             status_code=status.HTTP_451_UNAVAILABLE_FOR_LEGAL_REASONS,
             detail="User is currently banned. Please contact support for more information.",
         )
-    if (
-        not user.is_subscribed
-        and user.num_free_messages_sent <= settings.NUM_FREE_MESSAGES
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail="The number of free messages has been reached. Please subscribe to continue.",
-        )
+    subs = user.subscriptions
+    if all(s.stripe_status != "active" for s in subs):
+        if user.num_free_messages_sent >= settings.NUM_FREE_MESSAGES:
+            raise HTTPException(
+                status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                detail="The number of free messages has been reached. Please subscribe to continue.",
+            )
     return user
 
 

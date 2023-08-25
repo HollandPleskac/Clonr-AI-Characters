@@ -1,11 +1,12 @@
 from typing import Annotated
-from fastapi import Depends, status, Query
+
+import sqlalchemy as sa
+from fastapi import Depends, Query, status
 from fastapi.exceptions import HTTPException
 from fastapi.routing import APIRouter
-import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
-from app import deps, models, schemas
 
+from app import deps, models, schemas
 
 router = APIRouter(
     prefix="/signup",

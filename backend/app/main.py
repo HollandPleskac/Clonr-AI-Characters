@@ -4,13 +4,13 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 import uvicorn
-from fastapi import Depends, FastAPI, Response
+from fastapi import FastAPI, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from opentelemetry import metrics
 
-from app import api, deps, models, schemas
+from app import api, schemas
 from app.auth.users import (
     auth_backend,
     discord_oauth_client,
@@ -28,10 +28,9 @@ from app.db import (
 )
 from app.deps.users import fastapi_users
 from app.embedding import wait_for_embedding
-from app.settings import settings
-from app.middleware.tracing import setup_tracing
 from app.middleware.rate_limiter import IpAddrRateLimitMiddleware
-
+from app.middleware.tracing import setup_tracing
+from app.settings import settings
 
 if not settings.DEV:
     import sentry_sdk
