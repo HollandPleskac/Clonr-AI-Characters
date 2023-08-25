@@ -12,13 +12,15 @@ const axios = require('axios').default
 import Carousel from './Carousel'
 import TopBar from '@/components/TopBar'
 import AlertBar from '@/components/AlertBar'
-import { Character } from '@/types'
+import { Character, User } from '@/types'
 import { CloneSearchResult } from '@/client/models/CloneSearchResult'
 import SearchGrid from './SearchGrid'
 import StatBar from '../Statistics/StatBar'
 import ScaleFadeIn from '../Transitions/ScaleFadeIn'
 import { useQueryClones } from '@/hooks/useClones'
 import AuthModal from '../AuthModal'
+import { ColorRing } from "react-loader-spinner"
+import useSWR from 'swr'
 
 interface HomeScreenProps {
   topCharacters: Character[]
@@ -50,10 +52,10 @@ export default function HomeScreen({
   }
 
   // Regular clone data
-  const {data, isLoading} = useQueryClones(queryParams);
+  const { data, isLoading } = useQueryClones(queryParams);
 
   console.log("THIS IS DATA: ", data)
-  
+
   // search grid characters state
   const [searchInput, setSearchInput] = useState('')
   const [searchedCharacters, setSearchedCharacters] = useState<any>([])
@@ -78,8 +80,8 @@ export default function HomeScreen({
   }
 
   // Searched chars data
-  const {data: topSearchData, isLoading: isTopLoadingSearch} = useQueryClones(topSearchQueryParams);
-  const {data: trendingData, isLoading: isTrendingLoading} = useQueryClones(trendingQueryParams);
+  const { data: topSearchData, isLoading: isTopLoadingSearch } = useQueryClones(topSearchQueryParams);
+  const { data: trendingData, isLoading: isTrendingLoading } = useQueryClones(trendingQueryParams);
 
   useEffect(() => {
     setTopChars(data)
@@ -90,10 +92,10 @@ export default function HomeScreen({
   useEffect(() => {
     setSearchedCharacters(topSearchData)
   }, [isTopLoadingSearch])
-  
+
   const fetchMoreGridData = () => {
     // TODO: edit, incorporate useSWRInfinite on infinite scroll side
-}
+  }
 
   useEffect(() => {
     if (searchInput === '') {
@@ -105,15 +107,9 @@ export default function HomeScreen({
           setShowSearchGrid(true)
         }, duration)
         return () => clearTimeout(timer)
-      }
+      } 
     }
   }, [searchInput])
-
-  if (!topChars || topChars.length === 0 || continueChars.length === 0 || trendingChars.length === 0) {
-    return (
-        <div> Loading chars... </div>
-    )
-}
 
   return (
     <div className='pb-[75px]'>
@@ -124,7 +120,7 @@ export default function HomeScreen({
         onSearchInput={(x) => setSearchInput(x)}
         clearSearchInput={() => setSearchInput('')}
       />
-      {showSearchGrid ? (
+      {showSearchGrid && (
         <ScaleFadeIn loaded={showSearchGrid} duration={duration}>
           <SearchGrid
             characters={searchedCharacters}
@@ -133,36 +129,57 @@ export default function HomeScreen({
             hasMoreData={hasMoreData}
           />
         </ScaleFadeIn>
-      ) : (
+      )}
+
+      {!showSearchGrid && (
         <ScaleFadeIn loaded={!searchInput} duration={duration}>
-          {/* <StripeCheckoutButton /> */}
-          <Carousel
-            characters={topChars}
-            name='Top Characters'
-            isBigCarousel={true}
-            zIndex={40}
-          />
-          {/* <StatBar /> */}
-          <Carousel
-            characters={continueChars}
-            name='Continue Chatting'
-            isBigCarousel={false}
-            zIndex={30}
-          />
-          <Carousel
-            characters={trendingChars}
-            name='Trending'
-            isBigCarousel={false}
-            zIndex={20}
-          />
-          {/* <Carousel
+          {(!topChars || topChars.length === 0 || continueChars.length === 0 || trendingChars.length === 0) ? (
+            <div className='grid place-items-center'
+            style={{
+              height: 'calc(100vh - 48px - 84px)'
+            }}
+            >
+              <ColorRing
+                visible={true}
+                height="80"
+                width="80"
+                ariaLabel="blocks-loading"
+                wrapperStyle={{}}
+                wrapperClass="blocks-wrapper"
+                colors={['#9333ea', '#9333ea', '#9333ea', '#9333ea', '#9333ea']}
+              />
+            </div>
+          ) : (
+            <>
+              <Carousel
+                characters={topChars}
+                name='Top Characters'
+                isBigCarousel={true}
+                zIndex={40}
+              />
+              {/* <StatBar /> */}
+              <Carousel
+                characters={continueChars}
+                name='Continue Chatting'
+                isBigCarousel={false}
+                zIndex={30}
+              />
+              <Carousel
+                characters={trendingChars}
+                name='Trending'
+                isBigCarousel={false}
+                zIndex={20}
+              />
+              {/* <Carousel
             characters={anime}
             name='Anime'
             isBigCarousel={false}
             zIndex={10}
-          /> */}
+          /> */}</>
+          )}
         </ScaleFadeIn>
       )}
+
       <AuthModal />
     </div>
   )

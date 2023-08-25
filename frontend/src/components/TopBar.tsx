@@ -9,6 +9,10 @@ import SearchIcon from './SearchIcon'
 import XIcon from './XIcon'
 import { usePathname } from 'next/navigation'
 import AccountDropdown from './AccountDropdown'
+import { User } from '@/types'
+import axios from 'axios'
+import useSWR from 'swr'
+import { useUser } from '@/hooks/useUser'
 interface TopBarProps {
   searchInput: string
   onSearchInput: (input: string) => void
@@ -18,8 +22,10 @@ interface TopBarProps {
 export default function TopBar({
   searchInput,
   onSearchInput,
-  clearSearchInput,
+  clearSearchInput
 }: TopBarProps): React.ReactElement {
+  const { userObject, isUserLoading } = useUser()
+
   const pathname = usePathname()
 
   // search state
@@ -139,7 +145,8 @@ export default function TopBar({
                   Home
                 </Link>
 
-                <Link
+                {(!isUserLoading && userObject) && (
+                  <Link
                   href='/pricing'
                   className={`transition duration-200 ${pathname === '/create'
                     ? 'text-white font-semibold'
@@ -148,6 +155,7 @@ export default function TopBar({
                 >
                   Pricing
                 </Link>
+                )}
                 <Link
                   href='/browse'
                   className={`transition duration-200 ${pathname === '/browse'
@@ -238,7 +246,7 @@ export default function TopBar({
                 </Link>
               </div>
               <div className='hidden lg:flex items-center gap-x-4 text-white'>
-                
+
                 <div
                   className='relative group'
                   onClick={() => {
@@ -324,7 +332,16 @@ export default function TopBar({
                     </svg>
                   </a>
                 </div>
-                <AccountDropdown />
+                {(userObject && !isUserLoading) && <AccountDropdown userObject={userObject} />}
+                {(!userObject && !isUserLoading) && (
+                  <div className='flex items-center gap-x-3 text-white font-semibold' >
+                    <Link href='/login' className='text-[#e5e5e5] hover:text-[#979797]' >Sign in</Link>
+                    <Link href='/signup' className='text-[#e5e5e5] hover:text-[#979797]' >Sign up</Link>
+                  </div>
+                )}
+                {isUserLoading && (
+                  <div className='h-[40px] w-[40px] ' >&nbsp;</div>
+                )}
               </div>
             </div>
           </div>

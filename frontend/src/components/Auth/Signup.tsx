@@ -9,7 +9,7 @@ const SignupModal = () => {
         <div className='p-4 sm:p-7'>
           <div className='text-center'>
             <h1 className='mb-2 block text-2xl font-bold text-gray-800 dark:text-white'>
-              Sign up
+              Sign up for Clonr
             </h1>
           </div>
 

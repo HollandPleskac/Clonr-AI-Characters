@@ -1,3 +1,5 @@
+import { type } from "os"
+
 const BreakpointValues: Record<Breakpoint, number> = {
   XS: 480,
   SM: 640,
@@ -138,4 +140,17 @@ export type Section = {
   endpoint: string
   defaultCard?: boolean
   topList?: boolean
+}
+
+export type User = {
+  id: string;
+  email: string;
+  is_active: boolean;
+  is_superuser: boolean;
+  is_verified: boolean;
+  private_chat_name: string;
+  is_banned: boolean;
+  nsfw_enabled: boolean;
+  num_free_messages_sent: number;
+  is_subscribed: boolean;
 }

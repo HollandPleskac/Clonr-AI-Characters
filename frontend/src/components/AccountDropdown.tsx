@@ -1,24 +1,31 @@
+import { User } from '@/types'
 import Link from 'next/link'
 import React from 'react'
 
-const AccountDropdown = () => {
+interface AccountDropdownProps {
+  userObject: User
+}
+
+const AccountDropdown = ({userObject}:AccountDropdownProps) => {
+  console.log("user object", userObject)
   return (
     <div className='hs-dropdown relative inline-flex justify-center items-center'>
       <button
         id='hs-dropdown-with-header'
         type='button'
-        className='hs-dropdown-toggle cursor-pointer text-white h-[40px] w-[40px] bg-[#979797] rounded-full grid place-items-center hover:ring-1 hover:ring-[rgba(255,255,255,0.2)] '
+        disabled={!userObject}
+        className='hs-dropdown-toggle text-white h-[40px] w-[40px] bg-[#979797] rounded-full grid place-items-center hover:ring-1 hover:ring-[rgba(255,255,255,0.2)] '
       >
-        J
+        {userObject?.email?.charAt(0) || ''}
       </button>
 
       <div
-        className='hs-dropdown-menu transition-[opacity,margin] duration hs-dropdown-open:opacity-100 opacity-0 hidden min-w-[15rem]  shadow-md rounded-lg p-2 mt-2 bg-gray-900 border border-gray-700'
+        className='hs-dropdown-menu transition-[opacity,margin] duration hs-dropdown-open:opacity-100 opacity-0 hidden min-w-[15rem]  shadow-md rounded-lg p-2 mt-2 bg-black border border-gray-700'
         aria-labelledby='hs-dropdown-with-header'
       >
-        <div className='py-3 px-5 -m-2 rounded-t-lg bg-gray-800'>
+        <div className='py-3 px-5 -m-2 rounded-t-lg bg-gray-700'>
           <p className='text-sm text-gray-400'>Signed in as</p>
-          <p className='text-sm font-medium text-gray-300'>james@site.com</p>
+          <p className='text-sm font-medium text-gray-300'>{userObject?.email || ''}</p>
         </div>
         <div className='mt-2 py-2 first:pt-0 last:pb-0'>
           <Link

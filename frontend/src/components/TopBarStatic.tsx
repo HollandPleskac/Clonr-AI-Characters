@@ -9,6 +9,7 @@ import SearchIcon from './SearchIcon'
 import XIcon from './XIcon'
 import { usePathname } from 'next/navigation'
 import AccountDropdown from './AccountDropdown'
+import { useUser } from '@/hooks/useUser'
 interface TopBarProps {
   searchInput: string
   onSearchInput: (input: string) => void
@@ -16,6 +17,7 @@ interface TopBarProps {
 }
 
 export default function TopBar() {
+  const { userObject, isUserLoading } = useUser()
   const pathname = usePathname()
 
   // search state
@@ -47,7 +49,7 @@ export default function TopBar() {
               <p className='text-white font-thin ml-2 align-middle'>users</p>
             </Link>
             <div className='flex lg:hidden gap-x-4'>
-              
+
               <button
                 type='button'
                 className='w-[35px] h-[35px] hs-collapse-toggle p-2 inline-flex justify-center items-center gap-2 rounded-md border font-medium bg-white text-gray-700 shadow-sm align-middle hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-purple-600 transition-all text-sm dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white dark:focus:ring-offset-gray-800'
@@ -87,42 +89,40 @@ export default function TopBar() {
               <div className='flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-start'>
                 <Link
                   href='/'
-                  className={`transition duration-200 lg:ml-4 ${
-                    pathname === '/'
-                      ? 'text-white font-semibold'
-                      : 'text-[#e5e5e5] hover:text-[#979797]'
-                  } translate-y-[6px]`}
+                  className={`transition duration-200 lg:ml-4 ${pathname === '/'
+                    ? 'text-white font-semibold'
+                    : 'text-[#e5e5e5] hover:text-[#979797]'
+                    } translate-y-[6px]`}
                 >
                   Home
                 </Link>
 
-                <Link
-                  href='/pricing'
-                  className={`transition duration-200 ${
-                    pathname === '/create'
-                      ? 'text-white font-semibold'
-                      : 'text-[#e5e5e5] hover:text-[#979797]'
-                  } translate-y-[6px]`}
-                >
-                  Pricing
-                </Link>
+                {(!isUserLoading && userObject) && (
+                    <Link
+                      href='/pricing'
+                      className={`transition duration-200 ${pathname === '/create'
+                        ? 'text-white font-semibold'
+                        : 'text-[#e5e5e5] hover:text-[#979797]'
+                        } translate-y-[6px]`}
+                    >
+                      Pricing
+                    </Link>
+                  )}
                 <Link
                   href='/browse'
-                  className={`transition duration-200 ${
-                    pathname === '/browse'
-                      ? 'text-white font-semibold'
-                      : 'text-[#e5e5e5] hover:text-[#979797]'
-                  } translate-y-[6px]`}
+                  className={`transition duration-200 ${pathname === '/browse'
+                    ? 'text-white font-semibold'
+                    : 'text-[#e5e5e5] hover:text-[#979797]'
+                    } translate-y-[6px]`}
                 >
                   Browse
                 </Link>
                 <Link
                   href='#'
-                  className={`transition duration-200 ${
-                    pathname === '/create'
-                      ? 'text-white font-semibold'
-                      : 'text-[#e5e5e5]'
-                  } translate-y-[6px]`}
+                  className={`transition duration-200 ${pathname === '/create'
+                    ? 'text-white font-semibold'
+                    : 'text-[#e5e5e5]'
+                    } translate-y-[6px]`}
                 >
                   <span>
                     Create <sup className=''>Coming Soon</sup>
@@ -179,29 +179,40 @@ export default function TopBar() {
                 </div>
                 <Link
                   href='/browse'
-                  className={`transition duration-200 ${
-                    pathname === '/account'
-                      ? 'text-white font-semibold'
-                      : 'text-[#e5e5e5] hover:text-[#979797]'
-                  } translate-y-[6px] block lg:hidden`}
+                  className={`transition duration-200 ${pathname === '/account'
+                    ? 'text-white font-semibold'
+                    : 'text-[#e5e5e5] hover:text-[#979797]'
+                    } translate-y-[6px] block lg:hidden`}
                 >
                   Manage Account
                 </Link>
                 <Link
                   href='/browse'
-                  className={`transition duration-200 ${
-                    pathname === '/account'
-                      ? 'text-white font-semibold'
-                      : 'text-[#e5e5e5] hover:text-[#979797]'
-                  } translate-y-[6px] block lg:hidden`}
+                  className={`transition duration-200 ${pathname === '/account'
+                    ? 'text-white font-semibold'
+                    : 'text-[#e5e5e5] hover:text-[#979797]'
+                    } translate-y-[6px] block lg:hidden`}
                 >
                   Logout
                 </Link>
               </div>
               <div className='hidden lg:flex items-center gap-x-4 text-white'>
-                
 
-                <AccountDropdown />
+                {(!userObject && !isUserLoading) && (
+                  // <div className='h-[40px] w-[40px] bg-[#979797] rounded-full grid place-items-center' >
+                  //  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  // </div>
+                  <div className='flex items-center gap-x-3 text-white font-semibold' >
+                    <Link href='/login' className='text-[#e5e5e5] hover:text-[#979797]' >Sign in</Link>
+                    <Link href='/signup' className='text-[#e5e5e5] hover:text-[#979797]' >Sign up</Link>
+                  </div>
+                )}
+                {(userObject && !isUserLoading) && (
+                  <AccountDropdown userObject={userObject} />
+                )}
+                {isUserLoading && (
+                  <div className='h-[40px] w-[40px] ' >&nbsp;</div>
+                )}
               </div>
             </div>
           </div>
