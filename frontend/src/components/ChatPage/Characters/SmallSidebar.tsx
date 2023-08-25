@@ -2,36 +2,54 @@ import Link from "next/link"
 
 import Image from 'next/image'
 import InfiniteScroll from "react-infinite-scroll-component"
-import { CharacterChat } from "@/types"
+import { Character, CharacterChat } from "@/types"
 import { useEffect, useRef, useState } from "react"
 import SearchIcon from "./SearchIcon"
 import CharacterComponent from './Character'
+import useConversations from "@/hooks/useConversations"
+import { ColorRing } from "react-loader-spinner"
 
 interface SmallNavProps {
-  initialCharacterChats: CharacterChat[]
-  currentCharacterId: string
+  characterId: string
+  conversationId: string,
+  character: Character
 }
 
 export default function SmallNav({
-  initialCharacterChats,
-  currentCharacterId,
+  characterId,
+  conversationId,
+  character
 }: SmallNavProps) {
-  const [characterChats, setCharacterChats] = useState<CharacterChat[]>(
-    initialCharacterChats
-  )
 
-  console.log("in Characters, initialCharacterChats -> ", initialCharacterChats)
+  const { queryConversationMessages } = useConversations();
+
+  const [characterChats, setCharacterChats] = useState<CharacterChat[]>([]);
+  const [isFetching, setIsFetching] = useState(true)
+
+  // Fetch Initial Data
+  async function fetchData() {
+    if (conversationId !== 'convo') {
+      const chats = await queryConversationMessages(conversationId)
+
+      const characterChat = {
+        character: character,
+        lastMessage: chats[chats.length - 1].content,
+        lastConversationId: conversationId,
+      }
+
+      setCharacterChats([characterChat]);
+    }
+    setIsFetching(false)
+  }
 
   useEffect(() => {
-    setCharacterChats(initialCharacterChats)
-  }, [initialCharacterChats])
+    fetchData()
+  }, [])
 
   // search state
   const [isInputActive, setInputActive] = useState(false)
   const handleInputFocus = () => setInputActive(true)
   const handleInputBlur = () => setInputActive(false)
-
-  const sidebarRef = useRef<HTMLDivElement | null>(null)
 
   const fetchMoreData = () => {
     // FETCH A LIST OF CHARACTER CHAT OBJECTS HERE
@@ -107,33 +125,50 @@ export default function SmallNav({
           </div>
         </div>
         {/* Characters */}
-        <div
-          className='overflow-auto transition-all duration-100'
-          id='scrollableDiv'
-          style={{
-            height: 'calc(100vh - 144px)',
-            overflow: 'auto',
-            scrollBehavior: 'smooth',
-          }}
-        >
-          <InfiniteScroll
-            dataLength={characterChats.length}
-            next={fetchMoreData}
-            hasMore={true}
-            loader={<h4>Loading...</h4>}
-            scrollableTarget='scrollableDiv'
-            className='flex flex-col'
-          >
-
-            {characterChats.map((charChat, index) => (
-              <CharacterComponent
-                key={charChat.character.id}
-                characterChat={charChat}
-                currentCharacterId={currentCharacterId}
+        {
+          isFetching && (
+            <div className="grid place-items-center" >
+              <ColorRing
+                visible={true}
+                height="80"
+                width="80"
+                ariaLabel="blocks-loading"
+                wrapperStyle={{}}
+                wrapperClass="blocks-wrapper"
+                colors={['#9333ea', '#9333ea', '#9333ea', '#9333ea', '#9333ea']}
               />
-            ))}
-          </InfiniteScroll>
-        </div>
+            </div>
+          )
+        }
+        {!isFetching && (
+          <div
+            className='overflow-auto transition-all duration-100'
+            id='scrollableDiv'
+            style={{
+              height: 'calc(100vh - 144px)',
+              overflow: 'auto',
+              scrollBehavior: 'smooth',
+            }}
+          >
+            <InfiniteScroll
+              dataLength={characterChats.length}
+              next={fetchMoreData}
+              hasMore={true}
+              loader={<h4>Loading...</h4>}
+              scrollableTarget='scrollableDiv'
+              className='flex flex-col'
+            >
+
+              {characterChats.map((charChat, index) => (
+                <CharacterComponent
+                  key={charChat.character.id}
+                  characterChat={charChat}
+                  currentCharacterId={characterId}
+                />
+              ))}
+            </InfiniteScroll>
+          </div>
+        )}
       </div>
     </>
   )

@@ -1,7 +1,6 @@
 import './globals.css'
 import 'regenerator-runtime/runtime'
 import type { Metadata } from 'next'
-import AuthModal from '@/components/AuthModal'
 // import { Inter } from 'next/font/google'
 // const inter = Inter({ subsets: ['latin'] })
 

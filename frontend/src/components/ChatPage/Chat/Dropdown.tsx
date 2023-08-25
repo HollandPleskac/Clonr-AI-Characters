@@ -3,13 +3,15 @@
 import React from 'react'
 import HorizontalDotsBig from '@/svg/ChatPage/Chat/horizontal-dots-big.svg'
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 
 type ChatDropdownProps = {
   toggleChatState: () => void
   showChat: boolean
+  characterId: string
 }
 
-const ChatDropdown = ({ toggleChatState, showChat }: ChatDropdownProps) => {
+const ChatDropdown = ({ toggleChatState, showChat, characterId }: ChatDropdownProps) => {
   const [renderChat, setRenderChat] = useState(showChat)
   useEffect(() => {
     // set a timeout to update renderChat after 200ms
@@ -41,7 +43,9 @@ const ChatDropdown = ({ toggleChatState, showChat }: ChatDropdownProps) => {
           </span> */}
 
           {renderChat && (
-            <button className='w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-purple-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300'>
+            <Link
+              href={`http://localhost:3002/chat/${characterId}/convo`}
+              className='w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-purple-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300'>
               <div className='w-4 h-4'>
                 <svg
                   width='16'
@@ -60,7 +64,7 @@ const ChatDropdown = ({ toggleChatState, showChat }: ChatDropdownProps) => {
                 </svg>
               </div>
               Save and restart chat
-            </button>
+            </Link>
           )}
 
           <button

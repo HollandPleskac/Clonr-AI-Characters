@@ -16,34 +16,24 @@ type ChatTopBarProps = {
   handleInputBlur: () => void
   toggleChatState: () => void
   showChat: boolean
-  initialCharacterChats: CharacterChat[],
-  currentCharacterId: string
+  characterId: string
+  conversationId: string
 }
 
 const ChatTopBar = ({
   character,
   inputRef,
-  isInputActive,
   handleInputBlur,
   handleInputFocus,
   toggleChatState,
   showChat,
-  initialCharacterChats,
-  currentCharacterId,
+  characterId,
+  conversationId
 }: ChatTopBarProps) => {
   return (
     <div className='flex h-[122px] w-full items-center justify-between border-b border-[#252525] px-10'>
       <div className='flex items-center'>
-        <SmallNav initialCharacterChats={initialCharacterChats} currentCharacterId={currentCharacterId} />
-
-        {/* <Image
-          key={0}
-          src={character.avatar_uri}
-          alt={`Character Profile Picture ${0 + 1}`}
-          width={55}
-          height={55}
-          className='rounded-full'
-        /> */}
+        <SmallNav characterId={characterId} conversationId={conversationId} character={character} />
         <div className='h-[55px] w-[55px] relative'>
           <Image
             src={character.avatar_uri}
@@ -97,7 +87,7 @@ const ChatTopBar = ({
             <Paperclip />
           </button>
 
-          <ChatDropdown toggleChatState={toggleChatState} showChat={showChat} />
+          <ChatDropdown toggleChatState={toggleChatState} showChat={showChat} characterId={character.id} />
         </div>
       )}
       {!showChat && (

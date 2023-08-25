@@ -1,0 +1,11 @@
+Separate chat/charId/convoID
+
+into 2 server components 
+- keep client components as leaves
+- weird to pass server components through props
+- can easily mimic other stuff on website like search bar, input bar and make them temporarily unclickable
+
+1. sidebar
+
+
+2. chatscreen

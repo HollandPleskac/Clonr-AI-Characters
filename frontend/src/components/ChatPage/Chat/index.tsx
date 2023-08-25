@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import { useEffect, useRef, KeyboardEvent } from 'react'
 
 import { useState } from 'react'
@@ -8,8 +7,7 @@ import MessageComponent from './ChatTypes/Message'
 
 import SmileIcon from '@/svg/ChatPage/Chat/smile-icon.svg'
 import SendIcon from '@/svg/ChatPage/Chat/SendIcon'
-import axios from 'axios'
-import { ThreeDots } from 'react-loader-spinner'
+import { ColorRing, ThreeDots } from 'react-loader-spinner'
 
 import { Character, CharacterChat, Message } from '@/types'
 import InfiniteScroll from 'react-infinite-scroll-component'
@@ -17,16 +15,11 @@ import ChooseChatExperience from './ChooseChatExperience'
 import PreviousConversations from './PreviousConversations'
 import ChatTopBar from './ChatTopBar'
 import useConversations from '@/hooks/useConversations'
-import SmallNav from '@/components/ChatPage/Characters/SmallSidebar'
 
 interface ChatScreenProps {
   characterId: string
   conversationId: string
   character: Character
-  initialMessages: Message[]
-  initialConversationState: string
-  initialCharacterChats: CharacterChat[],
-  currentCharacterId: string
 }
 
 
@@ -34,24 +27,40 @@ export default function ChatScreen({
   characterId,
   conversationId,
   character,
-  initialMessages,
-  initialConversationState,
-  initialCharacterChats,
-  currentCharacterId
 }: ChatScreenProps) {
+  const { queryConversation, queryConversationMessages } = useConversations();
+
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
-  const [isFetching, setIsFetching] = useState(false)
+
+  const [isFetchingInitialData, setIsFetchingInitialData] = useState(true)
+  const [isFetchingServerMessage, setIsFetchingServerMessage] = useState(false)
+
   const [convoID, setConvoID] = useState('')
-  const [conversationState, setConversationState] = useState(
-    initialConversationState
-  )
+  const [conversationState, setConversationState] = useState<string | null>(null)
   const [showChat, setShowChat] = useState(true)
   const [scrollToNewMessage, setScrollToNewMessage] = useState<boolean>(false)
 
+  async function fetchInitialData() {
+    // get conversation state
+    if (conversationId !== 'convo') {
+      const conversation = await queryConversation(conversationId);
+      setConversationState(conversation.memory_strategy);
+
+      // get messages
+
+      const messages = await queryConversationMessages(conversationId)
+      setMessages(messages);
+    } else {
+      setConversationState('undecided')
+    }
+
+    setIsFetchingInitialData(false)
+  }
+
   useEffect(() => {
-    setConversationState(initialConversationState)
-  }, [initialConversationState])
+    fetchInitialData()
+  }, [])
 
   // search state
   const [isInputActive, setInputActive] = useState(false)
@@ -61,22 +70,13 @@ export default function ChatScreen({
   const divRef = useRef<HTMLDivElement | null>(null)
 
   // hooks
-  const { createConversation, queryConversation, queryConversationMessages, createMessage, generateCloneMessage, queryCurrentRevisions } = useConversations();
-
-  // OPTIONAL: FETCH initialMessages client side here
-  // type: Message (see @/types)
-  // want to sync this type up with backend
-  // useEffect(() => {
-  // setMessages(...)
-  // also setInitialConversationState to 'undecided' or 'short' or 'long'
-  // },[])
+  const { createConversation, createMessage, generateCloneMessage } = useConversations();
 
   useEffect(() => {
     // @ts-ignore
     import('preline')
-    setMessages(initialMessages);
     // TODO: create conversation if not exists
-  }, [initialMessages])
+  }, [])
 
   useEffect(() => {
     if (scrollToNewMessage && divRef.current) {
@@ -116,7 +116,7 @@ export default function ChatScreen({
   }
 
   const fetchMessageFromServer = async (in_msg: String) => {
-    setIsFetching(true)
+    setIsFetchingServerMessage(true)
 
     await new Promise((resolve) => setTimeout(resolve, 500))
 
@@ -133,7 +133,7 @@ export default function ChatScreen({
       console.error(error)
     }
 
-    setIsFetching(false)
+    setIsFetchingServerMessage(false)
   }
 
   const handleConversationCreate = async () => {
@@ -192,8 +192,8 @@ export default function ChatScreen({
           character={character}
           setConversationState={handleSetConversationState}
           setConvoID={handleSetConvoID}
-          initialCharacterChats={initialCharacterChats}
-          currentCharacterId={currentCharacterId}
+          initialCharacterChats={[]}
+          currentCharacterId={characterId}
 
         />
       )}
@@ -208,14 +208,32 @@ export default function ChatScreen({
             inputRef={inputRef}
             toggleChatState={() => setShowChat((prevState) => !prevState)}
             showChat={showChat}
-            initialCharacterChats={initialCharacterChats}
-            currentCharacterId={currentCharacterId}
+            characterId={characterId}
+            conversationId={conversationId}
 
           />
           {!showChat && <PreviousConversations />}
           {showChat && (
             <>
-              <div>
+              {isFetchingInitialData && (
+                <div className='text-white grid place-items-center'
+                  style={{
+                    height: 'calc(100vh - 122px - 92px)',
+                  }}
+                >
+                  <ColorRing
+                    visible={true}
+                    height="80"
+                    width="80"
+                    ariaLabel="blocks-loading"
+                    wrapperStyle={{}}
+                    wrapperClass="blocks-wrapper"
+                    colors={['#9333ea', '#9333ea', '#9333ea', '#9333ea', '#9333ea']}
+                  />
+                </div>
+              )}
+
+              {!isFetchingInitialData && (
                 <div
                   id='scrollableDiv'
                   style={{
@@ -239,7 +257,7 @@ export default function ChatScreen({
                     className='pt-4'
                   >
                     <div
-                      className={`${isFetching
+                      className={`${isFetchingServerMessage
                         ? 'text-white flex'
                         : 'text-transparent hidden'
                         } w-full py-4 h-[56px]`}
@@ -251,7 +269,7 @@ export default function ChatScreen({
                         color='#979797'
                         ariaLabel='three-dots-loading'
                         wrapperStyle={{}}
-                        visible={isFetching}
+                        visible={isFetchingServerMessage}
                       />
                     </div>
                     {messages.map((message, index) => (
@@ -267,13 +285,13 @@ export default function ChatScreen({
                     ))}
                   </InfiniteScroll>
                 </div>
-              </div>
+              )}
 
               <div className='flex h-[92px] items-center border-t  border-[#252525] px-6'>
                 <div className='relative w-full'>
-                  <div className='absolute right-4 top-3'>
+                  {/* <div className='absolute right-4 top-3'>
                     <SmileIcon />
-                  </div>
+                  </div> */}
                   <input
                     className='h-[48px] w-full rounded-[14px] border-none bg-[#1E1E1E] py-4 pl-4 pr-[50px] text-[15px] font-light leading-6 text-[#979797] transition-all duration-100 focus:ring-1 focus:ring-transparent'
                     type='text'
@@ -287,13 +305,13 @@ export default function ChatScreen({
                 <div className='ml-[10px] transition-all duration-100 '>
                   <button
                     onClick={async () => {
-                      !isFetching && sendMessage()
+                      !isFetchingServerMessage && sendMessage()
                     }}
-                    disabled={isFetching}
+                    disabled={isFetchingServerMessage}
                   >
                     <SendIcon
                       strokeClasses={
-                        isFetching ? 'stroke-[#515151] fill-[#515151]' : ''
+                        isFetchingServerMessage ? 'stroke-[#515151] fill-[#515151]' : ''
                       }
                     />
                   </button>

@@ -1,11 +1,11 @@
 'use client'
 
-import Footer from '@/components/Footer'
 import TopBarStatic from '@/components/TopBarStatic'
 import React from 'react'
 import Link from 'next/link'
 
-export default function Login() {
+export default function Account() {
+  
   const [activeTab, setActiveTab] = React.useState('billing')
   return (
     <>

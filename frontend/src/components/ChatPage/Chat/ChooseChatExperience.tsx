@@ -69,8 +69,8 @@ const ChooseChatExperience = ({ characterId, character, setConversationState, se
     return <div>Loading character..</div>
   }
   const [conversationID, setConversationID] = useState('')
-  //const history = useHistory();
   const router = useRouter();
+
   return (
     <div
       className='h-full flex flex-col gap-x-8'
@@ -78,16 +78,7 @@ const ChooseChatExperience = ({ characterId, character, setConversationState, se
     >
       <div className='flex h-[122px] w-full items-center justify-between border-b border-[#252525] px-10'>
         <div className='flex items-center'>
-          <SmallNav initialCharacterChats={initialCharacterChats} currentCharacterId={currentCharacterId} />
-          {/* <Image
-            key={0}
-            src={character.avatar_uri}
-            alt={`Character Profile Picture ${0 + 1}`}
-            width={55}
-            height={55}
-            className='rounded-full'
-          /> */}
-
+        <SmallNav characterId={characterId} conversationId={'undecided'} character={character} />
           <div className='h-[55px] w-[55px] relative'>
             <Image
               src={character.avatar_uri}
@@ -205,7 +196,7 @@ const ChooseChatExperience = ({ characterId, character, setConversationState, se
               const conversationId = await createCharacterConversation(characterId, 'short_term')
               // setConversationID(conversationId)
               // setConvoID(conversationId)
-              const new_url = `http://localhost:3000/chat/${characterId}/${conversationId}`
+              const new_url = `http://localhost:3002/chat/${characterId}/${conversationId}`
               router.push(new_url)
             }}
             className='flex items-center justify-between w-full py-2 px-4 inline-flex bg-purple-500 rounded-lg hover:bg-purple-600 text-white'
@@ -217,7 +208,7 @@ const ChooseChatExperience = ({ characterId, character, setConversationState, se
             onClick={async () => {
               setConversationState('long term')
               const conversationId = await createCharacterConversation(characterId, 'long_term')
-              const new_url = `http://localhost:3000/chat/${characterId}/${conversationId}`
+              const new_url = `http://localhost:3002/chat/${characterId}/${conversationId}`
               router.push(new_url)
             }}
             className='mt-2 flex items-center justify-between w-full py-2 px-4 inline-flex bg-purple-500 rounded-lg hover:bg-purple-600 text-white'

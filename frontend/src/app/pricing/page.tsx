@@ -3,6 +3,7 @@
 import Footer from '@/components/Footer'
 import TopBarStatic from '@/components/TopBarStatic'
 import { loadStripe } from '@stripe/stripe-js';
+import PricingTable from './PricingTable'
 const axios = require('axios').default;
 
 const stripePromise = loadStripe('pk_test_51MY0UYDg33BD1sq0OqYKxSAfdPZL4JvwavVzIuz3bIK8ndNUXO2MRaxM8eEMIWJLC2qD5XdPzXGYsgYQO3A4C6Hb008obmGHyR');
@@ -32,12 +33,12 @@ export default function PrivacyPage() {
       console.error('Error creating checkout session:', error);
     }
   };
-
   return (
     <>
       <main className='w-full flex flex-col h-full'>
         <TopBarStatic />
-        <div className='py-8 px-[4%]'>
+        <PricingTable/>
+        {/* <div className='py-8 px-[4%]'>
           <div className='max-w-2xl mx-auto text-center mb-10 lg:mb-14'>
             <h2 className='text-2xl font-bold md:text-4xl md:leading-tight dark:text-white'>
               Pricing
@@ -408,7 +409,7 @@ export default function PrivacyPage() {
               </a>
             </div>
           </div>
-        </div>
+        </div> */}
       </main>
       <Footer />
     </>
