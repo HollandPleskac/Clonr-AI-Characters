@@ -167,3 +167,5 @@ artifacts
 backend/demo.ipynb
 
 frontend/src/client/*
+
+*.DS_Store
