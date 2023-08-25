@@ -16,6 +16,7 @@ from app import deps, models, schemas
 from app.clone.controller import Controller
 from app.clone.types import AdaptationStrategy, InformationStrategy, MemoryStrategy
 from app.deps.limiter import user_id_cookie_fixed_window_ratelimiter
+from app.deps.users import Plan, UserAndPlan
 from app.embedding import EmbeddingClient
 from app.external.moderation import openai_moderation_check
 from clonr.tokenizer import Tokenizer
@@ -180,16 +181,18 @@ async def get_sidebar_conversations(
 async def create_conversation(
     obj: schemas.ConversationCreate,
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
-    user: Annotated[models.User, Depends(deps.get_free_or_paying_user)],
+    user_and_plan: Annotated[UserAndPlan, Depends(deps.get_free_or_paying_user)],
     conn: Annotated[Redis, Depends(deps.get_async_redis)],
     tokenizer: Annotated[Tokenizer, Depends(deps.get_tokenizer)],
     embedding_client: Annotated[EmbeddingClient, Depends(deps.get_embedding_client)],
 ):
-    if obj.memory_strategy != MemoryStrategy.zero and not user.is_subscribed:
+    user = user_and_plan.user
+    plan = user_and_plan.plan
+    if obj.memory_strategy != MemoryStrategy.zero and plan != Plan.plus:
         # TODO (Jonny): is this for clonr+ or for normal subscribers?
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail="Long-term memory only available for subscribers.",
+            detail="Long-term memory only available for clonr+ subscribers.",
         )
 
     clone = await db.get(models.Clone, obj.clone_id)
@@ -223,7 +226,7 @@ async def create_conversation(
         embedding_client=embedding_client,
     )
 
-    if not user.is_subscribed:
+    if plan == Plan.free:
         user.num_free_messages_sent = user.num_free_messages_sent + 1
         await db.commit()
 
@@ -441,7 +444,7 @@ async def generate_clone_message(
     try:
         msg = await controller.generate_message(msg_gen)
 
-        if not controller.user.is_subscribed:
+        if controller.subscription_plan == Plan.free:
             controller.user.num_free_messages_sent = (
                 controller.user.num_free_messages_sent + 1
             )

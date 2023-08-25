@@ -9,7 +9,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import Response
 from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from app import deps, models, schemas
 from app.clone.controller import Controller
@@ -179,7 +179,14 @@ async def query_clones(
             .subquery()
         )
         query = query.join(subquery, models.Clone.id == subquery.c.clone_id)
-    query = query.offset(offset=offset).limit(limit=limit)
+        from loguru import logger
+
+        logger.error(f"fuckkkkk {tags}")
+    query = (
+        query.options(selectinload(models.Clone.tags))
+        .offset(offset=offset)
+        .limit(limit=limit)
+    )
     clones = await db.scalars(query)
     return clones.unique().all()
 
@@ -229,10 +236,11 @@ async def patch_clone(
             continue
         not_modified = False
         setattr(clone, k, v)
-        clone.embedding = (
-            await embedding_client.encode_passage(clone.long_description)
-        )[0]
-        clone.embedding_model = await embedding_client.encoder_name()
+        if clone.long_description:
+            clone.embedding = (
+                await embedding_client.encode_passage(clone.long_description)
+            )[0]
+            clone.embedding_model = await embedding_client.encoder_name()
     if not_modified:
         raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
     else:

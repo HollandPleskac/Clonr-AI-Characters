@@ -114,7 +114,6 @@ class User(Base, SQLAlchemyBaseUserTableUUID):
     is_banned: Mapped[bool] = mapped_column(default=False)
     # Whether user is subscribed to premium plan, i.e. is paid
     stripe_customer_id: Mapped[str] = mapped_column(nullable=True)
-    is_subscribed: Mapped[bool] = mapped_column(default=False)
     nsfw_enabled: Mapped[bool] = mapped_column(default=False)
     # Number of free msgs sent
     num_free_messages_sent: Mapped[int] = mapped_column(default=0)
@@ -837,10 +836,6 @@ class Subscription(CommonMixin, Base):
         server_default=sa.func.now(),
         onupdate=sa.func.current_timestamp(),
     )
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
-    )
-    user: Mapped["User"] = relationship("User", back_populates="subscriptions")
     amount: Mapped[int]
     currency: Mapped[str]
     interval: Mapped[str]
@@ -855,6 +850,10 @@ class Subscription(CommonMixin, Base):
     stripe_price_lookup_key: Mapped[str]
     stripe_product_id: Mapped[str]
     stripe_product_name: Mapped[str]
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
+    user: Mapped["User"] = relationship("User", back_populates="subscriptions")
 
 
 class CreatorPartnerProgramSignup(CommonMixin, Base):

@@ -56,6 +56,24 @@ async def create_checkout_token(
     return StripeCheckoutTokenResponse(token=token)
 
 
+@router.get("/create-portal-session")
+async def customer_portal(
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
+):
+    if user.stripe_customer_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_402_PAYMENT_REQUIRED,
+            detail="User must first make a payment before viewing their payment portal",
+        )
+    portal_session = stripe.billing_portal.Session.create(
+        customer=user.stripe_customer_id,
+        return_url="http://localhost:3000",  # TODO (Jonny): replace with some env variables or something
+    )
+    return RedirectResponse(
+        url=portal_session.url, status_code=status.HTTP_303_SEE_OTHER
+    )
+
+
 @router.post("/webhook")
 async def webhook_received(
     request: Request,
@@ -76,19 +94,23 @@ async def webhook_received(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except stripe.error.SignatureVerificationError as e:
         logger.error(e)
-        raise HTTPException(status=status.HTTP_403_FORBIDDEN, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
 
+    logger.info(f"Received Stripe event: {event.type}")
+    logger.info(event.data.object)
     match event.type:
         case "checkout.session.completed":
-            logger.info(f"Stripe checkout session completed. Event ID: {event.id}")
             checkout_session: stripe.checkout.Session = event.data.object
+            logger.info(
+                f"Stripe checkout session completed. Event ID: {event.id}. Checkout session ID: {checkout_session.id}. Customer ID: {checkout_session.customer}"
+            )
 
             token: str = event.data.object.client_reference_id
             checkout_token = decode_stripe_checkout_token(token=token)
             user_id = checkout_token.user_id
 
             if not (user := await db.get(models.User, user_id)):
-                detail = f"Invalid access token. User does not exist: {user_id}"
+                detail = f"Invalid stripe-access token. User does not exist: {user_id}"
                 logger.error(detail)
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST, detail=detail
@@ -104,7 +126,7 @@ async def webhook_received(
 
             subscription_model = models.Subscription(
                 user_id=user_id,
-                amount=int(sub.plan.amount_decimal),
+                amount=int(sub.plan.amount),
                 currency=sub.plan.currency,
                 interval=sub.plan.interval,
                 stripe_customer_id=checkout_session.customer,
@@ -123,13 +145,15 @@ async def webhook_received(
             await db.commit()
 
         case "customer.subscription.updated":
-            logger.info(f"Subscription updated. Event ID: {event.id}")
             raw_sub: stripe.Subscription = event.data.object
+            logger.info(
+                f"Subscription updated Event ID: {event.id}. Subscription ID: {raw_sub.id}"
+            )
             sub = stripe.Subscription.retrieve(
                 id=raw_sub.id, expand=["items.data.price.product"]
             )
             values = dict(
-                amount=int(sub.plan.amount_decimal),
+                amount=int(sub.plan.amount),
                 currency=sub.plan.currency,
                 interval=sub.plan.interval,
                 stripe_customer_id=sub.customer,
@@ -152,8 +176,10 @@ async def webhook_received(
             await db.commit()
 
         case "customer.subscription.deleted":
-            logger.info(f"Subscription deleted. Event ID: {event.id}")
             sub: stripe.Subscription = event.data.object
+            logger.info(
+                f"Subscription deleted Event ID: {event.id}. Subscription ID: {sub.id}"
+            )
             await db.execute(
                 sa.update(models.Subscription)
                 .where(models.Subscription.stripe_subscription_id == sub.id)
@@ -162,21 +188,3 @@ async def webhook_received(
             await db.commit()
 
     return JSONResponse(content="", status_code=status.HTTP_200_OK)
-
-
-@router.post("/create-portal-session")
-async def customer_portal(
-    user: Annotated[models.User, Depends(deps.get_current_active_user)],
-):
-    if user.stripe_customer_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail="User must first make a payment before viewing their payment portal",
-        )
-    portal_session = stripe.billing_portal.Session.create(
-        customer=user.stripe_customer_id,
-        return_url="http://localhost:3000",  # TODO (Jonny): replace with some env variables or something
-    )
-    return RedirectResponse(
-        url=portal_session.url, status_code=status.HTTP_303_SEE_OTHER
-    )
