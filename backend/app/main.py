@@ -118,6 +118,7 @@ app.include_router(router=api.clones_router)
 app.include_router(router=api.conversations_router)
 app.include_router(router=api.tags_router)
 app.include_router(router=api.stripe_router)
+app.include_router(router=api.subscriptions_router)
 
 
 app.include_router(

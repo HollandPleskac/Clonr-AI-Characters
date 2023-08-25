@@ -460,3 +460,25 @@ class ClonrPlusSignup(CommonMixin, ClonrPlusSignupCreate):
     model_config = ConfigDict(from_attributes=True)
 
     user_id: uuid.UUID
+
+
+# TODO (Jonny): check to make sure we return the fields that we actually want here
+class Subscription(CommonMixin, BaseModel):
+    stripe_subscription_id: str
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+    amount: int
+    currency: str
+    interval: str
+    stripe_customer_id: str
+    stripe_subscription_id: str
+    stripe_status: str
+    stripe_created: int
+    stripe_current_period_start: int
+    stripe_current_period_end: int
+    stripe_quantity: int
+    stripe_price_id: str
+    stripe_price_lookup_key: str
+    stripe_product_id: str
+    stripe_product_name: str
+    user_id: uuid.UUID
