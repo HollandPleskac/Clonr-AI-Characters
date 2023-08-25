@@ -11,6 +11,7 @@ from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models, schemas
+from app.deps.users import Plan
 from app.embedding import EmbeddingClient
 from app.settings import settings
 from clonr import generate, templates
@@ -90,14 +91,18 @@ class Controller:
         llm: LLM,
         clonedb: CloneDB,
         clone: models.Clone,
+        user: models.User,
         conversation: models.Conversation,
+        subscription_plan: Plan,
         background_tasks: BackgroundTasks,
     ):
         self.llm = llm
         self.clonedb = clonedb
         self.clone = clone
+        self.user = user
         self.conversation = conversation
         self.background_tasks = background_tasks
+        self.subscription_plan = subscription_plan
 
     @property
     def memory_strategy(self) -> schemas.MemoryStrategy:
@@ -440,7 +445,8 @@ class Controller:
                     detail=f"Adaptation strategy ({self.adaptation_strategy}) is not compatible with agent summaries.",
                 )
 
-        # NOTE (Jonny): we don't require embeddings or hierarchical relationships for templates. Hopefull this doesn't become a breaking change
+        # NOTE (Jonny): we don't require embeddings or hierarchical relationships for templates.
+        # Hopefully this doesn't become a breaking change
         mem_structs = [
             Memory(
                 id=m.id,
@@ -627,15 +633,18 @@ class Controller:
 
         # This should always return a value, we catch any exceptions in the generate
         # function and default to returning the entire output as a query
-        queries = await generate.message_queries_create(
-            llm=self.llm,
-            char=self.clone.name,
-            short_description=self.clone.short_description,
-            agent_summary=agent_summary,
-            entity_context_summary=entity_context_summary,
-            entity_name=entity_name,
-            messages=msg_structs,
-        )
+        try:
+            queries = await generate.message_queries_create(
+                llm=self.llm,
+                char=self.clone.name,
+                short_description=self.clone.short_description,
+                agent_summary=agent_summary,
+                entity_context_summary=entity_context_summary,
+                entity_name=entity_name,
+                messages=msg_structs,
+            )
+        except Exception:
+            queries = []
 
         # NOTE (Jonny): add in the last messages as a query too!
         # pull at most 2 messages
@@ -1016,6 +1025,11 @@ class Controller:
             sa.select(models.Document).order_by(models.Document.type)
         )
         docs = r.all()
+        if not docs:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="There must be at least one uploaded document for the clone",
+            )
         # TODO (Jonny): replace this with the real one, mock is too expensive
         import warnings
 

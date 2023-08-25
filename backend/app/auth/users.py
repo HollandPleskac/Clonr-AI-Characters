@@ -21,6 +21,8 @@ from app.models import User
 from app.settings import settings
 
 SECRET = settings.AUTH_SECRET
+AUTH_KEY_PREFIX = "user_auth_token:"
+COOKIE_NAME = "clonrauth"
 
 # Redundant with app.db.cache.
 redis: Redis = Redis(
@@ -73,7 +75,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
 
 bearer_transport = BearerTransport(tokenUrl="auth/jwt/login")
-cookie_transport = CookieTransport(cookie_max_age=3600)
+cookie_transport = CookieTransport(cookie_max_age=3600, cookie_name=COOKIE_NAME)
 
 
 def get_jwt_strategy() -> JWTStrategy:
@@ -81,7 +83,7 @@ def get_jwt_strategy() -> JWTStrategy:
 
 
 def get_redis_strategy() -> RedisStrategy:
-    return RedisStrategy(redis, lifetime_seconds=3600)
+    return RedisStrategy(redis, lifetime_seconds=3600, key_prefix=AUTH_KEY_PREFIX)
 
 
 auth_backend = AuthenticationBackend(

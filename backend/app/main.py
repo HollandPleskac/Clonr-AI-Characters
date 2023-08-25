@@ -1,21 +1,16 @@
 import asyncio
 import json
-import logging
-import math
-import random
-import time
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Optional
 
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from opentelemetry import metrics
 
-from app import api, deps, models, schemas
+from app import api, schemas
 from app.auth.users import (
     auth_backend,
     discord_oauth_client,
@@ -33,14 +28,17 @@ from app.db import (
 )
 from app.deps.users import fastapi_users
 from app.embedding import wait_for_embedding
+from app.middleware.rate_limiter import IpAddrRateLimitMiddleware
+from app.middleware.tracing import setup_tracing
 from app.settings import settings
-from app.tracing import setup_tracing
 
-# import sentry_sdk
-# sentry_sdk.init(
-#     dsn="https://foo@sentry.io/123",
-#     traces_sample_rate=1.0,
-# )
+if not settings.DEV:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn="https://foo@sentry.io/123",
+        traces_sample_rate=1.0,
+    )
 
 
 meter = metrics.get_meter(settings.APP_NAME)
@@ -70,14 +68,6 @@ async def run_async_downgrade():
     await asyncio.create_subprocess_shell(
         cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )
-
-
-async def moderation_middleware(
-    request: Request, user: models.User = Depends(deps.get_current_active_user)
-):
-    if user.is_banned:
-        raise HTTPException(status_code=403, detail="User is banned!")
-    return request
 
 
 @asynccontextmanager
@@ -117,21 +107,31 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+if not settings.DEV:
+    app.add_middleware(
+        IpAddrRateLimitMiddleware, rate_limit=settings.IP_ADDR_RATE_LIMIT
+    )
+
 app.include_router(router=api.creator_router)
 app.include_router(router=api.clones_router)
 app.include_router(router=api.conversations_router)
 app.include_router(router=api.tags_router)
 app.include_router(router=api.stripe_router)
+app.include_router(router=api.subscriptions_router)
 
 
 app.include_router(
     fastapi_users.get_auth_router(auth_backend), prefix="/auth/cookies", tags=["auth"]
 )
-app.include_router(
-    fastapi_users.get_register_router(schemas.UserRead, schemas.UserCreate),
-    prefix="/auth",
-    tags=["auth"],
-)
+
+if settings.DEV:
+    app.include_router(
+        fastapi_users.get_register_router(schemas.UserRead, schemas.UserCreate),
+        prefix="/auth",
+        tags=["auth"],
+    )
+
 app.include_router(
     fastapi_users.get_users_router(schemas.UserRead, schemas.UserUpdate),
     prefix="/users",
@@ -139,28 +139,40 @@ app.include_router(
 )
 app.include_router(
     fastapi_users.get_oauth_router(
-        google_oauth_client, auth_backend, settings.AUTH_SECRET
+        google_oauth_client,
+        auth_backend,
+        settings.AUTH_SECRET,
+        redirect_url=settings.OAUTH_REDIRECT_URL,
     ),
     prefix="/auth/google",
     tags=["auth"],
 )
 app.include_router(
     fastapi_users.get_oauth_router(
-        facebook_oauth_client, auth_backend, settings.AUTH_SECRET
+        facebook_oauth_client,
+        auth_backend,
+        settings.AUTH_SECRET,
+        redirect_url=settings.OAUTH_REDIRECT_URL,
     ),
     prefix="/auth/facebook",
     tags=["auth"],
 )
 app.include_router(
     fastapi_users.get_oauth_router(
-        reddit_oauth_client, auth_backend, settings.AUTH_SECRET
+        reddit_oauth_client,
+        auth_backend,
+        settings.AUTH_SECRET,
+        redirect_url=settings.OAUTH_REDIRECT_URL,
     ),
     prefix="/auth/reddit",
     tags=["auth"],
 )
 app.include_router(
     fastapi_users.get_oauth_router(
-        discord_oauth_client, auth_backend, settings.AUTH_SECRET
+        discord_oauth_client,
+        auth_backend,
+        settings.AUTH_SECRET,
+        redirect_url=settings.OAUTH_REDIRECT_URL,
     ),
     prefix="/auth/discord",
     tags=["auth"],
@@ -175,68 +187,9 @@ app.add_middleware(
 )
 
 
-@app.get("/health")
+@app.get("/health", response_class=Response)
 def health_check():
-    return {"success": True}
-
-
-# Below are temporary just for running Locust
-def box_muller():
-    R = math.sqrt(-2 * math.log(random.random()))
-    theta = 2 * math.pi * random.random()
-    return R * math.abs(math.cos(theta))
-
-
-@app.get("/")
-async def read_root():
-    logging.error("Hello World")
-    return {"Hello": "World"}
-
-
-@app.get("/items/{item_id}")
-async def read_item(item_id: int, q: Optional[str] = None):
-    hist_meter.record(amount=box_muller(), attributes=dict(path="items"))
-    logging.error("items")
-    return {"item_id": item_id, "q": q}
-
-
-@app.get("/io_task")
-async def io_task():
-    time.sleep(1)
-    hist_meter.record(amount=box_muller(), attributes=dict(path="io"))
-    logging.error("io task")
-    return "IO bound task finish!"
-
-
-@app.get("/cpu_task")
-async def cpu_task():
-    req_meter.add(amount=1, attributes=dict(path="cpu_task"))
-    for i in range(1000):
-        i * i * i
-    logging.error("cpu task")
-    return "CPU bound task finish!"
-
-
-@app.get("/random_status")
-async def random_status(response: Response):
-    req_meter.add(amount=1, attributes=dict(path="random_status"))
-    response.status_code = random.choice([200, 200, 300, 400, 500])
-    logging.error("random status")
-    return {"path": "/random_status"}
-
-
-@app.get("/random_sleep")
-async def random_sleep(response: Response):
-    req_meter.add(amount=1, attributes=dict(path="random_sleep"))
-    time.sleep(random.randint(0, 5))
-    logging.error("random sleep")
-    return {"path": "/random_sleep"}
-
-
-@app.get("/error_test")
-async def error_test(response: Response):
-    logging.error("got error!!!!")
-    raise ValueError("value error")
+    return Response(status_code=204)
 
 
 setup_tracing(app=app)
@@ -247,8 +200,8 @@ if __name__ == "__main__":
     reload_dirs = [str((p / x).resolve()) for x in ["app", "clonr"]]
     uvicorn.run(
         "app.main:app",
-        host="0.0.0.0",
+        host=settings.HOST,
         port=settings.PORT,
-        reload=True,
+        reload=settings.DEV,
         reload_dirs=reload_dirs,
     )

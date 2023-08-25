@@ -114,7 +114,6 @@ class User(Base, SQLAlchemyBaseUserTableUUID):
     is_banned: Mapped[bool] = mapped_column(default=False)
     # Whether user is subscribed to premium plan, i.e. is paid
     stripe_customer_id: Mapped[str] = mapped_column(nullable=True)
-    is_subscribed: Mapped[bool] = mapped_column(default=False)
     nsfw_enabled: Mapped[bool] = mapped_column(default=False)
     # Number of free msgs sent
     num_free_messages_sent: Mapped[int] = mapped_column(default=0)
@@ -133,6 +132,9 @@ class User(Base, SQLAlchemyBaseUserTableUUID):
     creator: Mapped["Creator"] = relationship("Creator", back_populates="user")
     llm_calls: Mapped[list["LLMCall"]] = relationship(
         "LLMCall", back_populates="user", passive_deletes=True
+    )
+    subscriptions: Mapped[list["Subscription"]] = relationship(
+        "Subscription", back_populates="user"
     )
 
     def __repr__(self):
@@ -792,6 +794,7 @@ class ContentViolation(CommonMixin, Base):
     __tablename__ = "content_violations"
 
     content: Mapped[str]
+    reasons: Mapped[str] = mapped_column(default="")
     user_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
@@ -819,87 +822,105 @@ class LongDescription(CommonMixin, Base):
 
 
 # ------------- Stripe ------------- #
-# class UsageRecord(CommonMixin, Base):
-#     __tablename__ = "usage_records"
+class Subscription(CommonMixin, Base):
+    __tablename__ = "subscriptions"
 
-#     user_id: Mapped[uuid.UUID] = mapped_column(
-#         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
-#     )
-#     subscription_id: Mapped[uuid.UUID] = mapped_column(
-#         sa.ForeignKey("subscriptions.id", ondelete="cascade"), nullable=False
-#     )
-#     quantity: Mapped[int] = mapped_column(sa.Integer, nullable=False)
-#     timestamp: Mapped[datetime.datetime] = mapped_column(nullable=True)
-
-
-# TODO: edit
-# class Subscription(CommonMixin, Base):
-#     __tablename__ = "subscriptions"
-
-#     # Should match Stripe's subscription id
-#     subscription_id: Mapped[str] = mapped_column(nullable=False)
-#     customer_id: Mapped[str] = mapped_column(nullable=False)
-#     user_id: Mapped[uuid.UUID] = mapped_column(
-#         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
-#     )
-#     stripe_status: Mapped[str] = mapped_column(nullable=False)
-#     stripe_created: Mapped[datetime.datetime]
-#     stripe_current_period_start: Mapped[datetime.datetime]
-#     stripe_current_period_end: Mapped[datetime.datetime]
-#     stripe_cancel_at_period_end: Mapped[bool]
-#     stripe_canceled_at: Mapped[datetime.datetime]
-
-
-# ### Signups
+    stripe_subscription_id: Mapped[str] = mapped_column(
+        nullable=False, primary_key=True
+    )
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        sa.DateTime(timezone=True), server_default=sa.func.now()
+    )
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        server_default=sa.func.now(),
+        onupdate=sa.func.current_timestamp(),
+    )
+    amount: Mapped[int]
+    currency: Mapped[str]
+    interval: Mapped[str]
+    stripe_customer_id: Mapped[str]
+    stripe_subscription_id: Mapped[str]
+    stripe_status: Mapped[str]
+    stripe_created: Mapped[int]
+    stripe_current_period_start: Mapped[int]
+    stripe_current_period_end: Mapped[int]
+    stripe_quantity: Mapped[int]
+    stripe_price_id: Mapped[str]
+    stripe_price_lookup_key: Mapped[str]
+    stripe_product_id: Mapped[str]
+    stripe_product_name: Mapped[str]
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
+    user: Mapped["User"] = relationship("User", back_populates="subscriptions")
 
 
 class CreatorPartnerProgramSignup(CommonMixin, Base):
     __tablename__ = "creator_partner_signups"
 
+    id: Mapped[int] = mapped_column(autoincrement=True, primary_key=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        sa.DateTime(timezone=True), server_default=sa.func.now()
+    )
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        server_default=sa.func.now(),
+        onupdate=sa.func.current_timestamp(),
+    )
+    email: Mapped[str]
+    nsfw: Mapped[bool] = mapped_column(nullable=True)
+    personal: Mapped[bool] = mapped_column(nullable=True)
+    quality: Mapped[bool] = mapped_column(nullable=True)
+    story: Mapped[bool] = mapped_column(nullable=True)
+    roleplay: Mapped[bool] = mapped_column(nullable=True)
     user_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
-    name: Mapped[str] = mapped_column(nullable=False)
-    email: Mapped[str] = mapped_column(nullable=False)
-    phone: Mapped[str] = mapped_column(nullable=False)
-    social_media_handles: Mapped[str] = mapped_column(nullable=False)
-
-    # user: Mapped["User"] = relationship("User", back_populates="creator_partner_signup")
 
     def __repr__(self):
-        return f"CreatorPartnerSignup(id={self.id}, user_id={self.user_id}, name='{self.name}', email='{self.email}')"
+        arr = [
+            ("user_id", self.user_id),
+            ("nsfw", self.nsfw),
+            ("personal", self.personal),
+            ("quality", self.quality),
+            ("story", self.story),
+            ("roleplay", self.roleplay),
+        ]
+        arr2 = [f"{x}={y}" for x, y in arr if y is not None]
+        args = ", ".join(arr2)
+        return f"CreatorPartnerProgramSignup({args})"
 
 
-class NSFWSignup(CommonMixin, Base):
-    __tablename__ = "nsfw_signups"
+class ClonrPlusSignup(Base):
+    __tablename__ = "clonr_plus_signups"
 
+    id: Mapped[int] = mapped_column(autoincrement=True, primary_key=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(
+        sa.DateTime(timezone=True), server_default=sa.func.now()
+    )
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        sa.DateTime(timezone=True),
+        server_default=sa.func.now(),
+        onupdate=sa.func.current_timestamp(),
+    )
+    email: Mapped[str]
+    nsfw: Mapped[bool] = mapped_column(nullable=True)
+    long_term_memory: Mapped[bool] = mapped_column(nullable=True)
+    greater_accuracy: Mapped[bool] = mapped_column(nullable=True)
+    multiline_chat: Mapped[bool] = mapped_column(nullable=True)
     user_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )
-    name: Mapped[str] = mapped_column(nullable=False)
-    email: Mapped[str] = mapped_column(nullable=False)
-    phone: Mapped[str] = mapped_column(nullable=False)
-    social_media_handles: Mapped[str] = mapped_column(nullable=False)
-
-    # user: Mapped["user"] = relationship("User", back_populates="nsfw_signup")
 
     def __repr__(self):
-        return f"NSFWSignup(id={self.id}, user_id={self.user_id}, name='{self.name}', email='{self.email}')"
-
-
-# ------------- API Keys ------------- #
-# class APIKey(CommonMixin, Base):
-#     __tablename__ = "api_keys"
-
-#     hashed_key: Mapped[str] = mapped_column(unique=True)
-#     name: Mapped[str] = mapped_column(default=randomname.get_name)
-#     user_id: Mapped[uuid.UUID] = mapped_column(
-#         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
-#     )
-#     clone_id: Mapped[uuid.UUID] = mapped_column(
-#         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
-#     )
-#     clone: Mapped["Clone"] = relationship("Clone", back_populates="api_keys")
-
-#     def __repr__(self):
-#         return f"APIKey(hashed_key={self.hashed_key}, clone_id={self.clone_id})"
+        arr = [
+            ("user_id", self.user_id),
+            ("nsfw", self.nsfw),
+            ("long_term_memory", self.long_term_memory),
+            ("greater_accuracy", self.greater_accuracy),
+            ("multiline_chat", self.multiline_chat),
+        ]
+        arr2 = [f"{x}={y}" for x, y in arr if y is not None]
+        args = ", ".join(arr2)
+        return f"ClonrPlusSignup({args})"

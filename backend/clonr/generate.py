@@ -351,43 +351,61 @@ async def message_queries_create(
     # prefilling the first two tokens. We are currently enforcing that these first tokens
     # line up with the templates through the power of thoughts and prayers ^_^
     text = f'["{r.content.strip()}'
-    try:
-        queries = json.loads(text)
-    except json.JSONDecodeError:
-        attributes = dict(
-            subroutine=kwargs["subroutine"], model=llm.model, model_type=llm.model_type
-        )
-        output_parsing_exception_meter.add(amount=1, attributes=attributes)
-        # if isinstance(llm, MockLLM):
-        #     return ["foo", "bar", "baz"]
+    with tracer.start_as_current_span("parse text json"):
+        logger.info(text)
+        try:
+            queries = json.loads(text)
+        except json.JSONDecodeError:
+            try:
+                queries = json.loads(text[2:])
+            except json.JSONDecodeError:
+                attributes = dict(
+                    subroutine=kwargs["subroutine"],
+                    model=llm.model,
+                    model_type=llm.model_type,
+                )
+                output_parsing_exception_meter.add(amount=1, attributes=attributes)
+                # if isinstance(llm, MockLLM):
+                #     return ["foo", "bar", "baz"]
 
-        # see if we got back a numbered list
-        numbered_arr = re.split(r"\b\d\.\s*", text)
-        numbered_arr = list(filter(bool, numbered_arr))
-        if len(numbered_arr) == num_results:
-            return numbered_arr
+                # see if we got back a numbered list
+                numbered_arr = re.split(r"\b\d\.\s*", text)
+                numbered_arr = list(filter(bool, numbered_arr))
+                if len(numbered_arr) == num_results:
+                    return numbered_arr
 
-        # To prevent blocking, we will settle for just returning whatever shit the LLM
-        # output. In the controller, we append the last msg too, so the damage is hopefully
-        # not that bad.
-        err_msg = f"Unable to parse message_query_create output to JSON. Output: {text}"
-        logger.error(err_msg)
-        if kwargs["retry_attempt"] >= MAX_RETRIES - 1:
-            logger.warning("Returning approximate answer.")
-            return text.strip().split("\n")
-        logger.error(err_msg)
-        raise OutputParserError(err_msg)
+                # To prevent blocking, we will settle for just returning whatever shit the LLM
+                # output. In the controller, we append the last msg too, so the damage is hopefully
+                # not that bad.
+                err_msg = f"Unable to parse message_query_create output to JSON. Output: {text}"
+                logger.error(err_msg)
+                if kwargs["retry_attempt"] >= MAX_RETRIES - 1:
+                    logger.warning("Returning approximate answer.")
+                    return text.strip().split("\n")
+                logger.error(err_msg)
+                raise OutputParserError(err_msg)
 
     # Sometimes we get back valid JSON, but it's not a list, random shit like
     # [{"a":"hello", "b":"world"}]. Use Pydantic to remove these.
-    try:
-        QueryList(arr=queries)
-    except ValidationError as e:
-        attributes = dict(
-            subroutine=kwargs["subroutine"], model=llm.model, model_type=llm.model_type
-        )
-        output_parsing_exception_meter.add(amount=1, attributes=attributes)
-        raise OutputParserError(e)
+    with tracer.start_as_current_span("parse json to list of strings"):
+        logger.info(queries)
+        try:
+            QueryList(arr=queries)
+        except ValidationError as e:
+            try:
+                QueryList(arr=[queries])
+                return [queries]
+            except Exception:
+                if kwargs["retry_attempt"] >= MAX_RETRIES - 1:
+                    logger.warning("Returning approximate answer.")
+                    return text.strip().split("\n")
+                attributes = dict(
+                    subroutine=kwargs["subroutine"],
+                    model=llm.model,
+                    model_type=llm.model_type,
+                )
+                output_parsing_exception_meter.add(amount=1, attributes=attributes)
+                raise OutputParserError(e)
     return queries
 
 

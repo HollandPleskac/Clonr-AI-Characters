@@ -56,7 +56,7 @@ async def get_tags(
     r = await db.scalars(sa.select(models.Tag).order_by(models.Tag.name))
     tags = r.all()
     tag_bytes = json.dumps(jsonable_encoder(tags)).encode()
-    ex = 60 * 60 * 24  # recompute every day just in case?
+    ex = 60  # recompute every minute just in case?
     await conn.set("tags", tag_bytes, ex=ex)
     return tags
 
@@ -64,7 +64,6 @@ async def get_tags(
 @router.get("/{tag_id}", response_model=schemas.Tag)
 async def get_tag_by_id(
     tag_id: Annotated[int, Path()],
-    conn: Annotated[Redis, Depends(deps.get_async_redis)],
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
 ):
     if tag := await db.scalar(sa.select(models.Tag).where(models.Tag.id == tag_id)):

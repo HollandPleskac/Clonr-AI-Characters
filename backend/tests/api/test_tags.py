@@ -71,13 +71,14 @@ def test_browse_clones_by_tag(client: TestClient, superuser_headers: dict[str, s
         inp = schemas.CloneCreate(
             name=f"{name}-{i}",
             short_description=short_description,
-            is_public=False,
+            is_public=True,
             tags=x,
             greeting_message=greeting_message,
         )
         data = inp.model_dump()
         r = client.post("/clones/", headers=superuser_headers, json=data)
         assert r.status_code == 201, r.json()
+        assert r.json()["tags"], r.json()["tags"]
         clones.append(r.json())
 
     # test that we can query for multiple tags

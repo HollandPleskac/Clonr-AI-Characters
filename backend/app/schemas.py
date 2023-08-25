@@ -9,6 +9,7 @@ from pydantic import (
     AfterValidator,
     BaseModel,
     ConfigDict,
+    EmailStr,
     Field,
     ValidationInfo,
     model_validator,
@@ -58,7 +59,6 @@ class UserRead(BaseUser[uuid.UUID]):
     is_banned: bool
     nsfw_enabled: bool
     num_free_messages_sent: int
-    is_subscribed: bool
 
 
 class UserCreate(BaseUserCreate):
@@ -285,26 +285,6 @@ class Monologue(CommonMixin, MonologueCreate):
     clone_id: uuid.UUID
 
 
-# NOTE (Jonny): Which features are covered now
-#     zero_memory: int
-#     conversation_retrieval: int
-#     information_retrieval: int
-#     dynamic_quote_retrieval: int
-#     internal_thought_stream: int
-#     agent_summary_frequency: int
-#     multi_line_user_input: int
-
-# Which features are not yet covered
-#     third_party_memory_stream: int
-#     multi_character_chat__api_key_and_entity_context: int = (
-#         "needs websockets, too hard now"
-#     )
-#     streaming_response: int = "no fuck this, too hard and not realistic"
-#     multi_line_clone_output: int = "a bit harder, better to just parse outputs maybe?"
-#     current_event_knowledge: int = "serpAPI call"
-#     NSFW: int = "no content moderation boi"
-
-
 # TODO (Jonny): add timezone to this! fix the timezone for all messages at convo create time.
 # we're getting a mismatch in times between user and assistant for some reason too
 # lol maybe don't add it: https://www.youtube.com/watch?v=-5wpm-gesOY.
@@ -363,6 +343,11 @@ class Conversation(CommonMixin, ConversationCreate):
     num_messages_ever: int
     last_message: str | None
     clone_name: str
+
+
+class ConversationInSidebar(Conversation):
+    rank: int
+    group_updated_at: datetime.datetime
 
 
 class ConversationWithMessages(Conversation):
@@ -425,66 +410,75 @@ class LongDescription(CommonMixin, BaseModel):
     documents: list[Document]
 
 
-class CreatorPartnerProgramSignupBase(BaseModel):
-    name: str
-    email: str
-    phone_number: str | None = None
-    social_media_handles: str | None = None
+class CreatorPartnerProgramSignupCreate(BaseModel):
+    email: EmailStr = Field(
+        description="An email with which Clonr can notify you when you can sign up for the Partner Program"
+    )
+    nsfw: bool | None = Field(default=None, description="Intends to create NSFW clones")
+    personal: bool | None = Field(
+        default=None, description="Intends to create clones for personal use"
+    )
+    quality: bool | None = Field(
+        default=None,
+        description="Intends to create clones with high quality or fidelity",
+    )
+    story: bool | None = Field(
+        default=None,
+        description="Intends to create story-based bots, short or long form content.",
+    )
+    roleplay: bool | None = Field(
+        default=None, description="Intends to create roleplay scenarios"
+    )
 
 
-class CreatorPartnerProgramSignupCreate(CreatorPartnerProgramSignupBase):
-    pass
-
-
-class CreatorPartnerProgramSignupUpdate(CreatorPartnerProgramSignupBase):
-    pass
-
-
-class CreatorPartnerProgramSignup(CommonMixin, CreatorPartnerProgramSignupBase):
+class CreatorPartnerProgramSignup(CommonMixin, CreatorPartnerProgramSignupCreate):
     model_config = ConfigDict(from_attributes=True)
 
     user_id: uuid.UUID
 
 
-class NSFWSignupBase(BaseModel):
-    name: str
-    email: str
-    phone_number: str | None = None
-    social_media_handles: str | None = None
+class ClonrPlusSignupCreate(BaseModel):
+    email: EmailStr = Field(
+        description="An email with which Clonr can notify you when you can purchase the presale for Clonr+"
+    )
+    nsfw: bool | None = Field(
+        default=None, description="Signing up because of NSFW access"
+    )
+    long_term_memory: bool | None = Field(
+        default=None,
+        description="Signing up because of long term memory and long chats",
+    )
+    greater_accuracy: bool | None = Field(
+        default=None, description="Signing up because of greater clone accuracy"
+    )
+    multiline_chat: bool | None = Field(
+        default=None, description="Signing up because of multiline chat feature"
+    )
 
 
-class NSFWSignupCreate(NSFWSignupBase):
-    pass
-
-
-class NSFWSignupUpdate(NSFWSignupBase):
-    pass
-
-
-class NSFWSignup(NSFWSignupBase):
+class ClonrPlusSignup(CommonMixin, ClonrPlusSignupCreate):
     model_config = ConfigDict(from_attributes=True)
 
-    id: uuid.UUID
     user_id: uuid.UUID
+
+
+# TODO (Jonny): check to make sure we return the fields that we actually want here
+class Subscription(CommonMixin, BaseModel):
+    stripe_subscription_id: str
     created_at: datetime.datetime
     updated_at: datetime.datetime
-
-
-# ------------ Below here is unused ------------ #
-
-# class APIKeyCreate(BaseModel):
-#     user_id: uuid.UUID
-#     clone_id: uuid.UUID
-#     name: Optional[str] = None
-#     user_id: Optional[uuid.UUID] = None
-
-
-# class APIKey(CommonMixin, APIKeyCreate):
-#     name: str
-
-#     class Config:
-#         orm_mode = True
-
-
-# class APIKeyOnce(APIKey):
-#     key: str
+    amount: int
+    currency: str
+    interval: str
+    stripe_customer_id: str
+    stripe_subscription_id: str
+    stripe_status: str
+    stripe_created: int
+    stripe_current_period_start: int
+    stripe_current_period_end: int
+    stripe_quantity: int
+    stripe_price_id: str
+    stripe_price_lookup_key: str
+    stripe_product_id: str
+    stripe_product_name: str
+    user_id: uuid.UUID
