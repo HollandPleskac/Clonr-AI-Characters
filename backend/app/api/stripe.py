@@ -3,12 +3,13 @@ from typing import Annotated
 
 import sqlalchemy as sa
 import stripe
-from fastapi import Depends, Header, Query, Request, status
+from fastapi import Depends, Header, Request, status
 from fastapi.exceptions import HTTPException
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse
 from fastapi.routing import APIRouter
 from loguru import logger
 from opentelemetry import trace
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import deps, models
@@ -47,16 +48,22 @@ CHECKOUT_SUCCESS_URL = (
 CHECKOUT_CANCEL_URL = "http://localhost:3000?canceled=true"
 
 
+class PortalResponse(BaseModel):
+    url: str
+
+
 @router.get("/checkout-token", response_model=StripeCheckoutTokenResponse)
 async def create_checkout_token(
     user: Annotated[uuid.UUID, Depends(deps.get_current_active_user)],
-    expire_seconds: Annotated[int, Query(ge=60)] = 60 * 60 * 24 * 7,
+    # expire_seconds: Annotated[int, Query(ge=60)] = 60 * 60 * 24 * 7,
 ):
-    token = create_stripe_checkout_token(user_id=user.id, expire_seconds=expire_seconds)
+    # Stripe allows up to 200 tokens, and for long expire times, we could go over that limit.
+    # None gives 172 tokens. 1 week gives 195 tokens! I (Jonny) think it's ok to not expire these.
+    token = create_stripe_checkout_token(user_id=user.id, expire_seconds=None)
     return StripeCheckoutTokenResponse(token=token)
 
 
-@router.get("/create-portal-session")
+@router.get("/create-portal-session", response_model=PortalResponse, status_code=200)
 async def customer_portal(
     user: Annotated[models.User, Depends(deps.get_current_active_user)],
 ):
@@ -69,9 +76,7 @@ async def customer_portal(
         customer=user.stripe_customer_id,
         return_url="http://localhost:3000",  # TODO (Jonny): replace with some env variables or something
     )
-    return RedirectResponse(
-        url=portal_session.url, status_code=status.HTTP_303_SEE_OTHER
-    )
+    return PortalResponse(url=portal_session.url)
 
 
 @router.post("/webhook")
@@ -96,13 +101,12 @@ async def webhook_received(
         logger.error(e)
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
 
-    logger.info(f"Received Stripe event: {event.type}")
-    logger.info(event.data.object)
+    logger.info(f"Received Stripe event: {event.type}. EventID: {event.id}")
     match event.type:
         case "checkout.session.completed":
             checkout_session: stripe.checkout.Session = event.data.object
             logger.info(
-                f"Stripe checkout session completed. Event ID: {event.id}. Checkout session ID: {checkout_session.id}. Customer ID: {checkout_session.customer}"
+                f"Checkout session ID: {checkout_session.id}. Customer ID: {checkout_session.customer}"
             )
 
             token: str = event.data.object.client_reference_id
@@ -140,15 +144,14 @@ async def webhook_received(
                 stripe_price_lookup_key=sub["items"].data[0].price.lookup_key,
                 stripe_product_id=sub["items"].data[0].price.product.id,
                 stripe_product_name=sub["items"].data[0].price.product.name,
+                stripe_cancel_at_period_end=sub.cancel_at_period_end,
             )
             db.add(subscription_model)
             await db.commit()
 
         case "customer.subscription.updated":
             raw_sub: stripe.Subscription = event.data.object
-            logger.info(
-                f"Subscription updated Event ID: {event.id}. Subscription ID: {raw_sub.id}"
-            )
+            logger.info(f"Subscription ID: {raw_sub.id}")
             sub = stripe.Subscription.retrieve(
                 id=raw_sub.id, expand=["items.data.price.product"]
             )
@@ -167,6 +170,7 @@ async def webhook_received(
                 stripe_price_lookup_key=sub["items"].data[0].price.lookup_key,
                 stripe_product_id=sub["items"].data[0].price.product.id,
                 stripe_product_name=sub["items"].data[0].price.product.name,
+                stripe_cancel_at_period_end=sub.cancel_at_period_end,
             )
             await db.execute(
                 sa.update(models.Subscription)
@@ -177,13 +181,11 @@ async def webhook_received(
 
         case "customer.subscription.deleted":
             sub: stripe.Subscription = event.data.object
-            logger.info(
-                f"Subscription deleted Event ID: {event.id}. Subscription ID: {sub.id}"
-            )
+            logger.info(f"Subscription ID: {sub.id}")
             await db.execute(
                 sa.update(models.Subscription)
                 .where(models.Subscription.stripe_subscription_id == sub.id)
-                .values(status=sub.status)
+                .values(stripe_status=sub.status)
             )
             await db.commit()
 

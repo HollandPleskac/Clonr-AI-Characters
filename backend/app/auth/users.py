@@ -32,6 +32,7 @@ redis: Redis = Redis(
     decode_responses=True,
 )
 
+# TODO (Jonny): yo why this shit not working?
 google_oauth_client = GoogleOAuth2(
     settings.GOOGLE_CLIENT_ID,
     settings.GOOGLE_CLIENT_SECRET,

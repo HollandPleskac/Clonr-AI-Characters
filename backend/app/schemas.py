@@ -481,4 +481,5 @@ class Subscription(CommonMixin, BaseModel):
     stripe_price_lookup_key: str
     stripe_product_id: str
     stripe_product_name: str
+    stripe_cancel_at_period_end: bool
     user_id: uuid.UUID
