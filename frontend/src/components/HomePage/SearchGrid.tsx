@@ -76,7 +76,7 @@ export default function SearchGrid({
           next={fetchMoreData}
           hasMore={hasMoreData}
           loader={<h4>Loading...</h4>}
-          className={`grid grid-cols-6 gap-1 gap-y-10 ${showPadding2 ? 'pt-[40px]' : 'pt-[100px]'} pb-[100px] px-[4%]`}
+          className={`grid grid-cols-6 gap-1 gap-y-10 ${showPadding2 ? 'pt-[50px]' : 'pt-[100px]'} pb-[100px] px-[4%]`}
         >
           {characters.map((item, index) => {
             const edgeCard = calcEdgeCard(index)

@@ -21,6 +21,8 @@ import Dropdown from './Dropdown'
 import { useQueryTags } from '@/hooks/useTags'
 import { useQueryClones } from '@/hooks/useClones'
 import { CloneSortType } from '@/client/models/CloneSortType'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import { Navigation, Pagination, Scrollbar } from 'swiper/modules'
 
 interface BrowsePageProps {
     initialCharacters: Character[]
@@ -57,10 +59,10 @@ export default function BrowsePage({
     const [doneSearching, setDoneSearching] = useState(true)
     const [hasMoreData, setHasMoreData] = useState(true)
 
-    const {data: tagsData, error: tagsError, isLoading: isLoadingTags} = useQueryTags();
+    const { data: tagsData, error: tagsError, isLoading: isLoadingTags } = useQueryTags();
 
     useEffect(() => {
-        if(!isLoadingTags && tagsData) {
+        if (!isLoadingTags && tagsData) {
             setTags(tagsData)
             setDoneSearching(true)
             setLoading(false)
@@ -84,16 +86,16 @@ export default function BrowsePage({
         offset: 0,
         limit: 20
     }
-
-    const {data: searchData, isLoading: isLoadingSearch} = useQueryClones(searchQueryParams);
+    const { data: searchData, isLoading: isLoadingSearch } = useQueryClones(searchQueryParams);
 
     useEffect(() => {
-        if(!isLoadingSearch && searchData) {
+        if (!isLoadingSearch && searchData) {
+            console.log("this is activeTag: ", activeTag)
             setSearchedCharacters(searchData)
             setDoneSearching(true)
             setLoading(false)
         }
-      }, [searchInput, isLoadingSearch, activeTag, activeSortType]) 
+    }, [searchInput, isLoadingSearch, activeTag, activeSortType])
 
 
 
@@ -132,7 +134,8 @@ export default function BrowsePage({
             <div> Loading tags... </div>
         )
     }
-    
+
+
 
     return (
         <div className=''>
@@ -141,55 +144,41 @@ export default function BrowsePage({
             <TopBarStatic
             />
 
-            <div className='flex w-full justify-center items-center gap-x-4' >
-                <div
-                    className='relative group w-[500px]  my-10'
-                    onClick={() => {
-                        console.log('active')
-                        if (inputRef.current) {
-                            inputRef.current.focus()
-                        }
+            <div className='flex px-[4%] gap-x-8 mt-[50px]'  >
+                <Swiper
+                    modules={[Navigation, Pagination, Scrollbar]}
+                    navigation={true}
+                    spaceBetween={4}
+                    slidesPerView={'auto'}
+                    slidesPerGroup={5}
+                    speed={1100}
+                    className={`w-full flex gap-x-2`}
+                    style={{
+                        zIndex: 50,
                     }}
                 >
-                    <button className='group absolute peer left-[10px] top-[13px] peer cursor-default'>
-                        <SearchIcon
-                            strokeClasses={` group-focus:stroke-[#5848BC] ${isInputActive ? 'stroke-[#5848BC]' : 'stroke-[#515151]'
-                                } transition duration-100`}
-                        />
-                    </button>
-                    <input
-                        ref={inputRef}
-                        value={searchInput}
-                        onChange={(e) => setSearchInput(e.target.value)}
-                        onFocus={handleInputFocus}
-                        onBlur={handleInputBlur}
-                        className={`w-[500px] bg-[#1E1E1E] focus:cursor-auto peer py-auto h-[50px] transition-all  duration-500 rounded-lg border-none  pr-0 pl-[44px] text-[15px] font-light leading-6 text-[#979797] focus:ring-1 focus:ring-transparent`}
-                        type='text'
-                        placeholder='Search'
-                        style={{ outline: 'none', resize: 'none' }}
-                    />
-                    <button
-                        className={`absolute right-[10px] top-[17px] ${searchInput === '' ? 'hidden' : 'flex'}`}
-                        onClick={() => { setSearchInput('') }}
-                    >
-                        <XIcon />
-                    </button>
-                </div>
+                    {tags.map((tag, index) => {
+                        return (
+                            <SwiperSlide
+                                key={tag.id}
+                                className='w-auto inline-flex flex-grow flex-shrink-0'
+                                style={{
+                                    width: 'auto'
+                                }}
+                            >
+                                <TagComponent
+                                    name={tag.name}
+                                    onClick={() => {
+                                        handleTagClick(tag)
+                                    }}
+                                    active={tag.id === activeTag?.id}
+
+                                />
+                            </SwiperSlide>
+                        )
+                    })}
+                </Swiper>
                 <Dropdown onItemClick={handleSortClick} activeSort={activeSort} />
-            </div>
-
-            <div className='flex flex-wrap px-[4%] gap-x-2 gap-y-2' >
-                {tags.map(
-                    (tag) => <TagComponent
-                        key={tag.id}
-                        name={tag.name}
-                        onClick={() => {
-                            handleTagClick(tag)
-                        }}
-                        active={tag.id === activeTag?.id}
-
-                    />
-                )}
             </div>
 
             <SearchGrid

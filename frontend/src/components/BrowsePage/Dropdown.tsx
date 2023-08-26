@@ -10,7 +10,7 @@ interface DropdownProps {
 
 const Dropdown: React.FC<DropdownProps> = ({ onItemClick, activeSort }) => {
     return (
-        <div className="hs-dropdown relative inline-flex">
+        <div className="hs-dropdown relative inline-flex flex-grow flex-shrink-0">
             <button id="hs-dropdown-default" type="button" className="text-[#979797] h-[50px] hs-dropdown-toggle py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md font-medium shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-600 transition-all text-sm bg-[#1E1E1E] hover:bg-[rgb(25,25,25)] text-gray-400 focus:ring-offset-gray-800">
                 Sort: {activeSort}
                 <svg className="hs-dropdown-open:rotate-180 w-2.5 h-2.5 text-gray-600" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">

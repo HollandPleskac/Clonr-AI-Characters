@@ -822,6 +822,7 @@ class LongDescription(CommonMixin, Base):
 
 
 # ------------- Stripe ------------- #
+# TODO (Jonny): add a field for scheduled to be canceled
 class Subscription(CommonMixin, Base):
     __tablename__ = "subscriptions"
 
@@ -850,6 +851,7 @@ class Subscription(CommonMixin, Base):
     stripe_price_lookup_key: Mapped[str]
     stripe_product_id: Mapped[str]
     stripe_product_name: Mapped[str]
+    stripe_cancel_at_period_end: Mapped[bool]
     user_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )

@@ -26,7 +26,7 @@ async def get_my_subscriptions(
         raise HTTPException(
             status_code=400, detail="Free plan users do not yet have a customer portal"
         )
-    subs = await db.scalar(
+    sub = await db.scalar(
         sa.select(models.Subscription).where(models.Subscription.user_id == user.id)
     )
-    return subs.first()
+    return subs
