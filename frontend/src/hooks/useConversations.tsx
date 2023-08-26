@@ -6,7 +6,10 @@ import useSWR from 'swr';
 import { ConversationsService } from '@/client/services/ConversationsService'
 import { Conversation } from '@/client/models/Conversation'
 import { ConversationCreate } from '@/client/models/ConversationCreate'
-
+import { ConvoSortType } from '@/client/models/ConvoSortType'
+import { MemoryStrategy } from '@/client/models/MemoryStrategy'
+import { AdaptationStrategy } from '@/client/models/AdaptationStrategy'
+import { InformationStrategy } from '@/client/models/InformationStrategy'
 
 interface Message {
     id: string;
@@ -28,28 +31,88 @@ interface ConversationMessageQueryParams {
     conversationId: string;
 }
 
+interface ConversationsQueryParams {
+  tags?: (Array<number> | null);
+  cloneName?: (string | null);
+  cloneId?: (string | null);
+  sort?: ConvoSortType;
+  memoryStrategy?: (MemoryStrategy | null);
+  adaptationStrategy?: (AdaptationStrategy | null);
+  informationStrategy?: (InformationStrategy | null);
+  updatedAfter?: (string | null);
+  updatedBefore?: (string | null);
+  offset?: number;
+  limit: number;
+} 
+
+export function useQueryConversations(queryParams: ConversationsQueryParams) {
+  const {
+    tags,
+    cloneName,
+    cloneId,
+    sort,
+    memoryStrategy,
+    adaptationStrategy,
+    informationStrategy,
+    updatedAfter,
+    updatedBefore,
+    offset,
+    limit
+  } = queryParams;
+
+  console.log("useQueryConversations() queryParams: ", queryParams)
+
+  const fetcher = async () => {
+    try {
+      const response = await ConversationsService.getQueriedConvosConversationsGet(
+        tags,
+        cloneName,
+        cloneId,
+        sort,
+        memoryStrategy,
+        adaptationStrategy,
+        informationStrategy,
+        updatedAfter,
+        updatedBefore,
+        offset,
+        limit
+      );
+      return response;
+    } catch (error) {
+      throw new Error('Error fetching conversations: ' + error.message);
+    }
+  };
+
+  const { data, error } = useSWR([tags, cloneName, cloneId, sort, memoryStrategy, adaptationStrategy, informationStrategy, updatedAfter, updatedBefore, offset, limit, 'conversations'], fetcher);
+  console.log("useQueryConversations() data is: ", data);
+
+  return {
+    data: data,
+    isLoading: !error && !data,
+    error: error
+  };
+}
+
 export function useQueryConversationMessages(queryParams: ConversationMessageQueryParams) {
   const {
     conversationId
   } = queryParams;
 
-  console.log("queryParams: ", queryParams)
+  console.log("useQueryConversationMessages() queryParams: ", queryParams)
 
   const fetcher = async () => {
     try {
       const response = await ConversationsService.getMessagesConversationsConversationIdMessagesGet(
-        conversationId
+        queryParams.conversationId
       );
       return response;
     } catch (error) {
-      throw new Error('Error fetching clones: ' + error.message);
+      throw new Error('Error fetching conversation msgs: ' + error.message);
     }
   };
 
   const { data, error } = useSWR([conversationId, 'conversationMessagesByConvoId'], fetcher);
-
-  console.log("ERROR IS: ", error)
-  console.log("data is: ", data);
+  console.log("useQueryConversationMessages() data is: ", data);
 
   return {
     data: data,
@@ -65,18 +128,14 @@ export function createNewConversation(conversationData: ConversationCreate) {
       const response = await ConversationsService.createConversationConversationsPost(
         conversationData
       );
-      console.log("IN createNewConversation(), response is: ", response)
       return response;
     } catch (error) {
-      console.log("ERROR IN createNewConversation(): ", error)
       throw new Error('Error creating conversation: ' + error.message);
     }
   };
 
   const { data, error } = useSWR(['createConversation'], fetcher);
-
-  console.log("IN createNewConversation(), ERROR IS: ", error)
-  console.log("IN createNewConversation(), data is: ", data);
+  console.log("createNewConversation(), data is: ", data);
 
   return {
     data: data,

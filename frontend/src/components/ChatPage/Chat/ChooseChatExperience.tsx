@@ -68,6 +68,7 @@ async function createCharacterConversation(
 }
 
 const ChooseChatExperience = ({ characterId, character, setConversationState, setConvoID, initialCharacterChats, currentCharacterId }: ChooseChatExperienceProps) => {
+  console.log("In ChooseChatExperience, this is initial initialCharacterChats: ", initialCharacterChats)
   if (!character) {
     return <div>Loading characterSUP..</div>
   }
