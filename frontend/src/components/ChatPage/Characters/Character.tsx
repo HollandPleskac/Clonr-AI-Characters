@@ -12,6 +12,8 @@ const Character: React.FC<MyComponentProps> = ({
   characterChat,
   currentCharacterId,
 }) => {
+  console.log("In CharacterComponent, this is characterChat: ", characterChat)
+  console.log("In CharacterComponent, this is currentCharacterId: ", currentCharacterId)
   return (
     <Link
       href={`/chat/${characterChat.character.id}/${characterChat.lastConversationId}`}

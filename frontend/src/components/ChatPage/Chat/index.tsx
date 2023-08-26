@@ -15,6 +15,7 @@ import ChooseChatExperience from './ChooseChatExperience'
 import PreviousConversations from './PreviousConversations'
 import ChatTopBar from './ChatTopBar'
 import useConversations from '@/hooks/useConversations'
+//import { createConversation } from '@hooks/useConversations'
 
 interface ChatScreenProps {
   characterId: string
@@ -37,7 +38,7 @@ export default function ChatScreen({
   const [isFetchingServerMessage, setIsFetchingServerMessage] = useState(false)
 
   const [convoID, setConvoID] = useState('')
-  const [conversationState, setConversationState] = useState<string | null>(null)
+  const [conversationState, setConversationState] = useState<string | null>('undecided')
   const [showChat, setShowChat] = useState(true)
   const [scrollToNewMessage, setScrollToNewMessage] = useState<boolean>(false)
 

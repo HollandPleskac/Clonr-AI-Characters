@@ -30,6 +30,12 @@ const ChatTopBar = ({
   characterId,
   conversationId
 }: ChatTopBarProps) => {
+  if (!character) {
+    return (
+      <div> Loading character.. </div>
+    )
+  }
+
   return (
     <div className='flex h-[122px] w-full items-center justify-between border-b border-[#252525] px-10'>
       <div className='flex items-center'>

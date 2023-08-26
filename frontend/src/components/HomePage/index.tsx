@@ -21,6 +21,7 @@ import { useQueryClones } from '@/hooks/useClones'
 import AuthModal from '../AuthModal'
 import { ColorRing } from "react-loader-spinner"
 import useSWR from 'swr'
+import { CloneSortType } from '@/client/models/CloneSortType'
 
 interface HomeScreenProps {
   topCharacters: Character[]
@@ -65,16 +66,16 @@ export default function HomeScreen({
   const [trendingChars, setTrendingChars] = useState<any>([])
 
   const topSearchQueryParams = {
-    tags: '',
+    tags: [],
     name: searchInput,
-    sort: 'top',
+    sort: CloneSortType["TOP"],
     similar: searchInput,
     offset: 0,
     limit: 20
   }
 
   const trendingQueryParams = {
-    sort: 'hot',
+    sort: CloneSortType["HOT"],
     offset: 0,
     limit: 20
   }
@@ -133,7 +134,7 @@ export default function HomeScreen({
 
       {!showSearchGrid && (
         <ScaleFadeIn loaded={!searchInput} duration={duration}>
-          {(!topChars || topChars.length === 0 || continueChars.length === 0 || trendingChars.length === 0) ? (
+          {(!topChars || !continueChars || !trendingChars || topChars.length === 0 || continueChars.length === 0 || trendingChars.length === 0) ? (
             <div className='grid place-items-center'
             style={{
               height: 'calc(100vh - 48px - 84px)'

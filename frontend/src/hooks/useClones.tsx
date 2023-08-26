@@ -4,6 +4,9 @@ import { useState } from 'react';
 import axios from 'axios';
 import { Character } from '@/types';
 import useSWR from 'swr';
+import { ClonesService } from '@/client/services/ClonesService'
+import { CloneSearchResult } from '@/client/models/CloneSearchResult'
+import { CloneSortType } from '@/client/models/CloneSortType'
 
 interface Tag {
   id: string;
@@ -61,6 +64,10 @@ interface Document {
   clone_id: string;
 }
 
+interface CloneQueryByIdParams {
+  cloneId: string;
+}
+
 interface CloneQueryParams {
   tags?: number[] | null;
   name?: string;
@@ -69,10 +76,6 @@ interface CloneQueryParams {
   offset?: number;
   limit?: number;
 } 
-
-import { ClonesService } from '@/client/services/ClonesService'
-import { CloneSearchResult } from '@/client/models/CloneSearchResult'
-import { CloneSortType } from '@/client/models/CloneSortType'
 
 
 export function useQueryClones(queryParams: CloneQueryParams) {
@@ -105,9 +108,9 @@ export function useQueryClones(queryParams: CloneQueryParams) {
     }
   };
 
-  const { data, error } = useSWR('clones', fetcher);
+  const { data, error } = useSWR([tags, name, sort, similar, offset, limit, 'clones'], fetcher);
 
-  console.log("data is: ", data);
+  console.log("useQueryClones() data is: ", data);
 
   return {
     data: data,
@@ -116,6 +119,60 @@ export function useQueryClones(queryParams: CloneQueryParams) {
   };
 }
 
+export function useQueryClonesById(queryParams: CloneQueryByIdParams) {
+  const {
+    cloneId
+  } = queryParams;
+
+  console.log("useQueryClonesById() queryParams: ", queryParams)
+
+  const fetcher = async () => {
+    try {
+      const response = await ClonesService.getCloneByIdClonesCloneIdGet(
+        cloneId
+      );
+      return response;
+    } catch (error) {
+      throw new Error('Error fetching clones: ' + error.message);
+    }
+  };
+
+  const { data, error } = useSWR([cloneId, 'clonesById'], fetcher);
+
+  console.log("useQueryClonesById() data is: ", data);
+
+  return {
+    data: data,
+    isLoading: !error && !data,
+    error: error
+  };
+}
+
+export function useQueryMultipleClonesByIds(cloneIds: Array<string>) {
+  console.log("useQueryMultipleClonesByIds() cloneIds: ", cloneIds)
+
+  const fetcher = async () => {
+    try {
+      const responses = await Promise.all(
+        cloneIds.map(async (cloneId) => {
+          const response = await ClonesService.getCloneByIdClonesCloneIdGet(cloneId);
+          return response;
+        })
+      );
+      return responses;
+    } catch (error) {
+      throw new Error('Error fetching clones: ' + error.message);
+    }
+  };
+
+  const { data, error } = useSWR(cloneIds.map(id => [id, 'clonesById']), fetcher);
+
+  return {
+    data: data,
+    isLoading: !error && !data,
+    error: error
+  };
+}
 
 export default function useClones() {
   const createClone = async (cloneData: CloneCreate) => {
