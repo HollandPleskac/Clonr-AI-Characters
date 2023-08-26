@@ -60,7 +60,7 @@ def test_conversation_initialization(
         clone_id=clone_id,
         memory_strategy=schemas.MemoryStrategy.long_term,
         information_strategy=schemas.InformationStrategy.internal,
-        adaptation_strategy=schemas.AdaptationStrategy.dynamic,
+        adaptation_strategy=schemas.AdaptationStrategy.moderate,
     )
     data = jsonable_encoder(convo_create)
     r = client.post("/conversations/", json=data, headers=user_headers)
@@ -141,25 +141,25 @@ def test_conversation_queries(
                 clone_id=clone_id,
                 memory_strategy=MemoryStrategy.zero,
                 information_strategy=InformationStrategy.internal,
-                adaptation_strategy=None,
-            ),
-            schemas.ConversationCreate(
-                clone_id=clone_id,
-                memory_strategy=MemoryStrategy.short_term,
-                information_strategy=InformationStrategy.internal,
-                adaptation_strategy=None,
+                adaptation_strategy=AdaptationStrategy.zero,
             ),
             schemas.ConversationCreate(
                 clone_id=clone_id,
                 memory_strategy=MemoryStrategy.long_term,
                 information_strategy=InformationStrategy.internal,
-                adaptation_strategy=AdaptationStrategy.fluid,
+                adaptation_strategy=AdaptationStrategy.zero,
+            ),
+            schemas.ConversationCreate(
+                clone_id=clone_id,
+                memory_strategy=MemoryStrategy.long_term,
+                information_strategy=InformationStrategy.internal,
+                adaptation_strategy=AdaptationStrategy.high,
             ),
             schemas.ConversationCreate(
                 clone_id=clone_id,
                 memory_strategy=MemoryStrategy.zero,
                 information_strategy=InformationStrategy.zero,
-                adaptation_strategy=None,
+                adaptation_strategy=AdaptationStrategy.zero,
             ),
         ]:
             data = jsonable_encoder(payload)
@@ -174,7 +174,7 @@ def test_conversation_queries(
     param_dicts = [
         dict(memory_strategy=MemoryStrategy.zero.value),
         dict(information_strategy=InformationStrategy.zero.value),
-        dict(adaptation_strategy=AdaptationStrategy.fluid.value),
+        dict(adaptation_strategy=AdaptationStrategy.high.value),
         dict(clone_name="squares"),
         dict(clone_id=clone_ids[0]),
         dict(tags=[tags[0].id, tags[1].id]),

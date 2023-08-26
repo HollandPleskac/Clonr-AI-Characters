@@ -144,11 +144,14 @@ class Controller:
         embedding_client: EmbeddingClient,
     ) -> models.Conversation:
         data = obj.model_dump(exclude_none=True)
-        convo = models.Conversation(**data, user_id=user.id, clone_name=clone.name)
-        if obj.adaptation_strategy != AdaptationStrategy.static:
-            convo.agent_summary_threshold = AGENT_SUMMARY_THRESHOLD
-            convo.entity_context_threshold = ENTITY_CONTEXT_THRESHOLD
-            convo.reflection_threshold = REFLECTION_THRESHOLD
+        convo = models.Conversation(
+            **data,
+            user_id=user.id,
+            reflection_threshold=REFLECTION_THRESHOLD,
+            entity_context_threshold=ENTITY_CONTEXT_THRESHOLD,
+            agent_summary_threshold=AGENT_SUMMARY_THRESHOLD,
+            clone_name=clone.name,
+        )
         db.add(convo)
         await db.commit()
         await db.refresh(convo)
@@ -195,58 +198,68 @@ class Controller:
 
         return convo
 
-    @tracer.start_as_current_span("add_private_memory")
+    # NOTE (Jonny): Background tasks will not execute when they are wrapped
     async def _add_private_memory(self, content: str) -> models.Memory:
-        if self.memory_strategy == MemoryStrategy.zero:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Cannot add memories with memory strategy {self.memory_strategy}",
+        with tracer.start_as_current_span("add_private_memory"):
+            if self.memory_strategy == MemoryStrategy.zero:
+                raise ValueError(
+                    f"Cannot add memories with memory strategy {self.memory_strategy}"
+                )
+                # raise HTTPException(
+                #     status_code=status.HTTP_400_BAD_REQUEST,
+                #     detail=f"Cannot add memories with memory strategy {self.memory_strategy}",
+                # )
+
+            attributes = dict(
+                subroutine="add_private_memory",
+                clone_id=str(self.clone.id),
+                memory_strategy=self.memory_strategy,
+                adaptation_strategy=self.adaptation_strategy,
             )
+            special_subroutine_meter.add(amount=1, attributes=attributes)
 
-        attributes = dict(
-            subroutine="add_private_memory",
-            clone_id=str(self.clone.id),
-            memory_strategy=self.memory_strategy,
-            adaptation_strategy=self.adaptation_strategy,
-        )
-        special_subroutine_meter.add(amount=1, attributes=attributes)
+            importance = await generate.rate_memory(llm=self.llm, memory=content)
 
-        importance = await generate.rate_memory(llm=self.llm, memory=content)
-
-        reflection_count = await self.clonedb.increment_reflection_counter(
-            importance=importance
-        )
-
-        memory_struct = Memory(content=content, importance=importance, is_shared=False)
-        memory = await self.clonedb.add_memories([memory_struct])
-
-        if reflection_count >= self.reflection_threshold:
-            self.background_tasks.add_task(self._reflect, NUM_REFLECTION_MEMORIES)
-            await self.clonedb.set_reflection_count(0)
-
-        if (
-            self.memory_strategy == MemoryStrategy.long_term
-            and self.adaptation_strategy != AdaptationStrategy.static
-        ):
-            agent_summary_count = await self.clonedb.increment_agent_summary_counter(
+            reflection_count = await self.clonedb.increment_reflection_counter(
                 importance=importance
             )
 
-            if agent_summary_count >= self.agent_summary_threshold:
-                self.background_tasks.add_task(self._agent_summary_compute)
-                await self.clonedb.set_agent_summary_count(0)
-
-            entity_context_count = await self.clonedb.increment_entity_context_counter(
-                importance=importance
+            memory_struct = Memory(
+                content=content, importance=importance, is_shared=False
             )
+            memory = await self.clonedb.add_memories([memory_struct])
 
-            if entity_context_count >= self.entity_context_threshold:
-                self.background_tasks.add_task(self._entity_context_compute)
-                await self.clonedb.set_entity_context_count(0)
+            if reflection_count >= self.reflection_threshold:
+                self.background_tasks.add_task(self._reflect, NUM_REFLECTION_MEMORIES)
+                await self.clonedb.set_reflection_count(0)
 
-        special_subroutine_meter.add(amount=-1, attributes=attributes)
+            if (
+                self.memory_strategy == MemoryStrategy.long_term
+                and self.adaptation_strategy != AdaptationStrategy.zero
+            ):
+                agent_summary_count = (
+                    await self.clonedb.increment_agent_summary_counter(
+                        importance=importance
+                    )
+                )
 
-        return memory[0]
+                if agent_summary_count >= self.agent_summary_threshold:
+                    self.background_tasks.add_task(self._agent_summary_compute)
+                    await self.clonedb.set_agent_summary_count(0)
+
+                entity_context_count = (
+                    await self.clonedb.increment_entity_context_counter(
+                        importance=importance
+                    )
+                )
+
+                if entity_context_count >= self.entity_context_threshold:
+                    self.background_tasks.add_task(self._entity_context_compute)
+                    await self.clonedb.set_entity_context_count(0)
+
+            special_subroutine_meter.add(amount=-1, attributes=attributes)
+
+            return memory[0]
 
     @tracer.start_as_current_span("add_user_message")
     async def add_user_message(
@@ -319,235 +332,235 @@ class Controller:
         )
         return memory
 
-    @tracer.start_as_current_span("reflect")
     async def _reflect(self, num_memories: int) -> list[models.Memory]:
-        attributes = dict(
-            subroutine="reflect",
-            clone_id=str(self.clone.id),
-            memory_strategy=self.memory_strategy,
-            adaptation_strategy=self.adaptation_strategy,
-        )
-        special_subroutine_meter.add(amount=1, attributes=attributes)
-
-        # typical value is 100 memories. the query template is 112 tokens so we have lots of room here
-        # assume a max output of 512 tokens for questions
-        num_tokens = self.llm.context_length - 512 - 120
-        logger.info(f"Reflection triggered for conversation {self.conversation.id}")
-        memories = await self.clonedb.get_memories(
-            num_messages=num_memories, num_tokens=num_tokens
-        )
-
-        # the default value is 3, and the defintion should probably be pushed up higher in the stack
-        queries = await generate.reflection_queries_create(
-            llm=self.llm,
-            memories=memories,
-        )
-
-        retrieved_memories: list[models.Memory] = []
-        # this ensures we pull roughly a little less than the number of memories pulled above
-        # e.g. at 3 queries and 60 msgs, this would yield 45 msgs
-        max_items = num_memories // (1 + len(queries))
-        max_items = max(1, max_items)
-        # the prompt here is 180 tokens, so just take off another 860 tokens
-        num_tokens -= 60
-        params = GenAgentsSearchParams(max_items=max_items, max_tokens=num_tokens)
-
-        for q in queries:
-            cur = await self.clonedb.query_memories(
-                query=q, params=params, update_access_date=True
+        with tracer.start_as_current_span("reflect"):
+            attributes = dict(
+                subroutine="reflect",
+                clone_id=str(self.clone.id),
+                memory_strategy=self.memory_strategy,
+                adaptation_strategy=self.adaptation_strategy,
             )
-            retrieved_memories.extend([c.model for c in cur])
-        retrieved_memories.sort(key=lambda x: x.timestamp)
+            special_subroutine_meter.add(amount=1, attributes=attributes)
 
-        mem_structs = [
-            Memory(
-                id=m.id,
-                content=m.content,
-                timestamp=m.timestamp,
-                last_accessed_at=m.last_accessed_at,
-                is_shared=m.is_shared,
-                embedding=[],
-                embedding_model="",
-                depth=m.depth,
-                importance=m.importance,
+            # typical value is 100 memories. the query template is 112 tokens so we have lots of room here
+            # assume a max output of 512 tokens for questions
+            num_tokens = self.llm.context_length - 512 - 120
+            logger.info(f"Reflection triggered for conversation {self.conversation.id}")
+            memories = await self.clonedb.get_memories(
+                num_messages=num_memories, num_tokens=num_tokens
             )
-            for m in retrieved_memories
-        ]
-        reflections_without_ratings = await generate.reflections_create(
-            llm=self.llm, memories=mem_structs
-        )
-        reflections: list[Memory] = []
-        for r in reflections_without_ratings:
-            data = r.model_dump()
-            data["importance"] = await generate.rate_memory(
-                llm=self.llm, memory=r.content
+
+            # the default value is 3, and the defintion should probably be pushed up higher in the stack
+            queries = await generate.reflection_queries_create(
+                llm=self.llm,
+                memories=memories,
             )
-            refl = Memory(**data)
-            reflections.append(refl)
 
-        mems = await self.clonedb.add_memories(reflections)
-        await self.clonedb.set_reflection_count(0)
+            retrieved_memories: list[models.Memory] = []
+            # this ensures we pull roughly a little less than the number of memories pulled above
+            # e.g. at 3 queries and 60 msgs, this would yield 45 msgs
+            max_items = num_memories // (1 + len(queries))
+            max_items = max(1, max_items)
+            # the prompt here is 180 tokens, so just take off another 860 tokens
+            num_tokens -= 60
+            params = GenAgentsSearchParams(max_items=max_items, max_tokens=num_tokens)
 
-        special_subroutine_meter.add(amount=-1, attributes=attributes)
+            for q in queries:
+                cur = await self.clonedb.query_memories(
+                    query=q, params=params, update_access_date=True
+                )
+                retrieved_memories.extend([c.model for c in cur])
+            retrieved_memories.sort(key=lambda x: x.timestamp)
 
-        return mems
+            mem_structs = [
+                Memory(
+                    id=m.id,
+                    content=m.content,
+                    timestamp=m.timestamp,
+                    last_accessed_at=m.last_accessed_at,
+                    is_shared=m.is_shared,
+                    embedding=[],
+                    embedding_model="",
+                    depth=m.depth,
+                    importance=m.importance,
+                )
+                for m in retrieved_memories
+            ]
+            reflections_without_ratings = await generate.reflections_create(
+                llm=self.llm, memories=mem_structs
+            )
+            reflections: list[Memory] = []
+            for r in reflections_without_ratings:
+                data = r.model_dump()
+                data["importance"] = await generate.rate_memory(
+                    llm=self.llm, memory=r.content
+                )
+                refl = Memory(**data)
+                reflections.append(refl)
 
-    @tracer.start_as_current_span("agent_summary_compute")
+            mems = await self.clonedb.add_memories(reflections)
+            await self.clonedb.set_reflection_count(0)
+
+            special_subroutine_meter.add(amount=-1, attributes=attributes)
+
+            return mems
+
     async def _agent_summary_compute(self) -> models.AgentSummary:
-        attributes = dict(
-            subroutine="agent_summary_compute",
-            clone_id=str(self.clone.id),
-            memory_strategy=self.memory_strategy,
-            adaptation_strategy=self.adaptation_strategy,
-        )
-        special_subroutine_meter.add(amount=1, attributes=attributes)
-
-        # NOTE (Jonny): the queries are from clonr/templates/agent_summary
-        # the default questions. In this step.
-        # We use I/my since it's better for similarity search here.
-        logger.info(
-            f"Agent summary compute triggered for conversation {self.conversation.id}"
-        )
-        queries = [
-            "How would one describe my core characteristics?",
-            "How would one describe my feelings about my recent progress in life?",
-        ]
-        retrieved_memories: list[models.Memory] = []
-        # The prompt here is about 180 tokens base + 512 long desc.
-        max_tokens = self.llm.context_length - 190 - 512 - 512
-        max_tokens = int(max_tokens // max(1, len(queries)))
-        params = GenAgentsSearchParams(max_items=12, max_tokens=max_tokens)
-        for q in queries:
-            # TODO (Jonny): should we update access date for this?
-            cur = await self.clonedb.query_memories(
-                query=q, params=params, update_access_date=True
+        with tracer.start_as_current_span("agent_summary_compute"):
+            attributes = dict(
+                subroutine="agent_summary_compute",
+                clone_id=str(self.clone.id),
+                memory_strategy=self.memory_strategy,
+                adaptation_strategy=self.adaptation_strategy,
             )
-            retrieved_memories.extend([c.model for c in cur])
-        retrieved_memories.sort(key=lambda x: x.timestamp)
+            special_subroutine_meter.add(amount=1, attributes=attributes)
 
-        char = self.clone.name
-        short_description = self.clone.short_description
-        long_description: str | None = None
+            # NOTE (Jonny): the queries are from clonr/templates/agent_summary
+            # the default questions. In this step.
+            # We use I/my since it's better for similarity search here.
+            logger.info(
+                f"Agent summary compute triggered for conversation {self.conversation.id}"
+            )
+            queries = [
+                "How would one describe my core characteristics?",
+                "How would one describe my feelings about my recent progress in life?",
+            ]
+            retrieved_memories: list[models.Memory] = []
+            # The prompt here is about 180 tokens base + 512 long desc.
+            max_tokens = self.llm.context_length - 190 - 512 - 512
+            max_tokens = int(max_tokens // max(1, len(queries)))
+            params = GenAgentsSearchParams(max_items=12, max_tokens=max_tokens)
+            for q in queries:
+                # TODO (Jonny): should we update access date for this?
+                cur = await self.clonedb.query_memories(
+                    query=q, params=params, update_access_date=True
+                )
+                retrieved_memories.extend([c.model for c in cur])
+            retrieved_memories.sort(key=lambda x: x.timestamp)
 
-        match self.adaptation_strategy:
-            case AdaptationStrategy.dynamic:
-                long_description = self.clone.long_description
-                # NOTE (Jonny): we're shifting towards more dynamic here
-                # not sure if this is a good idea or not!
-                if prev_summaries := await self.clonedb.get_agent_summary(n=1):
-                    long_description = prev_summaries[0]
-            case AdaptationStrategy.fluid:
-                long_description = None
-            case _:
-                # not sure if this is a good idea, might want to break earlier in this function.
+            char = self.clone.name
+            short_description = self.clone.short_description
+            long_description: str | None = None
+
+            match self.adaptation_strategy:
+                case AdaptationStrategy.moderate:
+                    long_description = self.clone.long_description
+                    # NOTE (Jonny): we're shifting towards more dynamic here
+                    # not sure if this is a good idea or not!
+                    if prev_summaries := await self.clonedb.get_agent_summary(n=1):
+                        long_description = prev_summaries[0]
+                case AdaptationStrategy.high:
+                    long_description = None
+                case _:
+                    # not sure if this is a good idea, might want to break earlier in this function.
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Adaptation strategy ({self.adaptation_strategy}) is not compatible with agent summaries.",
+                    )
+
+            # NOTE (Jonny): we don't require embeddings or hierarchical relationships for templates.
+            # Hopefully this doesn't become a breaking change
+            mem_structs = [
+                Memory(
+                    id=m.id,
+                    content=m.content,
+                    timestamp=m.timestamp,
+                    last_accessed_at=m.last_accessed_at,
+                    is_shared=m.is_shared,
+                    embedding=[],
+                    embedding_model="",
+                    depth=m.depth,
+                    importance=m.importance,
+                )
+                for m in retrieved_memories
+            ]
+            content = await generate.agent_summary(
+                llm=self.llm,
+                char=char,
+                memories=mem_structs,
+                short_description=short_description,
+                long_description=long_description,
+            )
+            agent_summary = await self.clonedb.add_agent_summary(content=content)
+
+            special_subroutine_meter.add(amount=-1, attributes=attributes)
+
+            return agent_summary
+
+    async def _entity_context_compute(self) -> models.EntityContextSummary:
+        with tracer.start_as_current_span("entity_context_compute"):
+            attributes = dict(
+                subroutine="entity_context_compute",
+                clone_id=str(self.clone.id),
+                memory_strategy=self.memory_strategy,
+                adaptation_strategy=self.adaptation_strategy,
+            )
+            special_subroutine_meter.add(amount=1, attributes=attributes)
+
+            logger.info(
+                f"Entity context compute triggered for conversation {self.conversation.id}"
+            )
+            if self.adaptation_strategy == AdaptationStrategy.zero:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Adaptation strategy ({self.adaptation_strategy}) is not compatible with agent summaries.",
                 )
-
-        # NOTE (Jonny): we don't require embeddings or hierarchical relationships for templates.
-        # Hopefully this doesn't become a breaking change
-        mem_structs = [
-            Memory(
-                id=m.id,
-                content=m.content,
-                timestamp=m.timestamp,
-                last_accessed_at=m.last_accessed_at,
-                is_shared=m.is_shared,
-                embedding=[],
-                embedding_model="",
-                depth=m.depth,
-                importance=m.importance,
+            # get the last entity summary
+            tmp = await self.clonedb.get_entity_context_summary(
+                n=1, entity_name=self.user_name
             )
-            for m in retrieved_memories
-        ]
-        content = await generate.agent_summary(
-            llm=self.llm,
-            char=char,
-            memories=mem_structs,
-            short_description=short_description,
-            long_description=long_description,
-        )
-        agent_summary = await self.clonedb.add_agent_summary(content=content)
+            prev_entity_summary = tmp[0] if tmp else None
 
-        special_subroutine_meter.add(amount=-1, attributes=attributes)
+            # We adapt the in-template questions from clonr/templates/entity_relationship
+            queries = [
+                f"What is my relationship to {self.user_name}?",
+                f"What do I think of, and how do I feel about {self.user_name}?",
+            ]
+            statements: list[models.Memory] = []
+            # The prompt here is about 150 tokens base plus max 512 prev entity context + generation
+            max_tokens = self.llm.context_length - 150 - 512 - 512
+            max_tokens = int(max_tokens // max(1, len(queries)))
+            params = GenAgentsSearchParams(max_items=12, max_tokens=max_tokens)
+            for q in queries:
+                # TODO (Jonny): should we update access date for this?
+                cur = await self.clonedb.query_memories(
+                    query=q, params=params, update_access_date=True
+                )
+                statements.extend([c.model for c in cur])
+            statements.sort(key=lambda x: x.timestamp)
 
-        return agent_summary
+            statement_structs = [
+                Memory(
+                    id=m.id,
+                    content=m.content,
+                    timestamp=m.timestamp,
+                    last_accessed_at=m.last_accessed_at,
+                    is_shared=m.is_shared,
+                    embedding=[],
+                    embedding_model="",
+                    depth=m.depth,
+                    importance=m.importance,
+                )
+                for m in statements
+            ]
 
-    @tracer.start_as_current_span("entity_context_compute")
-    async def _entity_context_compute(self) -> models.EntityContextSummary:
-        attributes = dict(
-            subroutine="entity_context_compute",
-            clone_id=str(self.clone.id),
-            memory_strategy=self.memory_strategy,
-            adaptation_strategy=self.adaptation_strategy,
-        )
-        special_subroutine_meter.add(amount=1, attributes=attributes)
+            char = self.clone.name
+            entity = self.user_name
 
-        logger.info(
-            f"Entity context compute triggered for conversation {self.conversation.id}"
-        )
-        if self.adaptation_strategy == AdaptationStrategy.static:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Adaptation strategy ({self.adaptation_strategy}) is not compatible with agent summaries.",
+            content = await generate.entity_context_create(
+                llm=self.llm,
+                char=char,
+                entity=entity,
+                statements=statement_structs,
+                prev_entity_summary=prev_entity_summary,
             )
-        # get the last entity summary
-        tmp = await self.clonedb.get_entity_context_summary(
-            n=1, entity_name=self.user_name
-        )
-        prev_entity_summary = tmp[0] if tmp else None
-
-        # We adapt the in-template questions from clonr/templates/entity_relationship
-        queries = [
-            f"What is my relationship to {self.user_name}?",
-            f"What do I think of, and how do I feel about {self.user_name}?",
-        ]
-        statements: list[models.Memory] = []
-        # The prompt here is about 150 tokens base plus max 512 prev entity context + generation
-        max_tokens = self.llm.context_length - 150 - 512 - 512
-        max_tokens = int(max_tokens // max(1, len(queries)))
-        params = GenAgentsSearchParams(max_items=12, max_tokens=max_tokens)
-        for q in queries:
-            # TODO (Jonny): should we update access date for this?
-            cur = await self.clonedb.query_memories(
-                query=q, params=params, update_access_date=True
+            entity_summary = await self.clonedb.add_entity_context_summary(
+                content=content, entity_name=entity
             )
-            statements.extend([c.model for c in cur])
-        statements.sort(key=lambda x: x.timestamp)
 
-        statement_structs = [
-            Memory(
-                id=m.id,
-                content=m.content,
-                timestamp=m.timestamp,
-                last_accessed_at=m.last_accessed_at,
-                is_shared=m.is_shared,
-                embedding=[],
-                embedding_model="",
-                depth=m.depth,
-                importance=m.importance,
-            )
-            for m in statements
-        ]
+            special_subroutine_meter.add(amount=-1, attributes=attributes)
 
-        char = self.clone.name
-        entity = self.user_name
-
-        content = await generate.entity_context_create(
-            llm=self.llm,
-            char=char,
-            entity=entity,
-            statements=statement_structs,
-            prev_entity_summary=prev_entity_summary,
-        )
-        entity_summary = await self.clonedb.add_entity_context_summary(
-            content=content, entity_name=entity
-        )
-
-        special_subroutine_meter.add(amount=-1, attributes=attributes)
-
-        return entity_summary
+            return entity_summary
 
     @tracer.start_as_current_span("set_revision_as_main")
     async def set_revision_as_main(self, message_id: uuid.UUID) -> models.Message:
@@ -838,9 +851,9 @@ class Controller:
         # this is the diff with short vs. long. short term just doesn't have adaptation.
         if self.memory_strategy == MemoryStrategy.long_term:
             match self.adaptation_strategy:
-                case AdaptationStrategy.static:
+                case AdaptationStrategy.zero:
                     pass
-                case AdaptationStrategy.dynamic | AdaptationStrategy.fluid:
+                case AdaptationStrategy.moderate | AdaptationStrategy.high:
                     e_summ = await self.clonedb.get_entity_context_summary(
                         entity_name=self.user_name, n=1
                     )
@@ -848,9 +861,9 @@ class Controller:
 
                     a_summ = await self.clonedb.get_agent_summary(n=1)
 
-                    if self.adaptation_strategy == AdaptationStrategy.dynamic:
+                    if self.adaptation_strategy == AdaptationStrategy.moderate:
                         agent_summary = a_summ[0] if a_summ else None
-                    elif self.adaptation_strategy == AdaptationStrategy.fluid:
+                    elif self.adaptation_strategy == AdaptationStrategy.high:
                         # NOTE (Jonny): this is the key difference for fluid bots. We continually
                         # replace the long description, so the bot can change quickly!
                         long_description = a_summ[0] if a_summ else None
@@ -1003,7 +1016,7 @@ class Controller:
         match self.memory_strategy:
             case MemoryStrategy.zero:
                 return await self._generate_zero_memory_message(msg_gen=msg_gen)
-            case MemoryStrategy.short_term | MemoryStrategy.long_term:
+            case MemoryStrategy.long_term:
                 # the only diff is in adaptation strategy I guess, so it's
                 # all just handled in the same function
                 return await self._generate_long_term_memory_message(msg_gen=msg_gen)

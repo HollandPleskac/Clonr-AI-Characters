@@ -4,13 +4,18 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import BaseModel
 from sqlalchemy.engine import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from app import schemas
 from app.main import app as main_app
 from app.settings import settings
-from tests.types import LoginData
+
+
+class LoginData(BaseModel):
+    email: str
+    password: str
 
 
 def load_makima_create() -> dict:
@@ -180,7 +185,7 @@ def makima_clone_fixture(
 ) -> str:
     # Create the Makima clone. It has a tag field, but for testing, no tags exist yet
     clone_data = load_makima_create()
-    clone_create = schemas.CloneCreate(**clone_data, is_public=True, tags=["anime"])
+    clone_create = schemas.CloneCreate(**clone_data, is_public=True, tags=[])
     clone_create.greeting_message = "Jonny-kun, have you been a good dog?"
     r = client.post(
         "/clones/",
@@ -208,13 +213,15 @@ def makima_clone_fixture(
     assert r.status_code == 201, data
 
     # add monologues
+    monologues = []
     for m in clone_data["monologues"]:
         m_create = schemas.MonologueCreate(
             content=m,
         ).model_dump()
-        r = client.post(
-            f"/clones/{clone_id}/monologues", json=m_create, headers=creator_headers
-        )
-        assert r.status_code == 201
+        monologues.append(m_create)
+    r = client.post(
+        f"/clones/{clone_id}/monologues", json=monologues, headers=creator_headers
+    )
+    assert r.status_code == 201
 
     yield clone_id

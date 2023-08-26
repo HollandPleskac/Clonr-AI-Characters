@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from app import models, schemas
 from app.clone.controller import NUM_REFLECTION_MEMORIES
-from app.clone.types import InformationStrategy, MemoryStrategy
+from app.clone.types import AdaptationStrategy, InformationStrategy, MemoryStrategy
 
 
 def test_short_term_memory_convo(
@@ -19,9 +19,9 @@ def test_short_term_memory_convo(
     convo_create = schemas.ConversationCreate(
         clone_id=makima_id,
         user_name=user_name,
-        memory_strategy=MemoryStrategy.short_term,
+        memory_strategy=MemoryStrategy.long_term,
         information_strategy=InformationStrategy.internal,
-        adaptation_strategy=None,
+        adaptation_strategy=AdaptationStrategy.zero,
     )
     req_data = jsonable_encoder(convo_create)
     r = client.post("/conversations/", json=req_data, headers=user_headers)
@@ -86,7 +86,9 @@ def test_short_term_memory_convo(
     print("STATISTICS:", s)
 
     # check that we logged at least one memory for each message + the greeting
-    memories = db.query(models.Memory).all()
+    memories = (
+        db.query(models.Memory).where(models.Memory.conversation_id == convo_id).all()
+    )
     assert len(memories) >= tot_msgs
 
     # check that no prompts went over the max allowed value

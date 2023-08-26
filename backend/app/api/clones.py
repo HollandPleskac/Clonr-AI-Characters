@@ -5,7 +5,6 @@ from typing import Annotated
 
 import sqlalchemy as sa
 from fastapi import Depends, HTTPException, Path, Query, status
-from fastapi.encoders import jsonable_encoder
 from fastapi.responses import Response
 from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -210,17 +209,14 @@ async def get_clone_by_id(
             status_code=status.HTTP_404_NOT_FOUND, detail="Clone does not exist."
         )
     # Hide non-public fields
-    # TODO: edit, hacky way of removing embedding so jsonable_encoder doesn't complain
-    clone_data = vars(clone).copy()
-    clone_data.pop('embedding', None) 
-    response = jsonable_encoder(clone_data)
+    clone_response = schemas.Clone.model_validate(clone)
     if not clone.is_short_description_public:
-        response["short_description"] = None
+        clone_response.short_description = None
     if not clone.is_long_description_public:
-        response["long_description"] = None
+        clone_response.long_description = None
     if not clone.is_greeting_message_public:
-        response["greeting_message"] = None
-    return response
+        clone_response.greeting_message = None
+    return clone_response
 
 
 @router.patch("/{clone_id}", response_model=schemas.Clone)

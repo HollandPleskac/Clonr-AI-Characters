@@ -16,9 +16,8 @@ def test_zero_memory_convo(
     convo_create = schemas.ConversationCreate(
         clone_id=makima_id,
         user_name=user_name,
-        memory_strategy=MemoryStrategy.none,
+        memory_strategy=MemoryStrategy.zero,
         information_strategy=InformationStrategy.internal,
-        adaptation_strategy=None,
     )
     req_data = jsonable_encoder(convo_create)
     r = client.post("/conversations/", json=req_data, headers=user_headers)

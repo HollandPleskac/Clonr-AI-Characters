@@ -9,6 +9,7 @@ from fastapi import Depends, HTTPException, Path, Query, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import Response
 from fastapi.routing import APIRouter
+from loguru import logger
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,6 +20,7 @@ from app.deps.limiter import user_id_cookie_fixed_window_ratelimiter
 from app.deps.users import Plan, UserAndPlan
 from app.embedding import EmbeddingClient
 from app.external.moderation import openai_moderation_check
+from app.settings import settings
 from clonr.tokenizer import Tokenizer
 
 router = APIRouter(
@@ -359,7 +361,7 @@ async def get_messages(
     status_code=201,
     dependencies=[
         Depends(
-            user_id_cookie_fixed_window_ratelimiter("5/minute"),
+            user_id_cookie_fixed_window_ratelimiter("5/second"),
         )  # TODO (Jonny): This needs another ratelimit for long-term mem since it incurs LLM costs
     ],
 )
@@ -382,7 +384,8 @@ async def receive_message(
     try:
         # TODO (Jonny): we'll need to handle multiple models on the backend eventually
         # TODO (Jonny): put back in, in prod
-        if not controller.user.nsfw_enabled:
+        if not settings.DEV and not controller.user.nsfw_enabled:
+            logger.info("Content moderation request to OpenAI")
             if (r := await openai_moderation_check(msg_create.content)).flagged:
                 reasons = [k for k, v in r.categories.items() if v]
                 violation = models.ContentViolation(

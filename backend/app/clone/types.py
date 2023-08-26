@@ -12,7 +12,6 @@ INF = int(1e10)
 
 class MemoryStrategy(str, enum.Enum):
     zero = "zero"
-    short_term = "short_term"
     long_term = "long_term"
 
 
@@ -23,9 +22,9 @@ class InformationStrategy(str, enum.Enum):
 
 
 class AdaptationStrategy(str, enum.Enum):
-    static = "static"
-    dynamic = "dynamic"
-    fluid = "fluid"
+    zero = "zero"
+    moderate = "moderate"
+    high = "high"
 
 
 class VectorSearchable(DeclarativeAttributeIntercept):

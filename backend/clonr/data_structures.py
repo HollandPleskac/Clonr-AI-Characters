@@ -159,7 +159,7 @@ class _MemoryBase(BaseModel):
         default=False,
         detail="Whether this memory is shared across all conversations or not.",
     )
-    embedding: list[float] = Field(default=None, repr=False)
+    embedding: list[float] | None = Field(default=None, repr=False)
     embedding_model: str | None = Field(default=None, repr=False)
     depth: int = Field(
         default=0, detail="What depth of reflection this is. New memories are depth 0."
