@@ -6,7 +6,7 @@ const fs = require("fs/promises");
 const path = require("path");
 
 const patchCancellablePromise = async () => {
-  const src = path.resolve(process.cwd(), "client/core/CancelablePromise.ts");
+  const src = path.resolve(process.cwd(), "src/client/core/CancelablePromise.ts");
 
   let content = await fs.readFile(src, { encoding: "utf-8" });
   content = content.replaceAll("#", "");
