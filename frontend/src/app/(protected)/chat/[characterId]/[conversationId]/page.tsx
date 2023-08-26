@@ -14,7 +14,7 @@ export default async function ChatPage({
 
   // Route Protection
   const cookieStore = cookies()
-  const userCookie = cookieStore.get('fastapiusersauth')
+  const userCookie = cookieStore.get('clonrauth')
 
   if (!userCookie) {
     redirect("/login")

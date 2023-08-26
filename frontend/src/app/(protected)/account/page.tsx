@@ -6,7 +6,7 @@ export default async function AccountPage() {
 
   const cookieStore = cookies()
   console.log("COOOKIE STORE", cookieStore)
-  const userCookie = cookieStore.get('fastapiusersauth')
+  const userCookie = cookieStore.get('clonrauth')
 
   if (!userCookie) {
     redirect("/login")

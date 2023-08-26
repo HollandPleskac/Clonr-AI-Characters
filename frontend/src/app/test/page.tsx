@@ -1,33 +1,17 @@
-{
-  /* <div id='scrollableDiv' style={{ height: 300, overflow: 'auto' }}>
-        <InfiniteScroll
-          dataLength={messages.length}
-          next={fetchMoreData}
-          hasMore={true}
-          loader={<h4>Loading...</h4>}
-          scrollableTarget='scrollableDiv'
-        >
-          {messages.map((i, index) => (
-            <div className="bg-red-400 border-2 border-white" key={index}>
-              div - #{index}
-            </div>
-          ))}
-        </InfiniteScroll>
-      </div> */
-}
+'use client'
+import { ClonesService, CloneSortType } from "@/client"
 
-import TestPage from '@/components/TestPage'
+export default function Test() {
 
-export default async function Test() {
+  async function getClones() {
+   const clones = await ClonesService.queryClonesClonesGet()
+   console.log(clones)
+  }
+
   return (
     <div>
-      {/* <TopBar /> */}
-      <div
-        className='bg-gray-900 w-full flex justify-center items-center overflow-hidden'
-        style={{ height: 'calc(100vh)' }}
-      >
-        <TestPage />
-      </div>
+      <h1 className="text-white" >TEST</h1>
+      <button className="text-white" onClick={getClones}  >CLICK ME</button>
     </div>
   )
 }

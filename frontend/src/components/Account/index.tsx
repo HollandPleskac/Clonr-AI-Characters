@@ -1,82 +1,96 @@
 'use client'
 
 import TopBarStatic from '@/components/TopBarStatic'
-import React from 'react'
+import React, { useReducer } from 'react'
 import Link from 'next/link'
+import axios from 'axios';
+import { useRouter } from 'next/navigation'
 
 
 function SubscriptionPortal() {
-    const stripe_id = "stripe_id";
-    const interval = "interval";
-    const price = "14.99";
-    const product_name = "Buckwheat";
-    const email = 'test@example.com';
-    const status = 'active';
+  const stripe_id = "stripe_id";
+  const interval = "interval";
+  const price = "14.99";
+  const product_name = "Buckwheat";
+  const email = 'test@example.com';
+  const status = 'active';
 
-    return (
-        <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 py-10 space-y-4">
+  const {push} = useRouter()
 
-  <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-  <div className="rounded-md bg-[#240b65] p-4">
-    <div className="flex">
-      <div className="flex-shrink-0">
-        <svg className="h-5 w-5 text-[#6b40d7]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-        </svg>
+  return (
+    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 py-10 space-y-4">
+
+      <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+      <div className="rounded-md bg-[#240b65] p-4">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <svg className="h-5 w-5 text-[#6b40d7]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div className="ml-3 flex-1 md:flex md:justify-between">
+            <p className="text-sm text-blue-700">This dashboard is only for paying users like you.</p>
+          </div>
+        </div>
       </div>
-      <div className="ml-3 flex-1 md:flex md:justify-between">
-        <p className="text-sm text-blue-700">This dashboard is only for paying users like you.</p>
+
+      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="px-4 py-5 sm:px-6">
+          <h3 className="text-lg leading-6 font-medium text-gray-900">Billing Information</h3>
+          <p className="mt-1 max-w-2xl text-sm text-gray-500">Personal details and application.</p>
+        </div>
+        <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
+          <dl className="sm:divide-y sm:divide-gray-200">
+            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-500">Stripe Customer</dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{stripe_id}</dd>
+            </div>
+            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-500">Stripe Subscription</dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {stripe_id}
+                <span className="inline-flex items-center ml-4 px-3 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800"> {status}</span>
+              </dd>
+            </div>
+            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-500">Plan</dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {product_name}
+                {price}
+                {interval}
+              </dd>
+            </div>
+            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-500">Email address</dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{email}</dd>
+            </div>
+            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-500">Manage</dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                <button onClick={async () => {
+                  try {
+                    const res = await axios.get('http://localhost:8000/stripe/create-portal-session', {
+                      withCredentials: true
+                    })
+                    console.log("response", res)
+                    push(res.data)
+                  } catch(e){
+                    console.log("Error",e)
+                  }
+                }}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium text-emerald-900 bg-emerald-400 hover:bg-gray-700"
+                >Manage</button>
+              </dd>
+            </div>
+          </dl>
+        </div>
       </div>
     </div>
-  </div>
-
-  <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-    <div className="px-4 py-5 sm:px-6">
-      <h3 className="text-lg leading-6 font-medium text-gray-900">Billing Information</h3>
-      <p className="mt-1 max-w-2xl text-sm text-gray-500">Personal details and application.</p>
-    </div>
-    <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
-      <dl className="sm:divide-y sm:divide-gray-200">
-        <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-          <dt className="text-sm font-medium text-gray-500">Stripe Customer</dt>
-                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{stripe_id}</dd>
-        </div>
-        <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-          <dt className="text-sm font-medium text-gray-500">Stripe Subscription</dt>
-          <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-            {stripe_id}
-                                <span className="inline-flex items-center ml-4 px-3 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800"> {status}</span>
-          </dd>
-        </div>
-        <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-          <dt className="text-sm font-medium text-gray-500">Plan</dt>
-          <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-            {product_name}
-            {price}
-            {interval}
-          </dd>
-        </div>
-        <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-          <dt className="text-sm font-medium text-gray-500">Email address</dt>
-          <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{email}</dd>
-        </div>
-        <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-          <dt className="text-sm font-medium text-gray-500">Manage</dt>
-          <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-            <form action="http://localhost:8000/stripe/create-portal-session" method="post" data-turbo="false">
-              <input type="hidden"/>
-              <button className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium text-emerald-900 bg-emerald-400 hover:bg-gray-700">Manage</button>
-            </form>
-          </dd>
-        </div>
-      </dl>
-    </div>
-  </div>
-</div>
-    )
+  )
 }
 
 export default function Login() {
+  const {push} = useRouter()
   const [activeTab, setActiveTab] = React.useState('billing')
   return (
     <>
@@ -96,11 +110,10 @@ export default function Login() {
               <ul className='flex space-x-1.5 w-full'>
                 <li className='flex-grow'>
                   <button
-                    className={` ${
-                      activeTab === 'billing'
-                        ? 'bg-gray-900 text-white'
-                        : 'hover:bg-gray-900 text-slate-400 hover:text-slate-300'
-                    } flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-md w-full`}
+                    className={` ${activeTab === 'billing'
+                      ? 'bg-gray-900 text-white'
+                      : 'hover:bg-gray-900 text-slate-400 hover:text-slate-300'
+                      } flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-md w-full`}
                     onClick={() => setActiveTab('billing')}
                   >
                     <svg
@@ -126,11 +139,10 @@ export default function Login() {
 
                 <li className='flex-grow'>
                   <button
-                    className={` ${
-                      activeTab === 'usage'
-                        ? 'bg-gray-900 text-white'
-                        : 'hover:bg-gray-900 text-slate-400 hover:text-slate-300'
-                    } flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-md w-full`}
+                    className={` ${activeTab === 'usage'
+                      ? 'bg-gray-900 text-white'
+                      : 'hover:bg-gray-900 text-slate-400 hover:text-slate-300'
+                      } flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-md w-full`}
                     onClick={() => setActiveTab('usage')}
                   >
                     <svg
@@ -149,11 +161,10 @@ export default function Login() {
                 </li>
                 <li className='flex-grow'>
                   <button
-                    className={` ${
-                      activeTab === 'settings'
-                        ? 'bg-gray-900 text-white'
-                        : 'hover:bg-gray-900 text-slate-400 hover:text-slate-300'
-                    } flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-md w-full`}
+                    className={` ${activeTab === 'settings'
+                      ? 'bg-gray-900 text-white'
+                      : 'hover:bg-gray-900 text-slate-400 hover:text-slate-300'
+                      } flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-md w-full`}
                     onClick={() => setActiveTab('settings')}
                   >
                     <svg
@@ -196,11 +207,10 @@ export default function Login() {
               <ul className='space-y-1.5'>
                 <li>
                   <button
-                    className={` ${
-                      activeTab === 'billing'
-                        ? 'bg-gray-900 text-white'
-                        : 'hover:bg-gray-900 text-slate-400 hover:text-slate-300'
-                    } flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-md w-full`}
+                    className={` ${activeTab === 'billing'
+                      ? 'bg-gray-900 text-white'
+                      : 'hover:bg-gray-900 text-slate-400 hover:text-slate-300'
+                      } flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-md w-full`}
                     onClick={() => setActiveTab('billing')}
                   >
                     <svg
@@ -226,11 +236,10 @@ export default function Login() {
 
                 <li>
                   <button
-                    className={` ${
-                      activeTab === 'usage'
-                        ? 'bg-gray-900 text-white'
-                        : 'hover:bg-gray-900 text-slate-400 hover:text-slate-300'
-                    } flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-md w-full`}
+                    className={` ${activeTab === 'usage'
+                      ? 'bg-gray-900 text-white'
+                      : 'hover:bg-gray-900 text-slate-400 hover:text-slate-300'
+                      } flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-md w-full`}
                     onClick={() => setActiveTab('usage')}
                   >
                     <svg
@@ -249,11 +258,10 @@ export default function Login() {
                 </li>
                 <li>
                   <button
-                    className={` ${
-                      activeTab === 'settings'
-                        ? 'bg-gray-900 text-white'
-                        : 'hover:bg-gray-900 text-slate-400 hover:text-slate-300'
-                    } flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-md w-full`}
+                    className={` ${activeTab === 'settings'
+                      ? 'bg-gray-900 text-white'
+                      : 'hover:bg-gray-900 text-slate-400 hover:text-slate-300'
+                      } flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-md w-full`}
                     onClick={() => setActiveTab('settings')}
                   >
                     <svg
@@ -407,7 +415,7 @@ export default function Login() {
             )}
 
             {activeTab === 'billing' && (
-              <SubscriptionPortal/>
+              <SubscriptionPortal />
             )}
           </div>
         </div>

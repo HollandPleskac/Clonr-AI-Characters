@@ -12,8 +12,9 @@ export default function PrivacyPage({
 }) {
 
   // Route Protection
+  // make request to /users/me
   const cookieStore = cookies()
-  const userCookie = cookieStore.get('fastapiusersauth')
+  const userCookie = cookieStore.get('clonrauth')
 
   if (!userCookie) {
     redirect("/login")

@@ -1,9 +1,17 @@
 'use client'
 import Link from 'next/link'
 import React from 'react'
-// import { googleAuthorize } from '@/utils/auth'
+import { googleAuthorize } from '@/utils/auth'
+import { useRouter } from 'next/navigation'
 
 const LoginModal = () => {
+  const { push } = useRouter()
+
+  async function handleGoogleAuth() {
+    const authUrl = await googleAuthorize()
+    push(authUrl)
+  }
+
   return (
     <main className='w-full max-w-md mx-auto p-6'>
       <div className='mt-7 border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700'>
@@ -16,7 +24,7 @@ const LoginModal = () => {
 
           <div className='mt-5 flex flex-col gap-y-4 '>
             <button
-            // onClick={googleAuthorize}
+            onClick={handleGoogleAuth}
               type='button'
               className='w-full py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-600 transition-all text-sm bg-gray-800 hover:bg-slate-800 dark:border-gray-700 text-gray-400 hover:text-white focus:ring-offset-gray-800'
             >
