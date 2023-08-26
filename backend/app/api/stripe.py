@@ -76,7 +76,9 @@ async def customer_portal(
         customer=user.stripe_customer_id,
         return_url="http://localhost:3000",  # TODO (Jonny): replace with some env variables or something
     )
-    return PortalResponse(url=portal_session.url)
+    return JSONResponse(
+        content=portal_session.url, status_code=200
+    )
 
 
 @router.post("/webhook")

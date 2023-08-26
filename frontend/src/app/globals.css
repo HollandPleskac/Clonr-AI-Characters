@@ -11,3 +11,90 @@
   font-family: 'Fabada';
   src: url('/fonts/fabada.regular.ttf') format('truetype');
 }
+
+/* Browse Page Swiper Button Styles */
+
+.swiper-button-prev.swiper-button-disabled {
+  display: none;
+}
+
+.swiper-button-next.swiper-button-disabled {
+  display: none;
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+  position: relative;
+  top: 0 !important;
+  margin-top: 0 !important;
+  background-color: hsla(0, 0%, 8%, 1) !important;
+  /* background-color: blue !important; */
+  width: 30px !important;
+  height: 100% !important;
+  overflow: hidden;
+}
+
+.swiper-button-next:hover::after,
+.swiper-button-prev:hover::after {
+  transition: background-color 0.1s ease-in-out !important;
+}
+
+.swiper .swiper-button-next::after {
+  background-image: url(http://localhost:3000/arrow-right-white.svg);
+  opacity: 1;
+}
+
+.swiper .swiper-button-prev::after {
+  background-image: url(/arrow-left-white.svg);
+  opacity: 1;
+}
+
+.swiper:hover .swiper-button-next::after,
+.swiper:hover .swiper-button-prev::after {
+  opacity: 1;
+}
+
+.swiper-button-next::after,
+.swiper-button-prev::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-repeat: no-repeat;
+  background-size: 75% auto;
+  background-position: center;
+  transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out 0s;
+}
+
+.swiper-button-next:hover::after,
+.swiper-button-prev:hover::after {
+  transform: scale(1.3);
+}
+
+.swiper-button-next::after {
+  background-image: url(/arrow-right-white.svg);
+}
+
+.swiper-button-next {
+  border-top-right-radius: 4px !important;
+  border-bottom-right-radius: 4px !important;
+  right: 0 !important;
+}
+
+.swiper-button-prev::after {
+  background-image: url(/arrow-left-white.svg);
+}
+
+.swiper-button-prev {
+  border-top-left-radius: 4px !important;
+  border-bottom-left-radius: 4px !important;
+  left: 0 !important;
+}
+
+/* Hide the default swiper buttons */
+.swiper-button-next::after,
+.swiper-button-prev::after {
+  color: transparent !important;
+}

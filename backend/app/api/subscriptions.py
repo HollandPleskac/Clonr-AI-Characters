@@ -29,4 +29,4 @@ async def get_my_subscriptions(
     sub = await db.scalar(
         sa.select(models.Subscription).where(models.Subscription.user_id == user.id)
     )
-    return sub
+    return subs
