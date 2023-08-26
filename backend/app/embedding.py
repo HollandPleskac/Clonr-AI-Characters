@@ -8,6 +8,7 @@ from app.settings import settings
 from pb import embed_pb2, embed_pb2_grpc
 
 
+# TODO (Jonny): switch to multilingual model!
 class EmbeddingClient:
     def __init__(
         self,
