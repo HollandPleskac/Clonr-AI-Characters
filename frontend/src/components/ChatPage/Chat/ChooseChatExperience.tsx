@@ -14,7 +14,10 @@ import MagnifyingGlass from '@/svg/ChatPage/Chat/magnify.svg'
 import SmallNav from '../Characters/SmallSidebar'
 import { initScriptLoader } from 'next/script'
 import TagsComponent from '@/components/HomePage/Tags'
-const { createConversation, queryConversation, queryConversationMessages, createMessage, generateCloneMessage, queryCurrentRevisions } = useConversations();
+const { createConversation, createMessage, generateCloneMessage, queryCurrentRevisions } = useConversations();
+import createNewConversation from '@/hooks/useConversations'
+import { MemoryStrategy } from '@/client/models/MemoryStrategy'
+import { InformationStrategy } from '@/client/models/InformationStrategy'
 
 type ChooseChatExperienceProps = {
   characterId: string
@@ -52,21 +55,21 @@ async function createCharacterConversation(
   characterId: string,
   memoryStrategy: string,
 ) {
-  const conversationCreateData = {
+  const conversationData = {
     name: 'Test Conversation',
     user_name: 'Test User',
-    memory_strategy: memoryStrategy,
-    information_strategy: 'internal',
+    memory_strategy: MemoryStrategy[memoryStrategy],
+    information_strategy: InformationStrategy['internal'],
     adaptation_strategy: null,
     clone_id: characterId,
   }
-  const conversationId = await createConversation(conversationCreateData)
+  const conversationId = await createConversation(conversationData)
   return conversationId
 }
 
 const ChooseChatExperience = ({ characterId, character, setConversationState, setConvoID, initialCharacterChats, currentCharacterId }: ChooseChatExperienceProps) => {
   if (!character) {
-    return <div>Loading character..</div>
+    return <div>Loading characterSUP..</div>
   }
   const [conversationID, setConversationID] = useState('')
   const router = useRouter();
@@ -192,11 +195,9 @@ const ChooseChatExperience = ({ characterId, character, setConversationState, se
 
           <button
             onClick={async () => {
-              setConversationState('short term')
               const conversationId = await createCharacterConversation(characterId, 'short_term')
-              // setConversationID(conversationId)
-              // setConvoID(conversationId)
-              const new_url = `http://localhost:3002/chat/${characterId}/${conversationId}`
+              const new_url = `http://localhost:3000/chat/${characterId}/${conversationId}`
+              console.log("NEW URL -> ", new_url)
               router.push(new_url)
             }}
             className='flex items-center justify-between w-full py-2 px-4 inline-flex bg-purple-500 rounded-lg hover:bg-purple-600 text-white'
@@ -206,9 +207,8 @@ const ChooseChatExperience = ({ characterId, character, setConversationState, se
           </button>
           <button
             onClick={async () => {
-              setConversationState('long term')
               const conversationId = await createCharacterConversation(characterId, 'long_term')
-              const new_url = `http://localhost:3002/chat/${characterId}/${conversationId}`
+              const new_url = `http://localhost:3000/chat/${characterId}/${conversationId}`
               router.push(new_url)
             }}
             className='mt-2 flex items-center justify-between w-full py-2 px-4 inline-flex bg-purple-500 rounded-lg hover:bg-purple-600 text-white'

@@ -6,8 +6,9 @@ import { Character, CharacterChat } from "@/types"
 import { useEffect, useRef, useState } from "react"
 import SearchIcon from "./SearchIcon"
 import CharacterComponent from './Character'
-import useConversations from "@/hooks/useConversations"
 import { ColorRing } from "react-loader-spinner"
+import { useQueryConversationMessages } from '@/hooks/useConversations'
+
 
 interface SmallNavProps {
   characterId: string
@@ -20,31 +21,22 @@ export default function SmallNav({
   conversationId,
   character
 }: SmallNavProps) {
-
-  const { queryConversationMessages } = useConversations();
-
-  const [characterChats, setCharacterChats] = useState<CharacterChat[]>([]);
+  const [characterChats, setCharacterChats] = useState<any>([]);
   const [isFetching, setIsFetching] = useState(true)
 
-  // Fetch Initial Data
-  async function fetchData() {
-    if (conversationId !== 'convo') {
-      const chats = await queryConversationMessages(conversationId)
-
-      const characterChat = {
-        character: character,
-        lastMessage: chats[chats.length - 1].content,
-        lastConversationId: conversationId,
-      }
-
-      setCharacterChats([characterChat]);
-    }
-    setIsFetching(false)
-  }
+  const {data, error, isLoading} = useQueryConversationMessages({conversationId})
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    if (conversationId != 'undecided') {
+      const characterChat = {
+          character: character,
+          lastMessage: data ? data[data.length - 1].content : '',
+          lastConversationId: conversationId,
+      }
+      setCharacterChats(characterChat)
+    }
+    
+}, [conversationId, character])
 
   // search state
   const [isInputActive, setInputActive] = useState(false)
@@ -60,6 +52,10 @@ export default function SmallNav({
     //   ...newCharChats,
     // ])
   }
+
+  if (isLoading || !character || !conversationId || !characterChats) {
+    return <div> Loading characterSidebar.. </div>
+}
 
   return (
     <>

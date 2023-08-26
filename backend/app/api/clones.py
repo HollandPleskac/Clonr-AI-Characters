@@ -210,7 +210,14 @@ async def get_clone_by_id(
             status_code=status.HTTP_404_NOT_FOUND, detail="Clone does not exist."
         )
     # Hide non-public fields
-    response = jsonable_encoder(clone)
+    print("in get_clone_by_id(), this is clone: ", clone)
+    print(vars(clone))
+
+    clone_data = vars(clone).copy()
+    clone_data.pop('embedding', None)  
+
+    response = jsonable_encoder(clone_data)
+    print("in get_clone_by_id(), this is response: ", response)
     if not clone.is_short_description_public:
         response["short_description"] = None
     if not clone.is_long_description_public:

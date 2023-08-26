@@ -1,27 +1,65 @@
+'use client'
 
-import { cookies } from 'next/headers'
+import { useEffect, useState } from 'react'
+//import { cookies } from 'next/headers'
+import Cookies from 'js-cookie';
 import { redirect } from 'next/navigation'
 import { Character } from '@/types';
 import cookiesToString from '@/utils/cookiesToString';
 import CharactersSidebar from '@/components/ChatPage/Characters/Sidebar'
 import ChatScreen from '@/components/ChatPage/Chat'
+import { useQueryClonesById } from '@/hooks/useClones'
 
-export default async function ChatPage({
+import useClones from '@/hooks/useClones'
+
+export default function ChatPage({
   params,
 }: {
   params: { characterId: string; conversationId: string }
 }) {
 
-  // Route Protection
-  const cookieStore = cookies()
-  const userCookie = cookieStore.get('clonrauth')
+  //const { queryCloneById } = useClones()
 
-  if (!userCookie) {
-    redirect("/login")
+  console.log("IN ChatPage: ", params)
+  // Route Protection
+  //const cookieStore = cookies()
+  //const userCookie = cookieStore.get('clonrauth')
+  //const userCookie = Cookies.get('clonrauth');
+
+  const [character, setCharacter] = useState<any>(null);
+
+  // if (!userCookie) {
+  //   redirect("/login")
+  // }
+
+  useEffect(() => {
+    require('preline')
+}, [])
+
+  console.log("GETTING CHAR..")
+
+  const queryParams = {
+    cloneId: params["characterId"]
   }
 
+  const { data, error, isLoading } = useQueryClonesById(queryParams);
+
+  useEffect(() => {
+    setCharacter(data)
+  }, [isLoading, params.characterId])
+
+  console.log("THIS IS DATA: ", data)
+
   // Get Character
-  const character: Character = await getCharacterDetails(params.characterId)
+  //const character: any = getCharacterDetails(params.characterId)
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   // Render Page
   return (
@@ -43,22 +81,22 @@ export default async function ChatPage({
   )
 }
 
-// Return Character based on characterId
-async function getCharacterDetails(
-  characterId: string,
-): Promise<Character> {
-  const res = await fetch(`http://localhost:8000/clones/${characterId}`, {
-    cache: 'force-cache',
-    method: 'GET',
-    headers: {
-      'Cookie': cookiesToString(cookies().getAll())
-    },
-    credentials: 'include'
-  });
+// // // Return Character based on characterId
+// async function getCharacterDetails(
+//   characterId: string,
+// ): Promise<Character> {
+//   const res = await fetch(`http://localhost:8000/clones/${characterId}`, {
+//     cache: 'no-store', // force-cache
+//     method: 'GET',
+//     headers: {
+//       'Cookie': cookiesToString(Cookies.getAll())
+//     },
+//     credentials: 'include'
+//   });
 
-  if (!res.ok) {
-    throw new Error(`Something went wrong! Status: ${res.status}`);
-  }
+//   if (!res.ok) {
+//     throw new Error(`Something went wrong! Status: ${res.status}`);
+//   }
 
-  return await res.json()
-}
+//   return await res.json()
+// }

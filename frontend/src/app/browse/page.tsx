@@ -12,7 +12,7 @@ async function fetchCharacters() {
   return carouselData
 }
 
-export default async function Browse() {
+export default function Browse() {
   const [characters, setCharacters] = useState([])
 
   const queryParams = {

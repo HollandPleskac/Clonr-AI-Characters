@@ -8,8 +8,8 @@ import { Character, CharacterChat } from '@/types'
 import { formatDate } from '@/utils/formatDate'
 import Link from 'next/link'
 import InfiniteScroll from 'react-infinite-scroll-component'
-import useConversations from '@/hooks/useConversations'
 import { ColorRing, ThreeDots } from 'react-loader-spinner'
+import { useQueryConversationMessages } from '@/hooks/useConversations'
 
 
 interface CharactersProps {
@@ -23,32 +23,19 @@ export default function Characters({
     conversationId,
     character
 }: CharactersProps) {
-    const { queryConversationMessages } = useConversations();
-
-    const [characterChats, setCharacterChats] = useState<CharacterChat[]>([]);
+    const [characterChats, setCharacterChats] = useState<any>([]);
     const [isFetching, setIsFetching] = useState(true)
 
-    // Fetch Initial Data
-    async function fetchData() {
-        if (conversationId !== 'convo') {
-            const chats = await queryConversationMessages(conversationId)
-
-            const characterChat = {
-                character: character,
-                lastMessage: chats[chats.length - 1].content,
-                lastConversationId: conversationId,
-            }
-
-            setCharacterChats([characterChat]);
-        }
-        setIsFetching(false)
-
-    }
+    const {data, error, isLoading} = useQueryConversationMessages({conversationId})
 
     useEffect(() => {
-        fetchData()
-    }, [])
-
+        const characterChat = {
+            character: character,
+            lastMessage: data ? data[data.length - 1].content : '',
+            lastConversationId: conversationId,
+        }
+        setCharacterChats(characterChat)
+    }, [conversationId, character])
 
     // search state
     const [isInputActive, setInputActive] = useState(false)
@@ -65,6 +52,10 @@ export default function Characters({
         //   ...prevCharChats,
         //   ...newCharChats,
         // ])
+    }
+
+    if (isLoading || !character || !conversationId || !characterChats) {
+        return <div> Loading characterSidebar.. </div>
     }
 
     // Component

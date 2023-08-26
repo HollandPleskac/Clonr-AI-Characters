@@ -2,30 +2,12 @@
 
 import { useState } from 'react';
 import axios from 'axios';
+import useSWR from 'swr';
+import { ConversationsService } from '@/client/services/ConversationsService'
+import { Conversation } from '@/client/models/Conversation'
+import { ConversationCreate } from '@/client/models/ConversationCreate'
 
-interface ConversationCreate {
-    name: string;
-    user_name: string;
-    memory_strategy: string;
-    information_strategy: string,
-    adaptation_strategy: string | null,
-    clone_id: string;
-}
 
-interface Conversation {
-    id: string;
-    name: string;
-    user_name: string;
-    memory_strategy: string;
-    information_strategy: string,
-    adaptation_strategy: string | null,
-    clone_id: string;
-    created_at: string;
-    updated_at: string;
-    user_id: string;
-    is_active: boolean
-}
-  
 interface Message {
     id: string;
     content: string;
@@ -40,6 +22,67 @@ interface Message {
     clone_id: string;
     user_id: string;
     conversation_id: string;
+}
+
+interface ConversationMessageQueryParams {
+    conversationId: string;
+}
+
+export function useQueryConversationMessages(queryParams: ConversationMessageQueryParams) {
+  const {
+    conversationId
+  } = queryParams;
+
+  console.log("queryParams: ", queryParams)
+
+  const fetcher = async () => {
+    try {
+      const response = await ConversationsService.getMessagesConversationsConversationIdMessagesGet(
+        conversationId
+      );
+      return response;
+    } catch (error) {
+      throw new Error('Error fetching clones: ' + error.message);
+    }
+  };
+
+  const { data, error } = useSWR([conversationId, 'conversationMessagesByConvoId'], fetcher);
+
+  console.log("ERROR IS: ", error)
+  console.log("data is: ", data);
+
+  return {
+    data: data,
+    isLoading: !error && !data,
+    error: error
+  };
+}
+
+// TODO: edit this
+export function createNewConversation(conversationData: ConversationCreate) {
+  const fetcher = async () => {
+    try {
+      const response = await ConversationsService.createConversationConversationsPost(
+        conversationData
+      );
+      console.log("IN createNewConversation(), response is: ", response)
+      return response;
+    } catch (error) {
+      console.log("ERROR IN createNewConversation(): ", error)
+      throw new Error('Error creating conversation: ' + error.message);
+    }
+  };
+
+  const { data, error } = useSWR(['createConversation'], fetcher);
+
+  console.log("IN createNewConversation(), ERROR IS: ", error)
+  console.log("IN createNewConversation(), data is: ", data);
+
+  return {
+    data: data,
+    isLoading: !error && !data,
+    error: error
+  };
 }
 
 export default function useConversations() {
@@ -73,10 +116,10 @@ export default function useConversations() {
         }
       };
     
-      const queryConversationMessages = async (conversation_id: string) => {
+      const queryConversationMessages = async (conversationId: string) => {
         try {
           const response = await axios.get<Message[]>(
-            `http://localhost:8000/conversations/${conversation_id}/messages`,
+            `http://localhost:8000/conversations/${conversationId}/messages`,
             {
               withCredentials: true
             }

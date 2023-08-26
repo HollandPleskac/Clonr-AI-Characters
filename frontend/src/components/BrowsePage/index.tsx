@@ -7,7 +7,7 @@ import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import 'swiper/css/scrollbar'
 
-const axios = require('axios').default
+//const axios = require('axios').default
 
 import TopBarStatic from '@/components/TopBarStatic'
 import AlertBar from '@/components/AlertBar'
@@ -84,15 +84,14 @@ export default function BrowsePage({
         offset: 0,
         limit: 20
     }
+
     const {data: searchData, isLoading: isLoadingSearch} = useQueryClones(searchQueryParams);
 
     useEffect(() => {
         if(!isLoadingSearch && searchData) {
-            console.log("this is activeTag: ", activeTag)
             setSearchedCharacters(searchData)
             setDoneSearching(true)
             setLoading(false)
-            console.log("this is searchData: ", searchData)
         }
       }, [searchInput, isLoadingSearch, activeTag, activeSortType]) 
 
