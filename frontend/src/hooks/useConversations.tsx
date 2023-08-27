@@ -45,6 +45,12 @@ interface ConversationsQueryParams {
   limit: number;
 } 
 
+interface ConvesationsSidebarQueryParams {
+  convoLimit?: number;
+  offset?: number;
+  limit?: number;
+}
+
 export function useQueryConversations(queryParams: ConversationsQueryParams) {
   const {
     tags,
@@ -64,7 +70,7 @@ export function useQueryConversations(queryParams: ConversationsQueryParams) {
 
   const fetcher = async () => {
     try {
-      const response = await ConversationsService.getQueriedConvosConversationsGet(
+      const response = await ConversationsService.queryConversationsConversationsGet(
         tags,
         cloneName,
         cloneId,
@@ -113,6 +119,35 @@ export function useQueryConversationMessages(queryParams: ConversationMessageQue
 
   const { data, error } = useSWR([conversationId, 'conversationMessagesByConvoId'], fetcher);
   console.log("useQueryConversationMessages() data is: ", data);
+
+  return {
+    data: data,
+    isLoading: !error && !data,
+    error: error
+  };
+}
+
+export function useQueryConversationsSidebar(queryParams: ConvesationsSidebarQueryParams) {
+  const {
+    convoLimit,
+    offset,
+    limit
+  } = queryParams;
+
+  const fetcher = async () => {
+    try {
+      const response = await ConversationsService.getSidebarConversationsConversationsSidebarGet(
+        convoLimit,
+        offset,
+        limit
+      );
+      return response;
+    } catch (error) {
+      throw new Error('Error fetching conversation sidebar: ' + error.message);
+    }
+  };
+
+  const { data, error } = useSWR([convoLimit, offset, limit, 'conversationsSidebar'], fetcher);
 
   return {
     data: data,

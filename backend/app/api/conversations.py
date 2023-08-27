@@ -173,8 +173,24 @@ async def get_sidebar_conversations(
 
     # Get back row-objects, which need to be converted to the schemas
     rows = await db.execute(query)
-    convos = [schemas.ConversationInSidebar.model_validate(x) for x in rows.unique()]
-    return convos
+
+    conversations_with_clone = []
+    for row in rows:
+        row_dict = {attr: getattr(row, attr) for attr in row._fields}
+        clone = await db.get(models.Clone, row.clone_id)
+        clone_dict = clone.__dict__
+        tag_fields = ["id", "name", "color_code", "created_at", "updated_at"]
+        tags = [
+            {tag_field: getattr(tag, tag_field) for tag_field in tag_fields}
+            for tag in clone.tags
+        ]
+        clone_dict["tags"] = tags
+        clone_dict.pop("embedding", None)
+
+        row_dict["clone"] = clone_dict
+        conversation = schemas.ConversationInSidebar(**row_dict) 
+        conversations_with_clone.append(conversation)
+    return conversations_with_clone
 
 
 # TODO (Jonny): put a paywall behind this endpoint after X messages, need to add user permissions

@@ -352,6 +352,7 @@ class Conversation(CommonMixin, ConversationCreate):
 
 class ConversationInSidebar(Conversation):
     rank: int
+    clone: Clone
     group_updated_at: datetime.datetime
 
 
