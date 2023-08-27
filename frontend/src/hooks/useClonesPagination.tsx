@@ -34,7 +34,7 @@ export const useClonesPagination = (queryParams: CloneQueryParams) => {
     // handle offset for pagination
     const getKey = (pageIndex: number, previousPageData: any[]) => {
         if (previousPageData && !previousPageData.length) return null
-        return {...queryParams, offset:pageIndex*10 }
+        return {...queryParams, offset:pageIndex*limit }
     }
 
     const { data, size, setSize, isLoading } = useSWRInfinite(getKey, fetcher)

@@ -12,11 +12,12 @@ export default function Test() {
   const queryParams = {
     // tags: activeTag ? [activeTag.id] : null,
     // sort: CloneSortType[activeSortType],
-    limit: 8
+    limit: 30
 }
 
   const {
     paginatedData: clones,
+    isLoading,
     isLastPage,
     size,
     setSize
@@ -26,7 +27,7 @@ export default function Test() {
   return (
     <div>
       <h1 className="text-white" >TEST</h1>
-      <InfiniteScroll
+     {!isLoading &&  <InfiniteScroll
         next={() => setSize(size + 1)}
         hasMore={!isLastPage}
         loader={<h1 className="text-red-400" >LOADING</h1>}
@@ -37,7 +38,7 @@ export default function Test() {
           return <h1 className="text-white border h-[100px]" key={index} >{clone.name}</h1>
         })}
 
-      </InfiniteScroll>
+      </InfiniteScroll>}
     </div>
   )
 }

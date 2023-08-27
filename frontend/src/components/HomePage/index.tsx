@@ -19,37 +19,21 @@ import AuthModal from '../AuthModal'
 import { ColorRing } from "react-loader-spinner"
 import { CloneSortType } from '@/client/models/CloneSortType'
 import { useQueryConversationsSidebar } from '@/hooks/useConversations'
+import { useClonesPagination } from '@/hooks/useClonesPagination'
 
-interface HomeScreenProps {
-  topCharacters: Character[]
-  continueChatting: Character[]
-  trending: Character[]
-  anime: Character[]
-}
-
-export default function HomeScreen({
-  topCharacters,
-  continueChatting,
-  trending,
-  anime,
-}: HomeScreenProps) {
-  const [doneSearching, setDoneSearching] = useState(false)
+export default function HomeScreen() {
   const [showSearchGrid, setShowSearchGrid] = useState(false)
-  const [trill, setTrill] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
   const duration = 500
 
   useEffect(() => {
     require('preline')
   }, [])
 
-  
+
   // search grid characters state
   const [searchInput, setSearchInput] = useState('')
-  const [hasMoreData, setHasMoreData] = useState(true)
 
-  
+
   const queryParams = {
     offset: 0,
     limit: 20
@@ -59,15 +43,6 @@ export default function HomeScreen({
   const { data, isLoading } = useQueryClones(queryParams);
 
   console.log("THIS IS DATA: ", data)
-
-  const topSearchQueryParams = {
-    tags: [],
-    name: searchInput,
-    sort: CloneSortType["TOP"],
-    similar: searchInput,
-    offset: 0,
-    limit: 20
-  }
 
   const topQueryParams = {
     sort: CloneSortType["TOP"]
@@ -83,19 +58,15 @@ export default function HomeScreen({
     sort: CloneSortType["HOT"]
   }
 
-  // Searched chars data
-  const { data: searchedCharacters, isLoading: isTopLoadingSearch } = useQueryClones(topSearchQueryParams);
+  // chars data
+  // const { data: searchedCharacters, isLoading: isTopLoadingSearch } = useQueryClones(topSearchQueryParams);
   const { data: trendingChars, isLoading: isTrendingLoading } = useQueryClones(trendingQueryParams);
   const { data: topChars, isLoading: isTopLoading } = useQueryClones(topQueryParams);
-  const { data: continueConvos, isLoading: isLoadingContinue} = useQueryConversationsSidebar(conversationsSidebarParams)
+  const { data: continueConvos, isLoading: isLoadingContinue } = useQueryConversationsSidebar(conversationsSidebarParams)
 
   const continueChars = continueConvos?.map((convo) => {
     return convo.clone
   })
-
-  const fetchMoreGridData = () => {
-    // TODO: edit, incorporate useSWRInfinite on infinite scroll side
-  }
 
   useEffect(() => {
     if (searchInput === '') {
@@ -107,15 +78,25 @@ export default function HomeScreen({
           setShowSearchGrid(true)
         }, duration)
         return () => clearTimeout(timer)
-      } 
+      }
     }
   }, [searchInput])
 
-  if (isTopLoading || isTrendingLoading || isLoadingContinue) {
-    return (
-      <div> Loading chars.. </div>
-    )
+  // character grid state
+  const queryParamsSearch = {
+    name: searchInput,
+    sort: CloneSortType["TOP"],
+    similar: searchInput,
+    limit: 30
   }
+
+  const {
+    paginatedData: searchedCharacters,
+    isLastPage: isLastSearchedCharactersPage,
+    isLoading: isLoadingSearchedCharacters,
+    size,
+    setSize
+  } = useClonesPagination(queryParamsSearch)
 
   return (
     <div className='pb-[75px]'>
@@ -130,9 +111,9 @@ export default function HomeScreen({
         <ScaleFadeIn loaded={showSearchGrid} duration={duration}>
           <CharacterGrid
             characters={searchedCharacters}
-            loading={false}
-            fetchMoreData={fetchMoreGridData}
-            hasMoreData={hasMoreData}
+            loading={isLoadingSearchedCharacters}
+            fetchMoreData={() => setSize(size + 1)}
+            hasMoreData={!isLastSearchedCharactersPage}
           />
         </ScaleFadeIn>
       )}
@@ -141,9 +122,9 @@ export default function HomeScreen({
         <ScaleFadeIn loaded={!searchInput} duration={duration}>
           {(!topChars || !continueChars || !trendingChars || topChars.length === 0 || continueChars.length === 0 || trendingChars.length === 0) ? (
             <div className='grid place-items-center'
-            style={{
-              height: 'calc(100vh - 48px - 84px)'
-            }}
+              style={{
+                height: 'calc(100vh - 48px - 84px)'
+              }}
             >
               <ColorRing
                 visible={true}
