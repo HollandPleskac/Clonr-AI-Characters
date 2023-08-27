@@ -11,6 +11,7 @@ from fastapi.responses import Response
 from fastapi.routing import APIRouter
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import defer
 
 from app import deps, models, schemas
 from app.clone.controller import Controller
@@ -154,8 +155,11 @@ async def get_sidebar_conversations(
 
     # Run a subquery to fill in the partition values
     subquery = (
-        sa.select(models.Conversation, rank, group_updated_at)
+        sa.select(models.Conversation, rank, group_updated_at, models.Clone.avatar_uri, models.Clone.name)
         .where(models.Conversation.user_id == user.id)
+        .join(models.Clone, models.Clone.id == models.Conversation.clone_id)
+        #.join(models.Tag, models.Tag.id == models.Clone.tag_id)
+        #.options(defer(models.Clone.embedding))  # Exclude 'embedding' field
         .subquery()
     )
 
@@ -171,23 +175,10 @@ async def get_sidebar_conversations(
     # Get back row-objects, which need to be converted to the schemas
     rows = await db.execute(query)
 
-    conversations_with_clone = []
-    for row in rows:
-        row_dict = {attr: getattr(row, attr) for attr in row._fields}
-        clone = await db.get(models.Clone, row.clone_id)
-        clone_dict = clone.__dict__
-        tag_fields = ["id", "name", "color_code", "created_at", "updated_at"]
-        tags = [
-            {tag_field: getattr(tag, tag_field) for tag_field in tag_fields}
-            for tag in clone.tags
-        ]
-        clone_dict["tags"] = tags
-        clone_dict.pop("embedding", None)
+    convos = convos = [schemas.ConversationInSidebar.model_validate(x) for x in rows.unique()]
+    return convos
 
-        row_dict["clone"] = clone_dict
-        conversation = schemas.ConversationInSidebar(**row_dict) 
-        conversations_with_clone.append(conversation)
-    return conversations_with_clone
+# TODO (Kevin): add new route for /continue 
 
 
 # TODO (Jonny): put a paywall behind this endpoint after X messages, need to add user permissions

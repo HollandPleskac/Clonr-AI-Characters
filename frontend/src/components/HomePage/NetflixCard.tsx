@@ -22,6 +22,7 @@ export default function Cards({
 }: CardsProps): React.ReactElement {
   const style = defaultCard ? styles.card : styles.longCard
   const infoStyle = defaultCard ? styles.cardInfo : styles.more
+  console.log("In Cards(), this is item: ", item)
   const { name, short_description, num_messages, tags, avatar_uri } = item
   // const image = defaultCard ? banner : poster
 

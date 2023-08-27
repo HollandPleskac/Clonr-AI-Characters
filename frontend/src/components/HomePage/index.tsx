@@ -9,8 +9,6 @@ import 'swiper/css/scrollbar'
 import Carousel from './Carousel'
 import TopBar from '@/components/TopBar'
 import AlertBar from '@/components/AlertBar'
-import { Character, User } from '@/types'
-import { CloneSearchResult } from '@/client/models/CloneSearchResult'
 import CharacterGrid from './CharacterGrid'
 import StatBar from '../Statistics/StatBar'
 import ScaleFadeIn from '../Transitions/ScaleFadeIn'
@@ -33,17 +31,6 @@ export default function HomeScreen() {
   // search grid characters state
   const [searchInput, setSearchInput] = useState('')
 
-
-  const queryParams = {
-    offset: 0,
-    limit: 20
-  }
-
-  // Regular clone data
-  const { data, isLoading } = useQueryClones(queryParams);
-
-  console.log("THIS IS DATA: ", data)
-
   const topQueryParams = {
     sort: CloneSortType["TOP"]
   }
@@ -64,9 +51,12 @@ export default function HomeScreen() {
   const { data: topChars, isLoading: isTopLoading } = useQueryClones(topQueryParams);
   const { data: continueConvos, isLoading: isLoadingContinue } = useQueryConversationsSidebar(conversationsSidebarParams)
 
-  const continueChars = continueConvos?.map((convo) => {
-    return convo.clone
-  })
+  // const continueChars = continueConvos?.map((convo) => {
+  //   return convo.clone
+  // })
+
+  // TODO: edit with new endpoint
+  const continueChars = [];
 
   useEffect(() => {
     if (searchInput === '') {
@@ -98,6 +88,17 @@ export default function HomeScreen() {
     setSize
   } = useClonesPagination(queryParamsSearch)
 
+
+  if (isTopLoading || isTrendingLoading || isLoadingContinue || !topChars || !trendingChars || !continueChars) {
+    return (
+      <div> Loading.. </div>
+    )
+  }
+
+  console.log("HomePage() -> topChars: ", topChars)
+  console.log("HomePage() -> trendingChars: ", trendingChars)
+  console.log("HomePage() -> continueChars: ", continueChars)
+
   return (
     <div className='pb-[75px]'>
       <AlertBar />
@@ -120,7 +121,7 @@ export default function HomeScreen() {
 
       {!showSearchGrid && (
         <ScaleFadeIn loaded={!searchInput} duration={duration}>
-          {(!topChars || !continueChars || !trendingChars || topChars.length === 0 || continueChars.length === 0 || trendingChars.length === 0) ? (
+          {(!topChars || !continueChars || !trendingChars || topChars.length === 0 || trendingChars.length === 0) ? (
             <div className='grid place-items-center'
               style={{
                 height: 'calc(100vh - 48px - 84px)'

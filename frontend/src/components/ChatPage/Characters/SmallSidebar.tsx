@@ -22,7 +22,6 @@ export default function SmallNav({
 }: SmallNavProps) {
   const [characterChats, setCharacterChats] = useState<any>([]);
   const [isFetching, setIsFetching] = useState(true)
-  const [conversations, setConversations] = useState<any>([])
 
   // TODO: edit
   if (conversationId === 'undecided') {
@@ -42,10 +41,12 @@ export default function SmallNav({
       const sortCharacterChats = () => {
         let characterChats = data.map((conversation: any) => {
           return {
-            character: conversation.clone,
+            characterId: conversation.clone_id,
+            characterName: conversation.clone_name,
+            characterAvatarUri: conversation.avatar_uri,
+            lastUpdatedAt: conversation.updated_at,
             lastMessage: conversation.last_message,
-            lastConversationId: conversation.id,
-            lastUpdatedAt: conversation.updated_at
+            lastConversationId: conversation.id
           };
         });
   
@@ -182,7 +183,7 @@ export default function SmallNav({
 
               {characterChats.map((charChat, index) => (
                 <CharacterComponent
-                  key={charChat.character.id}
+                  key={charChat.characterId}
                   characterChat={charChat}
                   currentCharacterId={characterId}
                 />

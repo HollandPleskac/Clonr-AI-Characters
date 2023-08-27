@@ -347,7 +347,7 @@ class Conversation(CommonMixin, ConversationCreate):
 
 class ConversationInSidebar(Conversation):
     rank: int
-    clone: Clone
+    avatar_uri: str | None
     group_updated_at: datetime.datetime
 
 
