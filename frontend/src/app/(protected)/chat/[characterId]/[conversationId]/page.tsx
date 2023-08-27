@@ -10,8 +10,6 @@ import CharactersSidebar from '@/components/ChatPage/Characters/Sidebar'
 import ChatScreen from '@/components/ChatPage/Chat'
 import { useQueryClonesById } from '@/hooks/useClones'
 
-import useClones from '@/hooks/useClones'
-
 export default function ChatPage({
   params,
 }: {
@@ -20,13 +18,10 @@ export default function ChatPage({
 
   //const { queryCloneById } = useClones()
 
-  console.log("IN ChatPage: ", params)
   // Route Protection
   //const cookieStore = cookies()
   //const userCookie = cookieStore.get('clonrauth')
   //const userCookie = Cookies.get('clonrauth');
-
-  const [character, setCharacter] = useState<any>(null);
 
   // if (!userCookie) {
   //   redirect("/login")
@@ -36,22 +31,11 @@ export default function ChatPage({
     require('preline')
 }, [])
 
-  console.log("GETTING CHAR..")
-
   const queryParams = {
     cloneId: params["characterId"]
   }
 
-  const { data, error, isLoading } = useQueryClonesById(queryParams);
-
-  useEffect(() => {
-    setCharacter(data)
-  }, [isLoading, params.characterId])
-
-  console.log("THIS IS DATA: ", data)
-
-  // Get Character
-  //const character: any = getCharacterDetails(params.characterId)
+  const { data: character, error, isLoading } = useQueryClonesById(queryParams);
 
   if (error) {
     return <div>Error: {error.message}</div>;
