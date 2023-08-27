@@ -20,8 +20,8 @@ import ScaleFadeIn from '../Transitions/ScaleFadeIn'
 import { useQueryClones } from '@/hooks/useClones'
 import AuthModal from '../AuthModal'
 import { ColorRing } from "react-loader-spinner"
-import useSWR from 'swr'
 import { CloneSortType } from '@/client/models/CloneSortType'
+import { useQueryConversationsSidebar } from '@/hooks/useConversations'
 
 interface HomeScreenProps {
   topCharacters: Character[]
@@ -55,15 +55,9 @@ export default function HomeScreen({
   // Regular clone data
   const { data, isLoading } = useQueryClones(queryParams);
 
-  console.log("THIS IS DATA: ", data)
-
   // search grid characters state
   const [searchInput, setSearchInput] = useState('')
-  const [searchedCharacters, setSearchedCharacters] = useState<any>([])
   const [hasMoreData, setHasMoreData] = useState(true)
-  const [topChars, setTopChars] = useState<any>([])
-  const [continueChars, setContinueChars] = useState<any>([])
-  const [trendingChars, setTrendingChars] = useState<any>([])
 
   const topSearchQueryParams = {
     tags: [],
@@ -74,25 +68,29 @@ export default function HomeScreen({
     limit: 20
   }
 
-  const trendingQueryParams = {
-    sort: CloneSortType["HOT"],
+  const topQueryParams = {
+    sort: CloneSortType["TOP"]
+  }
+
+  let conversationsSidebarParams = {
+    convoLimit: 3,
     offset: 0,
     limit: 20
   }
 
+  const trendingQueryParams = {
+    sort: CloneSortType["HOT"]
+  }
+
   // Searched chars data
-  const { data: topSearchData, isLoading: isTopLoadingSearch } = useQueryClones(topSearchQueryParams);
-  const { data: trendingData, isLoading: isTrendingLoading } = useQueryClones(trendingQueryParams);
+  const { data: searchedCharacters, isLoading: isTopLoadingSearch } = useQueryClones(topSearchQueryParams);
+  const { data: trendingChars, isLoading: isTrendingLoading } = useQueryClones(trendingQueryParams);
+  const { data: topChars, isLoading: isTopLoading } = useQueryClones(topQueryParams);
+  const { data: continueConvos, isLoading: isLoadingContinue} = useQueryConversationsSidebar(conversationsSidebarParams)
 
-  useEffect(() => {
-    setTopChars(data)
-    setContinueChars(data)
-    setTrendingChars(trendingData)
-  }, [isLoading, isTopLoadingSearch, isTrendingLoading])
-
-  useEffect(() => {
-    setSearchedCharacters(topSearchData)
-  }, [isTopLoadingSearch])
+  const continueChars = continueConvos?.map((convo) => {
+    return convo.clone
+  })
 
   const fetchMoreGridData = () => {
     // TODO: edit, incorporate useSWRInfinite on infinite scroll side
@@ -111,6 +109,12 @@ export default function HomeScreen({
       } 
     }
   }, [searchInput])
+
+  if (isLoading || isTopLoading || isTrendingLoading || isLoadingContinue) {
+    return (
+      <div> Loading chars.. </div>
+    )
+  }
 
   return (
     <div className='pb-[75px]'>
