@@ -6,9 +6,6 @@ import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import 'swiper/css/scrollbar'
-
-const axios = require('axios').default
-
 import Carousel from './Carousel'
 import TopBar from '@/components/TopBar'
 import AlertBar from '@/components/AlertBar'
@@ -46,14 +43,6 @@ export default function HomeScreen({
   useEffect(() => {
     require('preline')
   }, [])
-
-  const queryParams = {
-    offset: 0,
-    limit: 20
-  }
-
-  // Regular clone data
-  const { data, isLoading } = useQueryClones(queryParams);
 
   // search grid characters state
   const [searchInput, setSearchInput] = useState('')
@@ -110,7 +99,7 @@ export default function HomeScreen({
     }
   }, [searchInput])
 
-  if (isLoading || isTopLoading || isTrendingLoading || isLoadingContinue) {
+  if (isTopLoading || isTrendingLoading || isLoadingContinue) {
     return (
       <div> Loading chars.. </div>
     )

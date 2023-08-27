@@ -77,7 +77,6 @@ interface CloneQueryParams {
   limit?: number;
 } 
 
-
 export function useQueryClones(queryParams: CloneQueryParams) {
   const {
     tags,
@@ -87,8 +86,6 @@ export function useQueryClones(queryParams: CloneQueryParams) {
     offset,
     limit
   } = queryParams;
-
-  console.log("queryParams: ", queryParams)
 
   const fetcher = async () => {
     try {
@@ -110,8 +107,6 @@ export function useQueryClones(queryParams: CloneQueryParams) {
 
   const { data, error } = useSWR([tags, name, sort, similar, offset, limit, 'clones'], fetcher);
 
-  console.log("useQueryClones() data is: ", data);
-
   return {
     data: data,
     isLoading: !error && !data,
@@ -124,8 +119,6 @@ export function useQueryClonesById(queryParams: CloneQueryByIdParams) {
     cloneId
   } = queryParams;
 
-  console.log("useQueryClonesById() queryParams: ", queryParams)
-
   const fetcher = async () => {
     try {
       const response = await ClonesService.getCloneByIdClonesCloneIdGet(
@@ -133,39 +126,11 @@ export function useQueryClonesById(queryParams: CloneQueryByIdParams) {
       );
       return response;
     } catch (error) {
-      throw new Error('Error fetching clones: ' + error.message);
+      throw new Error('Error fetching clones by id: ' + error.message);
     }
   };
 
   const { data, error } = useSWR([cloneId, 'clonesById'], fetcher);
-
-  console.log("useQueryClonesById() data is: ", data);
-
-  return {
-    data: data,
-    isLoading: !error && !data,
-    error: error
-  };
-}
-
-export function useQueryMultipleClonesByIds(cloneIds: Array<string>) {
-  console.log("useQueryMultipleClonesByIds() cloneIds: ", cloneIds)
-
-  const fetcher = async () => {
-    try {
-      const responses = await Promise.all(
-        cloneIds.map(async (cloneId) => {
-          const response = await ClonesService.getCloneByIdClonesCloneIdGet(cloneId);
-          return response;
-        })
-      );
-      return responses;
-    } catch (error) {
-      throw new Error('Error fetching clones: ' + error.message);
-    }
-  };
-
-  const { data, error } = useSWR(cloneIds.map(id => [id, 'clonesById']), fetcher);
 
   return {
     data: data,
@@ -182,51 +147,6 @@ export default function useClones() {
         cloneData,
         {
             withCredentials: true
-        }
-      );
-      return response.data;
-    } catch (error) {
-      throw new Error('Error fetching clone: ' + error.message);
-    }
-  };
-
-  const queryClones = async (queryParams: any) => {
-    const {
-        tags = null,
-        name = null,
-        sort = 'top',
-        similar = null,
-        offset = 0,
-        limit = 20
-    } = queryParams;
-    try {
-      const response = await axios.get<Character[]>(
-        `http://localhost:8000/clones/`,
-        {
-          withCredentials: true,
-          params: {
-            tags,
-            name,
-            sort,
-            similar,
-            offset,
-            limit
-          }
-        }
-      );
-      console.log("Response from queryClones(): ", response)
-      return response.data;
-    } catch (error) {
-      throw new Error('Error fetching clone: ' + error.message);
-    }
-  };
-
-  const queryCloneById = async (clone_id: string) => {
-    try {
-      const response = await axios.get<Character>(
-        `http://localhost:8000/clones/${clone_id}`,
-        {
-          withCredentials: true
         }
       );
       return response.data;
@@ -279,72 +199,10 @@ export default function useClones() {
     }
   };
 
-  const queryDocuments = async (cloneId: string) => {
-    try {
-      const response = await axios.get<Document[]>(
-        `http://localhost:8000/clones/${cloneId}/documents`,
-        {
-          withCredentials: true
-        }
-      );
-      return response.data;
-    } catch (error) {
-      throw new Error('Error fetching documents: ' + error.message);
-    }
-  };
-
-  const queryDocument = async (cloneId: string, documentId: string) => {
-    try {
-      const response = await axios.get<Document>(
-        `http://localhost:8000/clones/${cloneId}/documents/${documentId}`,
-        {
-          withCredentials: true
-        }
-      );
-      return response.data;
-    } catch (error) {
-      throw new Error('Error fetching document: ' + error.message);
-    }
-  };
-
-  const queryMonologue = async (cloneId: string, monologueId: string) => {
-    try {
-      const response = await axios.get<Monologue>(
-        `http://localhost:8000/clones/${cloneId}/monologues/${monologueId}`,
-        {
-          withCredentials: true
-        }
-      );
-      return response.data;
-    } catch (error) {
-      throw new Error('Error fetching monologue: ' + error.message);
-    }
-  };
-
-  const queryMonologues = async (cloneId: string) => {
-    try {
-      const response = await axios.get<Monologue[]>(
-        `http://localhost:8000/clones/${cloneId}/monologues`,
-        {
-          withCredentials: true
-        }
-      );
-      return response.data;
-    } catch (error) {
-      throw new Error('Error fetching monologues: ' + error.message);
-    }
-  };
-
   return {
     createClone,
-    queryClones,
-    queryCloneById,
     generateLongDescription,
     queryGeneratedLongDescription,
-    createDocument,
-    queryDocuments,
-    queryDocument,
-    queryMonologue,
-    queryMonologues
+    createDocument
   };
 }

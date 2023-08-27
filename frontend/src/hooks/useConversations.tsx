@@ -66,8 +66,6 @@ export function useQueryConversations(queryParams: ConversationsQueryParams) {
     limit
   } = queryParams;
 
-  console.log("useQueryConversations() queryParams: ", queryParams)
-
   const fetcher = async () => {
     try {
       const response = await ConversationsService.queryConversationsConversationsGet(
@@ -90,7 +88,6 @@ export function useQueryConversations(queryParams: ConversationsQueryParams) {
   };
 
   const { data, error } = useSWR([tags, cloneName, cloneId, sort, memoryStrategy, adaptationStrategy, informationStrategy, updatedAfter, updatedBefore, offset, limit, 'conversations'], fetcher);
-  console.log("useQueryConversations() data is: ", data);
 
   return {
     data: data,
@@ -118,7 +115,6 @@ export function useQueryConversationMessages(queryParams: ConversationMessageQue
   };
 
   const { data, error } = useSWR([conversationId, 'conversationMessagesByConvoId'], fetcher);
-  console.log("useQueryConversationMessages() data is: ", data);
 
   return {
     data: data,
@@ -170,7 +166,6 @@ export function createNewConversation(conversationData: ConversationCreate) {
   };
 
   const { data, error } = useSWR(['createConversation'], fetcher);
-  console.log("createNewConversation(), data is: ", data);
 
   return {
     data: data,

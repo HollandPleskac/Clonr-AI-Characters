@@ -72,6 +72,12 @@ export default function BrowsePage() {
         require('preline')
     }, [])
 
+    if (isLoadingCharacters) {
+        return (
+            <div> Loading characters.. </div>
+        )
+    }
+
     return (
         <div className=''>
             <AlertBar />
