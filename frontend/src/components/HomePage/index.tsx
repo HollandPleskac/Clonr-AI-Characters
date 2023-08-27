@@ -120,7 +120,7 @@ export default function HomeScreen() {
 
       {!showSearchGrid && (
         <ScaleFadeIn loaded={!searchInput} duration={duration}>
-          {(!topChars || !continueChars || !trendingChars || topChars.length === 0 || continueChars.length === 0 || trendingChars.length === 0) ? (
+          {(!topChars || !continueChars || !trendingChars || topChars.length === 0 || trendingChars.length === 0) ? (
             <div className='grid place-items-center'
               style={{
                 height: 'calc(100vh - 48px - 84px)'
