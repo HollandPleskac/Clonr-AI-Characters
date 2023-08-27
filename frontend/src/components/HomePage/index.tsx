@@ -11,7 +11,7 @@ import TopBar from '@/components/TopBar'
 import AlertBar from '@/components/AlertBar'
 import { Character, User } from '@/types'
 import { CloneSearchResult } from '@/client/models/CloneSearchResult'
-import SearchGrid from './SearchGrid'
+import CharacterGrid from './CharacterGrid'
 import StatBar from '../Statistics/StatBar'
 import ScaleFadeIn from '../Transitions/ScaleFadeIn'
 import { useQueryClones } from '@/hooks/useClones'
@@ -44,9 +44,21 @@ export default function HomeScreen({
     require('preline')
   }, [])
 
+  
   // search grid characters state
   const [searchInput, setSearchInput] = useState('')
   const [hasMoreData, setHasMoreData] = useState(true)
+
+  
+  const queryParams = {
+    offset: 0,
+    limit: 20
+  }
+
+  // Regular clone data
+  const { data, isLoading } = useQueryClones(queryParams);
+
+  console.log("THIS IS DATA: ", data)
 
   const topSearchQueryParams = {
     tags: [],
@@ -116,9 +128,9 @@ export default function HomeScreen({
       />
       {showSearchGrid && (
         <ScaleFadeIn loaded={showSearchGrid} duration={duration}>
-          <SearchGrid
+          <CharacterGrid
             characters={searchedCharacters}
-            doneSearching={true}
+            loading={false}
             fetchMoreData={fetchMoreGridData}
             hasMoreData={hasMoreData}
           />

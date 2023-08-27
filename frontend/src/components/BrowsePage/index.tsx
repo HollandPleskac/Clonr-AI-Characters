@@ -11,7 +11,7 @@ import TopBarStatic from '@/components/TopBarStatic'
 import AlertBar from '@/components/AlertBar'
 import { Character, Tag } from '@/types'
 import AuthModal from '../AuthModal'
-import SearchGrid from '@/components/HomePage/SearchGrid'
+import CharacterGrid from '@/components/HomePage/CharacterGrid'
 import TagComponent from './Tag'
 import Dropdown from './Dropdown'
 import { useQueryTags } from '@/hooks/useTags'
@@ -20,6 +20,7 @@ import { CloneSortType } from '@/client/models/CloneSortType'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation, Pagination, Scrollbar } from 'swiper/modules'
 import { ColorRing } from 'react-loader-spinner'
+import { useClonesPagination } from '@/hooks/useClonesPagination'
 
 export default function BrowsePage() {
     // tags state
@@ -30,23 +31,22 @@ export default function BrowsePage() {
     const [activeSort, setActiveSort] = useState<string>("Trending")
     const [activeSortType, setActiveSortType] = useState<string>("TOP")
 
-    // infinite scroll state
-    const [hasMoreData, setHasMoreData] = useState(true)
-
-    const fetchMoreGridData = () => {
-        // TODO: edit, incorporate useSWRInfinite on infinite scroll side
-    }
-
-    // search grid characters state
-    const searchQueryParams = {
+    // character grid state
+    const queryParams = {
         tags: activeTag ? [activeTag.id] : null,
         sort: CloneSortType[activeSortType],
-        offset: 0,
-        limit: 20
+        limit: 30
     }
-    const { data: characters, isLoading: isLoadingCharacters } = useQueryClones(searchQueryParams);
 
-    // handle sorting logic
+    const {
+        paginatedData: characters,
+        isLastPage: isLastCharactersPage,
+        isLoading: isLoadingCharacters,
+        size,
+        setSize
+      } = useClonesPagination(queryParams)
+    
+
     function mapSortClickToSortType(sort: string) {
         switch (sort) {
             case "Trending":
@@ -145,11 +145,11 @@ export default function BrowsePage() {
             )}
 
             {!isLoadingCharacters && (
-                <SearchGrid
+                <CharacterGrid
                     characters={characters}
-                    doneSearching={!isLoadingCharacters}
-                    fetchMoreData={fetchMoreGridData}
-                    hasMoreData={hasMoreData}
+                    loading={isLoadingCharacters}
+                    fetchMoreData={() => setSize(size + 1)}
+                    hasMoreData={!isLastCharactersPage}
                     showPadding2={true}
 
                 />
