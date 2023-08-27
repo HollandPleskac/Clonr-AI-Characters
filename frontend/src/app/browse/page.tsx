@@ -1,5 +1,3 @@
-'use client'
-
 import BrowsePage from '@/components/BrowsePage'
 import Footer from '@/components/Footer'
 

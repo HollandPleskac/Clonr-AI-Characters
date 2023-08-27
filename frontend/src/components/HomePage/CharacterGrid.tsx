@@ -17,18 +17,18 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 
 interface SearchGridProps {
   characters: any[]
-  doneSearching: boolean
+  loading: boolean
   fetchMoreData: () => void
   hasMoreData: boolean
   showPadding2?: boolean
 }
 
-export default function SearchGrid({
+export default function CharacterGrid({
   characters,
-  doneSearching,
+  loading,
   fetchMoreData,
   hasMoreData,
-  showPadding2 = false
+  showPadding2 = false,
 }: SearchGridProps) {
 
   function calcEdgeCard(n: number): 'left' | 'right' | undefined {
@@ -54,7 +54,7 @@ export default function SearchGrid({
 
   return (
     <div className=''>
-      {!doneSearching && (
+      {loading && (
          <div
          className='text-white grid place-items-center'
          style={{ minHeight: 'calc(100vh - 72px - 48px)' }}
@@ -62,7 +62,7 @@ export default function SearchGrid({
          <p></p>
        </div>
       )}
-      {doneSearching && characters.length === 0 && (
+      {!loading && characters.length === 0 && (
         <div
           className='text-white grid place-items-center'
           style={{ minHeight: 'calc(100vh - 72px - 48px)' }}
@@ -70,9 +70,9 @@ export default function SearchGrid({
           <p>Your search did not return any matches.</p>
         </div>
       )}
-      {doneSearching && characters.length > 0 && (
+      {!loading && characters.length > 0 && (
         <InfiniteScroll
-          dataLength={characters.length}
+          dataLength={characters?.length ?? 0}
           next={fetchMoreData}
           hasMore={hasMoreData}
           loader={<h4>Loading...</h4>}
