@@ -27,6 +27,10 @@ interface Message {
     conversation_id: string;
 }
 
+interface ConversationByIdQueryParams {
+  conversationId: string;
+}
+
 interface ConversationMessageQueryParams {
     conversationId: string;
 }
@@ -88,6 +92,33 @@ export function useQueryConversations(queryParams: ConversationsQueryParams) {
   };
 
   const { data, error } = useSWR([tags, cloneName, cloneId, sort, memoryStrategy, adaptationStrategy, informationStrategy, updatedAfter, updatedBefore, offset, limit, 'conversations'], fetcher);
+
+  return {
+    data: data,
+    isLoading: !error && !data,
+    error: error
+  };
+}
+
+export function useQueryConversationById(queryParams: ConversationByIdQueryParams) {
+  const {
+    conversationId
+  } = queryParams;
+
+  console.log("useQueryConversationById() queryParams: ", queryParams)
+
+  const fetcher = async () => {
+    try {
+      const response = await ConversationsService.getConversationByIdConversationsConversationIdGet(
+        queryParams.conversationId
+      );
+      return response;
+    } catch (error) {
+      throw new Error('Error fetching conversation msgs: ' + error.message);
+    }
+  };
+
+  const { data, error } = useSWR([conversationId, 'conversationMessagesByConvoId'], fetcher);
 
   return {
     data: data,
@@ -190,34 +221,6 @@ export default function useConversations() {
           throw new Error('Error creating conversation: ' + error.message);
         }
       };
-
-    const queryConversation = async (conversationId: string) => {
-        try {
-          const response = await axios.get<Conversation>(
-            `http://localhost:8000/conversations/${conversationId}`,
-            {
-              withCredentials: true
-            }
-          );
-          return response.data;
-        } catch (error) {
-          throw new Error('Error fetching conversation: ' + error.message);
-        }
-      };
-    
-      const queryConversationMessages = async (conversationId: string) => {
-        try {
-          const response = await axios.get<Message[]>(
-            `http://localhost:8000/conversations/${conversationId}/messages`,
-            {
-              withCredentials: true
-            }
-          );
-          return response.data;
-        } catch (error) {
-          throw new Error('Error fetching conversation messages: ' + error.message);
-        }
-      };
     
       const createMessage = async (conversationId: string, content: string) => {
         try {
@@ -258,26 +261,9 @@ export default function useConversations() {
         }
       };
     
-      const queryCurrentRevisions = async (conversationId: string) => {
-        try {
-          const response = await axios.get<any[]>(
-            `http://localhost:8000/conversations/${conversationId}/current_revisions`,
-            {
-              withCredentials: true
-            }
-          );
-          return response.data;
-        } catch (error) {
-          throw new Error('Error fetching current revisions: ' + error.message);
-        }
-      };
-    
       return {
         createConversation,
-        queryConversation,
-        queryConversationMessages,
         createMessage,
-        generateCloneMessage,
-        queryCurrentRevisions
+        generateCloneMessage
       };
 };

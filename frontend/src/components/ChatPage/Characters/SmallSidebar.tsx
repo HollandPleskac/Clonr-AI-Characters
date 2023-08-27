@@ -22,7 +22,7 @@ export default function SmallNav({
 }: SmallNavProps) {
   const [characterChats, setCharacterChats] = useState<any>([]);
   const [isFetching, setIsFetching] = useState(true)
-  
+
   // TODO: edit
   if (conversationId === 'undecided') {
     return (null)
@@ -43,7 +43,7 @@ export default function SmallNav({
           return {
             characterId: conversation.clone_id,
             characterName: conversation.clone_name,
-            characterAvatarUri: conversation.clone_avatar_uri,
+            characterAvatarUri: conversation.avatar_uri,
             lastUpdatedAt: conversation.updated_at,
             lastMessage: conversation.last_message,
             lastConversationId: conversation.id

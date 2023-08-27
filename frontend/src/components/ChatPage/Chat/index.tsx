@@ -16,6 +16,7 @@ import PreviousConversations from './PreviousConversations'
 import ChatTopBar from './ChatTopBar'
 import useConversations from '@/hooks/useConversations'
 //import { createConversation } from '@hooks/useConversations'
+import { useQueryConversations, useQueryConversationById, useQueryConversationMessages } from '@/hooks/useConversations'
 
 interface ChatScreenProps {
   characterId: string
@@ -29,8 +30,6 @@ export default function ChatScreen({
   conversationId,
   character,
 }: ChatScreenProps) {
-  const { queryConversation, queryConversationMessages } = useConversations();
-
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
 
@@ -42,26 +41,16 @@ export default function ChatScreen({
   const [showChat, setShowChat] = useState(true)
   const [scrollToNewMessage, setScrollToNewMessage] = useState<boolean>(false)
 
-  async function fetchInitialData() {
-    // get conversation state
-    if (conversationId !== 'convo') {
-      const conversation = await queryConversation(conversationId);
-      setConversationState(conversation.memory_strategy);
-
-      // get messages
-
-      const messages = await queryConversationMessages(conversationId)
-      setMessages(messages);
-    } else {
-      setConversationState('undecided')
-    }
-
-    setIsFetchingInitialData(false)
-  }
+  const { data: conversation, error: convoError, isLoading: convoIsLoading } = useQueryConversationById({conversationId});
+  const { data: conversationMessages, error: convoMsgError, isLoading: convoMsgIsLoading } = useQueryConversationMessages({conversationId});
 
   useEffect(() => {
-    fetchInitialData()
-  }, [])
+    if (conversationId !== 'convo' && conversation && conversationMessages) {
+      setConversationState(conversation.memory_strategy)
+      setMessages(conversationMessages)
+    }
+    setIsFetchingInitialData(false)
+  }, [conversation, conversationMessages])
 
   // search state
   const [isInputActive, setInputActive] = useState(false)
@@ -76,7 +65,6 @@ export default function ChatScreen({
   useEffect(() => {
     // @ts-ignore
     import('preline')
-    // TODO: create conversation if not exists
   }, [])
 
   useEffect(() => {
@@ -135,25 +123,6 @@ export default function ChatScreen({
     }
 
     setIsFetchingServerMessage(false)
-  }
-
-  const handleConversationCreate = async () => {
-    let conversationCreateData = {
-      name: 'example',
-      user_name: 'user',
-      memory_strategy: 'short_term',
-      information_strategy: 'internal',
-      adaptation_strategy: 'static',
-      clone_id: 'd433575f-d8ad-4f80-a90d-f21122b71bf0'
-    }
-    let convo_id = await createConversation(conversationCreateData);
-    setConvoID(convo_id)
-
-    let r_msg = await queryConversationMessages(convo_id);
-    let msgs = r_msg.map((x: Message, index: number) => (
-      x
-    ))
-    setMessages(msgs)
   }
 
   const formatTime = (seconds: number) => {
