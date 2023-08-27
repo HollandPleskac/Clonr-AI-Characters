@@ -12,31 +12,21 @@ const Character: React.FC<MyComponentProps> = ({
   characterChat,
   currentCharacterId,
 }) => {
-  console.log("In CharacterComponent, this is characterChat: ", characterChat)
-  console.log("In CharacterComponent, this is currentCharacterId: ", currentCharacterId)
   return (
     <Link
-      href={`/chat/${characterChat.character.id}/${characterChat.lastConversationId}`}
+      href={`/chat/${characterChat.characterId}/${characterChat.lastConversationId}`}
     >
       <div
-        className={`${characterChat.character.id === currentCharacterId
+        className={`${characterChat.characterId === currentCharacterId
             ? ' border-[#252525] bg-[#282348]'
             : 'border-[#252525] bg-[#121212]'
           } border-r-none cursor-pointer border-b px-0`}
       >
         <div className='flex items-center justify-between px-4 py-[22px]'>
           <div className='flex items-center'>
-            {/* <Image
-              key={0}
-              src={characterChat.character.avatar_uri} 
-              alt={`Character Profile Picture ${0 + 1}`}
-              width={40}
-              height={40}
-              className='rounded-full'
-            /> */}
             <div className='h-[55px] w-[55px] relative'>
               <Image
-                src={characterChat.character.avatar_uri}
+                src={characterChat.characterAvatarUri}
                 alt='Character Profile Picture'
                 layout='fill'
                 objectFit='cover'
@@ -46,11 +36,11 @@ const Character: React.FC<MyComponentProps> = ({
             <div className='ml-3 flex flex-col'>
               <div className='mb-1 flex items-center'>
                 <h3 className='mr-2 text-[16px] font-bold leading-[22px]'>
-                  {characterChat.character.name}
+                  {characterChat.characterName}
                 </h3>
                 <h4 className='text-sm font-light leading-[18px] text-[#979797]'>
                   {/* {username} */}
-                  {' • ' + formatDate(new Date(characterChat.character.updated_at))}
+                  {' • ' + formatDate(new Date(characterChat.lastUpdatedAt))}
                 </h4>
               </div>
               <div className='text-smibold text-[14px] leading-[18px] line-clamp-1'>

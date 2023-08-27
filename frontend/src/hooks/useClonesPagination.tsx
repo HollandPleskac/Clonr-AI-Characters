@@ -24,7 +24,7 @@ export const useClonesPagination = (queryParams: CloneQueryParams) => {
                 params.offset,
                 params.limit
                 );
-            console.log("response",res)
+            console.log("useClonesPagination() -> response",res)
             return res;
         } catch (error) {
             throw new Error('Error fetching clones: ' + error);
@@ -34,12 +34,12 @@ export const useClonesPagination = (queryParams: CloneQueryParams) => {
     // handle offset for pagination
     const getKey = (pageIndex: number, previousPageData: any[]) => {
         if (previousPageData && !previousPageData.length) return null
-        return {...queryParams, offset:pageIndex*limit }
+        const newKey = {...queryParams, offset:pageIndex*limit }
+        return newKey
     }
 
     const { data, size, setSize, isLoading } = useSWRInfinite(getKey, fetcher)
     const paginatedData = data?.flat()
-
     const isLastPage = data && data[data.length - 1]?.length < limit // last batch if data < limit
 
     return {
