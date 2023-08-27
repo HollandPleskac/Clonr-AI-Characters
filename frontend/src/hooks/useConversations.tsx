@@ -45,6 +45,12 @@ interface ConversationsQueryParams {
   limit: number;
 } 
 
+interface ConvesationsSidebarQueryParams {
+  convoLimit?: number;
+  offset?: number;
+  limit?: number;
+}
+
 export function useQueryConversations(queryParams: ConversationsQueryParams) {
   const {
     tags,
@@ -60,11 +66,9 @@ export function useQueryConversations(queryParams: ConversationsQueryParams) {
     limit
   } = queryParams;
 
-  console.log("useQueryConversations() queryParams: ", queryParams)
-
   const fetcher = async () => {
     try {
-      const response = await ConversationsService.getQueriedConvosConversationsGet(
+      const response = await ConversationsService.queryConversationsConversationsGet(
         tags,
         cloneName,
         cloneId,
@@ -84,7 +88,6 @@ export function useQueryConversations(queryParams: ConversationsQueryParams) {
   };
 
   const { data, error } = useSWR([tags, cloneName, cloneId, sort, memoryStrategy, adaptationStrategy, informationStrategy, updatedAfter, updatedBefore, offset, limit, 'conversations'], fetcher);
-  console.log("useQueryConversations() data is: ", data);
 
   return {
     data: data,
@@ -112,7 +115,35 @@ export function useQueryConversationMessages(queryParams: ConversationMessageQue
   };
 
   const { data, error } = useSWR([conversationId, 'conversationMessagesByConvoId'], fetcher);
-  console.log("useQueryConversationMessages() data is: ", data);
+
+  return {
+    data: data,
+    isLoading: !error && !data,
+    error: error
+  };
+}
+
+export function useQueryConversationsSidebar(queryParams: ConvesationsSidebarQueryParams) {
+  const {
+    convoLimit,
+    offset,
+    limit
+  } = queryParams;
+
+  const fetcher = async () => {
+    try {
+      const response = await ConversationsService.getSidebarConversationsConversationsSidebarGet(
+        convoLimit,
+        offset,
+        limit
+      );
+      return response;
+    } catch (error) {
+      throw new Error('Error fetching conversation sidebar: ' + error.message);
+    }
+  };
+
+  const { data, error } = useSWR([convoLimit, offset, limit, 'conversationsSidebar'], fetcher);
 
   return {
     data: data,
@@ -135,7 +166,6 @@ export function createNewConversation(conversationData: ConversationCreate) {
   };
 
   const { data, error } = useSWR(['createConversation'], fetcher);
-  console.log("createNewConversation(), data is: ", data);
 
   return {
     data: data,

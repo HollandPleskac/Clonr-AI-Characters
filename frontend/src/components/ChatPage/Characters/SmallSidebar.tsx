@@ -3,13 +3,11 @@ import Link from "next/link"
 import Image from 'next/image'
 import InfiniteScroll from "react-infinite-scroll-component"
 import { Character, CharacterChat } from "@/types"
-import { useEffect, useRef, useState } from "react"
+import { use, useEffect, useRef, useState } from "react"
 import SearchIcon from "./SearchIcon"
 import CharacterComponent from './Character'
 import { ColorRing } from "react-loader-spinner"
-import { useQueryConversationMessages } from '@/hooks/useConversations'
-import { useQueryConversations } from '@/hooks/useConversations'
-import { useQueryMultipleClonesByIds } from '@/hooks/useClones'
+import { useQueryConversationsSidebar } from '@/hooks/useConversations'
 
 interface SmallNavProps {
   characterId: string
@@ -31,44 +29,39 @@ export default function SmallNav({
     return (null)
   }
 
-  const {data, error, isLoading} = useQueryConversationMessages({conversationId})
-
-  let conversationsParams = {
+  let conversationsSidebarParams = {
+    convoLimit: 3,
     offset: 0,
     limit: 20
   }
 
-  const {data: conversationData, error: conversationsError, isLoading: conversationsIsLoading} = useQueryConversations(conversationsParams)
+  const {data, error, isLoading} = useQueryConversationsSidebar(conversationsSidebarParams)
 
   useEffect(() => {
-    if (conversationId != 'undecided') {
-      console.log("SMALLNAV -> conversations: ", conversationData)
-      setConversations(conversationData)
-      setIsFetching(false)
+    if (data) {
+      const sortCharacterChats = () => {
+        let characterChats = data.map((conversation: any) => {
+          return {
+            character: conversation.clone,
+            lastMessage: conversation.last_message,
+            lastConversationId: conversation.id,
+            lastUpdatedAt: conversation.updated_at
+          };
+        });
+  
+        characterChats.sort((a: any, b: any) => {
+          return a.lastUpdatedAt - b.lastUpdatedAt;
+        });
+  
+        return characterChats;
+      };
+
+      const characterChats = sortCharacterChats();
+
+      setCharacterChats(characterChats);
+      setIsFetching(false);
     }
-    
-  }, [conversationData, conversationsIsLoading])
-
-  // Get clone id values from converstions, to populate characterChats
-  let characterIds: any = conversations ? [...new Set(conversations.map((conversation: { clone_id: any }) => conversation.clone_id))] : [];
-
-  const {data: clonesData, error: clonesError, isLoading: clonesIsLoading} = useQueryMultipleClonesByIds(characterIds)
-
-  useEffect(() => {
-    if (characterIds && !clonesIsLoading && clonesData && conversationData) {
-      // TODO: edit - only has one convo per character
-      const characterChats = clonesData.map((clone: any) => {
-        return {
-          character: clone,
-          lastMessage: conversationData?.filter((conversation: any) => conversation.clone_id === clone.id)[0].last_message,
-          lastConversationId: conversationData?.filter((conversation: any) => conversation.clone_id === clone.id)[0].id,
-        }
-      });
-      setCharacterChats(characterChats)
-      setIsFetching(false)
-    }
-      
-  }, [clonesData, conversationData])
+  }, [data, isLoading])
 
   // search state
   const [isInputActive, setInputActive] = useState(false)
@@ -85,7 +78,7 @@ export default function SmallNav({
     // ])
   }
 
-  if (isLoading || !character || !conversationId || !characterChats) {
+  if (isLoading || !character || !conversationId || !characterChats || characterChats.length === 0) {
     return <div> Loading characterSidebar.. </div>
   }
 
