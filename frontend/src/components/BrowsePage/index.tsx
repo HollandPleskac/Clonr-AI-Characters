@@ -7,7 +7,7 @@ import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import 'swiper/css/scrollbar'
 
-import TopBarStatic from '@/components/TopBarStatic'
+import TopBar from '@/components/TopBar'
 import AlertBar from '@/components/AlertBar'
 import { Character, Tag } from '@/types'
 import AuthModal from '../AuthModal'
@@ -21,20 +21,24 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation, Pagination, Scrollbar } from 'swiper/modules'
 import { ColorRing } from 'react-loader-spinner'
 import { useClonesPagination } from '@/hooks/useClonesPagination'
+import ScaleFadeIn from '../Transitions/ScaleFadeIn'
 
 export default function BrowsePage() {
+
+    const [searchInput, setSearchInput] = useState('')
+    const [showSearchGrid, setShowSearchGrid] = useState(false)
+    const duration = 500
+
+    const [activeTag, setActiveTag] = useState<Tag | null>()
+    const [activeSort, setActiveSort] = useState<string>("Trending")
+
     // tags state
     const { data: tags, error: tagsError, isLoading: isLoadingTags } = useQueryTags();
-    const [activeTag, setActiveTag] = useState<Tag | null>()
-
-    // Sort state
-    const [activeSort, setActiveSort] = useState<string>("Trending")
-    const [activeSortType, setActiveSortType] = useState<string>("TOP")
 
     // character grid state
     const queryParams = {
         tags: activeTag ? [activeTag.id] : null,
-        sort: CloneSortType[activeSortType],
+        sort: CloneSortType[mapSortClickToSortType(activeSort)],
         limit: 30
     }
 
@@ -44,8 +48,38 @@ export default function BrowsePage() {
         isLoading: isLoadingCharacters,
         size,
         setSize
-      } = useClonesPagination(queryParams)
-    
+    } = useClonesPagination(queryParams)
+
+    // search grid state
+    const queryParamsSearch = {
+        name: searchInput,
+        sort: CloneSortType["TOP"],
+        similar: searchInput,
+        limit: 30
+    }
+
+    const {
+        paginatedData: searchedCharacters,
+        isLastPage: isLastSearchedCharactersPage,
+        isLoading: isLoadingSearchedCharacters,
+        size: searchedCharactersSize,
+        setSize: setSearchedCharactersSize
+    } = useClonesPagination(queryParamsSearch)
+
+    useEffect(() => {
+        if (searchInput === '') {
+            setShowSearchGrid(false)
+            console.log(searchInput)
+        } else {
+            if (!showSearchGrid) {
+                const timer = setTimeout(() => {
+                    setShowSearchGrid(true)
+                }, duration)
+                return () => clearTimeout(timer)
+            }
+        }
+    }, [searchInput])
+
 
     function mapSortClickToSortType(sort: string) {
         switch (sort) {
@@ -63,96 +97,108 @@ export default function BrowsePage() {
     }
 
     function handleSortClick(sort: string) {
-        const sort_type = mapSortClickToSortType(sort)
         setActiveSort(sort)
-        setActiveSortType(sort_type)
     }
 
     useEffect(() => {
         require('preline')
     }, [])
 
-    if (isLoadingCharacters) {
-        return (
-            <div> Loading characters.. </div>
-        )
-    }
-
     return (
         <div className=''>
             <AlertBar />
 
-            <TopBarStatic
+            <TopBar
+                searchInput={searchInput}
+                onSearchInput={(x) => setSearchInput(x)}
+                clearSearchInput={() => setSearchInput('')}
             />
 
-            <div className='flex px-[4%] gap-x-8 mt-[50px]'  >
-                {isLoadingTags && (
-                    <div className='w-full flex-grow text-white' >&nbsp;</div>
-                )}
-                {!isLoadingTags && (
-                    <Swiper
-                        modules={[Navigation, Pagination, Scrollbar]}
-                        navigation={true}
-                        spaceBetween={4}
-                        slidesPerView={'auto'}
-                        slidesPerGroup={5}
-                        speed={1100}
-                        className={`w-full flex gap-x-2`}
-                        style={{
-                            zIndex: 50,
-                        }}
-                    >
-                        {tags!.map((tag, index) => {
-                            return (
-                                <SwiperSlide
-                                    key={tag.id}
-                                    className='w-auto inline-flex flex-grow flex-shrink-0'
-                                    style={{
-                                        width: 'auto'
-                                    }}
-                                >
-                                    <TagComponent
-                                        name={tag.name}
-                                        onClick={() => {
-                                            setActiveTag(tag)
-                                        }}
-                                        active={tag.id === activeTag?.id}
-
-                                    />
-                                </SwiperSlide>
-                            )
-                        })}
-                    </Swiper>
-                )}
-                <Dropdown onItemClick={handleSortClick} activeSort={activeSort} />
-            </div>
-
-            {isLoadingCharacters && (
-                <div className="grid place-items-center" 
-                style={{
-                    height: "calc(100vh - 50px - 75px - 80px)"
-                }}>
-                <ColorRing
-                  visible={true}
-                  height="80"
-                  width="80"
-                  ariaLabel="blocks-loading"
-                  wrapperStyle={{}}
-                  wrapperClass="blocks-wrapper"
-                  colors={['#9333ea', '#9333ea', '#9333ea', '#9333ea', '#9333ea']}
-                />
-              </div>
+            {showSearchGrid && (
+                <ScaleFadeIn loaded={showSearchGrid} duration={duration}>
+                    <CharacterGrid
+                        characters={searchedCharacters}
+                        loading={isLoadingSearchedCharacters}
+                        fetchMoreData={() => setSize(size + 1)}
+                        hasMoreData={!isLastSearchedCharactersPage}
+                    />
+                </ScaleFadeIn>
             )}
 
-            {!isLoadingCharacters && (
-                <CharacterGrid
-                    characters={characters}
-                    loading={isLoadingCharacters}
-                    fetchMoreData={() => setSize(size + 1)}
-                    hasMoreData={!isLastCharactersPage}
-                    showPadding2={true}
+            {!showSearchGrid && (
+                <ScaleFadeIn loaded={!searchInput} duration={duration}>
 
-                />
+
+                <div className='flex px-[4%] gap-x-8 mt-[50px]'  >
+                    {isLoadingTags && (
+                        <div className='w-full flex-grow text-white' >&nbsp;</div>
+                    )}
+                    {!isLoadingTags && (
+                        <Swiper
+                            modules={[Navigation, Pagination, Scrollbar]}
+                            navigation={true}
+                            spaceBetween={4}
+                            slidesPerView={'auto'}
+                            slidesPerGroup={5}
+                            speed={1100}
+                            className={`w-full flex gap-x-2`}
+                            style={{
+                                zIndex: 50,
+                            }}
+                        >
+                            {tags!.map((tag, index) => {
+                                return (
+                                    <SwiperSlide
+                                        key={tag.id}
+                                        className='w-auto inline-flex flex-grow flex-shrink-0'
+                                        style={{
+                                            width: 'auto'
+                                        }}
+                                    >
+                                        <TagComponent
+                                            name={tag.name}
+                                            onClick={() => {
+                                                setActiveTag(tag)
+                                            }}
+                                            active={tag.id === activeTag?.id}
+
+                                        />
+                                    </SwiperSlide>
+                                )
+                            })}
+                        </Swiper>
+                    )}
+                    <Dropdown onItemClick={handleSortClick} activeSort={activeSort} />
+                </div>
+
+                {isLoadingCharacters && (
+                    <div className="grid place-items-center"
+                        style={{
+                            height: "calc(100vh - 50px - 75px - 80px)"
+                        }}>
+                        <ColorRing
+                            visible={true}
+                            height="80"
+                            width="80"
+                            ariaLabel="blocks-loading"
+                            wrapperStyle={{}}
+                            wrapperClass="blocks-wrapper"
+                            colors={['#9333ea', '#9333ea', '#9333ea', '#9333ea', '#9333ea']}
+                        />
+                    </div>
+                )}
+
+                {!isLoadingCharacters && (
+                    <CharacterGrid
+                        characters={characters}
+                        loading={isLoadingCharacters}
+                        fetchMoreData={() => setSize(size + 1)}
+                        hasMoreData={!isLastCharactersPage}
+                        showPadding2={true}
+
+                    />
+                )}
+            </ScaleFadeIn>
             )}
 
             <AuthModal />
