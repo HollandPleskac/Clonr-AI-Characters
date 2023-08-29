@@ -2,86 +2,38 @@ import Link from "next/link"
 
 import Image from 'next/image'
 import InfiniteScroll from "react-infinite-scroll-component"
-import { Character, CharacterChat } from "@/types"
-import { use, useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import SearchIcon from "./SearchIcon"
 import CharacterComponent from './Character'
 import { ColorRing } from "react-loader-spinner"
-import { useQueryConversationsSidebar } from '@/hooks/useConversations'
+import { useSidebarClonesPagination } from "@/hooks/useSidebarClonesPagination"
 
 interface SmallNavProps {
   characterId: string
-  conversationId: string,
-  character: Character
 }
 
 export default function SmallNav({
   characterId,
-  conversationId,
-  character
 }: SmallNavProps) {
-  const [characterChats, setCharacterChats] = useState<any>([]);
-  const [isFetching, setIsFetching] = useState(true)
-
-  // TODO: edit
-  if (conversationId === 'undecided') {
-    return (null)
-  }
-
-  let conversationsSidebarParams = {
-    convoLimit: 3,
-    offset: 0,
-    limit: 20
-  }
-
-  const {data, error, isLoading} = useQueryConversationsSidebar(conversationsSidebarParams)
-
-  useEffect(() => {
-    if (data) {
-      const sortCharacterChats = () => {
-        let characterChats = data.map((conversation: any) => {
-          return {
-            characterId: conversation.clone_id,
-            characterName: conversation.clone_name,
-            characterAvatarUri: conversation.avatar_uri,
-            lastUpdatedAt: conversation.updated_at,
-            lastMessage: conversation.last_message,
-            lastConversationId: conversation.id
-          };
-        });
-  
-        characterChats.sort((a: any, b: any) => {
-          return a.lastUpdatedAt - b.lastUpdatedAt;
-        });
-  
-        return characterChats;
-      };
-
-      const characterChats = sortCharacterChats();
-
-      setCharacterChats(characterChats);
-      setIsFetching(false);
-    }
-  }, [data, isLoading])
-
   // search state
+  const [searchInput, setSearchInput] = useState('')
   const [isInputActive, setInputActive] = useState(false)
   const handleInputFocus = () => setInputActive(true)
   const handleInputBlur = () => setInputActive(false)
 
-  const fetchMoreData = () => {
-    // FETCH A LIST OF CHARACTER CHAT OBJECTS HERE
-
-    // Add the new conversations to the end of the existing conversations
-    // setCharacterChats((prevCharChats) => [
-    //   ...prevCharChats,
-    //   ...newCharChats,
-    // ])
+  const sidebarClonesQueryParams = {
+    limit: 10
   }
 
-  if (isLoading || !character || !conversationId || !characterChats || characterChats.length === 0) {
-    return <div> Loading characterSidebar.. </div>
-  }
+  const {
+    paginatedData: cloneChats,
+    isLoading,
+    isLastPage,
+    size,
+    setSize
+  } = useSidebarClonesPagination(sidebarClonesQueryParams)
+
+
 
   return (
     <>
@@ -107,25 +59,29 @@ export default function SmallNav({
                 />
               </div>
               <h3 className='ml-2 text-[30px] font-semibold leading-5 text-white font-fabada'>
-                SmallNav
+                clonr
               </h3>
               <p className='text-white font-thin ml-2 align-middle'>users</p>
             </Link>
           </div>
-          <svg
-            width='20'
-            height='20'
-            viewBox='0 0 16 16'
-            fill='none'
-            xmlns='http://www.w3.org/2000/svg'
-            className="cursor-pointer"
+          <button
+            type='button' data-hs-overlay="#docs-sidebar" aria-controls="docs-sidebar" aria-label="Toggle navigation">
+            <svg
+              width='20'
+              height='20'
+              viewBox='0 0 16 16'
+              fill='none'
+              xmlns='http://www.w3.org/2000/svg'
+              className="cursor-pointer"
 
-          >
-            <path
-              d='M12.8537 12.1463C12.9002 12.1927 12.937 12.2479 12.9622 12.3086C12.9873 12.3693 13.0003 12.4343 13.0003 12.5C13.0003 12.5657 12.9873 12.6308 12.9622 12.6915C12.937 12.7521 12.9002 12.8073 12.8537 12.8538C12.8073 12.9002 12.7521 12.9371 12.6914 12.9622C12.6307 12.9873 12.5657 13.0003 12.5 13.0003C12.4343 13.0003 12.3692 12.9873 12.3085 12.9622C12.2478 12.9371 12.1927 12.9002 12.1462 12.8538L7.99997 8.70688L3.85372 12.8538C3.7599 12.9476 3.63265 13.0003 3.49997 13.0003C3.36729 13.0003 3.24004 12.9476 3.14622 12.8538C3.0524 12.7599 2.99969 12.6327 2.99969 12.5C2.99969 12.3673 3.0524 12.2401 3.14622 12.1463L7.2931 8L3.14622 3.85375C3.0524 3.75993 2.99969 3.63269 2.99969 3.5C2.99969 3.36732 3.0524 3.24007 3.14622 3.14625C3.24004 3.05243 3.36729 2.99973 3.49997 2.99973C3.63265 2.99973 3.7599 3.05243 3.85372 3.14625L7.99997 7.29313L12.1462 3.14625C12.24 3.05243 12.3673 2.99973 12.5 2.99973C12.6327 2.99973 12.7599 3.05243 12.8537 3.14625C12.9475 3.24007 13.0003 3.36732 13.0003 3.5C13.0003 3.63269 12.9475 3.75993 12.8537 3.85375L8.70685 8L12.8537 12.1463Z'
-              fill='#515151'
-            />
-          </svg>
+            >
+              <path
+                d='M12.8537 12.1463C12.9002 12.1927 12.937 12.2479 12.9622 12.3086C12.9873 12.3693 13.0003 12.4343 13.0003 12.5C13.0003 12.5657 12.9873 12.6308 12.9622 12.6915C12.937 12.7521 12.9002 12.8073 12.8537 12.8538C12.8073 12.9002 12.7521 12.9371 12.6914 12.9622C12.6307 12.9873 12.5657 13.0003 12.5 13.0003C12.4343 13.0003 12.3692 12.9873 12.3085 12.9622C12.2478 12.9371 12.1927 12.9002 12.1462 12.8538L7.99997 8.70688L3.85372 12.8538C3.7599 12.9476 3.63265 13.0003 3.49997 13.0003C3.36729 13.0003 3.24004 12.9476 3.14622 12.8538C3.0524 12.7599 2.99969 12.6327 2.99969 12.5C2.99969 12.3673 3.0524 12.2401 3.14622 12.1463L7.2931 8L3.14622 3.85375C3.0524 3.75993 2.99969 3.63269 2.99969 3.5C2.99969 3.36732 3.0524 3.24007 3.14622 3.14625C3.24004 3.05243 3.36729 2.99973 3.49997 2.99973C3.63265 2.99973 3.7599 3.05243 3.85372 3.14625L7.99997 7.29313L12.1462 3.14625C12.24 3.05243 12.3673 2.99973 12.5 2.99973C12.6327 2.99973 12.7599 3.05243 12.8537 3.14625C12.9475 3.24007 13.0003 3.36732 13.0003 3.5C13.0003 3.63269 12.9475 3.75993 12.8537 3.85375L8.70685 8L12.8537 12.1463Z'
+                fill='#515151'
+              />
+            </svg>
+          </button>
+
         </div>
         {/* Search Bar */}
         <div className={` flex w-[375px] min-w-[375px] max-w-[375px] items-center gap-x-2 pb-4`}>
@@ -137,6 +93,8 @@ export default function SmallNav({
               />
             </div>
             <input
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               onFocus={handleInputFocus}
               onBlur={handleInputBlur}
               className='py-auto h-[48px] w-full border-none bg-[#1E1E1E] pl-[50px] text-[15px] font-light leading-6 text-[#979797] transition duration-100 focus:ring-1 focus:ring-transparent'
@@ -148,7 +106,7 @@ export default function SmallNav({
         </div>
         {/* Characters */}
         {
-          isFetching && (
+          isLoading && (
             <div className="grid place-items-center" >
               <ColorRing
                 visible={true}
@@ -162,29 +120,29 @@ export default function SmallNav({
             </div>
           )
         }
-        {!isFetching && (
+        {!isLoading && (
           <div
             className='overflow-auto transition-all duration-100'
-            id='scrollableDiv'
+            id='scrollableDivSidebar'
             style={{
-              height: 'calc(100vh - 144px)',
+              height: 'calc(100vh - 172px - 40px)',
               overflow: 'auto',
               scrollBehavior: 'smooth',
             }}
           >
             <InfiniteScroll
-              dataLength={characterChats.length}
-              next={fetchMoreData}
-              hasMore={true}
+              dataLength={cloneChats?.length ?? 0}
+              next={() => setSize(size + 1)}
+              hasMore={!isLastPage}
               loader={<h4>Loading...</h4>}
-              scrollableTarget='scrollableDiv'
+              scrollableTarget='scrollableDivSidebar'
               className='flex flex-col'
             >
 
-              {characterChats.map((charChat, index) => (
+              {cloneChats!.map((sidebarClone, index) => (
                 <CharacterComponent
-                  key={charChat.characterId}
-                  characterChat={charChat}
+                  key={sidebarClone.id}
+                  sidebarClone={sidebarClone}
                   currentCharacterId={characterId}
                 />
               ))}

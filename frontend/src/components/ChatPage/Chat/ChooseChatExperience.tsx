@@ -14,7 +14,6 @@ import MagnifyingGlass from '@/svg/ChatPage/Chat/magnify.svg'
 import SmallNav from '../Characters/SmallSidebar'
 import { initScriptLoader } from 'next/script'
 import TagsComponent from '@/components/HomePage/Tags'
-const { createConversation, createMessage, generateCloneMessage, queryCurrentRevisions } = useConversations();
 import createNewConversation from '@/hooks/useConversations'
 import { MemoryStrategy } from '@/client/models/MemoryStrategy'
 import { InformationStrategy } from '@/client/models/InformationStrategy'
@@ -22,10 +21,6 @@ import { InformationStrategy } from '@/client/models/InformationStrategy'
 type ChooseChatExperienceProps = {
   characterId: string
   character: Character
-  setConversationState: (newState: string) => void
-  setConvoID: (newID: string) => void
-  initialCharacterChats: CharacterChat[],
-  currentCharacterId: string
 }
 
 const tags = [
@@ -51,29 +46,27 @@ const tags = [
   }
 ]
 
-async function createCharacterConversation(
-  characterId: string,
-  memoryStrategy: string,
-) {
-  const conversationData = {
-    name: 'Test Conversation',
-    user_name: 'Test User',
-    memory_strategy: MemoryStrategy[memoryStrategy],
-    information_strategy: InformationStrategy['internal'],
-    adaptation_strategy: null,
-    clone_id: characterId,
-  }
-  const conversationId = await createConversation(conversationData)
-  return conversationId
-}
 
-const ChooseChatExperience = ({ characterId, character, setConversationState, setConvoID, initialCharacterChats, currentCharacterId }: ChooseChatExperienceProps) => {
-  console.log("In ChooseChatExperience, this is initial initialCharacterChats: ", initialCharacterChats)
-  if (!character) {
-    return <div>Loading characterSUP..</div>
-  }
-  const [conversationID, setConversationID] = useState('')
+
+const ChooseChatExperience = ({ characterId, character}: ChooseChatExperienceProps) => {
   const router = useRouter();
+  const { createConversation } = useConversations();
+
+  async function createCharacterConversation(
+    characterId: string,
+    memoryStrategy: string,
+  ) {
+    const conversationData = {
+      name: 'Test Conversation',
+      user_name: 'Test User',
+      memory_strategy: MemoryStrategy[memoryStrategy],
+      information_strategy: InformationStrategy['internal'],
+      adaptation_strategy: null,
+      clone_id: characterId,
+    }
+    const conversationId = await createConversation(conversationData)
+    return conversationId
+  }
 
   return (
     <div
@@ -82,7 +75,7 @@ const ChooseChatExperience = ({ characterId, character, setConversationState, se
     >
       <div className='flex h-[122px] w-full items-center justify-between border-b border-[#252525] px-10'>
         <div className='flex items-center'>
-        <SmallNav characterId={characterId} conversationId={'undecided'} character={character} />
+          <SmallNav characterId={characterId} />
           <div className='h-[55px] w-[55px] relative'>
             <Image
               src={character.avatar_uri}

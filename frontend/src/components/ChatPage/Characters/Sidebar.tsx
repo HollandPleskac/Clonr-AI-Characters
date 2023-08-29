@@ -1,15 +1,14 @@
 'use client'
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useState } from 'react'
 import Image from 'next/image'
 import SearchIcon from './SearchIcon'
 import CharacterComponent from './Character'
 import { Character, CharacterChat } from '@/types'
-import { formatDate } from '@/utils/formatDate'
 import Link from 'next/link'
 import InfiniteScroll from 'react-infinite-scroll-component'
-import { ColorRing, ThreeDots } from 'react-loader-spinner'
-import { useQueryConversationMessages } from '@/hooks/useConversations'
+import { ColorRing } from 'react-loader-spinner'
+import { useSidebarClonesPagination } from '@/hooks/useSidebarClonesPagination'
 
 
 interface CharactersProps {
@@ -23,45 +22,32 @@ export default function Characters({
     conversationId,
     character
 }: CharactersProps) {
-    const [characterChats, setCharacterChats] = useState<any>([]);
-    const [isFetching, setIsFetching] = useState(true)
-
-    const {data, error, isLoading} = useQueryConversationMessages({conversationId})
-
-    useEffect(() => {
-        const characterChat = {
-            character: character,
-            lastMessage: data ? data[data.length - 1].content : '',
-            lastConversationId: conversationId,
-        }
-        setCharacterChats(characterChat)
-    }, [conversationId, character])
 
     // search state
+    const [searchInput, setSearchInput] = useState('')
     const [isInputActive, setInputActive] = useState(false)
     const handleInputFocus = () => setInputActive(true)
     const handleInputBlur = () => setInputActive(false)
 
-    const sidebarRef = useRef<HTMLDivElement | null>(null)
-
-    const fetchMoreData = () => {
-        // FETCH A LIST OF CHARACTER CHAT OBJECTS HERE
-
-        // Add the new conversations to the end of the existing conversations
-        // setCharacterChats((prevCharChats) => [
-        //   ...prevCharChats,
-        //   ...newCharChats,
-        // ])
+    const sidebarClonesQueryParams = {
+        limit: 10,
     }
 
-    if (isLoading || !character || !conversationId || !characterChats) {
-        return <div> Loading characterSidebar.. </div>
-    }
+    const {
+        paginatedData: cloneChats,
+        isLoading,
+        isLastPage,
+        size,
+        setSize
+    } = useSidebarClonesPagination(sidebarClonesQueryParams)
+
+    console.log("clone chats", cloneChats)
+
+    
 
     // Component
     return (
         <div
-            ref={sidebarRef}
             className={`hidden lg:flex flex-col w-[375px] flex-grow border-r-[2px] border-[#252525] bg-[#121212] text-white`}
             style={{ height: 'calc(100vh)' }}
         >
@@ -95,6 +81,8 @@ export default function Characters({
                         />
                     </div>
                     <input
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
                         onFocus={handleInputFocus}
                         onBlur={handleInputBlur}
                         className='py-auto h-[48px] w-full border-none bg-[#1E1E1E] pl-[50px] text-[15px] font-light leading-6 text-[#979797] transition duration-100 focus:ring-1 focus:ring-transparent'
@@ -105,7 +93,7 @@ export default function Characters({
                 </div>
             </div>
             {/* Characters */}
-            {isFetching && (
+            {isLoading && (
                 <div className='h-full grid place-items-center' >
                     <ColorRing
                         visible={true}
@@ -118,7 +106,7 @@ export default function Characters({
                     />
                 </div>
             )}
-            {!isFetching && (
+            {!isLoading && (
                 <div
                     className='overflow-auto transition-all duration-100'
                     id='scrollableDiv'
@@ -129,18 +117,18 @@ export default function Characters({
                     }}
                 >
                     <InfiniteScroll
-                        dataLength={characterChats.length}
-                        next={fetchMoreData}
-                        hasMore={false}
+                        dataLength={cloneChats?.length ?? 0}
+                        next={() => setSize(size + 1)}
+                        hasMore={!isLastPage}
                         loader={<h4>Loading...</h4>}
                         scrollableTarget='scrollableDiv'
                         className='flex flex-col'
                     >
 
-                        {characterChats.map((charChat, index) => (
+                        {cloneChats!.map((sidebarClone, index) => (
                             <CharacterComponent
-                                key={charChat.character.id}
-                                characterChat={charChat}
+                                key={sidebarClone.id}
+                                sidebarClone={sidebarClone}
                                 currentCharacterId={currentCharacterId}
                             />
                         ))}
