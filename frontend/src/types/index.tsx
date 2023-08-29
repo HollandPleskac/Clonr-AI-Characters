@@ -97,17 +97,20 @@ export type CharacterChat = {
 // TODO: add character: Clone field here
 // TODO: lastBotMsg and lastUserMsg?
 export type Conversation = {
-  id: string;
-  name: string;
-  user_name: string;
-  memory_strategy: string;
+  name: string,
+  user_name: string,
+  memory_strategy: string,
   information_strategy: string,
   adaptation_strategy: string,
-  clone_id: string;
-  created_at: string;
-  updated_at: string;
-  user_id: string;
-  is_active: boolean
+  clone_id: string,
+  id: string,
+  created_at: string,
+  updated_at: string,
+  user_id: string,
+  is_active: boolean,
+  num_messages_ever: number,
+  last_message: string,
+  clone_name: string
 }
 
 // export type Message = {
@@ -157,6 +160,8 @@ export type User = {
   num_free_messages_sent: number;
   is_subscribed: boolean;
 }
+
+
 
 export type SidebarClone = {
   name: string,

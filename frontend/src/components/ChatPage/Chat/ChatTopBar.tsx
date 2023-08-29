@@ -100,9 +100,6 @@ const ChatTopBar = ({
               style={{ outline: 'none', resize: 'none' }}
             />
           </div>
-          <button className='bg-gray-800 hover:bg-gray-700 rounded-full p-2 grid place-items-center transition duration-200'>
-            <Paperclip />
-          </button>
 
           <ChatDropdown toggleChatState={toggleChatState} showChat={showChat} characterId={character.id} />
         </div>

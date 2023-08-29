@@ -5,7 +5,6 @@ import HorizontalDotsBig from '@/svg/ChatPage/Chat/horizontal-dots-big.svg'
 import Image from 'next/image'
 import useConversations from '@/hooks/useConversations'
 import { Character, CharacterChat, Message } from '@/types'
-import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 //import { useHistory } from 'react-router-dom';
 import Paperclip from '@/svg/ChatPage/Chat/paperclip.svg'
@@ -109,9 +108,6 @@ const ChooseChatExperience = ({ characterId, character}: ChooseChatExperiencePro
           >
             <MagnifyingGlass />
 
-          </button>
-          <button className='bg-gray-800 hover:bg-gray-700 rounded-full p-2 grid place-items-center transition duration-200 cursor-not-allowed'>
-            <Paperclip />
           </button>
 
           <button
