@@ -1,20 +1,28 @@
+'use client'
+
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Message } from '@/types'
 import { notFound } from 'next/navigation'
+import useConversations from '@/hooks/useConversations'
+import { Character } from '@/types'
 
 interface MessageProps {
+  mutateMessages: any
+  conversationId: string
   message: Message
+  character: Character
   clone_avatar_uri: string
   isLast: boolean
 }
 
-const Message: React.FC<MessageProps> = ({ message, clone_avatar_uri, isLast }) => {
+const Message: React.FC<MessageProps> = ({ mutateMessages, conversationId, message, clone_avatar_uri, isLast }) => {
 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [messages, setMessages] = useState<Message[]>([message])
 
 
+  const { createMessage, generateCloneMessage } = useConversations();
 
   function formatTime(date: Date): string {
     let hours = date.getHours()
@@ -29,25 +37,32 @@ const Message: React.FC<MessageProps> = ({ message, clone_avatar_uri, isLast }) 
     return `${hours.toString().padStart(2, '0')}:${minutes} ${ampm}`
   }
 
-  function generateNewMessage() {
+  async function generateNewMessage() {
+
+    console.log("GENERATING NEW MESSAGE, this is message: ", message)
+
+    //let newMessageContent = await generateCloneMessage(conversationId);
+
+    //console.log("THIS IS newMessageContent: ", newMessageContent)
 
     const newMessage: Message = {
-      id: '12345',
-      content: 'string',
-      created_at: 'string',
-      updated_at: 'string',
-      sender_name: 'string',
-      timestamp: 'string',
+      id: message.id,
+      content: message.content,
+      created_at: message.created_at,
+      updated_at: message.updated_at,
+      sender_name: message.sender_name,
+      timestamp: message.timestamp,
       is_clone: true,
       is_main: true,
       is_active: true,
-      parent_id: '123',
-      clone_id: '123',
-      user_id: '13432',
-      conversation_id: '3243',
+      parent_id: message.parent_id,
+      clone_id: message.clone_id,
+      user_id: message.user_id,
+      conversation_id: message.conversation_id,
     };
 
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
+    // TODO: edit to remove prev msg and also add set new msg
+    mutateMessages((prevMessages) => [...prevMessages, newMessage]);
   }
 
   function handleRightArrow() {

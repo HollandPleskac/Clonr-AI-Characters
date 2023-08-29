@@ -21,18 +21,13 @@ export default function SmallNav({
   const handleInputFocus = () => setInputActive(true)
   const handleInputBlur = () => setInputActive(false)
 
-  const sidebarClonesQueryParams = {
-    limit: 10
-  }
-
   const {
     paginatedData: cloneChats,
     isLoading,
     isLastPage,
     size,
     setSize
-  } = useSidebarClonesPagination(sidebarClonesQueryParams)
-
+  } = useSidebarClonesPagination({name: searchInput, limit: 10})
 
 
   return (
