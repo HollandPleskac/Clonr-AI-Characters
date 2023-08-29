@@ -190,7 +190,7 @@ export default function ChatScreen({
             characterId={characterId}
             conversationId={conversationId}
           />
-          {!showChat && <PreviousConversations />}
+          {!showChat && <PreviousConversations characterId={characterId} />}
           {showChat && (
             <>
               {isLoadingMessages && (
