@@ -5,11 +5,14 @@ import useSWRInfinite from "swr/infinite"
   
 
 interface SidebarClonesQueryParams {
+    name?: string | null;
     limit: number
 }
 
 export const useSidebarClonesPagination = (queryParams: SidebarClonesQueryParams) => {
-    const { limit } = queryParams
+    const { name, limit } = queryParams
+
+    console.log("useSidebarClonesPagination -> queryParams: ", queryParams)
 
     const fetcher = async (url:string) => {
         try {
@@ -30,6 +33,10 @@ export const useSidebarClonesPagination = (queryParams: SidebarClonesQueryParams
     const getKey = (pageIndex: number, previousPageData: any[]) => {
         if (previousPageData && !previousPageData.length) return null
         const url = `http://localhost:8000/conversations/sidebar?convo_limit=1&offset=${pageIndex*limit}&limit=${limit}`
+        // TODO: adding name here, makes current convo char not immediately appear in sidebar?
+        if (name && name.length > 0) {
+            return url + `&name=${name}`
+        }
         return url
     }
 
