@@ -1,3 +1,5 @@
+import itertools
+import random
 import textwrap
 
 import pytest
@@ -6,6 +8,7 @@ from clonr.text_splitters import (
     CharSplitter,
     SentenceSplitter,
     TokenSplitter,
+    _aggregate_with_overlaps,
     _is_asian_language,
     _is_english,
     regex_split,
@@ -64,3 +67,16 @@ def test_splitters(corpus, size, overlap):
     arr = splitter.split(corpus)
     assert len(arr) > 1
     assert len(corpus) - 500 < sum(map(len, arr)) < len(corpus) + 500
+
+
+def test_aggregate_with_overlap_hidden():
+    N = 100
+    random.seed(42)
+
+    arr = list(range(N))
+
+    for _ in range(10):
+        size_arr = [random.randint(5, 60) for _ in range(N)]
+        res = _aggregate_with_overlaps(arr, size_arr, 100, 30)
+        assert all(sum(size_arr[i] for i in x) <= 100 for x in res)
+        assert set(itertools.chain.from_iterable(res)) == set(arr)

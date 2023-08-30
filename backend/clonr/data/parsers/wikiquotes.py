@@ -1,10 +1,8 @@
-import re
-
 from loguru import logger
 
 from clonr.data.parsers.base import Parser, ParserException
 from clonr.data_structures import Monologue
-from clonr.text_splitters import SentenceSplitter
+from clonr.text_splitters import SentenceSplitterChars
 from clonr.utils.shared import instance_level_lru_cache
 
 try:
@@ -15,7 +13,7 @@ except ImportError:
     WIKIQUOTE_AVAILABLE = False
 
 # this is by character size
-SPLITTER = SentenceSplitter(max_chunk_size=256, use_tokens=False)
+SPLITTER = SentenceSplitterChars(max_chunk_size=256, chunk_overlap=0, min_chunk_size=32)
 
 
 # TODO (Jonny): add a text-splitter to downsize big quotes. splitting in non-english is tough
@@ -29,7 +27,6 @@ class WikiQuotesParser(Parser):
             raw_quotes: list[str] = wikiquote.quotes(
                 character_name, max_quotes=max_quotes
             )
-            raw_quotes = [re.sub(r"\s*\<s\>\s*", " ", x) for x in raw_quotes]
         except (
             wikiquote.utils.DisambiguationPageException,
             wikiquote.utils.NoSuchPageException,
