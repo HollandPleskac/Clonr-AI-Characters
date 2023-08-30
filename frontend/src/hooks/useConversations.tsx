@@ -152,6 +152,35 @@ export function useQueryConversationsSidebar(queryParams: ConvesationsSidebarQue
   };
 }
 
+export function useQueryConversationsContinue(queryParams: ConvesationsSidebarQueryParams) {
+  const {
+    convoLimit,
+    offset,
+    limit
+  } = queryParams;
+
+  const fetcher = async () => {
+    try {
+      const response = await ConversationsService.getContinueConversationsConversationsContinueGet(
+        convoLimit,
+        offset,
+        limit
+      );
+      return response;
+    } catch (error) {
+      throw new Error('Error fetching conversation continue: ' + error.message);
+    }
+  };
+
+  const { data, error } = useSWR([convoLimit, offset, limit, 'conversationsSidebar'], fetcher);
+
+  return {
+    data: data,
+    isLoading: !error && !data,
+    error: error
+  };
+}
+
 // TODO: edit this
 export function createNewConversation(conversationData: ConversationCreate) {
   const fetcher = async () => {

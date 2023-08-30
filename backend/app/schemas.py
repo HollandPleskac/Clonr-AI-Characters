@@ -218,6 +218,11 @@ class CloneSearchResult(CommonMixin, BaseModel):
     tags: list[Tag]
 
 
+class CloneContinue(CloneSearchResult):
+    conversation_updated_at: datetime.datetime
+    conversation_id: uuid.UUID
+
+
 # TODO (Jonny): we need to take in more information than just content
 # like accepting character names, URLs, etc. Maybe we feed these back to
 # the user, and have them accept them.

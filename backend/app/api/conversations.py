@@ -13,6 +13,8 @@ from loguru import logger
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import defer
+from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import aliased
 
 from app import deps, models, schemas
 from app.clone.controller import Controller
@@ -187,7 +189,43 @@ async def get_sidebar_conversations(
     return convos
 
 
-# TODO (Kevin): add new route for /continue
+@router.get("/continue", response_model=list[schemas.CloneContinue], status_code=200)
+async def get_continue_conversations(
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
+    offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
+    limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 30,
+):
+    rank = (
+        sa.func.rank()
+        .over(
+            order_by=models.Conversation.updated_at.desc(),
+            partition_by=models.Conversation.clone_id,
+        )
+        .label("rank")
+    )
+    subquery = (
+        sa.select(
+            models.Conversation.clone_id.label("clone_id"),
+            models.Conversation.updated_at.label("conversation_updated_at"),
+            models.Conversation.id.label("conversation_id"),
+            rank,
+        )
+        .where(models.Conversation.user_id == user.id)
+        .subquery()
+    )
+    q = (
+        sa.select(
+            models.Clone, subquery.c.conversation_updated_at, subquery.c.conversation_id
+        )
+        .join(subquery, subquery.c.clone_id == models.Clone.id)
+        .where(subquery.c.rank == 1)
+        .order_by(subquery.c.conversation_updated_at)
+        .offset(offset)
+        .limit(limit)
+    )
+    rows = await db.execute(q)
+    return rows.unique().all()
 
 
 # TODO (Jonny): put a paywall behind this endpoint after X messages, need to add user permissions

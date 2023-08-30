@@ -18,7 +18,7 @@ import { useQueryClones } from '@/hooks/useClones'
 import AuthModal from '../AuthModal'
 import { ColorRing } from "react-loader-spinner"
 import { CloneSortType } from '@/client/models/CloneSortType'
-import { useQueryConversationsSidebar } from '@/hooks/useConversations'
+import { useQueryConversationsContinue } from '@/hooks/useConversations'
 import { useClonesPagination } from '@/hooks/useClonesPagination'
 
 export default function HomeScreen() {
@@ -62,11 +62,7 @@ export default function HomeScreen() {
   // const { data: searchedCharacters, isLoading: isTopLoadingSearch } = useQueryClones(topSearchQueryParams);
   const { data: trendingChars, isLoading: isTrendingLoading } = useQueryClones(trendingQueryParams);
   const { data: topChars, isLoading: isTopLoading } = useQueryClones(topQueryParams);
-  const { data: continueConvos, isLoading: isLoadingContinue } = useQueryConversationsSidebar(conversationsSidebarParams)
-
-  const continueChars = continueConvos?.map((convo) => {
-    return convo.clone
-  })
+  const { data: continueChars, isLoading: isLoadingContinue } = useQueryConversationsContinue(conversationsSidebarParams)
 
   useEffect(() => {
     if (searchInput === '') {
