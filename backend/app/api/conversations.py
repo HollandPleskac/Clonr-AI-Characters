@@ -163,13 +163,7 @@ async def get_sidebar_conversations(
 
     # Run a subquery to fill in the partition values
     subquery = (
-        sa.select(
-            models.Conversation,
-            rank,
-            group_updated_at,
-            models.Clone.avatar_uri,
-            models.Clone.name,
-        )
+        sa.select(models.Conversation, rank, group_updated_at, models.Clone.avatar_uri)
         .where(models.Conversation.user_id == user.id)
         .join(models.Clone, models.Clone.id == models.Conversation.clone_id)
         .subquery()
@@ -184,7 +178,9 @@ async def get_sidebar_conversations(
 
     # Filter by name if provided
     if name is not None:
-        query = query.where(subquery.c.case_insensitive_name.ilike(f"%{name}%"))
+        query = query.where(
+            sa.func.lower(subquery.c.clone_name).ilike(f"%{name.lower()}%")
+        )
 
     # Filter by clone_id if provided
     if clone_id is not None:
@@ -240,9 +236,7 @@ async def get_continue_conversations(
     return rows.unique().all()
 
 
-@router.get(
-    "/last_conversation/{clone_id}", response_model=uuid.UUID, status_code=200
-)
+@router.get("/last_conversation/{clone_id}", response_model=uuid.UUID, status_code=200)
 async def get_last_conversation(
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
     clone: Annotated[models.Clone, Depends(get_clone)],
@@ -252,7 +246,7 @@ async def get_last_conversation(
         sa.select(models.Conversation.id)
         .filter(
             models.Conversation.clone_id == clone.id,
-            models.Conversation.user_id == user.id
+            models.Conversation.user_id == user.id,
         )
         .order_by(models.Conversation.updated_at.desc())  # Assuming created_at field
         .limit(1)
@@ -261,6 +255,7 @@ async def get_last_conversation(
     result = await db.execute(query)
     conversation_id = result.scalars().unique().one()
     return conversation_id
+
 
 # TODO (Jonny): put a paywall behind this endpoint after X messages, need to add user permissions
 @router.post(
