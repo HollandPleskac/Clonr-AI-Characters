@@ -119,18 +119,32 @@ export function useQueryClonesById(queryParams: CloneQueryByIdParams) {
     cloneId
   } = queryParams;
 
-  const fetcher = async () => {
+  const fetcher = async (url: string) => {
     try {
-      const response = await ClonesService.getCloneByIdClonesCloneIdGet(
-        cloneId
+      // const response = await ClonesService.getCloneByIdClonesCloneIdGet(
+      //   cloneId
+      // );
+      // return response;
+
+      const response = await axios.get(
+        url,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+            'accept': 'application/json',
+          },
+        }
       );
-      return response;
+
+      return response.data;
     } catch (error) {
+      console.log("error",error)
       throw new Error('Error fetching clones by id: ' + error.message);
     }
   };
 
-  const { data, error } = useSWR([cloneId, 'clonesById'], fetcher);
+  const { data, error } = useSWR(`http://localhost:8000/clones/${cloneId}`, fetcher);
 
   return {
     data: data,

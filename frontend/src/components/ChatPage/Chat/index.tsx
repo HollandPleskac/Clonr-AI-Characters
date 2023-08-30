@@ -150,7 +150,8 @@ export default function ChatScreen({
         <ChooseChatExperience
           characterId={characterId}
           character={character}
-
+          toggleChatState={() => setShowChat((prevState) => !prevState)}
+          showChat={showChat}
         />
       )}
 

@@ -13,14 +13,10 @@ import { useSidebarClonesPagination } from '@/hooks/useSidebarClonesPagination'
 
 interface CharactersProps {
     currentCharacterId: string
-    conversationId: string
-    character: Character
 }
 
 export default function Characters({
     currentCharacterId,
-    conversationId,
-    character
 }: CharactersProps) {
 
     // search state
