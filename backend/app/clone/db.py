@@ -103,6 +103,31 @@ class QueryMemoryResult:
     metric: MetricType
 
 
+def inplace_convert_embeddings_to_hierarchical_weighting(
+    nodes: list[Node], weight_decay_factor: float
+):
+    # If the doc is indexed as a tree, we add in the embeddings of parent
+    # elements to better match, as x1 + (1/gamma) * x2 + (1/gamma)^2 * x3 + ...
+    # this operates in place!
+    if weight_decay_factor > 0:
+        _node_dict: dict[uuid.UUID, Node] = {nd.id: nd for nd in nodes}
+        # since nodes are weighted using parents, sorting will make sure everything
+        # is done in order
+        ids = sorted(list(range(len(nodes))), key=lambda i: nodes[i].depth)
+        for i in ids:
+            nd = nodes[i]
+            if nd.parent_id:
+                new_nd = nd
+                emb = np.array(nd.embedding)
+                gamma = weight_decay_factor
+                while new_nd.parent_id:
+                    new_nd = _node_dict[new_nd.parent_id]
+                    emb += gamma * np.array(new_nd.embedding)
+                    gamma *= weight_decay_factor
+                emb /= np.linalg.norm(emb)
+                nd.embedding = emb.flatten().tolist()
+
+
 class CreatorCloneDB:
     def __init__(
         self,
@@ -110,7 +135,7 @@ class CreatorCloneDB:
         cache: CloneCache,
         tokenizer: Tokenizer,
         embedding_client: EmbeddingClient,
-        clone_id: str | uuid.UUID,
+        clone_id: uuid.UUID,
     ):
         self.embedding_client = embedding_client
         self.db = db
@@ -124,6 +149,7 @@ class CreatorCloneDB:
         self,
         doc: Document,
         nodes: list[Node],
+        hierarchical_weight_decay_factor: float = 0.5,
     ) -> models.Document:
         # don't re-do work if it's already there?
         if await self.db.scalar(
@@ -137,7 +163,9 @@ class CreatorCloneDB:
             )
 
         # Add embedding stuff. Doc embeddings are just the mean of all node embeddings
-        embs = await self.embedding_client.encode_passage([x.content for x in nodes])
+        embs = await self.embedding_client.encode_passage(
+            [x.content.strip() for x in nodes]
+        )
         encoder_name = await self.embedding_client.encoder_name()
         for i, node in enumerate(nodes):
             node.embedding = embs[i]
@@ -147,6 +175,11 @@ class CreatorCloneDB:
             arr /= np.linalg.norm(arr)
         doc.embedding = arr.tolist()
         doc.embedding_model = await self.embedding_client.encoder_name()
+
+        if doc.index_type == "tree" and hierarchical_weight_decay_factor > 0:
+            inplace_convert_embeddings_to_hierarchical_weighting(
+                nodes=node, weight_decay_factor=hierarchical_weight_decay_factor
+            )
 
         # Add together to prevent inconsistency, or out-of-order addition
         doc_model = models.Document(
@@ -158,6 +191,9 @@ class CreatorCloneDB:
             type=doc.type,
             url=doc.url,
             index_type=doc.index_type,
+            max_chunk_size=doc.max_chunk_size,
+            chunk_overlap=doc.chunk_overlap,
+            text_splitter=doc.text_splitter,
             embedding=doc.embedding,
             embedding_model=doc.embedding_model,
             clone_id=self.clone_id,
@@ -166,7 +202,7 @@ class CreatorCloneDB:
             node.id: models.Node(
                 id=node.id,
                 index=node.index,
-                content=node.content,
+                content=node.content.strip(),
                 context=node.context,
                 embedding=node.embedding,
                 embedding_model=node.embedding_model,
@@ -346,9 +382,9 @@ class CloneDB:
         cache: CloneCache,
         tokenizer: Tokenizer,
         embedding_client: EmbeddingClient,
-        clone_id: str | uuid.UUID,
-        conversation_id: str | uuid.UUID,
-        user_id: str | uuid.UUID,
+        clone_id: uuid.UUID,
+        conversation_id: uuid.UUID,
+        user_id: uuid.UUID,
     ):
         self.embedding_client = embedding_client
         self.db = db
@@ -1038,46 +1074,53 @@ class CloneDB:
             conversation_id=self.conversation_id
         ).set(value=value)
 
-    @tracer.start_as_current_span("get_message_ancestors")
-    @report_duration
-    async def get_message_ancestors(
-        self, message_id: uuid.UUID
-    ) -> Sequence[models.Message]:
+    async def _get_ancestors(self, model: T, id: uuid.UUID) -> list[T]:
         getter = (
-            sa.select(models.Message)
-            .where(models.Message.id == message_id)
+            sa.select(model)
+            .where(model.id == id)
             .cte(name="parent_for", recursive=True)
         )
-        recursive_part = sa.select(models.Message).where(
-            models.Message.id == getter.c.parent_id
-        )
+        recursive_part = sa.select(model).where(model.id == getter.c.parent_id)
         with_recursive = getter.union_all(recursive_part)
-        join_condition = models.Message.id == with_recursive.c.id
-        final_query = sa.select(models.Message).select_from(
-            with_recursive.join(models.Message, join_condition)
+        join_condition = model.id == with_recursive.c.id
+        final_query = sa.select(model).select_from(
+            with_recursive.join(model, join_condition)
         )
         r = await self.db.scalars(final_query)
         return list(r.all())
 
+    @tracer.start_as_current_span("get_message_ancestors")
+    @report_duration
+    async def get_message_ancestors(
+        self, message_id: uuid.UUID
+    ) -> list[models.Message]:
+        return await self._get_ancestors(model=models.Message, id=message_id)
+
+    @tracer.start_as_current_span("get_node_ancestors")
+    @report_duration
+    async def get_node_ancestors(self, node_id: uuid.UUID) -> list[models.Node]:
+        return await self._get_ancestors(model=models.Node, id=node_id)
+
     # (Jonny): is a flat list the best data structure to return here?
     # maybe like a hierarchical dict would be better?
+    async def _get_descendants(self, model: T, id: uuid.UUID) -> list[T]:
+        getter = (
+            sa.select(model)
+            .where(model.id == id)
+            .cte(name="children_for", recursive=True)
+        )
+        recursive_part = sa.select(model).where(model.parent_id == getter.c.id)
+        with_recursive = getter.union_all(recursive_part)
+        join_condition = model.id == with_recursive.c.id
+        final_query = sa.select(model).select_from(
+            with_recursive.join(model, join_condition)
+        )
+        r = await self.db.scalars(final_query)
+        return list(r.all())
+
     @tracer.start_as_current_span("get_message_descendants")
     @report_duration
     async def get_message_descendants(
         self, message_id: uuid.UUID
-    ) -> Sequence[models.Message]:
-        getter = (
-            sa.select(models.Message)
-            .where(models.Message.id == message_id)
-            .cte(name="children_for", recursive=True)
-        )
-        recursive_part = sa.select(models.Message).where(
-            models.Message.parent_id == getter.c.id
-        )
-        with_recursive = getter.union_all(recursive_part)
-        join_condition = models.Message.id == with_recursive.c.id
-        final_query = sa.select(models.Message).select_from(
-            with_recursive.join(models.Message, join_condition)
-        )
-        r = await self.db.scalars(final_query)
-        return list(r.all())
+    ) -> list[models.Message]:
+        return await self._get_descendants(model=models.Message, id=message_id)

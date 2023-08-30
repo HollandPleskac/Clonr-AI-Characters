@@ -1,16 +1,19 @@
+import itertools
+import random
 import textwrap
 
 import pytest
 
 from clonr.text_splitters import (
     CharSplitter,
-    SentenceSplitter,
+    SentenceSplitterTokens,
     TokenSplitter,
     _is_asian_language,
     _is_english,
+    aggregate_with_overlaps,
     regex_split,
 )
-from clonr.tokenizer import _get_tiktoken_tokenizer
+from clonr.tokenizer import Tokenizer, _get_tiktoken_tokenizer
 
 
 @pytest.fixture
@@ -44,23 +47,46 @@ def test_regex_split():
     assert regex_split(s, r"[\?\!\.]+", False) == ["foo", " bar", " and baz", " ok"]
 
 
+@pytest.fixture
+def tokenizer():
+    return Tokenizer.from_openai("gpt-3.5-turbo")
+
+
 @pytest.mark.parametrize("overlap", [0])
 @pytest.mark.parametrize("size", [128])
-def test_splitters(corpus, size, overlap):
-    splitter = SentenceSplitter(max_chunk_size=size, min_chunk_size=0, overlap=overlap)
+def test_splitters(corpus, size, overlap, tokenizer):
+    splitter = SentenceSplitterTokens(
+        max_chunk_size=size,
+        min_chunk_size=0,
+        chunk_overlap=overlap,
+        tokenizer=tokenizer,
+    )
     arr = splitter.split(corpus)
     assert len(arr) > 1
     assert len(corpus) - 500 < sum(map(len, arr)) < len(corpus) + 500
 
     tokenizer = _get_tiktoken_tokenizer("gpt-3.5-turbo")
     splitter = TokenSplitter(
-        tokenizer=tokenizer, chunk_size=size, chunk_overlap=overlap
+        tokenizer=tokenizer, max_chunk_size=size, chunk_overlap=overlap
     )
     arr = splitter.split(corpus)
     assert len(arr) > 1
     assert len(corpus) - 500 < sum(map(len, arr)) < len(corpus) + 500
 
-    splitter = CharSplitter(chunk_size=size, chunk_overlap=overlap)
+    splitter = CharSplitter(max_chunk_size=size, chunk_overlap=overlap)
     arr = splitter.split(corpus)
     assert len(arr) > 1
     assert len(corpus) - 500 < sum(map(len, arr)) < len(corpus) + 500
+
+
+def test_aggregate_with_overlap_hidden():
+    N = 100
+    random.seed(42)
+
+    arr = list(range(N))
+
+    for _ in range(10):
+        size_arr = [random.randint(5, 60) for _ in range(N)]
+        res = aggregate_with_overlaps(arr, size_arr, 100, 30)
+        assert all(sum(size_arr[i] for i in x) <= 100 for x in res)
+        assert set(itertools.chain.from_iterable(res)) == set(arr)

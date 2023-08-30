@@ -38,17 +38,16 @@ class Summarize(Template):
 {{- llm.system_end }}
 
 {{ llm.user_start -}}
-Summarize the following passage (enclosed with ---), using only the \
-text in the passage and not prior knowledge. \
-Write a brief and straightforward summarization, that includes as many \
-key points and as much salient information as possible. \
-Use only information present in the passage.
----
-{{passage}}
----
+Summarize the following passage using only the \
+text in the passage and not prior knowledge.
+
+Passage: {{passage}}
 {{- llm.user_end }}
 
 {{ llm.assistant_start -}}
+Here is a summary of the provided passage that captures as many key points \
+and as much salient information as possible, using only information present \
+in the passage.
 Summary:
 {{- llm.assistant_end -}}
 """
@@ -400,53 +399,37 @@ class SummarizeWithContext(Template):
 {{- llm.system_end }}
 
 {{ llm.user_start -}}
-Given both an excerpt from a long document, and a summary of that document \
-up until the excerpt, write a brief and straightforward summarization. Include \
-as many key points and as much salient information as possible. \
-Summarize only information present in the excerpt, but make use of the previous \
-summary where necessary. The current summary (enclosed with ---) is:
----
-{{prev_summary}}
----
-The excerpt to summarize (enclosed with ---) is:
----
-{{passage}}
----
+You are annotating passages from a long document.{% if (prev_summary) -%}You have written \
+the following summary of the previous passage:
+Context: {{prev_summary}}{%- endif %}
+
+The current passage is:
+Passage: {{passage}}
+
+Summarize the current passage\
+{% if (prev_summary) %}\
+.
+{%- else -%}
+, making use of information from the context only \
+as necessary in order to elucidate the current passage.
+{%- endif %}
 {{- llm.user_end }}
 
 {{ llm.assistant_start -}}
+The following is a brief and straightforward summarization of the provided passage, which \
+includes as many key points and as much salient information as possible. \
 Summary:\
 {{- llm.assistant_end -}}
 """
     )
 
-    instruct_template = env.from_string(
-        """\
-Below is an instruction that describes a task. Write a response that \
-appropriately completes the request
-
-### Instruction: 
-Given both an excerpt from a long document, and a summary of that document \
-up until the excerpt, write a brief and straightforward summarization. Include \
-as many key points and as much salient information as possible. \
-Summarize only information present in the excerpt, but make use of the previous \
-summary where necessary. The current summary (enclosed with ---) is:
----
-{{prev_summary}}
----
-The excerpt to summarize (enclosed with ---) is:
----
-{{passage}}
----
-
-### Response:
-Summary:\
-"""
-    )
-
     @classmethod
     def render(
-        cls, passage: str, prev_summary: str, llm: LLM, system_prompt: str | None = None
+        cls,
+        passage: str,
+        llm: LLM,
+        prev_summary: str | None = None,
+        system_prompt: str | None = None,
     ):
         system_prompt = (
             llm.default_system_prompt if system_prompt is None else system_prompt
@@ -460,4 +443,4 @@ Summary:\
 
     @classmethod
     def render_instruct(cls, passage: str, prev_summary: str):
-        return cls.instruct_template.render(passage=passage, prev_summary=prev_summary)
+        raise NotImplementedError()

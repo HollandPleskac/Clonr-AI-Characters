@@ -289,10 +289,10 @@ class Conversation(CommonMixin, Base):
     user_name: Mapped[str]
     memory_strategy: Mapped[str]
     information_strategy: Mapped[str]
-    agent_summary_threshold: Mapped[int] = mapped_column(nullable=True)
-    reflection_threshold: Mapped[int] = mapped_column(nullable=True)
-    entity_context_threshold: Mapped[int] = mapped_column(nullable=True)
-    adaptation_strategy: Mapped[str] = mapped_column(nullable=True)
+    agent_summary_threshold: Mapped[int]
+    reflection_threshold: Mapped[int]
+    entity_context_threshold: Mapped[int]
+    adaptation_strategy: Mapped[str]
     # NOTE (Jonny): data redundancy, but it will allow us to not perform an expensive join on messages when fetching convos
     # this serves 2 purposes: (1) eliminates a join (2) by updating this, is auto triggers the last_updated_at field on this model!
     last_message: Mapped[str] = mapped_column(nullable=True)
@@ -472,6 +472,9 @@ class Document(CommonMixin, Base):
     index_type: Mapped[IndexType] = mapped_column(nullable=True)
     embedding: Mapped[list[float]]
     embedding_model: Mapped[str]
+    text_splitter: Mapped[str] = mapped_column(nullable=True)
+    max_chunk_size: Mapped[int] = mapped_column(nullable=True)
+    chunk_overlap: Mapped[int] = mapped_column(nullable=True)
     clone_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )

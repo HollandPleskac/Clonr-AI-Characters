@@ -50,6 +50,7 @@ class ReflectionItem(BaseModel):
     memories: list[int]
 
 
+# TODO (Jonny): revisit freq vs presence penalties here
 class Params:
     agent_summary = GenerationParams(
         max_tokens=512, top_p=0.95, presence_penalty=0.3, temperature=0.6
@@ -68,16 +69,24 @@ class Params:
     )
     reflection_create = GenerationParams(max_tokens=256, temperature=0.3, top_p=0.95)
     summarize = GenerationParams(
-        max_tokens=512, temperature=0.3, presence_penalty=0.2, top_p=0.95
+        max_tokens=512, temperature=0.6, frequency_penalty=0.3, top_p=0.95
     )
     online_summarize = GenerationParams(
-        max_tokens=512, temperature=0.3, presence_penalty=0.2, top_p=0.95
+        max_tokens=512, temperature=0.3, frequency_penalty=0.3, top_p=0.95
     )
     generate_zero_memory_message = GenerationParams(
-        max_tokens=512, temperature=0.7, top_p=0.95
+        max_tokens=512,
+        temperature=1.0,
+        top_p=0.95,
+        frequency_penalty=0.5,
+        presence_penalty=0.4,
     )
     generate_long_term_memory_message = GenerationParams(
-        max_tokens=512, temperature=0.7, top_p=0.95
+        max_tokens=512,
+        temperature=1.0,
+        top_p=0.95,
+        frequency_penalty=0.5,
+        presence_penalty=0.4,
     )
 
 
@@ -190,16 +199,20 @@ async def agent_summary(
 
 @tracer.start_as_current_span("long_description_create")
 async def long_description_create(
-    llm: LLM, short_description: str, docs: list[Document], **kwargs
+    llm: LLM,
+    tokenizer: Tokenizer,
+    short_description: str,
+    docs: list[Document],
+    **kwargs,
 ) -> str:
     """WARNING: this thing could be pretty expensive, it will run ALL documents
     through the LLM. but tests show this is the highest quality, using cached summaries
     doesn't work as well :("""
     current_description = short_description
-    chunk_size = auto_chunk_size_long_desc(llm=llm)
+    max_chunk_size = auto_chunk_size_long_desc(llm=llm)
     splitter = TokenSplitter(
-        tokenizer=getattr(llm, "tokenizer", Tokenizer.from_openai("gpt-3.5-turbo")),
-        chunk_size=chunk_size,
+        tokenizer=tokenizer,
+        max_chunk_size=max_chunk_size,
         chunk_overlap=32,
     )
     for doc in docs:
@@ -624,7 +637,46 @@ async def summarize(
     r = await llm.agenerate(
         prompt_or_messages=prompt, params=Params.summarize, **kwargs
     )
-    return r.content.strip()
+    output = r.content.strip()
+    output = re.sub(
+        r"^(In this passage, it is mentioned that|The passage|In this passage,|This passage)\s*",
+        "",
+        output,
+    )
+    return output
+
+
+@tracer.start_as_current_span("summarize_with_context")
+async def summarize_with_context(
+    llm: LLM,
+    passage: str,
+    prev_summary: str,
+    system_prompt: str | None = None,
+    **kwargs,
+) -> str:
+    if llm.is_chat_model:
+        prompt = templates.SummarizeWithContext.render(
+            llm=llm,
+            passage=passage,
+            prev_summary=prev_summary,
+            system_prompt=system_prompt,
+        )
+    else:
+        prompt = templates.SummarizeWithContext.render_instruct(
+            passage=passage,
+        )
+    kwargs["template"] = templates.SummarizeWithContext.__name__
+    kwargs["subroutine"] = summarize_with_context.__name__
+    r = await llm.agenerate(
+        prompt_or_messages=prompt, params=Params.summarize, **kwargs
+    )
+    output = r.content.strip()
+    output = re.sub(
+        r"^(In this passage, it is mentioned that|The passage|In this passage,|This passage)\s*",
+        "",
+        output,
+    )
+    return output
 
 
 @tracer.start_as_current_span("online_summarize")

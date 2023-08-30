@@ -53,9 +53,18 @@ class WikipediaParser(Parser):
         wikipedia.set_lang(lang)
         try:
             page = wikipedia.page(title=title, pageid=pageid, auto_suggest=False)
+            bad_headers = r"== (Bibliography|See also|References|Futher reading)"
             content = page.content
-            content = re.sub(r"\s*\<s\>\s*", " ", content)
-            content = content.split("== Biliography")[0]
+            content = re.split(bad_headers, content)[0]
+            # This removes some unsalvageable html styling (things like latex, bold),
+            content = re.sub(r"[ \t]+", " ", content)
+            content = re.sub(r"\s*\n+\s*", "\n", content)
+            content = "\n".join(
+                x for x in content.split("\n") if len(x) > 1 and not x.startswith("{")
+            )
+            content = re.sub(
+                r"([^A-Z])\.([A-Z])", r"\1. \2", content
+            )  # I think citations mess up the whitespace after sentence endings.
         except wikipedia.exceptions.DisambiguationError as e:
             raise ParserException(
                 f"Failed to parse Wikipedia page: {page}. Reason: {str(e)}"

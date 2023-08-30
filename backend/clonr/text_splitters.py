@@ -1,9 +1,10 @@
 import re
 import warnings
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from functools import lru_cache
 from typing import Literal, TypeVar
+
+from loguru import logger
 
 try:
     from nltk.tokenize import sent_tokenize as _nltk_sent_tokenize
@@ -11,13 +12,6 @@ try:
     NLTK_AVAILABLE = True
 except ImportError:
     NLTK_AVAILABLE = False
-    warnings.warn(
-        (
-            "NLTK sent tokenize was not found. `pip install nltk` "
-            "and ensure python -c 'import nltk; nltk.download('punkt') "
-            "has been run. This downloads the english tokenizer."
-        )
-    )
 try:
     import spacy
 
@@ -29,31 +23,17 @@ try:
 
 except ImportError:
     SPACY_AVAILABLE = False
-    warnings.warn(
-        (
-            "Spacy was not found. `pip install spacy` "
-            "and check that the en_core_web_sm pipeline is loaded."
-        )
-    )
 
 from clonr.data_structures import Chunk, Document
 from clonr.tokenizer import Tokenizer
 
 T = TypeVar("T")
 
-
 # TODO (Jonny): We need a tokenizer that can split on lines of dialogue! Should
 # be able to rig this by using the regex_split function.
-
-
-@dataclass
-class DEFAULTS:
-    max_chunk_size_chars: int = 512
-    min_chunk_size_chars: int = 64
-    max_chunk_size_tokens: int = 64
-    min_chunk_size_tokens: int = 16
-    overlap_chars: int = 128
-    overlap_tokens: int = 16
+# NOTE (Jonny): default chunk sizes and overlaps were tested manually, and gave the best results.
+# For our type of retrieval it's often better to select a larger passage, and indexing more nodes
+# upfront is acceptable. rule of thumb: 1 token = 4 chars
 
 
 def _is_asian_language(s: str):
@@ -140,7 +120,47 @@ def chunk(arr: list[T], size: int, overlap: int) -> list[list[T]]:
         return _chunk_with_overlap(arr, size=size, overlap=overlap)
 
 
+def aggregate_with_overlaps(
+    arr: list[T], size_arr: list[int], max_chunk_size: int, overlap: int
+) -> list[list[T]]:
+    assert overlap < max_chunk_size
+    assert len(arr) == len(size_arr)
+    assert all(
+        x <= max_chunk_size for x in size_arr
+    ), "Run split large chunks first to ensure no chunks are above max size, i.e. stepping would never happen."
+    l, r, N = 0, 0, len(arr)
+    chunks: list[list[T]] = []
+    while r < N:
+        # forward step until you've collected up to max_chunk_size tokens
+        size = 0
+        while r < N and (size + size_arr[r]) <= max_chunk_size:
+            size += size_arr[r]
+            r += 1
+        chunks.append(arr[l:r])
+
+        # backtrack until you've collected up to an amount "overlap" of tokens, but still at least one step
+        # forward from the last chunk
+        cur_overlap = 0
+        while r > l + 1 and (cur_overlap + size_arr[r - 1]) <= overlap:
+            cur_overlap += size_arr[r - 1]
+            r -= 1
+        l = r
+    return chunks
+
+
 class TextSplitter(ABC):
+    name: str = "TextSplitter"
+
+    def __init__(
+        self,
+        max_chunk_size: int,
+        min_chunk_size: int,
+        chunk_overlap: int,
+    ):
+        self.max_chunk_size = max_chunk_size
+        self.min_chunk_size = min_chunk_size
+        self.chunk_overlap = chunk_overlap
+
     @abstractmethod
     def _split_text(self, text: str) -> list[str]:
         pass
@@ -167,7 +187,7 @@ class TextSplitter(ABC):
             raise TypeError(f"Invalid input type to TextSplitter: ({type(inp)})")
 
 
-class SentenceSplitter(TextSplitter):
+class BaseSentenceSplitter(TextSplitter):
     """Performs splitting at the sentence level, using either
     spacy or nltk for determining sentence boundaries. Warning,
     those tools use external models which require memory and time.
@@ -175,12 +195,10 @@ class SentenceSplitter(TextSplitter):
 
     def __init__(
         self,
-        max_chunk_size: int | None = None,
-        min_chunk_size: int | None = None,
-        overlap: int = 0,
-        backend: Literal["spacy", "nltk"] = "nltk",
-        tokenizer: Tokenizer | None = None,
-        use_tokens: bool = False,
+        max_chunk_size: int,
+        min_chunk_size: int,
+        chunk_overlap: int,
+        backend: Literal["spacy", "nltk"],
     ):
         """Constructor for SentenceSplitter
 
@@ -214,97 +232,36 @@ class SentenceSplitter(TextSplitter):
             ValueError: Overlap cannot be larger than the chunk size
             ValueError: Unsupported backend
         """
-        self.use_tokens = use_tokens
-        if self.use_tokens:
-            max_chunk_size = (
-                max_chunk_size
-                if max_chunk_size is not None
-                else DEFAULTS.max_chunk_size_tokens
-            )
-            min_chunk_size = (
-                min_chunk_size
-                if min_chunk_size is not None
-                else DEFAULTS.min_chunk_size_tokens
-            )
-            overlap = overlap if overlap is None else DEFAULTS.overlap_tokens
-        else:
-            max_chunk_size = (
-                max_chunk_size
-                if max_chunk_size is not None
-                else DEFAULTS.max_chunk_size_chars
-            )
-            min_chunk_size = (
-                min_chunk_size
-                if min_chunk_size is not None
-                else DEFAULTS.min_chunk_size_chars
-            )
-            overlap = overlap if overlap is not None else DEFAULTS.overlap_chars
-        self.max_chunk_size = max_chunk_size
-        self.min_chunk_size = min_chunk_size
-        if overlap > max_chunk_size:
+        if chunk_overlap > max_chunk_size:
             raise ValueError("Cannot specify overlap to be larger than the chunk size")
-        self.overlap = overlap
+        super().__init__(
+            max_chunk_size=max_chunk_size,
+            min_chunk_size=min_chunk_size,
+            chunk_overlap=chunk_overlap,
+        )
+        match backend:
+            case "spacy":
+                assert SPACY_AVAILABLE, "spacy is not available."
+                self._spacy_tokenizer = _load_spacy_tokenizer()
+            case "nltk":
+                assert NLTK_AVAILABLE, "nltk is not available."
+            case _:
+                raise ValueError(f"Unsupported backend: {self.backend}")
         self.backend = backend
-        if self.backend == "spacy":
-            assert SPACY_AVAILABLE, "spacy is not available."
-            self._spacy_tokenizer = _load_spacy_tokenizer()
-        elif self.backend == "nltk":
-            assert NLTK_AVAILABLE, "nltk is not available."
-        else:
-            raise ValueError(f"Unsupported backend: {self.backend}")
-        self.tokenizer = tokenizer
-        self.use_tokens = use_tokens
-        if self.use_tokens:
-            assert (
-                self.tokenizer is not None
-            ), "If using tokens, must specify a tokenizer."
 
     def _text_to_sentences(self, text: str) -> list[str]:
-        if self.backend == "spacy":
-            return self._spacy_tokenizer(text).sents
-        elif self.backend == "nltk":
-            # ntlk removes the left space, which is kind of weird. This could mess up newlines but whateva
-            return [
-                " " + x.lstrip() if i else x
-                for i, x in enumerate(_nltk_sent_tokenize(text))
-            ]
-        raise ValueError("Unsupported backend")
+        match self.backend:
+            case "spacy":
+                sents: list[str] = self._spacy_tokenizer(text).sents
+                return sents
+            case "nltk":
+                # ntlk removes the left space, which is kind of weird. This could mess up newlines but whateva
+                sents: list[str] = _nltk_sent_tokenize(text)
+                return [" " + x.lstrip() if i else x for i, x in enumerate(sents)]
+            case _:
+                raise ValueError("Unsupported backend")
 
-    def _sentences_to_overlapped_sentences(self, sentences: list):
-        """Returns a list of sequences"""
-        assert all(len(x) <= self.max_chunk_size for x in sentences)
-        l, r = 0, 0
-        N = len(sentences)
-        res = []
-        chunk = []
-        chunk_len = 0
-        for _ in range(N):
-            # grab sentences while the chunk is under the limit
-            while r < N and (chunk_len + len(sentences[r])) <= self.max_chunk_size:
-                chunk.append(sentences[r])
-                chunk_len += len(sentences[r])
-                r += 1
-            # add the completed chunk, you're now sitting on the newest element
-            # if overlap were 0, you would repeat here
-            if chunk and isinstance(chunk[0], str):
-                chunk = " ".join(chunk)  # type: ignore
-            elif chunk and isinstance(chunk[0], list):
-                chunk = [x for y in chunk for x in y]
-            res.append(chunk)
-            if r >= N:
-                break
-            overlap = 0
-            # back track until you've hit no more than self.overlap characters
-            # ensure at minimum you return to at least one space ahead of the last start
-            while r > (l + 1) and (overlap + len(sentences[r - 1])) < self.overlap:
-                r -= 1
-                overlap += len(sentences[r - 1])
-            l = r  # noqa
-            chunk = []
-            chunk_len = 0
-        return res
-
-    def _aggregate_small_chunks(self, arr: list):
+    def _aggregate_small_chunks_in_place(self, arr: list[T]) -> None:
         no_edits = True
         for _ in range(len(arr)):
             # do this in reverse so we don't get a smaller array
@@ -315,42 +272,103 @@ class SentenceSplitter(TextSplitter):
                         arr[i - 1] += arr.pop(i)
                         no_edits = False
             if no_edits:
-                return arr
-        return arr
+                return None
 
-    def _split_large_chunks(self, arr: list):
+    def _split_large_chunks(self, arr: list[T]) -> list[T]:
         return [x for y in arr for x in chunk(y, self.max_chunk_size, overlap=0)]
 
     def _split_text(self, text: str) -> list[str]:
-        if _is_asian_language(text):
-            warnings.warn(
-                (
-                    "Yo you got chinese or some shit. Not gonna go well"
-                    ", you better use the multilingual EmbeddingModel "
-                    "and also not use nltk or these english-specific tokenizers."
-                )
-            )
-        sentences = self._text_to_sentences(text)
-        if self.tokenizer is not None:
-            sentences_ids = self.tokenizer.encode_batch(sentences)
-            sentences_ids = self._aggregate_small_chunks(sentences_ids)
-            sentences_ids = self._split_large_chunks(sentences_ids)
-            if self.overlap > 0:
-                sentences_ids = self._sentences_to_overlapped_sentences(sentences_ids)
-            sentences = self.tokenizer.decode_batch(sentences_ids)
-        else:
-            sentences = self._aggregate_small_chunks(sentences)
-            sentences = self._split_large_chunks(sentences)
-            if self.overlap > 0:
-                sentences = self._sentences_to_overlapped_sentences(sentences)
-        return sentences
+        raise NotImplementedError()
 
     def __repr__(self) -> str:
         name = self.__class__.__name__
         return (
             f"{name}(max={self.max_chunk_size}, min={self.min_chunk_size}, "
-            f"overlap={self.overlap}, use_tokens={self.use_tokens})"
+            f"overlap={self.chunk_overlap})"
         )
+
+
+class SentenceSplitterTokens(BaseSentenceSplitter):
+    name: str = "SentenceSplitterTokens"
+
+    def __init__(
+        self,
+        tokenizer: Tokenizer,
+        max_chunk_size: int = 160,
+        min_chunk_size: int = 30,
+        chunk_overlap: int = 100,
+        backend: Literal["spacy", "nltk"] = "nltk",
+    ):
+        super().__init__(
+            max_chunk_size=max_chunk_size,
+            min_chunk_size=min_chunk_size,
+            chunk_overlap=chunk_overlap,
+            backend=backend,
+        )
+        self.tokenizer = tokenizer
+
+    def _split_text(self, text: str) -> list[str]:
+        if _is_asian_language(text):
+            warnings.warn(
+                "Using SentenceSplitter with non-latin alphabets will lead to errors!"
+            )
+        sentences = self._text_to_sentences(text)
+        ids = self.tokenizer.encode_batch(sentences)
+        if self.chunk_overlap > 0:
+            ids = self._split_large_chunks(ids)
+            size_arr = [len(x) for x in ids]
+            sentences = self.tokenizer.decode_batch(ids)
+            groups = aggregate_with_overlaps(
+                sentences,
+                size_arr=size_arr,
+                max_chunk_size=self.max_chunk_size,
+                overlap=self.chunk_overlap,
+            )
+            sentences = ["".join(g) for g in groups]
+        else:
+            self._aggregate_small_chunks_in_place(ids)
+            ids = self._split_large_chunks(ids)
+            sentences = self.tokenizer.decode_batch(ids)
+        return sentences
+
+
+class SentenceSplitterChars(BaseSentenceSplitter):
+    name: str = "SentenceSplitterChars"
+
+    def __init__(
+        self,
+        max_chunk_size: int = 640,
+        min_chunk_size: int = 120,
+        chunk_overlap: int = 400,
+        backend: Literal["spacy", "nltk"] = "nltk",
+    ):
+        super().__init__(
+            max_chunk_size=max_chunk_size,
+            min_chunk_size=min_chunk_size,
+            chunk_overlap=chunk_overlap,
+            backend=backend,
+        )
+
+    def _split_text(self, text: str) -> list[str]:
+        if _is_asian_language(text):
+            warnings.warn(
+                "Using SentenceSplitter with non-latin alphabets will lead to errors!"
+            )
+        sentences = self._text_to_sentences(text)
+        if self.chunk_overlap > 0:
+            sentences = self._split_large_chunks(sentences)
+            size_arr = [len(x) for x in sentences]
+            groups = aggregate_with_overlaps(
+                sentences,
+                size_arr=size_arr,
+                max_chunk_size=self.max_chunk_size,
+                overlap=self.chunk_overlap,
+            )
+            sentences = ["".join(g) for g in groups]
+        else:
+            self._aggregate_small_chunks_in_place(sentences)
+            sentences = self._split_large_chunks(sentences)
+        return sentences
 
 
 class CharSplitter(TextSplitter):
@@ -359,35 +377,43 @@ class CharSplitter(TextSplitter):
     and also for ingesting text that is too long to fit within a context window.
     """
 
+    name: str = "CharacterSplitter"
+
     def __init__(
         self,
-        chunk_size: int | None = None,
-        chunk_overlap: int | None = None,
+        max_chunk_size: int = 400,
+        chunk_overlap: int = 200,
+        min_chunk_size: int = 1,
     ):
-        self.chunk_size = (
-            chunk_size if chunk_size is not None else DEFAULTS.max_chunk_size_chars
-        )
-        self.chunk_overlap = (
-            chunk_overlap if chunk_overlap is not None else DEFAULTS.overlap_chars
+        super().__init__(
+            max_chunk_size=max_chunk_size,
+            min_chunk_size=min_chunk_size,
+            chunk_overlap=chunk_overlap,
         )
 
     def _split_text(self, text: str) -> list[str]:
         text_arr = list(text)
-        arr = chunk(text_arr, size=self.chunk_size, overlap=self.chunk_overlap)
+        arr = chunk(text_arr, size=self.max_chunk_size, overlap=self.chunk_overlap)
         sentences = ["".join(x) for x in arr]
         return sentences
 
     def __repr__(self) -> str:
         name = self.__class__.__name__
-        return f"{name}(chunk_size={self.chunk_size}, " f"overlap={self.chunk_overlap})"
+        return (
+            f"{name}(chunk_size={self.max_chunk_size}, "
+            f"overlap={self.chunk_overlap})"
+        )
 
 
 class TokenSplitter(TextSplitter):
+    name: str = "TokenSplitter"
+
     def __init__(
         self,
         tokenizer: Tokenizer,
-        chunk_size: int | None = None,
-        chunk_overlap: int | None = None,
+        max_chunk_size: int = 100,
+        chunk_overlap: int = 50,
+        min_chunk_size: int = 1,
     ):
         """Shit, the token splitting process can destroy the original string,
         if for example the tokenizer is lower case.
@@ -397,36 +423,72 @@ class TokenSplitter(TextSplitter):
             chunk_overlap (int): _description_
             tokenizer (Tokenizer): _description_
         """
-        self.chunk_size = (
-            chunk_size if chunk_size is not None else DEFAULTS.max_chunk_size_tokens
-        )
-        self.chunk_overlap = (
-            chunk_overlap if chunk_overlap is not None else DEFAULTS.overlap_tokens
+        super().__init__(
+            max_chunk_size=max_chunk_size,
+            min_chunk_size=min_chunk_size,
+            chunk_overlap=chunk_overlap,
         )
         self.tokenizer = tokenizer
 
     def _split_text(self, text: str) -> list[str]:
         arr = self.tokenizer.encode(text)
-        chunks = chunk(arr, size=self.chunk_size, overlap=self.chunk_overlap)
+        chunks = chunk(arr, size=self.max_chunk_size, overlap=self.chunk_overlap)
         return ["".join(self.tokenizer.decode(x)) for x in chunks]
 
     def __repr__(self) -> str:
         name = self.__class__.__name__
         return (
-            f"{name}(chunk_size={self.chunk_size}, "
+            f"{name}(chunk_size={self.max_chunk_size}, "
             f"overlap={self.chunk_overlap}, tokenizer={self.tokenizer})"
         )
 
 
+ST = TypeVar("ST", bound=BaseSentenceSplitter)
+
+
+# All of this is so hacky to just try to display which one was chose dynamically...
 class DynamicTextSplitter(TextSplitter):
-    def __init__(
-        self, sentence_splitter: SentenceSplitter, token_splitter: TokenSplitter
-    ):
+    def __init__(self, sentence_splitter: ST, token_splitter: TokenSplitter):
         self.sentence_splitter = sentence_splitter
         self.token_splitter = token_splitter
+        self._max_chunk_size = None
+        self._min_chunk_size = None
+        self._chunk_overlap = None
+        self._name = None
+        self._rep = "DynamicTextSplitter()"
 
     def _split_text(self, text: str) -> list[str]:
         if _is_asian_language(text):
+            logger.info("Detected Asian language. Switching to TokenSplitter")
+            self._max_chunk_size = self.token_splitter.max_chunk_size
+            self._min_chunk_size = self.token_splitter.min_chunk_size
+            self._chunk_overlap = self.token_splitter.chunk_overlap
+            self._name = self.token_splitter.name
+            self._rep = self.token_splitter.__repr__()
             return self.token_splitter._split_text(text)
         else:
+            self._max_chunk_size = self.sentence_splitter.max_chunk_size
+            self._min_chunk_size = self.sentence_splitter.min_chunk_size
+            self._chunk_overlap = self.sentence_splitter.chunk_overlap
+            self._name = self.sentence_splitter.name
+            self._rep = self.sentence_splitter.__repr__()
             return self.sentence_splitter._split_text(text)
+
+    def __repr__(self):
+        return self._rep
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def max_chunk_size(self):
+        return self._max_chunk_size
+
+    @property
+    def min_chunk_size(self):
+        return self._min_chunk_size
+
+    @property
+    def chunk_overlap(self):
+        return self._chunk_overlap

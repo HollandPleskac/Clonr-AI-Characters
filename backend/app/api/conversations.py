@@ -9,6 +9,7 @@ from fastapi import Depends, HTTPException, Path, Query, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import Response
 from fastapi.routing import APIRouter
+from loguru import logger
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import defer
@@ -21,9 +22,10 @@ from app.clone.controller import Controller
 from app.clone.types import AdaptationStrategy, InformationStrategy, MemoryStrategy
 from app.api.clones import get_clone
 from app.deps.limiter import user_id_cookie_fixed_window_ratelimiter
-from app.deps.users import Plan, UserAndPlan
+from app.deps.users import UserAndPlan
 from app.embedding import EmbeddingClient
 from app.external.moderation import openai_moderation_check
+from app.settings import settings
 from clonr.tokenizer import Tokenizer
 
 router = APIRouter(
@@ -161,7 +163,7 @@ async def get_sidebar_conversations(
 
     # Run a subquery to fill in the partition values
     subquery = (
-        sa.select(models.Conversation, rank, group_updated_at, models.Clone.avatar_uri, models.Clone.name, func.lower(models.Clone.name).label("case_insensitive_name"))
+        sa.select(models.Conversation, rank, group_updated_at, models.Clone.avatar_uri)
         .where(models.Conversation.user_id == user.id)
         .join(models.Clone, models.Clone.id == models.Conversation.clone_id)
         .subquery()
@@ -176,7 +178,9 @@ async def get_sidebar_conversations(
 
     # Filter by name if provided
     if name is not None:
-        query = query.where(subquery.c.case_insensitive_name.ilike(f"%{name}%"))
+        query = query.where(
+            sa.func.lower(subquery.c.clone_name).ilike(f"%{name.lower()}%")
+        )
 
     # Filter by clone_id if provided
     if clone_id is not None:
@@ -187,7 +191,9 @@ async def get_sidebar_conversations(
     # Get back row-objects, which need to be converted to the schemas
     rows = await db.execute(query)
 
-    convos = convos = [schemas.ConversationInSidebar.model_validate(x) for x in rows.unique()]
+    convos = [
+        schemas.ConversationInSidebar.model_validate(x) for x in rows.unique()
+    ]
     return convos
 
 @router.get(
@@ -239,6 +245,66 @@ async def get_last_conversation(
     conversation_id = result.scalars().unique().one()
     return conversation_id
 
+@router.get("/continue", response_model=list[schemas.CloneContinue], status_code=200)
+async def get_continue_conversations(
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
+    offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
+    limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 30,
+):
+    rank = (
+        sa.func.rank()
+        .over(
+            order_by=models.Conversation.updated_at.desc(),
+            partition_by=models.Conversation.clone_id,
+        )
+        .label("rank")
+    )
+    subquery = (
+        sa.select(
+            models.Conversation.clone_id.label("clone_id"),
+            models.Conversation.updated_at.label("conversation_updated_at"),
+            models.Conversation.id.label("conversation_id"),
+            rank,
+        )
+        .where(models.Conversation.user_id == user.id)
+        .subquery()
+    )
+    q = (
+        sa.select(
+            models.Clone, subquery.c.conversation_updated_at, subquery.c.conversation_id
+        )
+        .join(subquery, subquery.c.clone_id == models.Clone.id)
+        .where(subquery.c.rank == 1)
+        .order_by(subquery.c.conversation_updated_at)
+        .offset(offset)
+        .limit(limit)
+    )
+    rows = await db.execute(q)
+    return rows.unique().all()
+
+
+@router.get("/last_conversation/{clone_id}", response_model=uuid.UUID, status_code=200)
+async def get_last_conversation(
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    clone: Annotated[models.Clone, Depends(get_clone)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
+):
+    query = (
+        sa.select(models.Conversation.id)
+        .filter(
+            models.Conversation.clone_id == clone.id,
+            models.Conversation.user_id == user.id,
+        )
+        .order_by(models.Conversation.updated_at.desc())  # Assuming created_at field
+        .limit(1)
+    )
+
+    result = await db.execute(query)
+    conversation_id = result.scalars().unique().one()
+    return conversation_id
+
+
 # TODO (Jonny): put a paywall behind this endpoint after X messages, need to add user permissions
 @router.post(
     "/", response_model=schemas.Conversation, status_code=status.HTTP_201_CREATED
@@ -253,7 +319,7 @@ async def create_conversation(
 ):
     user = user_and_plan.user
     plan = user_and_plan.plan
-    if obj.memory_strategy != MemoryStrategy.zero and plan != Plan.plus:
+    if obj.memory_strategy != MemoryStrategy.zero and plan != schemas.Plan.plus:
         # TODO (Jonny): is this for clonr+ or for normal subscribers?
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
@@ -291,7 +357,7 @@ async def create_conversation(
         embedding_client=embedding_client,
     )
 
-    if plan == Plan.free:
+    if plan == schemas.Plan.free:
         user.num_free_messages_sent = user.num_free_messages_sent + 1
         await db.commit()
 
@@ -424,7 +490,7 @@ async def get_messages(
     status_code=201,
     dependencies=[
         Depends(
-            user_id_cookie_fixed_window_ratelimiter("5/minute"),
+            user_id_cookie_fixed_window_ratelimiter("5/second"),
         )  # TODO (Jonny): This needs another ratelimit for long-term mem since it incurs LLM costs
     ],
 )
@@ -447,7 +513,8 @@ async def receive_message(
     try:
         # TODO (Jonny): we'll need to handle multiple models on the backend eventually
         # TODO (Jonny): put back in, in prod
-        if not controller.user.nsfw_enabled:
+        if not settings.DEV and not controller.user.nsfw_enabled:
+            logger.info("Content moderation request to OpenAI")
             if (r := await openai_moderation_check(msg_create.content)).flagged:
                 reasons = [k for k, v in r.categories.items() if v]
                 violation = models.ContentViolation(
@@ -509,7 +576,7 @@ async def generate_clone_message(
     try:
         msg = await controller.generate_message(msg_gen)
 
-        if controller.subscription_plan == Plan.free:
+        if controller.subscription_plan == schemas.Plan.free:
             controller.user.num_free_messages_sent = (
                 controller.user.num_free_messages_sent + 1
             )

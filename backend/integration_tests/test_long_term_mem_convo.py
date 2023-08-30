@@ -15,7 +15,7 @@ from app.clone.controller import (
 from app.clone.types import AdaptationStrategy, InformationStrategy, MemoryStrategy
 
 
-def test_short_term_memory_convo(
+def test_long_term_memory_convo(
     client: TestClient, user_headers: dict[str, str], makima_id: str, db: Session
 ):
     # Create a conversation as User
@@ -25,7 +25,7 @@ def test_short_term_memory_convo(
         user_name=user_name,
         memory_strategy=MemoryStrategy.long_term,
         information_strategy=InformationStrategy.internal,
-        adaptation_strategy=AdaptationStrategy.dynamic,
+        adaptation_strategy=AdaptationStrategy.moderate,
     )
     req_data = jsonable_encoder(convo_create)
     r = client.post("/conversations/", json=req_data, headers=user_headers)

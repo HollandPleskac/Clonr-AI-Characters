@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 import uvicorn
-from fastapi import FastAPI, Response
+from fastapi import FastAPI
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
@@ -18,14 +18,7 @@ from app.auth.users import (
     google_oauth_client,
     reddit_oauth_client,
 )
-from app.db import (
-    clear_db,
-    clear_redis,
-    create_superuser,
-    init_db,
-    wait_for_db,
-    wait_for_redis,
-)
+from app.db import clear_db, create_superuser, init_db, wait_for_db, wait_for_redis
 from app.deps.users import fastapi_users
 from app.embedding import wait_for_embedding
 from app.middleware.rate_limiter import IpAddrRateLimitMiddleware
@@ -103,7 +96,7 @@ async def lifespan(app: FastAPI):
         logger.warning("Erasing database")
         await clear_db()
     logger.warning("Clearing Redis cache")
-    await clear_redis()
+    # await clear_redis()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -119,6 +112,7 @@ app.include_router(router=api.conversations_router)
 app.include_router(router=api.tags_router)
 app.include_router(router=api.stripe_router)
 app.include_router(router=api.subscriptions_router)
+app.include_router(router=api.signups_router)
 
 
 app.include_router(
@@ -142,7 +136,7 @@ app.include_router(
         google_oauth_client,
         auth_backend,
         settings.AUTH_SECRET,
-        # redirect_url=settings.OAUTH_REDIRECT_URL,
+        redirect_url=settings.OAUTH_REDIRECT_URL,
     ),
     prefix="/auth/google",
     tags=["auth"],
@@ -187,9 +181,9 @@ app.add_middleware(
 )
 
 
-@app.get("/health", response_class=Response)
+@app.get("/health", status_code=200)
 def health_check():
-    return Response(status_code=204)
+    return {"success": True}
 
 
 setup_tracing(app=app)

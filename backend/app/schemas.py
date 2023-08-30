@@ -2,6 +2,7 @@ import datetime
 import random
 import re
 import uuid
+from enum import Enum
 from typing import Annotated
 
 from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate
@@ -50,6 +51,12 @@ def validate_hex_code(s: str | None):
     if not all(x in "1234567890ABCDEFabcdef" for x in s):
         raise ValueError(f"Invalid hexcode: {s}")
     return s
+
+
+class Plan(str, Enum):
+    free: str = "free"
+    basic: str = "basic"
+    plus: str = "plus"
 
 
 class UserRead(BaseUser[uuid.UUID]):
@@ -211,6 +218,11 @@ class CloneSearchResult(CommonMixin, BaseModel):
     tags: list[Tag]
 
 
+class CloneContinue(CloneSearchResult):
+    conversation_updated_at: datetime.datetime
+    conversation_id: uuid.UUID
+
+
 # TODO (Jonny): we need to take in more information than just content
 # like accepting character names, URLs, etc. Maybe we feed these back to
 # the user, and have them accept them.
@@ -307,22 +319,20 @@ class ConversationCreate(BaseModel):
         default=InformationStrategy.internal,
         description="The level of factual accuracy to give your bot. Internal enables creator knowledge sources. External allows for pulling information on current events.",
     )
-    adaptation_strategy: AdaptationStrategy | None = Field(
-        default=None,
-        description="How flexible the clone is on changing its long description. Static means never chaning. Fluid means completely adaptive. Dynamic means partial adaption.",
+    adaptation_strategy: AdaptationStrategy = Field(
+        default=AdaptationStrategy.zero,
+        description="How flexible the clone is on changing its long description. Zero means never changes. Moderate means the clone maintains a second dynamic long description. High means the long description continually changes.",
     )
     clone_id: uuid.UUID = Field(description="The clone that a user will chat with")
 
     @model_validator(mode="after")
     def check_adaptation_agrees_with_memory(self) -> "ConversationCreate":
-        if self.memory_strategy != MemoryStrategy.long_term:
-            if self.adaptation_strategy is not None:
-                raise ValueError(
-                    "Adaptation strategies are only available with long-term memory"
-                )
-        elif self.adaptation_strategy is None:
+        if (
+            self.memory_strategy != MemoryStrategy.long_term
+            and self.adaptation_strategy != AdaptationStrategy.zero
+        ):
             raise ValueError(
-                "Adaptation strategy must be set when using long-term memory."
+                "Adaptation strategies are only available with long-term memory"
             )
         return self
 

@@ -1,20 +1,25 @@
 import asyncio
-import json
 import uuid
 from abc import ABC, abstractmethod
-from pathlib import Path
-from typing import Any
 
 from loguru import logger
+from opentelemetry import trace
 from pydantic import BaseModel, validator
 
 from clonr import templates
 from clonr.data_structures import Document, IndexType, Node
-from clonr.generate import auto_chunk_size_summarize, online_summarize, summarize
+from clonr.generate import (
+    auto_chunk_size_summarize,
+    online_summarize,
+    summarize,
+    summarize_with_context,
+)
 from clonr.llms import LLM, MockLLM
 from clonr.text_splitters import TextSplitter
 from clonr.tokenizer import Tokenizer
 from clonr.utils import aggregate_by_length
+
+tracer = trace.get_tracer(__name__)
 
 
 class TokenEstimate(BaseModel):
@@ -104,12 +109,16 @@ class ListIndex(Index):
     def get(self, id: str | uuid.UUID):
         return self._index.get(str(id))
 
+    @tracer.start_as_current_span("ListIndex_abuild")
     async def abuild(self, doc: Document, **kwargs) -> list[Node]:
         logger.info(f"Building {self.__class__.__name__} on doc_id: {doc.id}.")
         nodes = create_leaf_nodes(doc=doc, splitter=self.splitter)
         for node in nodes:
             self._index[str(node.id)] = node
         doc.index_type = self.type
+        doc.text_splitter = self.splitter.name
+        doc.max_chunk_size = self.splitter.max_chunk_size
+        doc.chunk_overlap = self.splitter.chunk_overlap
         self._index = {}  # TODO (Jonny): trying to make this stateless!
         # No LLM calls in this one :)
         return nodes
@@ -178,6 +187,7 @@ class ListIndexWithContext(ListIndex):
             llm_call_tokens=llm_call_tokens,
         )
 
+    @tracer.start_as_current_span("ListIndexWithContext_abuild")
     async def abuild(self, doc: Document, **kwargs) -> list[Node]:
         logger.info(f"Building {self.__class__.__name__} on doc_id: {doc.id}.")
         nodes = await super().abuild(doc=doc)
@@ -192,6 +202,9 @@ class ListIndexWithContext(ListIndex):
             nodes[i].context = call.content
             self._tokens_processed += call.usage.total_tokens
         doc.index_type = self.type
+        doc.text_splitter = self.splitter.name
+        doc.max_chunk_size = self.splitter.max_chunk_size
+        doc.chunk_overlap = self.splitter.chunk_overlap
         self._index = {}  # TODO (Jonny): trying to make this stateless!
         return nodes
 
@@ -201,6 +214,9 @@ class ListIndexWithContext(ListIndex):
         )
 
 
+# TODO (Jonny): If we decide to use this in the future, consider implementing
+# text spliter overlapping for each level. Can probably just reuse the _aggregate_with_overlap
+# function in text_splitters
 class TreeIndex(Index):
     """Implements the TreeSummarize method. This iteratively
     aggregates leaf nodes then distills with an LLM summarization
@@ -226,12 +242,14 @@ class TreeIndex(Index):
         splitter: TextSplitter,
         llm: LLM,
         max_group_size: int | str = "auto",
+        max_depth: int | None = None,
     ):
         self.tokenizer = tokenizer
         self.splitter = splitter
         self.llm = llm
         self._index: dict[str, Node] = {}
         self._tokens_processed = 0
+        self.max_depth = max_depth
 
         prompt = templates.Summarize.render(passage="", llm=MockLLM(""))
         self._prompt_len = self.tokenizer.length(prompt)
@@ -240,7 +258,6 @@ class TreeIndex(Index):
                 raise ValueError("Max group size should be an int or auto.")
             max_group_size = auto_chunk_size_summarize(llm=llm)
         self.max_group_size = max_group_size
-        self.root: Node | None = None
 
     @property
     def num_nodes(self):
@@ -250,16 +267,20 @@ class TreeIndex(Index):
     def tokens_processed(self):
         return self._tokens_processed
 
-    def estimate_llm_tokens(self, doc: Document, max_tokens: int = 4096):
+    def estimate_llm_tokens(self, doc: Document, max_tokens: int = 512):
         # the entire document is ultimately processed
+        assert max_tokens < 2 * self.max_group_size
         llm_call_tokens = 0
         depth = 0
         sum_size = max_tokens
         prompt_size = self._prompt_len
         nodes = create_leaf_nodes(doc=doc, splitter=self.splitter)
         chunks = [x.content for x in nodes]
-        metadata: list[dict[str, int]] = []
-        for _ in range(1_000):
+        depth = 0
+        metadata: list[dict[str, int]] = [{"depth": depth, "nodes": len(chunks)}]
+        depth += 1
+        prev_len = len(chunks)
+        for _ in range(self.max_depth or len(nodes)):
             if len(chunks) <= 1:
                 break
             group_chunks = aggregate_by_length(
@@ -272,6 +293,8 @@ class TreeIndex(Index):
             chunks = groups
             metadata.append({"depth": depth, "nodes": len(chunks)})
             depth += 1
+            if len(chunks) == prev_len:
+                raise ValueError(f"Failed to reduce chunks ({prev_len} -> {prev_len})")
         return TokenEstimate(
             doc_tokens=self.tokenizer.length(doc.content),
             llm_call_tokens=llm_call_tokens,
@@ -279,58 +302,7 @@ class TreeIndex(Index):
             metadata={"layers": metadata},
         )
 
-    def parent(self, node: Node):
-        if node.id in self._index:
-            id = self._index[str(node.id)].parent_id
-            if id is not None:
-                return self._index[str(id)]
-
-    def children(self, node: Node):
-        if node.id in self._index:
-            ids = self._index[str(node.id)].child_ids
-            if ids is not None:
-                return [self._index[str(id)] for id in ids]
-
-    def save(self, path: str | Path, overwrite: bool = False):
-        path = Path(path)
-        if path.exists() and not overwrite:
-            raise FileExistsError()
-        data: dict[str, Any] = {
-            str(k): v.model_dump_json() for k, v in self._index.items()
-        }
-        root: str | None = None
-        if self.root is not None:
-            root = self.root.model_dump_json()
-        extras = dict(
-            max_group_size=self.max_group_size,
-            _tokens_processed=self._tokens_processed,
-            root=root,
-        )
-        data["extras"] = extras
-        with open(path, "w") as f:
-            json.dump(data, f, indent=2)
-        return self
-
-    def load(self, path: str | Path):
-        # TODO (Jonny): really, this stuff should be made picklable with
-        # __setstate__ and __getstate__ but like fuck it, we shouldn't
-        # be using these anyway aside from debugging or notebook work.
-        path = Path(path)
-        if not path.exists():
-            raise FileNotFoundError()
-        with open(path, "r") as f:
-            data = json.load(f)
-        for k, v in data.pop("extras").items():
-            setattr(self, k, v)
-        # if self.root is not None:
-        #     self.root = Node(**json.loads(self.root))
-        self._index = {k: Node(**json.loads(v)) for k, v in data.items()}
-
-    def leaves(self):
-        # maybe this should be a generator, but fuck it.
-        nodes = [nd for nd in self._index.values() if nd.is_leaf]
-        return sorted(nodes, key=lambda x: x.index)
-
+    @tracer.start_as_current_span("_process_level")
     async def _process_level(
         self, nodes: list[Node], depth: int, doc: Document, **kwargs
     ) -> list[Node]:
@@ -365,25 +337,165 @@ class TreeIndex(Index):
             self._index[str(node.id)] = node
         return return_nodes
 
+    @tracer.start_as_current_span("TreeIndex_abuild")
     async def abuild(self, doc: Document, **kwargs) -> list[Node]:
         logger.info(f"Building {self.__class__.__name__} on doc_id: {str(doc.id)}.")
         nodes = create_leaf_nodes(doc=doc, splitter=self.splitter)
         if not nodes:
             return []
         depth = 1
-        max_iter = len(nodes)
+        max_iter = self.max_depth or len(nodes)
+        prev_size = len(nodes)
         while len(nodes) > 1 and max_iter > 0:
-            for node in nodes:
-                self._index[str(node.id)] = node
-            nodes = await self._process_level(
-                nodes=nodes, depth=depth, doc=doc, **kwargs
-            )
-            depth += 1
-            max_iter -= 1
+            with tracer.start_as_current_span(f"process_nodes_depth_{depth}"):
+                for node in nodes:
+                    self._index[str(node.id)] = node
+                nodes = await self._process_level(
+                    nodes=nodes, depth=depth, doc=doc, **kwargs
+                )
+                depth += 1
+                max_iter -= 1
+                if len(nodes) >= prev_size:
+                    logger.error(
+                        "Failed to reduce nodes size ({prev_size} -> {prev_size})"
+                    )
+                    break
+                prev_size == len(nodes)
         if not nodes:
             raise ValueError("Somehow we reduced past a single node!")
-        self.root = nodes[0]
         doc.index_type = self.type
+        doc.text_splitter = self.splitter.name
+        doc.max_chunk_size = self.splitter.max_chunk_size
+        doc.chunk_overlap = self.splitter.chunk_overlap
+        r = list(self._index.values())
+        self._index = {}  # TODO (Jonny): trying to make this stateless!
+        return r
+
+    def build(self, doc: Document, **kwargs) -> list[Node]:
+        return asyncio.get_event_loop().run_until_complete(
+            self.abuild(doc=doc, **kwargs)
+        )
+
+
+class TreeIndexWithContext(TreeIndex):
+    type = IndexType.tree
+
+    def __init__(
+        self,
+        tokenizer: Tokenizer,
+        splitter: TextSplitter,
+        llm: LLM,
+        max_group_size: int | str = "auto",
+        max_depth: int | None = None,
+    ):
+        self.tokenizer = tokenizer
+        self.splitter = splitter
+        self.llm = llm
+        self._index: dict[str, Node] = {}
+        self._tokens_processed = 0
+        self.max_depth = max_depth
+
+        prompt = templates.Summarize.render(passage="", llm=MockLLM(""))
+        self._prompt_len = self.tokenizer.length(prompt)
+        if isinstance(max_group_size, str):
+            if max_group_size != "auto":
+                raise ValueError("Max group size should be an int or auto.")
+            max_group_size = auto_chunk_size_summarize(llm=llm)
+        self.max_group_size = max_group_size
+
+    @property
+    def num_nodes(self):
+        return len(self._index)
+
+    @property
+    def tokens_processed(self):
+        return self._tokens_processed
+
+    def estimate_llm_tokens(
+        self, doc: Document, max_tokens: int = 512
+    ) -> TokenEstimate:
+        estimate = super().estimate_llm_tokens(doc=doc, max_tokens=max_tokens)
+        # add the additional prompt input for the context
+        llm_call_tokens = estimate.llm_call_tokens
+        for row in estimate.metadata["layers"]:
+            if row["depth"] > 0:
+                llm_call_tokens += max_tokens * row["nodes"]
+        return TokenEstimate(
+            doc_tokens=estimate.doc_tokens,
+            llm_call_tokens=llm_call_tokens,
+            max_depth=estimate.max_depth,
+            metadata=estimate.metadata,
+        )
+
+    @tracer.start_as_current_span("_process_level")
+    async def _process_level(
+        self, nodes: list[Node], depth: int, doc: Document, **kwargs
+    ) -> list[Node]:
+        def length_fn(node: Node):
+            return self.tokenizer.length(node.content)
+
+        groups: list[list[Node]] = aggregate_by_length(
+            nodes, max_size=self.max_group_size, length_fn=length_fn
+        )
+        return_nodes: list[Node] = []
+        prev_summary: str | None = None
+        for i, g in enumerate(groups):
+            content = "".join(x.content for x in g)
+            kwargs["depth"] = depth
+            kwargs["subroutine"] = self.__class__.__name__
+            kwargs["group"] = f"{i+1}/{len(groups)}"
+            content = await summarize_with_context(
+                passage=content, llm=self.llm, prev_summary=prev_summary, **kwargs
+            )
+            node = Node(
+                content=content,
+                document_id=doc.id,
+                index=i,
+                is_leaf=False,
+                depth=depth,
+                child_ids=[],
+            )
+            for nd in g:
+                if node.child_ids is None:
+                    node.child_ids = [nd.id]
+                else:
+                    node.child_ids.append(nd.id)
+                nd.parent_id = node.id
+            return_nodes.append(node)
+            self._index[str(node.id)] = node
+            prev_summary = content
+        return return_nodes
+
+    @tracer.start_as_current_span("TreeIndexWithContext_abuild")
+    async def abuild(self, doc: Document, **kwargs) -> list[Node]:
+        logger.info(f"Building {self.__class__.__name__} on doc_id: {str(doc.id)}.")
+        nodes = create_leaf_nodes(doc=doc, splitter=self.splitter)
+        if not nodes:
+            return []
+        depth = 1
+        max_iter = self.max_depth or len(nodes)
+        prev_size = len(nodes)
+        while len(nodes) > 1 and max_iter > 0:
+            with tracer.start_as_current_span(f"process_nodes_depth_{depth}"):
+                for node in nodes:
+                    self._index[str(node.id)] = node
+                nodes = await self._process_level(
+                    nodes=nodes, depth=depth, doc=doc, **kwargs
+                )
+                depth += 1
+                max_iter -= 1
+                if len(nodes) >= prev_size:
+                    logger.error(
+                        "Failed to reduce nodes size ({prev_size} -> {prev_size})"
+                    )
+                    break
+                prev_size == len(nodes)
+        if not nodes:
+            raise ValueError("Somehow we reduced past a single node!")
+        doc.index_type = self.type
+        doc.text_splitter = self.splitter.name
+        doc.max_chunk_size = self.splitter.max_chunk_size
+        doc.chunk_overlap = self.splitter.chunk_overlap
         r = list(self._index.values())
         self._index = {}  # TODO (Jonny): trying to make this stateless!
         return r

@@ -81,16 +81,11 @@ export default function HomeScreen() {
     setSize
   } = useClonesPagination(queryParamsSearch)
 
-
   if (isTopLoading || isTrendingLoading || isLoadingContinue || !topChars || !trendingChars || !continueChars) {
     return (
       <div> Loading.. </div>
     )
   }
-
-  console.log("HomePage() -> topChars: ", topChars)
-  console.log("HomePage() -> trendingChars: ", trendingChars)
-  console.log("HomePage() -> continueChars: ", continueChars)
 
   return (
     <div className='pb-[75px]'>

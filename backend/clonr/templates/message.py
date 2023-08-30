@@ -105,6 +105,94 @@ If you have no questions, simply return the last message in the conversation.
         raise NotImplementedError()
 
 
+class MessageQuery2(Template):
+    chat_template = env.from_string(
+        """\
+{{ llm.system_start -}}
+{{ llm.default_system_prompt }}
+{{- llm.system_end }}
+
+{{ llm.user_start -}}
+{% if (use_timestamps) -%}The current time is {{cur_time}}. {% endif -%}\
+You are analyzing a conversation between yourself ({{char}}) and {{entity_name}}.\
+
+{%- if (short_description) %}
+
+### {{char}} description
+{{short_description}}
+{%- if (agent_summary) %}
+{{agent_summary}}
+{%- endif -%}
+{%- endif %}
+
+{%- if (entity_context_summary) %}
+
+### {{char}}'s relationship to {{entity_name}}
+{{entity_context_summary}}
+{%- endif %}
+
+{%- if (true) %}
+
+### Task
+Read the following conversation bewteen {{char}} and {{entity_name}} and answer the question that follows.
+
+{% for msg in messages -%}
+{% if (use_timestamps) -%}[{{ msg.time_str }}] {% endif -%}<|{{msg.sender_name}}|> {{ msg.content }}
+{%- if not loop.last %}
+{% endif %}
+{%- endfor %}
+
+In order to write a response to {{entity_name}}, what questions do you need answered? \
+Format your response as a numbered list of at most {{num_results}} strings.
+{%- endif -%}
+{{- llm.user_end }}
+
+{{ llm.assistant_start -}}
+1.
+{{- llm.assistant_end -}}
+"""
+    )
+
+    @classmethod
+    def render(
+        cls,
+        char: str,
+        short_description: str,
+        entity_name: str,
+        messages: list[MessageStruct],
+        llm: LLM,
+        agent_summary: str | None = None,
+        entity_context_summary: str | None = None,
+        long_description: str | None = None,
+        use_timestamps: bool = False,
+        num_results: int = 3,
+        system_prompt: str | None = None,
+    ):
+        system_prompt = system_prompt or llm.default_system_prompt
+        cur_time = DateFormat.human_readable(
+            get_current_datetime(), use_today_and_yesterday=False
+        )
+        if agent_summary is None:
+            agent_summary = long_description
+        return cls.chat_template.render(
+            char=char,
+            short_description=short_description,
+            agent_summary=agent_summary,
+            entity_context_summary=entity_context_summary,
+            messages=messages,
+            llm=llm,
+            entity_name=entity_name,
+            cur_time=cur_time,
+            system_prompt=system_prompt,
+            use_timestamps=use_timestamps,
+            num_results=num_results,
+        )
+
+    @classmethod
+    def render_instruct(cls, *args, **kwargs):
+        raise NotImplementedError()
+
+
 # TODO (Jonny): We probably don't need datetimes for zero memory chats, since
 # they likely don't last long enough for it to matter? Also not sure if facts should
 # be numbered or bullet-pointed :/

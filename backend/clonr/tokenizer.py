@@ -136,10 +136,10 @@ class HuggingFaceTokenizer(Tokenizer):
         self.tokenizer = _get_hf_tokenizer(model, use_fast=use_fast)
 
     def encode(self, text):
-        return self.tokenizer.encode(text)
+        return self.tokenizer.encode(text, add_special_tokens=False)
 
     def encode_batch(self, text: list[str]) -> list[list[int]]:
-        return self.tokenizer(text)["input_ids"]
+        return self.tokenizer(text, add_special_tokens=False)["input_ids"]
 
     def decode(self, ids: list[int]) -> str:
         return self.tokenizer.decode(ids)

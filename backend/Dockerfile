@@ -7,7 +7,7 @@ ENV PYTHONUNBUFFERED=true \
   PIP_DEFAULT_TIMEOUT=100 \
   DEBIAN_FRONTEND=noninteractive
 
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+RUN apt update && apt upgrade && apt install curl -y
 
 RUN python -m pip install --no-cache-dir --upgrade pip
 

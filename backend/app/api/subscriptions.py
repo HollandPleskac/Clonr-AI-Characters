@@ -6,7 +6,8 @@ from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import deps, models, schemas
-from app.deps.users import Plan, UserAndPlan
+from app.deps.users import UserAndPlan
+from app.schemas import Plan
 
 router = APIRouter(
     prefix="/subscriptions",
@@ -29,4 +30,4 @@ async def get_my_subscriptions(
     sub = await db.scalar(
         sa.select(models.Subscription).where(models.Subscription.user_id == user.id)
     )
-    return subs
+    return sub

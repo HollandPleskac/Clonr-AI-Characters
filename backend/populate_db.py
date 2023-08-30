@@ -9,11 +9,11 @@ from fastapi.encoders import jsonable_encoder
 
 from app.schemas import CloneCreate, DocumentCreate, MonologueCreate
 from app.settings import settings
-# from clonr.data.parsers import FandomParser, WikipediaParser, WikiQuotesParser
+from clonr.data.parsers import FandomParser, WikipediaParser, WikiQuotesParser
 
-# wiki_parser = WikipediaParser()
-# quote_parser = WikiQuotesParser()
-# fandom_parser = FandomParser()
+wiki_parser = WikipediaParser()
+quote_parser = WikiQuotesParser()
+fandom_parser = FandomParser()
 
 
 async def create_makima(headers: dict[str, str]):

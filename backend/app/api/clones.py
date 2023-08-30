@@ -5,7 +5,6 @@ from typing import Annotated
 
 import sqlalchemy as sa
 from fastapi import Depends, HTTPException, Path, Query, status
-from fastapi.encoders import jsonable_encoder
 from fastapi.responses import Response
 from fastapi.routing import APIRouter
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -119,11 +118,15 @@ async def create_clone(
 
     clone = models.Clone(**data, creator_id=creator.user_id)
 
-    if clone.long_description:
-        clone.embedding = (
-            await embedding_client.encode_passage(clone.long_description)
-        )[0]
-        clone.embedding_model = await embedding_client.encoder_name()
+    if clone.long_description and len(clone.long_description) > 16:
+        embedding_content = clone.long_description
+    elif clone.short_description and len(clone.short_description) > 5:
+        embedding_content = f"{clone.name} {clone.short_description}"
+    else:
+        embedding_content = clone.name
+    clone.embedding = (await embedding_client.encode_passage(embedding_content))[0]
+    clone.embedding_model = await embedding_client.encoder_name()
+
     db.add(clone)
     await db.commit()
 
@@ -179,9 +182,6 @@ async def query_clones(
             .subquery()
         )
         query = query.join(subquery, models.Clone.id == subquery.c.clone_id)
-        from loguru import logger
-
-        logger.error(f"fuckkkkk {tags}")
     query = (
         query.options(selectinload(models.Clone.tags))
         .offset(offset=offset)
@@ -210,17 +210,14 @@ async def get_clone_by_id(
             status_code=status.HTTP_404_NOT_FOUND, detail="Clone does not exist."
         )
     # Hide non-public fields
-    # TODO: edit, hacky way of removing embedding so jsonable_encoder doesn't complain
-    clone_data = vars(clone).copy()
-    clone_data.pop('embedding', None) 
-    response = jsonable_encoder(clone_data)
+    clone_response = schemas.Clone.model_validate(clone)
     if not clone.is_short_description_public:
-        response["short_description"] = None
+        clone_response.short_description = None
     if not clone.is_long_description_public:
-        response["long_description"] = None
+        clone_response.long_description = None
     if not clone.is_greeting_message_public:
-        response["greeting_message"] = None
-    return response
+        clone_response.greeting_message = None
+    return clone_response
 
 
 @router.patch("/{clone_id}", response_model=schemas.Clone)
@@ -233,24 +230,31 @@ async def patch_clone(
 ):
     if not user.is_superuser and clone.creator_id != user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
     not_modified = True
+
     for k, v in obj.model_dump(exclude_unset=True).items():
         if getattr(clone, k) == v:
             continue
         not_modified = False
         setattr(clone, k, v)
-        if clone.long_description:
-            clone.embedding = (
-                await embedding_client.encode_passage(clone.long_description)
-            )[0]
-            clone.embedding_model = await embedding_client.encoder_name()
+
     if not_modified:
         raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
+
+    if clone.long_description and len(clone.long_description) > 16:
+        embedding_content = clone.long_description
+    elif clone.short_description and len(clone.short_description) > 5:
+        embedding_content = f"{clone.name} {clone.short_description}"
     else:
-        db.add(clone)
-        await db.commit()
-        await db.refresh(clone)
-        return clone
+        embedding_content = clone.name
+    clone.embedding = (await embedding_client.encode_passage(embedding_content))[0]
+    clone.embedding_model = await embedding_client.encoder_name()
+
+    db.add(clone)
+    await db.commit()
+    await db.refresh(clone)
+    return clone
 
 
 # (Jonny): We can't delete a clone, because that will cause a cascade that
@@ -277,6 +281,7 @@ async def delete(
 async def generate_long_desc(
     creator: Annotated[models.Creator, Depends(deps.get_current_active_creator)],
     llm: Annotated[LLM, Depends(deps.get_llm_with_clone_id)],
+    tokenizer: Annotated[Tokenizer, Depends(deps.get_tokenizer)],
     clone: Annotated[models.Clone, Depends(get_clone)],
     clonedb: Annotated[CreatorCloneDB, Depends(deps.get_creator_clonedb)],
 ):
@@ -289,7 +294,7 @@ async def generate_long_desc(
             detail="Auto generated long descriptions for Creators is not yet enabled. Please contact us for more information.",
         )
     long_desc = await Controller.generate_long_description(
-        llm=llm, clone=clone, clonedb=clonedb
+        llm=llm, tokenizer=tokenizer, clone=clone, clonedb=clonedb
     )
     return long_desc
 
@@ -340,11 +345,13 @@ async def create_document(
         index_type=IndexType.list, **doc_create.model_dump(exclude_unset=True)
     )
     index = ListIndex(tokenizer=tokenizer, splitter=splitter)
+
     nodes = await index.abuild(doc=doc)
     doc_model = await clonedb.add_document(
         doc=doc,
         nodes=nodes,
     )
+
     return doc_model
 
 

@@ -31,6 +31,9 @@ class Document(BaseModel):
     embedding: list[float] = Field(default=None, repr=False)
     embedding_model: str | None = Field(default=None, repr=False)
     hash: str = ""
+    text_splitter: str | None = None
+    max_chunk_size: str | None = None
+    chunk_overlap: str | None = None
 
     @validator("hash", always=True)
     def doc_hash(cls, v, values) -> str:
@@ -159,7 +162,7 @@ class _MemoryBase(BaseModel):
         default=False,
         detail="Whether this memory is shared across all conversations or not.",
     )
-    embedding: list[float] = Field(default=None, repr=False)
+    embedding: list[float] | None = Field(default=None, repr=False)
     embedding_model: str | None = Field(default=None, repr=False)
     depth: int = Field(
         default=0, detail="What depth of reflection this is. New memories are depth 0."
