@@ -5,15 +5,16 @@ import Image from 'next/image'
 import useConversations from '@/hooks/useConversations'
 import { Character, CharacterChat, Message } from '@/types'
 import { useRouter } from 'next/navigation'
-import ChatPopover from './ChatPopover'
+import ChatPopover from './PopoverCreate'
 import MagnifyingGlass from '@/svg/ChatPage/Chat/magnify.svg'
 import SmallNav from '../Characters/SmallSidebar'
 import TagsComponent from '@/components/HomePage/Tags'
 import { MemoryStrategy } from '@/client/models/MemoryStrategy'
 import { InformationStrategy } from '@/client/models/InformationStrategy'
-import DropdownChoose from './Dropdown'
+import DropdownChoose from './DropdownCreate'
 import { useQueryClonesById } from '@/hooks/useClones'
 import { ColorRing } from 'react-loader-spinner'
+import Dropdown from './DropdownCreate'
 
 type CreateProps = {
     characterId: string
@@ -73,6 +74,8 @@ const Create = ({ characterId }: CreateProps) => {
         require('preline')
     }, [])
 
+    const lastConversationId = "test"
+
     return (
         <div className='w-[100%] border-r-[2px] border-[#252525] bg-[#121212] lg:inline'>
             {isLoading && (
@@ -128,13 +131,12 @@ const Create = ({ characterId }: CreateProps) => {
 
                         </button>
 
-                        <button
+                        {/* <button
                             className='hs-dropdown-toggle inline-flex justify-center items-center bg-gray-800 hover:bg-gray-700 rounded-full p-2 transition duration-200 cursor-not-allowed'
                         >
-                            {/* <HorizontalDotsBig /> */}
-                            Dots
-                        </button>
-                        {/* <DropdownChoose characterId={character.id} toggleChatState={toggleChatState} */}
+                            <HorizontalDotsBig />
+                        </button> */}
+                        <Dropdown characterId={character.id} lastConversationId={lastConversationId}  />
                     </div>
                 </div>
 
@@ -157,7 +159,7 @@ const Create = ({ characterId }: CreateProps) => {
                         <button
                             onClick={async () => {
                                 const conversationId = await createCharacterConversation(characterId, 'short_term')
-                                const new_url = `http://localhost:3000/chat/${characterId}/${conversationId}`
+                                const new_url = `http://localhost:3000/clones/${characterId}/conversations/${conversationId}`
                                 console.log("NEW URL -> ", new_url)
                                 router.push(new_url)
                             }}
@@ -169,7 +171,7 @@ const Create = ({ characterId }: CreateProps) => {
                         <button
                             onClick={async () => {
                                 const conversationId = await createCharacterConversation(characterId, 'long_term')
-                                const new_url = `http://localhost:3000/chat/${characterId}/${conversationId}`
+                                const new_url = `http://localhost:3000/clones/${characterId}/conversations/${conversationId}`
                                 router.push(new_url)
                             }}
                             className='mt-2 flex items-center justify-between w-full py-2 px-4 inline-flex bg-purple-500 rounded-lg hover:bg-purple-600 text-white'

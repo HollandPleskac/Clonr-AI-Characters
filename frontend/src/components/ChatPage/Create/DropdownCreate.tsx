@@ -7,13 +7,10 @@ import Link from 'next/link'
 
 type ChatDropdownProps = {
   characterId: string
-  toggleChatState: () => void
+  lastConversationId: string
 }
 
-const ChatDropdown = ({ characterId, toggleChatState }: ChatDropdownProps) => {
-
-    // need to get the last conversation id here somehow
-    const lastConversationId="test"
+const Dropdown = ({ characterId, lastConversationId }: ChatDropdownProps) => {
   
   return (
     <div className='hs-dropdown relative inline-flex justify-center items-center'>
@@ -34,7 +31,7 @@ const ChatDropdown = ({ characterId, toggleChatState }: ChatDropdownProps) => {
             Options
           </span> */}
           <Link
-            href={`http://localhost:3000/chat/${characterId}/${lastConversationId}`}
+            href={`http://localhost:3000/clones/${characterId}/conversations/${lastConversationId}`}
             className='w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-purple-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300'>
             <div className='w-4 h-4'>
               <svg
@@ -56,25 +53,28 @@ const ChatDropdown = ({ characterId, toggleChatState }: ChatDropdownProps) => {
             View current chat
           </Link>
 
-          <button
-            onClick={toggleChatState}
-            className='w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-purple-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300'
-          >
-            <svg
-              width='16'
-              height='16'
-              viewBox='0 0 20 20'
-              xmlns='http://www.w3.org/2000/svg'
-              fill='currentColor'
-            >
-              <rect x='0' fill='none' width='20' height='20' />
-
-              <g>
-                <path d='M14.8 9c.1-.3.2-.6.2-1 0-2.2-1.8-4-4-4-1.5 0-2.9.9-3.5 2.2-.3-.1-.7-.2-1-.2C5.1 6 4 7.1 4 8.5c0 .2 0 .4.1.5-1.8.3-3.1 1.7-3.1 3.5C1 14.4 2.6 16 4.5 16h10c1.9 0 3.5-1.6 3.5-3.5 0-1.8-1.4-3.3-3.2-3.5zm-6.3 5.9l-3.2-3.2 1.4-1.4 1.8 1.8 3.8-3.8 1.4 1.4-5.2 5.2z' />
-              </g>
-            </svg>
+          <Link
+            href={`http://localhost:3000/clones/${characterId}/conversations`}
+            className='w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-purple-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300'>
+            <div className='w-4 h-4'>
+              <svg
+                width='16'
+                height='16'
+                viewBox='0 0 24 24'
+                fill='none'
+                xmlns='http://www.w3.org/2000/svg'
+              >
+                <path
+                  d='M18.364 8.05026L17.6569 7.34315C14.5327 4.21896 9.46734 4.21896 6.34315 7.34315C3.21895 10.4673 3.21895 15.5327 6.34315 18.6569C9.46734 21.7811 14.5327 21.7811 17.6569 18.6569C19.4737 16.84 20.234 14.3668 19.9377 12.0005M18.364 8.05026H14.1213M18.364 8.05026V3.80762'
+                  stroke='currentColor'
+                  strokeWidth='1.5'
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                />
+              </svg>
+            </div>
             View previous conversations
-          </button>
+          </Link>
 
           {/* <button className='w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-purple-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300'>
             <svg
@@ -138,4 +138,4 @@ const ChatDropdown = ({ characterId, toggleChatState }: ChatDropdownProps) => {
   )
 }
 
-export default ChatDropdown
+export default Dropdown
