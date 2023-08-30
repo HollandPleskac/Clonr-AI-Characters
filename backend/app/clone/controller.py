@@ -206,6 +206,10 @@ class Controller:
                 raise ValueError(
                     f"Cannot add memories with memory strategy {self.memory_strategy}"
                 )
+                # raise HTTPException(
+                #     status_code=status.HTTP_400_BAD_REQUEST,
+                #     detail=f"Cannot add memories with memory strategy {self.memory_strategy}",
+                # )
 
             attributes = dict(
                 subroutine="add_private_memory",
