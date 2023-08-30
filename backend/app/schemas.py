@@ -219,6 +219,8 @@ class CloneSearchResult(CommonMixin, BaseModel):
 
 
 class CloneContinue(CloneSearchResult):
+    model_config = ConfigDict(from_attributes=True)
+
     conversation_updated_at: datetime.datetime
     conversation_id: uuid.UUID
 

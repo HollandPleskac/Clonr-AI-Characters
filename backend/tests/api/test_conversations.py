@@ -1,5 +1,4 @@
 import uuid
-import warnings
 
 import sqlalchemy as sa
 from fastapi.encoders import jsonable_encoder
@@ -185,29 +184,41 @@ def test_conversation_queries(
     ]
     for params in param_dicts:
         r = client.get(
-            "/conversations",
-            headers=superuser_headers.copy(),
+            "/conversations/",
+            headers={
+                "Content-type": "application/json",
+                "Cookie": superuser_headers["Cookie"],
+                "cake": superuser_headers["Cookie"],
+            },
             params=params,
         )
         # FixMe (Jonny): Spent like 2 hours on this, Starlette will not
         # send the cookie header through for some reason. Other headers work,
         # other routes work, but this shit? nah. fucking annoying
         data = r.json()
-        if r.status_code == 401:
-            warnings.warn("Starlette error needs to be fixed here.")
-        else:
-            assert r.status_code == 200, data
-            assert all(x["user_id"] == user_id for x in data)
+        assert r.status_code == 200, data
+        assert all(x["user_id"] == user_id for x in data)
 
     # test the conversation sidebar query
     r = client.get(
         "/conversations/sidebar",
-        headers=superuser_headers.copy(),
+        headers=superuser_headers,
     )
-    if r.status_code == 401:
-        warnings.warn("Starlette error needs to be fixed here.")
-    else:
-        assert r.status_code == 200, data
+    assert r.status_code == 200, r.json()
+    # TODO write a test to make sure this is properly ordered.
+
+    # test the conversation sidebar query
+    r = client.get(
+        "/conversations/continue",
+        headers=superuser_headers,
+    )
+    assert r.status_code == 200, r.json()
+    data = r.json()
+    assert len(data) == len(
+        set(x["id"] for x in data)
+    ), "Received duplicate clones in continue chatting"
+    arr = [x["conversation_updated_at"] for x in data]
+    assert arr == sorted(arr, reverse=True), "Continue chatting data not sorted"
 
     for t in tags:
         db.delete(t)
