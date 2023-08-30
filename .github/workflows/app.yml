@@ -1,100 +1,78 @@
-# name: Python application
+name: Python application
 
-# env:
-#   ACTIONS_RUNNER_DEBUG: true
+env:
+  ACTIONS_RUNNER_DEBUG: true
 
-# on:
-#   push:
-#     branches: [ "main" ]
-#   pull_request:
-#     branches: [ "main" ]
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
-# permissions:
-#   contents: read
+permissions:
+  contents: read
 
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-#     steps:
-#     - uses: actions/checkout@v2
-#     - name: Set up Python 3.10
-#       uses: actions/setup-python@v2
-#       with:
-#         python-version: "3.10"
-#     - name: Install poetry
-#       run: |
-#         python -m pip install --upgrade pip
-#         python -m pip install poetry==1.5.1
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.10"
+    - name: Install poetry
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install poetry==1.5.1
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m venv venv  
+        source venv/bin/activate 
+        cd ./backend
+        poetry export -f requirements.txt --output requirements.txt --without-hashes --dev
+        pip install -r requirements.txt
+    - name: Cache pip dependencies
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: pip-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          pip-${{ runner.os }}-
+    - name: Lint with flake8
+      run: |
+        source venv/bin/activate 
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Formatting with black
+      run: |
+        source venv/bin/activate 
+        black ./backend --check --verbose
+    - name: Type checking with mypy
+      run: |
+        source venv/bin/activate 
+        cd ./backend
+        mypy . --ignore-missing-imports --exclude ./clonr/ --exclude ./tests/ --exclude ./integration_tests/ --exclude ./app/embedding/
+      continue-on-error: true
+    - name: Install Docker Compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y docker-compose
+    - name: Start docker compose
+      run: docker-compose up -d
+    - name: Run tests w/ docker compose
+      run: |
+        source venv/bin/activate
+        cd ./backend
+        chmod +x run_tests.sh
+        ./run_tests.sh
+    - name: Stop docker compose
+      run: docker-compose down
+    # - name: Run tests
+    #   run: |
+    #     source venv/bin/activate 
+    #     cd ./backend
+    #     python -m pytest
       
-#     # - name: Configure poetry
-#     #   run: |
-#     #     python -m poetry config virtualenvs.in-project true
-
-#     # - name: Cache the virtualenv
-#     #   uses: actions/cache@v2
-#     #   with:
-#     #     path: ./.venv
-#     #     key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
-
-#     # - name: Install dependencies
-#     #   run: |
-#     #     python -m poetry install
-#     # - uses: Gr1N/setup-poetry@v8
-#     #   with:
-#     #     path: ~/.cache/pypoetry/virtualenvs
-#     #     key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
-#     # - run: poetry --version
-#     ##### TODO: caching of deps 
-#     - name: Install dependencies
-#       run: |
-#         python -m pip install --upgrade pip
-#         cd ./backend
-#         poetry export -f requirements.txt --output requirements.txt --without-hashes
-#         pip install -r requirements.txt
-#     # - name: Install poetry
-#     #   uses: snok/install-poetry@v1
-#     #   with:
-#     #     version: 1.5.1
-#     #     virtualenvs-create: true
-#     #     virtualenvs-in-project: false
-#     #     installer-parallel: true
-#     # - name: Check current directory and contents
-#     #   run: |
-#     #     pwd
-#     #     ls -la
-#     #     cd ./backend
-#     #     pwd
-#     #     ls -la
-#     # - name: Load cached venv
-#     #   id: cached-poetry-dependencies
-#     #   uses: actions/cache@v3
-#     #   with:
-#     #     path: .venv
-#     #     key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-#     # - name: Install dependencies
-#     #   #if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-#     #   run: |
-#     #     pwd
-#     #     ls -la
-#     #     cd ./backend
-#     #     pwd 
-#     #     ls -la
-#     # - name: Install project
-#     #   run: |
-#     #     poetry install --no-interaction -R backend
-#     - name: Lint with flake8
-#       run: |
-#         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-#         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-#     - name: Formatting with black
-#       # run: black . --check --verbose
-#       run: black ./backend --check --verbose
-#     - name: Type checking with mypy
-#       run: |
-#         cd ./backend
-#         mypy . --ignore-missing-imports
-#     - name: Run tests
-#       run: |
-#         cd ./backend
-#         python -m pytest
