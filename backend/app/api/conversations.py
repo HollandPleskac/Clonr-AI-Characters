@@ -12,7 +12,7 @@ from fastapi.routing import APIRouter
 from loguru import logger
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import defer
 
 from app import deps, models, schemas
 from app.clone.controller import Controller
@@ -157,7 +157,13 @@ async def get_sidebar_conversations(
 
     # Run a subquery to fill in the partition values
     subquery = (
-        sa.select(models.Conversation, rank, group_updated_at, models.Clone.avatar_uri)
+        sa.select(
+            models.Conversation,
+            rank,
+            group_updated_at,
+            models.Clone.avatar_uri,
+            models.Clone.name,
+        )
         .where(models.Conversation.user_id == user.id)
         .join(models.Clone, models.Clone.id == models.Conversation.clone_id)
         .subquery()
@@ -174,17 +180,14 @@ async def get_sidebar_conversations(
 
     # Get back row-objects, which need to be converted to the schemas
     rows = await db.execute(query)
-    
-    conversations_with_clone = []
 
-    for row in rows:
-        row_dict = {attr: getattr(row, attr) for attr in row._fields}
-        clone_avatar_query = sa.select(models.Clone.avatar_uri).where(models.Clone.id == row.clone_id)
-        clone_avatar_uri = await db.scalar(clone_avatar_query)
-        row_dict["clone_avatar_uri"] = clone_avatar_uri
-        conversation = schemas.ConversationInSidebar(**row_dict)
-        conversations_with_clone.append(conversation)
-    return conversations_with_clone
+    convos = convos = [
+        schemas.ConversationInSidebar.model_validate(x) for x in rows.unique()
+    ]
+    return convos
+
+
+# TODO (Kevin): add new route for /continue
 
 
 # TODO (Jonny): put a paywall behind this endpoint after X messages, need to add user permissions
