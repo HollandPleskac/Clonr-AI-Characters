@@ -9,9 +9,11 @@ import SmallNav from '../Characters/SmallSidebar'
 
 
 type ChatTopBarProps = {
+  isInputActive: boolean
+  onSearchInput: (x:string) => void
+  searchInput: string
   character: Character
   inputRef: React.RefObject<HTMLInputElement>
-  isInputActive: boolean
   handleInputFocus: () => void
   handleInputBlur: () => void
   toggleChatState: () => void
@@ -21,6 +23,9 @@ type ChatTopBarProps = {
 }
 
 const ChatTopBar = ({
+  isInputActive,
+  onSearchInput,
+  searchInput,
   character,
   inputRef,
   handleInputBlur,
@@ -39,7 +44,7 @@ const ChatTopBar = ({
   return (
     <div className='flex h-[122px] w-full items-center justify-between border-b border-[#252525] px-10'>
       <div className='flex items-center'>
-        <SmallNav characterId={characterId} conversationId={conversationId} character={character} />
+        <SmallNav characterId={characterId} />
         <div className='h-[55px] w-[55px] relative'>
           <Image
             src={character.avatar_uri}
@@ -81,9 +86,15 @@ const ChatTopBar = ({
             </button>
             <input
               ref={inputRef}
+              value={searchInput}
+              onChange={(e) => onSearchInput(e.target.value)}
               onFocus={handleInputFocus}
               onBlur={handleInputBlur}
-              className={`cursor-default peer-focus:cursor-auto focus:cursor-auto peer py-auto h-[40px] w-[44px] peer-focus:w-[300px] focus:w-[300px] transition-all  duration-500 rounded-full border-none bg-gray-800 peer-focus:bg-gray-700 focus:bg-gray-700 pr-0 pl-[44px] text-[15px] font-light leading-6 text-[#979797] focus:ring-1 focus:ring-transparent`}
+              className={` ${isInputActive
+                ? 'w-[300px] cursor-auto bg-gray-700'
+                : 'w-[44px] cursor-default bg-gray-800'
+                }
+              py-auto h-[40px] transition-all  duration-500 rounded-full border-none pr-0 pl-[44px] text-[15px] font-light leading-6 text-[#979797] focus:ring-1 focus:ring-transparent`}
               type='text'
               placeholder='Search'
               style={{ outline: 'none', resize: 'none' }}

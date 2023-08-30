@@ -9,13 +9,13 @@ import SmileIcon from '@/svg/ChatPage/Chat/smile-icon.svg'
 import SendIcon from '@/svg/ChatPage/Chat/SendIcon'
 import { ColorRing, ThreeDots } from 'react-loader-spinner'
 
-import { Character, CharacterChat, Message } from '@/types'
+import { Character, Message } from '@/types'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import ChooseChatExperience from './ChooseChatExperience'
 import PreviousConversations from './PreviousConversations'
 import ChatTopBar from './ChatTopBar'
 import useConversations from '@/hooks/useConversations'
-//import { createConversation } from '@hooks/useConversations'
+import { useMessagesPagination } from '@/hooks/useMessagesPagination'
 
 interface ChatScreenProps {
   characterId: string
@@ -32,52 +32,38 @@ export default function ChatScreen({
   const { queryConversation, queryConversationMessages } = useConversations();
 
   const [message, setMessage] = useState('')
-  const [messages, setMessages] = useState<Message[]>([])
 
-  const [isFetchingInitialData, setIsFetchingInitialData] = useState(true)
   const [isFetchingServerMessage, setIsFetchingServerMessage] = useState(false)
 
-  const [convoID, setConvoID] = useState('')
-  const [conversationState, setConversationState] = useState<string | null>('undecided')
   const [showChat, setShowChat] = useState(true)
   const [scrollToNewMessage, setScrollToNewMessage] = useState<boolean>(false)
 
-  async function fetchInitialData() {
-    // get conversation state
-    if (conversationId !== 'convo') {
-      const conversation = await queryConversation(conversationId);
-      setConversationState(conversation.memory_strategy);
-
-      // get messages
-
-      const messages = await queryConversationMessages(conversationId)
-      setMessages(messages);
-    } else {
-      setConversationState('undecided')
-    }
-
-    setIsFetchingInitialData(false)
-  }
-
-  useEffect(() => {
-    fetchInitialData()
-  }, [])
-
   // search state
+  const [searchInput, setSearchInput] = useState('')
   const [isInputActive, setInputActive] = useState(false)
   const handleInputFocus = () => setInputActive(true)
   const handleInputBlur = () => setInputActive(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const divRef = useRef<HTMLDivElement | null>(null)
 
-  // hooks
-  const { createConversation, createMessage, generateCloneMessage } = useConversations();
+  // handle messages state
+  const { createMessage, generateCloneMessage } = useConversations();
 
-  useEffect(() => {
-    // @ts-ignore
-    import('preline')
-    // TODO: create conversation if not exists
-  }, [])
+  const queryParamsMessages = {
+    conversationId: conversationId,
+    limit: 10
+    // todo: include search query params
+  }
+
+  const {
+    paginatedData: messages,
+    isLastPage: isLastMessagesPage,
+    isLoading: isLoadingMessages,
+    size: messagesSize,
+    setSize: setMessagesSize,
+    mutate: mutateMessages
+  } = useMessagesPagination(queryParamsMessages)
+
 
   useEffect(() => {
     if (scrollToNewMessage && divRef.current) {
@@ -88,6 +74,8 @@ export default function ChatScreen({
 
   const sendMessage = async () => {
     setScrollToNewMessage(true)
+
+    let sentMsg = await createMessage(conversationId, message);
 
     const newMessage = {
       id: window.Date.now().toString(),
@@ -102,15 +90,12 @@ export default function ChatScreen({
       parent_id: '',
       clone_id: '',
       user_id: '',
-      conversation_id: convoID
+      conversation_id: conversationId
     }
 
     let updatedMessages = [newMessage, ...messages]
+    mutateMessages(updatedMessages);
 
-    // TODO: figure out 423
-    // TODO: add this in 
-    let sentMsg = await createMessage(conversationId, message);
-    setMessages(updatedMessages)
     const message_copy = message
     setMessage('')
     await fetchMessageFromServer(message_copy)
@@ -119,7 +104,7 @@ export default function ChatScreen({
   const fetchMessageFromServer = async (in_msg: String) => {
     setIsFetchingServerMessage(true)
 
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    // await new Promise((resolve) => setTimeout(resolve, 500))
 
     try {
       let serverMessage = await generateCloneMessage(conversationId);
@@ -129,7 +114,9 @@ export default function ChatScreen({
         console.log('Server Message:', serverMessage.content)
       }
 
-      setMessages((messages) => [serverMessage, ...messages])
+      const updatedMessagess = [serverMessage, ...messages]
+      mutateMessages(updatedMessagess);
+
     } catch (error) {
       console.error(error)
     }
@@ -173,50 +160,40 @@ export default function ChatScreen({
     }
   }
 
-  // TODO: edit this
-  const fetchMoreData = () => {
-  }
-
-  const handleSetConversationState = (newState: string) => {
-    setConversationState(newState)
-  }
-
-  const handleSetConvoID = (newID: string) => {
-    setConvoID(newID)
-  }
+  useEffect(() => {
+    // @ts-ignore
+    import('preline')
+  }, [])
 
   return (
     <div className='w-[100%] border-r-[2px] border-[#252525] bg-[#121212] lg:inline'>
-      {conversationState === 'undecided' && (
+      {conversationId === 'convo' && (
         <ChooseChatExperience
           characterId={characterId}
           character={character}
-          setConversationState={handleSetConversationState}
-          setConvoID={handleSetConvoID}
-          initialCharacterChats={[]}
-          currentCharacterId={characterId}
 
         />
       )}
 
-      {conversationState !== 'undecided' && (
+      {conversationId !== 'convo' && (
         <>
           <ChatTopBar
-            character={character}
             isInputActive={isInputActive}
+            searchInput={searchInput}
+            onSearchInput={(x) => setSearchInput(x)}
             handleInputFocus={handleInputFocus}
             handleInputBlur={handleInputBlur}
             inputRef={inputRef}
             toggleChatState={() => setShowChat((prevState) => !prevState)}
             showChat={showChat}
+            character={character}
             characterId={characterId}
             conversationId={conversationId}
-
           />
           {!showChat && <PreviousConversations />}
           {showChat && (
             <>
-              {isFetchingInitialData && (
+              {isLoadingMessages && (
                 <div className='text-white grid place-items-center'
                   style={{
                     height: 'calc(100vh - 122px - 92px)',
@@ -234,9 +211,9 @@ export default function ChatScreen({
                 </div>
               )}
 
-              {!isFetchingInitialData && (
+              {!isLoadingMessages && (
                 <div
-                  id='scrollableDiv'
+                  id='scrollableMessagesDiv'
                   style={{
                     height: 'calc(100vh - 122px - 92px)',
                     overflow: 'auto',
@@ -248,13 +225,13 @@ export default function ChatScreen({
                   ref={divRef}
                 >
                   <InfiniteScroll
-                    dataLength={messages.length}
-                    next={fetchMoreData}
+                    dataLength={messages?.length ?? 0}
+                    next={() => setMessagesSize(messagesSize + 1)}
+                    hasMore={!isLastMessagesPage}
                     style={{ display: 'flex', flexDirection: 'column-reverse' }} //To put endMessage and loader to the top.
                     inverse={true}
-                    hasMore={true}
                     loader={<h4>Loading...</h4>}
-                    scrollableTarget='scrollableDiv'
+                    scrollableTarget='scrollableMessagesDiv'
                     className='pt-4'
                   >
                     <div
@@ -273,7 +250,7 @@ export default function ChatScreen({
                         visible={isFetchingServerMessage}
                       />
                     </div>
-                    {messages.map((message, index) => (
+                    {messages?.map((message, index) => (
                       <MessageComponent
                         message={message}
                         clone_avatar_uri={character.avatar_uri}
