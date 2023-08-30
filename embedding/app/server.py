@@ -8,13 +8,22 @@ from grpc_reflection.v1alpha import reflection
 from loguru import logger
 from opentelemetry import metrics
 
-from app.encoder import CrossEncoder, EmbeddingModel
+from app.encoder import (
+    CrossEncoder,
+    EmbeddingModel,
+    EmbeddingModelEnum,
+    CrossEncoderEnum,
+)
 from app.pb import embed_pb2, embed_pb2_grpc
 from app.tracing import setup_tracing
 
 HOST = os.environ.get("EMBEDDINGS_GRPC_HOST", "localhost")
 PORT = os.environ.get("EMBEDDINGS_GRPC_PORT", 50051)
 OTEL_EXPORTER_OTLP_ENDPOINT = os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT")
+EMBEDDING_MODEL_NAME = os.environ.get("EMBEDDING_MODEL_NAME", "intfloat/e5-small-v2")
+CROSSENCODER_MODEL_NAME = os.environ.get(
+    "CROSSENCODER_MODEL_NAME", "cross-encoder/ms-marco-MiniLM-L-6-v2"
+)
 
 APP_NAME = "embeddings.server"
 
@@ -41,8 +50,14 @@ class EmbedServicer(embed_pb2_grpc.EmbedServicer):
     """Provides methods that implement functionality of route guide server."""
 
     def __init__(self) -> None:
-        self.encoder = EmbeddingModel.default()
-        self.cross_encoder = CrossEncoder.default()
+        logger.info(f"Loading Embedding Model: {EMBEDDING_MODEL_NAME}")
+        self.encoder = EmbeddingModel.from_pretrained(
+            EmbeddingModelEnum(EMBEDDING_MODEL_NAME), download_if_needed=True
+        )
+        logger.info(f"Loading CrossEncoder Model: {CROSSENCODER_MODEL_NAME}")
+        self.cross_encoder = CrossEncoder.from_pretrained(
+            CrossEncoderEnum(CROSSENCODER_MODEL_NAME), download_if_needed=True
+        )
         info_meter.add(amount=1, attributes=dict(app_name=APP_NAME))
 
     async def EncodeQueries(
