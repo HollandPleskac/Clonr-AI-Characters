@@ -1,7 +1,7 @@
 import React from 'react'
 import MagnifyingGlass from '@/svg/ChatPage/Chat/magnify.svg'
 import Paperclip from '@/svg/ChatPage/Chat/paperclip.svg'
-import ChatDropdown from './Dropdown'
+import ChatDropdown from './DropdownCreate'
 import Image from 'next/image'
 import { Character } from '@/types'
 import Link from 'next/link'
