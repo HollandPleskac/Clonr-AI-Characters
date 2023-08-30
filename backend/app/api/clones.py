@@ -281,6 +281,7 @@ async def delete(
 async def generate_long_desc(
     creator: Annotated[models.Creator, Depends(deps.get_current_active_creator)],
     llm: Annotated[LLM, Depends(deps.get_llm_with_clone_id)],
+    tokenizer: Annotated[Tokenizer, Depends(deps.get_tokenizer)],
     clone: Annotated[models.Clone, Depends(get_clone)],
     clonedb: Annotated[CreatorCloneDB, Depends(deps.get_creator_clonedb)],
 ):
@@ -293,7 +294,7 @@ async def generate_long_desc(
             detail="Auto generated long descriptions for Creators is not yet enabled. Please contact us for more information.",
         )
     long_desc = await Controller.generate_long_description(
-        llm=llm, clone=clone, clonedb=clonedb
+        llm=llm, tokenizer=tokenizer, clone=clone, clonedb=clonedb
     )
     return long_desc
 

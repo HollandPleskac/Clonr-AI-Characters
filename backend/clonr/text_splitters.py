@@ -428,9 +428,6 @@ class TokenSplitter(TextSplitter):
             min_chunk_size=min_chunk_size,
             chunk_overlap=chunk_overlap,
         )
-        self.max_chunk_size = max_chunk_size
-        self.chunk_overlap = chunk_overlap
-        self.max_chunk_size = min_chunk_size
         self.tokenizer = tokenizer
 
     def _split_text(self, text: str) -> list[str]:

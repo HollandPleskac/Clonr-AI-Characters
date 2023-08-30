@@ -1028,7 +1028,11 @@ class Controller:
     @classmethod
     @tracer.start_as_current_span("generate_long_description")
     async def generate_long_description(
-        cls, llm: LLM, clone: models.Clone, clonedb: CreatorCloneDB
+        cls,
+        llm: LLM,
+        tokenizer: Tokenizer,
+        clone: models.Clone,
+        clonedb: CreatorCloneDB,
     ) -> models.LongDescription:
         # This can be an expensive computation as it will cost roughly
         # the number of tokens in all documents combined, plus some
@@ -1069,7 +1073,10 @@ class Controller:
             for doc in docs
         ]
         long_desc = await generate.long_description_create(
-            llm=MockLLM(), short_description=clone.short_description, docs=doc_structs
+            llm=MockLLM(),
+            tokenizer=tokenizer,
+            short_description=clone.short_description,
+            docs=doc_structs,
         )
         # A stateful edit seems like a bad idea
         # clone.long_description = long_desc

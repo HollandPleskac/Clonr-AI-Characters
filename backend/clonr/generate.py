@@ -199,16 +199,20 @@ async def agent_summary(
 
 @tracer.start_as_current_span("long_description_create")
 async def long_description_create(
-    llm: LLM, short_description: str, docs: list[Document], **kwargs
+    llm: LLM,
+    tokenizer: Tokenizer,
+    short_description: str,
+    docs: list[Document],
+    **kwargs,
 ) -> str:
     """WARNING: this thing could be pretty expensive, it will run ALL documents
     through the LLM. but tests show this is the highest quality, using cached summaries
     doesn't work as well :("""
     current_description = short_description
-    chunk_size = auto_chunk_size_long_desc(llm=llm)
+    max_chunk_size = auto_chunk_size_long_desc(llm=llm)
     splitter = TokenSplitter(
-        tokenizer=getattr(llm, "tokenizer", Tokenizer.from_openai("gpt-3.5-turbo")),
-        chunk_size=chunk_size,
+        tokenizer=tokenizer,
+        max_chunk_size=max_chunk_size,
         chunk_overlap=32,
     )
     for doc in docs:
