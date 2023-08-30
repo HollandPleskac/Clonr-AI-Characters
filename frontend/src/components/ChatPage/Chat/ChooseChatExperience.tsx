@@ -16,10 +16,13 @@ import TagsComponent from '@/components/HomePage/Tags'
 import createNewConversation from '@/hooks/useConversations'
 import { MemoryStrategy } from '@/client/models/MemoryStrategy'
 import { InformationStrategy } from '@/client/models/InformationStrategy'
+import DropdownChoose from './DropdownChoose'
 
 type ChooseChatExperienceProps = {
   characterId: string
   character: Character
+  toggleChatState: () => void
+  showChat: boolean
 }
 
 const tags = [
@@ -47,7 +50,7 @@ const tags = [
 
 
 
-const ChooseChatExperience = ({ characterId, character}: ChooseChatExperienceProps) => {
+const ChooseChatExperience = ({ characterId, character, toggleChatState, showChat }: ChooseChatExperienceProps) => {
   const router = useRouter();
   const { createConversation } = useConversations();
 
@@ -110,11 +113,13 @@ const ChooseChatExperience = ({ characterId, character}: ChooseChatExperiencePro
 
           </button>
 
-          <button
+          {/* <button
             className='hs-dropdown-toggle inline-flex justify-center items-center bg-gray-800 hover:bg-gray-700 rounded-full p-2 transition duration-200 cursor-not-allowed'
           >
             <HorizontalDotsBig />
-          </button>
+          </button> */}
+          <DropdownChoose characterId={character.id} toggleChatState={toggleChatState}
+          />
         </div>
       </div>
 
