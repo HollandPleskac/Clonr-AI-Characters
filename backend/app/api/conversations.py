@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import defer
 from sqlalchemy.orm import selectinload
 from sqlalchemy.orm import aliased
+from sqlalchemy.sql import func
 
 from app import deps, models, schemas
 from app.clone.controller import Controller
@@ -137,6 +138,7 @@ async def get_sidebar_conversations(
     convo_limit: Annotated[
         int, Query(title="Number of conversations to return per clone", ge=1, le=5)
     ] = 3,
+    name: Annotated[str | None, Query()] = None,
     offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
     limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 30,
 ):
@@ -177,6 +179,10 @@ async def get_sidebar_conversations(
         .where(subquery.c.rank <= convo_limit)
         .order_by(subquery.c.group_updated_at, subquery.c.rank, subquery.c.name)
     )
+
+    # Filter by name if provided
+    if name is not None:
+        query = query.where(subquery.c.case_insensitive_name.ilike(f"%{name}%"))
 
     query = query.offset(offset).limit(limit)
 

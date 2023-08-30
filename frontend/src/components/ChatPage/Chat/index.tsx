@@ -252,7 +252,10 @@ export default function ChatScreen({
                     </div>
                     {messages?.map((message, index) => (
                       <MessageComponent
+                        mutateMessages={mutateMessages}
+                        conversationId={conversationId}
                         message={message}
+                        character={character}
                         clone_avatar_uri={character.avatar_uri}
                         isLast={
                           message.is_clone && index === 0 ? true : false
