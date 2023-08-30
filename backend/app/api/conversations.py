@@ -20,6 +20,7 @@ from sqlalchemy.sql import func
 from app import deps, models, schemas
 from app.clone.controller import Controller
 from app.clone.types import AdaptationStrategy, InformationStrategy, MemoryStrategy
+from app.api.clones import get_clone
 from app.deps.limiter import user_id_cookie_fixed_window_ratelimiter
 from app.deps.users import UserAndPlan
 from app.embedding import EmbeddingClient
@@ -139,6 +140,7 @@ async def get_sidebar_conversations(
         int, Query(title="Number of conversations to return per clone", ge=1, le=5)
     ] = 3,
     name: Annotated[str | None, Query()] = None,
+    clone_id: Annotated[uuid.UUID | None, Query()] = None,
     offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
     limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 30,
 ):
@@ -183,6 +185,10 @@ async def get_sidebar_conversations(
     # Filter by name if provided
     if name is not None:
         query = query.where(subquery.c.case_insensitive_name.ilike(f"%{name}%"))
+
+    # Filter by clone_id if provided
+    if clone_id is not None:
+        query = query.where(subquery.c.clone_id == clone_id)
 
     query = query.offset(offset).limit(limit)
 
@@ -233,6 +239,28 @@ async def get_continue_conversations(
     rows = await db.execute(q)
     return rows.unique().all()
 
+
+@router.get(
+    "/last_conversation/{clone_id}", response_model=uuid.UUID, status_code=200
+)
+async def get_last_conversation(
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    clone: Annotated[models.Clone, Depends(get_clone)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
+):
+    query = (
+        sa.select(models.Conversation.id)
+        .filter(
+            models.Conversation.clone_id == clone.id,
+            models.Conversation.user_id == user.id
+        )
+        .order_by(models.Conversation.updated_at.desc())  # Assuming created_at field
+        .limit(1)
+    )
+
+    result = await db.execute(query)
+    conversation_id = result.scalars().unique().one()
+    return conversation_id
 
 # TODO (Jonny): put a paywall behind this endpoint after X messages, need to add user permissions
 @router.post(
