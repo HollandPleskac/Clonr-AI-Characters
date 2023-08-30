@@ -29,8 +29,6 @@ export default function ChatScreen({
   conversationId,
   character,
 }: ChatScreenProps) {
-  const { queryConversation, queryConversationMessages } = useConversations();
-
   const [message, setMessage] = useState('')
 
   const [isFetchingServerMessage, setIsFetchingServerMessage] = useState(false)
@@ -122,25 +120,6 @@ export default function ChatScreen({
     }
 
     setIsFetchingServerMessage(false)
-  }
-
-  const handleConversationCreate = async () => {
-    let conversationCreateData = {
-      name: 'example',
-      user_name: 'user',
-      memory_strategy: 'short_term',
-      information_strategy: 'internal',
-      adaptation_strategy: 'static',
-      clone_id: 'd433575f-d8ad-4f80-a90d-f21122b71bf0'
-    }
-    let convo_id = await createConversation(conversationCreateData);
-    setConvoID(convo_id)
-
-    let r_msg = await queryConversationMessages(convo_id);
-    let msgs = r_msg.map((x: Message, index: number) => (
-      x
-    ))
-    setMessages(msgs)
   }
 
   const formatTime = (seconds: number) => {

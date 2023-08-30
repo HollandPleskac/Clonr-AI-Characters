@@ -191,11 +191,59 @@ async def get_sidebar_conversations(
     # Get back row-objects, which need to be converted to the schemas
     rows = await db.execute(query)
 
-    convos = convos = [
+    convos = [
         schemas.ConversationInSidebar.model_validate(x) for x in rows.unique()
     ]
     return convos
 
+@router.get(
+    "/continue", response_model=list[schemas.CloneSearchResult], status_code=200
+)
+async def get_continue_conversations(
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
+    convo_limit: Annotated[
+        int, Query(title="Number of conversations to return", ge=1, le=20)
+    ] = 10,
+    offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
+    limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 30,
+):
+    query = (
+        sa.select(models.Clone, models.Tag)
+        .join(models.Conversation, models.Clone.id == models.Conversation.clone_id)
+        .join(models.clones_to_tags, models.clones_to_tags.c.clone_id == models.Clone.id)
+        .join(models.Tag, models.Tag.id == models.clones_to_tags.c.tag_id)
+        .where(models.Conversation.user_id == user.id)
+        .distinct(models.Clone.id)
+        .offset(offset)
+        .limit(limit)
+    )
+
+    rows_execute = await db.execute(query)
+    rows = rows_execute.scalars().unique().all()
+    return rows
+
+@router.get(
+    "/last_conversation/{clone_id}", response_model=uuid.UUID, status_code=200
+)
+async def get_last_conversation(
+    db: Annotated[AsyncSession, Depends(deps.get_async_session)],
+    clone: Annotated[models.Clone, Depends(get_clone)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
+):
+    query = (
+        sa.select(models.Conversation.id)
+        .filter(
+            models.Conversation.clone_id == clone.id,
+            models.Conversation.user_id == user.id
+        )
+        .order_by(models.Conversation.updated_at.desc())  # Assuming created_at field
+        .limit(1)
+    )
+
+    result = await db.execute(query)
+    conversation_id = result.scalars().unique().one()
+    return conversation_id
 
 @router.get("/continue", response_model=list[schemas.CloneContinue], status_code=200)
 async def get_continue_conversations(

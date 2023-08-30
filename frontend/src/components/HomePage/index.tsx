@@ -9,8 +9,6 @@ import 'swiper/css/scrollbar'
 import Carousel from './Carousel'
 import TopBar from '@/components/TopBar'
 import AlertBar from '@/components/AlertBar'
-import { Character, User } from '@/types'
-import { CloneSearchResult } from '@/client/models/CloneSearchResult'
 import CharacterGrid from './CharacterGrid'
 import StatBar from '../Statistics/StatBar'
 import ScaleFadeIn from '../Transitions/ScaleFadeIn'
@@ -32,17 +30,6 @@ export default function HomeScreen() {
 
   // search grid characters state
   const [searchInput, setSearchInput] = useState('')
-
-
-  const queryParams = {
-    offset: 0,
-    limit: 20
-  }
-
-  // Regular clone data
-  const { data, isLoading } = useQueryClones(queryParams);
-
-  console.log("THIS IS DATA: ", data)
 
   const topQueryParams = {
     sort: CloneSortType["TOP"]
@@ -93,6 +80,12 @@ export default function HomeScreen() {
     size,
     setSize
   } = useClonesPagination(queryParamsSearch)
+
+  if (isTopLoading || isTrendingLoading || isLoadingContinue || !topChars || !trendingChars || !continueChars) {
+    return (
+      <div> Loading.. </div>
+    )
+  }
 
   return (
     <div className='pb-[75px]'>
