@@ -472,6 +472,9 @@ class Document(CommonMixin, Base):
     index_type: Mapped[IndexType] = mapped_column(nullable=True)
     embedding: Mapped[list[float]]
     embedding_model: Mapped[str]
+    text_splitter: Mapped[str] = mapped_column(nullable=True)
+    max_chunk_size: Mapped[int] = mapped_column(nullable=True)
+    chunk_overlap: Mapped[int] = mapped_column(nullable=True)
     clone_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("clones.id", ondelete="cascade"), nullable=False
     )

@@ -1,7 +1,6 @@
 import time
 import uuid
 from dataclasses import dataclass
-from enum import Enum
 from typing import Annotated
 
 from fastapi import Cookie, Depends, status
@@ -13,15 +12,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
 from app.auth.users import AUTH_KEY_PREFIX, UserManager, auth_backend
+from app.schemas import Plan
 from app.settings import settings
 
 from .db import get_async_redis, get_async_session
-
-
-class Plan(str, Enum):
-    free: str = "free"
-    basic: str = "basic"
-    plus: str = "plus"
 
 
 @dataclass

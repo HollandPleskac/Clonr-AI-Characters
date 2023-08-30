@@ -2,6 +2,7 @@ import datetime
 import random
 import re
 import uuid
+from enum import Enum
 from typing import Annotated
 
 from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate
@@ -50,6 +51,12 @@ def validate_hex_code(s: str | None):
     if not all(x in "1234567890ABCDEFabcdef" for x in s):
         raise ValueError(f"Invalid hexcode: {s}")
     return s
+
+
+class Plan(str, Enum):
+    free: str = "free"
+    basic: str = "basic"
+    plus: str = "plus"
 
 
 class UserRead(BaseUser[uuid.UUID]):

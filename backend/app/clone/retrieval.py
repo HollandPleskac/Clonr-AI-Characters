@@ -40,7 +40,7 @@ async def vector_search(
     if params.metric == MetricType.cosine:
         dist = model.embedding.cosine_distance(q)
     elif params.metric == MetricType.euclidean:
-        dist = -model.embedding.l2_distance(q)
+        dist = model.embedding.l2_distance(q)
     elif params.metric == MetricType.inner_product:
         assert (
             await embedding_client.is_normalized()

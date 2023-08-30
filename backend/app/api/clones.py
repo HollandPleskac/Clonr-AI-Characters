@@ -118,11 +118,15 @@ async def create_clone(
 
     clone = models.Clone(**data, creator_id=creator.user_id)
 
-    if clone.long_description:
-        clone.embedding = (
-            await embedding_client.encode_passage(clone.long_description)
-        )[0]
-        clone.embedding_model = await embedding_client.encoder_name()
+    if clone.long_description and len(clone.long_description) > 16:
+        embedding_content = clone.long_description
+    elif clone.short_description and len(clone.short_description) > 5:
+        embedding_content = f"{clone.name} {clone.short_description}"
+    else:
+        embedding_content = clone.name
+    clone.embedding = (await embedding_client.encode_passage(embedding_content))[0]
+    clone.embedding_model = await embedding_client.encoder_name()
+
     db.add(clone)
     await db.commit()
 
@@ -178,9 +182,6 @@ async def query_clones(
             .subquery()
         )
         query = query.join(subquery, models.Clone.id == subquery.c.clone_id)
-        from loguru import logger
-
-        logger.error(f"fuckkkkk {tags}")
     query = (
         query.options(selectinload(models.Clone.tags))
         .offset(offset=offset)
@@ -229,24 +230,31 @@ async def patch_clone(
 ):
     if not user.is_superuser and clone.creator_id != user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
     not_modified = True
+
     for k, v in obj.model_dump(exclude_unset=True).items():
         if getattr(clone, k) == v:
             continue
         not_modified = False
         setattr(clone, k, v)
-        if clone.long_description:
-            clone.embedding = (
-                await embedding_client.encode_passage(clone.long_description)
-            )[0]
-            clone.embedding_model = await embedding_client.encoder_name()
+
     if not_modified:
         raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
+
+    if clone.long_description and len(clone.long_description) > 16:
+        embedding_content = clone.long_description
+    elif clone.short_description and len(clone.short_description) > 5:
+        embedding_content = f"{clone.name} {clone.short_description}"
     else:
-        db.add(clone)
-        await db.commit()
-        await db.refresh(clone)
-        return clone
+        embedding_content = clone.name
+    clone.embedding = (await embedding_client.encode_passage(embedding_content))[0]
+    clone.embedding_model = await embedding_client.encoder_name()
+
+    db.add(clone)
+    await db.commit()
+    await db.refresh(clone)
+    return clone
 
 
 # (Jonny): We can't delete a clone, because that will cause a cascade that
@@ -336,11 +344,13 @@ async def create_document(
         index_type=IndexType.list, **doc_create.model_dump(exclude_unset=True)
     )
     index = ListIndex(tokenizer=tokenizer, splitter=splitter)
+
     nodes = await index.abuild(doc=doc)
     doc_model = await clonedb.add_document(
         doc=doc,
         nodes=nodes,
     )
+
     return doc_model
 
 

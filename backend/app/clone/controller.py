@@ -11,9 +11,10 @@ from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models, schemas
-from app.deps.users import Plan
 from app.embedding import EmbeddingClient
+from app.schemas import Plan
 from app.settings import settings
+from app.utils import remove_overlaps_in_list_of_strings
 from clonr import generate, templates
 from clonr.data_structures import Document, IndexType, Memory, Message, Monologue
 from clonr.llms import LLM
@@ -205,10 +206,6 @@ class Controller:
                 raise ValueError(
                     f"Cannot add memories with memory strategy {self.memory_strategy}"
                 )
-                # raise HTTPException(
-                #     status_code=status.HTTP_400_BAD_REQUEST,
-                #     detail=f"Cannot add memories with memory strategy {self.memory_strategy}",
-                # )
 
             attributes = dict(
                 subroutine="add_private_memory",
@@ -646,6 +643,7 @@ class Controller:
 
         # This should always return a value, we catch any exceptions in the generate
         # function and default to returning the entire output as a query
+        queries: list[str] = []
         try:
             queries = await generate.message_queries_create(
                 llm=self.llm,
@@ -656,8 +654,8 @@ class Controller:
                 entity_name=entity_name,
                 messages=msg_structs,
             )
-        except Exception:
-            queries = []
+        except Exception as e:
+            logger.error(e)
 
         # NOTE (Jonny): add in the last messages as a query too!
         # pull at most 2 messages
@@ -726,22 +724,26 @@ class Controller:
                 for m in results
             ]
 
-            # NOTE (Jonny): the odds of duplicates are low for info-extraction, so
-            # do the higher accuracy info retrieval step. Weird we take str and not nodes.
-            # whatever, not gonna redo it.
-            facts = []
-            vis: set[uuid.UUID] = set([])
+            retrieved_nodes: list[models.Node] = []
+            max_fact_tokens = get_num_fact_tokens(extra_space=True) + 50
+            search_params = VectorSearchParams(max_items=3, max_tokens=max_fact_tokens)
             for q in queries:
-                cur = await self.clonedb.query_nodes_with_rerank(
-                    query=q, params=ReRankSearchParams(max_items=3, max_tokens=170)
-                )
-                for c in cur:
-                    if c.model.id not in vis:
-                        vis.add(c.model.id)
-                        facts.append(c.model.content)
+                # empirically, plain vector search seems to do better
+                cur = await self.clonedb.query_nodes(query=q, params=search_params)
+                retrieved_nodes.extend([x.model for x in cur])
+            # the sort op is important, the tuple is unique across all nodes, so it
+            # ensures that identical nodes will be adjacent.
+            retrieved_nodes.sort(key=lambda x: (x.document_id, x.depth, x.index))
+            facts = [x.content for x in retrieved_nodes]
+            # this thing below will collapse any duplicate characters, and consequently
+            # collapses duplicates as well. It is useful for when the splitter has high overlap
+            # and the odds of retrieving indexes n, n+1 are high.
+            facts = remove_overlaps_in_list_of_strings(facts)
+
         else:
             # TODO (Jonny): trying to avoid a ~500 token request by eliminating the
             # monologue query. We are always running for the thrill of it.
+            # we have to duplicate this here, since we are not running message query generation!
             monologues = [
                 Monologue(
                     id=m.model.id,
@@ -901,17 +903,14 @@ class Controller:
             InformationStrategy.internal,
             InformationStrategy.external,
         ]:
-            facts = []
-            vis: set[uuid.UUID] = set()
+            retrieved_nodes: list[models.Node] = []
+            search_params = VectorSearchParams(max_items=3, max_tokens=fact_tokens)
             for q in queries:
-                cur = await self.clonedb.query_nodes_with_rerank(
-                    query=q,
-                    params=ReRankSearchParams(max_items=3, max_tokens=fact_tokens),
-                )
-                for c in cur:
-                    if c.model.id not in vis:
-                        vis.add(c.model.id)
-                        facts.append(c.model.content)
+                cur = await self.clonedb.query_nodes(query=q, params=search_params)
+                retrieved_nodes.extend([x.model for x in cur])
+            retrieved_nodes.sort(key=lambda x: (x.document_id, x.depth, x.index))
+            facts = [x.content for x in retrieved_nodes]
+            facts = remove_overlaps_in_list_of_strings(facts)
 
         # Retrieve relevant memories (max 512 tokens)
         memories: list[Memory] = []
