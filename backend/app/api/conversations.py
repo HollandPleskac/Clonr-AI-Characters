@@ -194,10 +194,12 @@ async def get_sidebar_conversations(
 @router.get("/continue", response_model=list[schemas.CloneContinue], status_code=200)
 async def get_continue_conversations(
     db: Annotated[AsyncSession, Depends(deps.get_async_session)],
-    user: Annotated[models.User, Depends(deps.get_current_active_user)],
+    user: Annotated[models.User, Depends(deps.get_optional_current_active_user)],
     offset: Annotated[int, Query(title="database row offset", ge=0)] = 0,
     limit: Annotated[int, Query(title="database row return limit", ge=1, le=60)] = 30,
 ):
+    if not user or not user.is_active:
+        return []
     rank = (
         sa.func.rank()
         .over(
