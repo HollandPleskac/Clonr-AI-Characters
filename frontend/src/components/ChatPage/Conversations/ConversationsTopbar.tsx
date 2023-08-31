@@ -8,16 +8,15 @@ import { Character, CharacterChat } from '@/types'
 import Link from 'next/link'
 import SmallNav from '../Characters/SmallSidebar'
 import { useQueryClonesById } from '@/hooks/useClones'
+import DropdownConversations from './DropdownConversations'
 
 
 type ConversationsTopBarProps = {
   characterId: string
-  lastConversationId: string
 }
 
 const ConversationsTopBar = ({
   characterId,
-  lastConversationId
 }: ConversationsTopBarProps) => {
 
   const queryParams = {
@@ -28,7 +27,7 @@ const ConversationsTopBar = ({
 
   if (!character) {
     return (
-      <div> </div>
+      <div className='h-[122px]' > </div>
     )
   }
 
@@ -61,12 +60,7 @@ const ConversationsTopBar = ({
 
 
       </div>
-      <Link
-        href={`http://localhost:3000/clones/${characterId}/conversations/${lastConversationId}`}
-        className='px-4 py-2 bg-gray-800 hover:bg-gray-700 text-[#D1D5DB] rounded-lg transition duration-200'
-      >
-        Back to Current Chat
-      </Link>
+      <DropdownConversations characterId={character.id} lastConversationId={"test"} />
     </div>
   )
 }

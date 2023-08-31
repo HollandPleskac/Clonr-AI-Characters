@@ -4,6 +4,7 @@ import React from 'react'
 import HorizontalDotsBig from '@/svg/ChatPage/Chat/horizontal-dots-big.svg'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useSidebarClonesPagination } from '@/hooks/useSidebarClonesPagination'
 
 type ChatDropdownProps = {
   characterId: string

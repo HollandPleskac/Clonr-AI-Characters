@@ -6,7 +6,7 @@ import useSWRInfinite from "swr/infinite"
 
 interface SidebarClonesQueryParams {
     name?: string | null;
-    cloneId?: string | null;
+    cloneId?: string;
     limit: number
 }
 

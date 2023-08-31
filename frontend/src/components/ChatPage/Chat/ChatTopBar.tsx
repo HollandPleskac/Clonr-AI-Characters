@@ -16,8 +16,6 @@ type ChatTopBarProps = {
   inputRef: React.RefObject<HTMLInputElement>
   handleInputFocus: () => void
   handleInputBlur: () => void
-  toggleChatState: () => void
-  showChat: boolean
   characterId: string
   conversationId: string
 }
@@ -30,8 +28,6 @@ const ChatTopBar = ({
   inputRef,
   handleInputBlur,
   handleInputFocus,
-  toggleChatState,
-  showChat,
   characterId,
   conversationId
 }: ChatTopBarProps) => {
@@ -70,7 +66,6 @@ const ChatTopBar = ({
 
 
       </div>
-      {showChat && (
         <div className='flex items-center gap-x-4'>
           <div className='relative group'>
             <button
@@ -101,17 +96,9 @@ const ChatTopBar = ({
             />
           </div>
 
-          <ChatDropdown toggleChatState={toggleChatState} showChat={showChat} characterId={character.id} />
+          <ChatDropdown characterId={character.id} />
         </div>
-      )}
-      {!showChat && (
-        <button
-          onClick={toggleChatState}
-          className='px-4 py-2 bg-gray-800 hover:bg-gray-700 text-[#D1D5DB] rounded-lg transition duration-200'
-        >
-          Back to Current Chat
-        </button>
-      )}
+     
     </div>
   )
 }

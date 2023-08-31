@@ -27,14 +27,12 @@ const Conversations = ({ characterId }: ConversationsProps) => {
     setSize: setConversationsSize,
   } = useConversationsPagination(conversationsQueryParams)
 
-  const lastConversationId = "test"
 
   return (
     <div className='w-[100%] border-r-[2px] border-[#252525] bg-[#121212] lg:inline'>
       {/* Conversations Top bar */}
       <ConversationsTopBar
         characterId={characterId}
-        lastConversationId={lastConversationId}
       />
 
       <div>
