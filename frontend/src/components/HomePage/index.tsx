@@ -126,7 +126,7 @@ export default function HomeScreen() {
                 zIndex={40}
               />
               {/* <StatBar /> */}
-              {continueChars?.length > 0 && (
+              {continueChars && continueChars.length > 0 && (
                 <Carousel
                   characters={continueChars}
                   name='Continue Chatting'

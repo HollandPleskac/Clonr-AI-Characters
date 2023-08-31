@@ -75,20 +75,24 @@ export default function Carousel({
         <h2 className='text-[#E5E5E5] text-2xl font-semibold mb-1'>{name}</h2>
       </div>
       <div className='group/swiper flex w-full h-full'>
-        <SwiperBtnLeft setRef={(node) => setPrevEl(node)} />
+        <SwiperBtnLeft setRef={(node) => setPrevEl(node)} hideArrow={leftSwiperIndex === 0 && characters.length >= slidesPerView} />
         <Swiper
           modules={[Navigation, Pagination, Scrollbar]}
           navigation={{ prevEl, nextEl }}
           spaceBetween={4}
           slidesPerView={slidesPerView}
           slidesPerGroup={slidesPerView}
-          loop={true}
+          loop={characters.length > slidesPerView*2 && true}
           speed={1100}
-          onSlideChange={(swiper) => setLeftSwiperIndex(swiper.realIndex)}
+          onSlideChange={(swiper) => {
+            setLeftSwiperIndex(swiper.realIndex)
+          }}
           onSwiper={(swiper) => setLeftSwiperIndex(swiper.realIndex)}
           className={`w-full`}
           style={{
             zIndex: zIndex,
+            marginLeft: characters.length <= slidesPerView ? '4%': '',
+            marginRight: characters.length <= slidesPerView ? '4%': ''
           }}
         >
           {characters.map((item, index) => {
@@ -122,7 +126,7 @@ export default function Carousel({
             )
           })}
         </Swiper>
-        <SwiperBtnRight setRef={(node) => setNextEl(node)} />
+        <SwiperBtnRight setRef={(node) => setNextEl(node)} hideArrow={characters.length <= slidesPerView*2 && characters.length-leftSwiperIndex===slidesPerView} />
       </div>
     </div>
   )
