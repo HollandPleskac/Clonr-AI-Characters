@@ -286,6 +286,8 @@ async def create_conversation(
             status_code=status.HTTP_409_CONFLICT,
             detail=detail,
         )
+
+    print("CREATING CONVERSATION ON BACKEND, this is obj: ", obj)
     convo = await Controller.create_conversation(
         obj=obj,
         clone=clone,

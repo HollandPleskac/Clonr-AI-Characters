@@ -4,6 +4,7 @@ import React from 'react'
 import HorizontalDotsBig from '@/svg/ChatPage/Chat/horizontal-dots-big.svg'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useConversationsPagination } from '@/hooks/useConversationsPagination'
 
 type ChatDropdownProps = {
   characterId: string
@@ -12,8 +13,20 @@ type ChatDropdownProps = {
 
 const ChatDropdown = ({ characterId, toggleChatState }: ChatDropdownProps) => {
 
-    // need to get the last conversation id here somehow
-    const lastConversationId="test"
+  const conversationsQueryParams = {
+    cloneId: characterId,
+    limit: 1
+  }
+
+  const {
+    paginatedData: conversations,
+    isLastPage: isLastConversationsPage,
+    isLoading: isLoadingConversations,
+    size: conversationsSize,
+    setSize: setConversationsSize,
+  } = useConversationsPagination(conversationsQueryParams)
+
+  const lastConversationId = conversations?.[0]?.id ? conversations?.[0]?.id : 'convo'
   
   return (
     <div className='hs-dropdown relative inline-flex justify-center items-center'>
