@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import SearchIcon from './SearchIcon'
 import CharacterComponent from './Character'
@@ -9,6 +9,7 @@ import Link from 'next/link'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import { ColorRing } from 'react-loader-spinner'
 import { useSidebarClonesPagination } from '@/hooks/useSidebarClonesPagination'
+import XIcon from '@/components/XIcon'
 
 
 interface CharactersProps {
@@ -18,15 +19,26 @@ interface CharactersProps {
 export default function Characters({
     currentCharacterId,
 }: CharactersProps) {
+    const duration = 500
 
     // search state
     const [searchInput, setSearchInput] = useState('')
+    const [searchParam, setSearchParam] = useState('')
     const [isInputActive, setInputActive] = useState(false)
     const handleInputFocus = () => setInputActive(true)
     const handleInputBlur = () => setInputActive(false)
 
+    // search delay
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearchParam(searchInput)
+        }, duration)
+        return () => clearTimeout(timer)
+    }, [searchInput])
+
     const sidebarClonesQueryParams = {
         limit: 10,
+        name: searchParam,
     }
 
     const {
@@ -39,7 +51,7 @@ export default function Characters({
 
     console.log("clone chats", cloneChats)
 
-    
+
 
     // Component
     return (
@@ -67,6 +79,7 @@ export default function Characters({
                     </Link>
                 </div>
             </div>
+
             {/* Search Bar  */}
             <div className={` flex w-[375px] min-w-[375px] max-w-[375px] items-center gap-x-2 pb-4`}>
                 <div className='relative w-full'>
@@ -81,11 +94,19 @@ export default function Characters({
                         onChange={(e) => setSearchInput(e.target.value)}
                         onFocus={handleInputFocus}
                         onBlur={handleInputBlur}
-                        className='py-auto h-[48px] w-full border-none bg-[#1E1E1E] pl-[50px] text-[15px] font-light leading-6 text-[#979797] transition duration-100 focus:ring-1 focus:ring-transparent'
+                        className='py-auto h-[48px] pr-[42px] w-full border-none bg-[#1E1E1E] pl-[50px] text-[15px] font-light leading-6 text-[#979797] transition duration-100 focus:ring-1 focus:ring-transparent'
                         type='text'
                         placeholder='Search'
                         style={{ outline: 'none', resize: 'none' }}
                     />
+                    <button
+                        className={`absolute right-4 top-[16px] ${searchInput === '' ? 'hidden' : 'flex'
+                            }`}
+                        onMouseDown={(e) => e.preventDefault()} // prevent blur on input
+                        onClick={() => { setSearchInput('') }}
+                    >
+                        <XIcon />
+                    </button>
                 </div>
             </div>
             {/* Characters */}

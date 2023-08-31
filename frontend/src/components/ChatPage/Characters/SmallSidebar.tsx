@@ -2,11 +2,12 @@ import Link from "next/link"
 
 import Image from 'next/image'
 import InfiniteScroll from "react-infinite-scroll-component"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import SearchIcon from "./SearchIcon"
 import CharacterComponent from './Character'
 import { ColorRing } from "react-loader-spinner"
 import { useSidebarClonesPagination } from "@/hooks/useSidebarClonesPagination"
+import XIcon from "@/components/XIcon"
 
 interface SmallNavProps {
   characterId: string
@@ -15,11 +16,27 @@ interface SmallNavProps {
 export default function SmallNav({
   characterId,
 }: SmallNavProps) {
+  const duration = 500
+
   // search state
   const [searchInput, setSearchInput] = useState('')
+  const [searchParam, setSearchParam] = useState('')
   const [isInputActive, setInputActive] = useState(false)
   const handleInputFocus = () => setInputActive(true)
   const handleInputBlur = () => setInputActive(false)
+
+  // search delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchParam(searchInput)
+    }, duration)
+    return () => clearTimeout(timer)
+  }, [searchInput])
+
+  const sidebarClonesQueryParams = {
+    limit: 10,
+    name: searchParam,
+  }
 
   const {
     paginatedData: cloneChats,
@@ -27,7 +44,7 @@ export default function SmallNav({
     isLastPage,
     size,
     setSize
-  } = useSidebarClonesPagination({name: searchInput, limit: 10})
+  } = useSidebarClonesPagination(sidebarClonesQueryParams)
 
 
   return (
@@ -97,6 +114,14 @@ export default function SmallNav({
               placeholder='Search'
               style={{ outline: 'none', resize: 'none' }}
             />
+            <button
+              className={`absolute right-4 top-[16px] ${searchInput === '' ? 'hidden' : 'flex'
+                }`}
+              onMouseDown={(e) => e.preventDefault()} // prevent blur on input
+              onClick={() => { setSearchInput('') }}
+            >
+              <XIcon />
+            </button>
           </div>
         </div>
         {/* Characters */}

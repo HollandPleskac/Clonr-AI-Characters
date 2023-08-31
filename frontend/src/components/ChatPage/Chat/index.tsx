@@ -137,6 +137,7 @@ export default function ChatScreen({
     }
   }
 
+  // import preline and collapse sidebar if needed
   useEffect(() => {
     // @ts-ignore
     import('preline')

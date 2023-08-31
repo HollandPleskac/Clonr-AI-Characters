@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { SidebarClone } from '@/types'
 import { formatDate } from '@/utils/formatDate'
+import { useRouter } from 'next/navigation'
 
 interface MyComponentProps {
   sidebarClone: SidebarClone
@@ -12,14 +13,22 @@ const Character: React.FC<MyComponentProps> = ({
   sidebarClone,
   currentCharacterId,
 }) => {
+  const router = useRouter()
   return (
-    <Link
-      href={`/chat/${sidebarClone.clone_id}/${sidebarClone.id}`}
+    <button
+      // href={`/clones/${sidebarClone.clone_id}/conversations/${sidebarClone.id}`}
+      onClick={async () => {
+        if (window.innerWidth<1024) {
+          const sidebarElement = document.querySelector('#docs-sidebar');
+          await (window as any).HSOverlay.close(sidebarElement)
+        }
+        router.push(`/clones/${sidebarClone.clone_id}/conversations/${sidebarClone.id}`)
+      }}
     >
       <div
         className={`${sidebarClone.clone_id === currentCharacterId
-            ? ' border-[#252525] bg-[#282348]'
-            : 'border-[#252525] bg-[#121212]'
+          ? ' border-[#252525] bg-[#282348]'
+          : 'border-[#252525] bg-[#121212]'
           } border-r-none cursor-pointer border-b px-0`}
       >
         <div className='flex items-center justify-between px-4 py-[22px]'>
@@ -53,7 +62,7 @@ const Character: React.FC<MyComponentProps> = ({
           </div> */}
         </div>
       </div>
-    </Link>
+    </button>
   )
 }
 
