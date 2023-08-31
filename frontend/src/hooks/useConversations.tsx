@@ -6,10 +6,6 @@ import useSWR from 'swr';
 import { ConversationsService } from '@/client/services/ConversationsService'
 import { Conversation } from '@/client/models/Conversation'
 import { ConversationCreate } from '@/client/models/ConversationCreate'
-import { ConvoSortType } from '@/client/models/ConvoSortType'
-import { MemoryStrategy } from '@/client/models/MemoryStrategy'
-import { AdaptationStrategy } from '@/client/models/AdaptationStrategy'
-import { InformationStrategy } from '@/client/models/InformationStrategy'
 
 interface Message {
     id: string;
@@ -27,37 +23,13 @@ interface Message {
     conversation_id: string;
 }
 
-interface ConversationByIdQueryParams {
-  conversationId: string;
-}
-
-interface ConversationMessageQueryParams {
-    conversationId: string;
-}
-
-interface ConversationsQueryParams {
-  tags?: (Array<number> | null);
-  cloneName?: (string | null);
-  cloneId?: (string | null);
-  sort?: ConvoSortType;
-  memoryStrategy?: (MemoryStrategy | null);
-  adaptationStrategy?: (AdaptationStrategy | null);
-  informationStrategy?: (InformationStrategy | null);
-  updatedAfter?: (string | null);
-  updatedBefore?: (string | null);
-  offset?: number;
-  limit: number;
-} 
-
 interface ConvesationsSidebarQueryParams {
-  convoLimit?: number;
   offset?: number;
   limit?: number;
 }
 
 export function useQueryConversationsContinue(queryParams: ConvesationsSidebarQueryParams) {
   const {
-    convoLimit,
     offset,
     limit
   } = queryParams;
@@ -65,7 +37,6 @@ export function useQueryConversationsContinue(queryParams: ConvesationsSidebarQu
   const fetcher = async () => {
     try {
       const response = await ConversationsService.getContinueConversationsConversationsContinueGet(
-        convoLimit,
         offset,
         limit
       );
@@ -75,7 +46,7 @@ export function useQueryConversationsContinue(queryParams: ConvesationsSidebarQu
     }
   };
 
-  const { data, error } = useSWR([convoLimit, offset, limit, 'conversationsSidebar'], fetcher);
+  const { data, error } = useSWR([offset, limit, 'conversationsSidebar'], fetcher);
 
   return {
     data: data,

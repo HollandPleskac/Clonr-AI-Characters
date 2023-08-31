@@ -16,6 +16,7 @@ import TagsComponent from '@/components/HomePage/Tags'
 import createNewConversation from '@/hooks/useConversations'
 import { MemoryStrategy } from '@/client/models/MemoryStrategy'
 import { InformationStrategy } from '@/client/models/InformationStrategy'
+import { AdaptationStrategy } from '@/client/models/AdaptationStrategy'
 import DropdownChoose from './DropdownChoose'
 
 type ChooseChatExperienceProps = {
@@ -57,13 +58,16 @@ const ChooseChatExperience = ({ characterId, character, toggleChatState, showCha
   async function createCharacterConversation(
     characterId: string,
     memoryStrategy: string,
+    informationStrategy: string = 'INTERNAL',
+    adaptationStrategy: string = 'ZERO',
   ) {
+    // TODO: edit
     const conversationData = {
       name: 'Test Conversation',
       user_name: 'Test User',
       memory_strategy: MemoryStrategy[memoryStrategy],
-      information_strategy: InformationStrategy['internal'],
-      adaptation_strategy: null,
+      information_strategy: InformationStrategy[informationStrategy],
+      adaptation_strategy: AdaptationStrategy[adaptationStrategy],
       clone_id: characterId,
     }
     const conversationId = await createConversation(conversationData)
@@ -190,19 +194,19 @@ const ChooseChatExperience = ({ characterId, character, toggleChatState, showCha
 
           <button
             onClick={async () => {
-              const conversationId = await createCharacterConversation(characterId, 'short_term')
+              const conversationId = await createCharacterConversation(characterId, 'ZERO')
               const new_url = `http://localhost:3000/chat/${characterId}/${conversationId}`
               console.log("NEW URL -> ", new_url)
               router.push(new_url)
             }}
             className='flex items-center justify-between w-full py-2 px-4 inline-flex bg-purple-500 rounded-lg hover:bg-purple-600 text-white'
           >
-            Short Term Memory Chat
+            Zero Memory Chat
             <ChatPopover />
           </button>
           <button
             onClick={async () => {
-              const conversationId = await createCharacterConversation(characterId, 'long_term')
+              const conversationId = await createCharacterConversation(characterId, 'LONG_TERM')
               const new_url = `http://localhost:3000/chat/${characterId}/${conversationId}`
               router.push(new_url)
             }}

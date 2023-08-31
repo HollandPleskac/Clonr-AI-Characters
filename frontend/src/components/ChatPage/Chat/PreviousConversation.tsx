@@ -29,18 +29,18 @@ const PreviousConversations = ({
       </div>
       <div
         className={`${
-          conversation.memory_strategy === 'short_term'
+          conversation.memory_strategy === 'zero'
             ? 'text-purple-500'
             : 'text-purple-600'
         } font-semibold flex items-center shrink-0`}
       >
         <p className=''>
-          {conversation.memory_strategy === 'short_term'
-            ? 'Short Term Memory'
+          {conversation.memory_strategy === 'zero'
+            ? 'Zero Memory'
             : 'Long Term Memory'}
         </p>
         <div className='flex h-[24px] w-[24px] items-center justify-center ml-2'>
-          {conversation.memory_strategy === 'short_term' ? (
+          {conversation.memory_strategy === 'zero' ? (
             <ChevronRightPurple500 />
           ) : (
             <ChevronRightPurple600 />

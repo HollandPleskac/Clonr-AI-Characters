@@ -66,6 +66,7 @@ const Create = ({ characterId }: CreateProps) => {
             adaptation_strategy: null,
             clone_id: characterId,
         }
+        console.log("THIS IS THE CONVERSATION DATA -> ", conversationData)
         const conversationId = await createConversation(conversationData)
         return conversationId
     }
@@ -158,14 +159,14 @@ const Create = ({ characterId }: CreateProps) => {
 
                         <button
                             onClick={async () => {
-                                const conversationId = await createCharacterConversation(characterId, 'short_term')
+                                const conversationId = await createCharacterConversation(characterId, 'zero')
                                 const new_url = `http://localhost:3000/clones/${characterId}/conversations/${conversationId}`
                                 console.log("NEW URL -> ", new_url)
                                 router.push(new_url)
                             }}
                             className='flex items-center justify-between w-full py-2 px-4 inline-flex bg-purple-500 rounded-lg hover:bg-purple-600 text-white'
                         >
-                            Short Term Memory Chat
+                            Zero Memory Chat
                             <ChatPopover />
                         </button>
                         <button
