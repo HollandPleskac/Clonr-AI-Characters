@@ -34,19 +34,26 @@ export function useQueryConversationsContinue(queryParams: ConvesationsSidebarQu
     limit
   } = queryParams;
 
-  const fetcher = async () => {
+  const fetcher = async (url: string) => {
     try {
-      const response = await ConversationsService.getContinueConversationsConversationsContinueGet(
-        offset,
-        limit
+      // const response = await ConversationsService.getContinueConversationsConversationsContinueGet(
+      //   offset,
+      //   limit
+      // );
+      const res = await axios.get<string>(
+        url,
+        {
+          withCredentials: true
+        }
       );
-      return response;
+
+    return res.data;
     } catch (error) {
       throw new Error('Error fetching conversation continue: ' + error.message);
     }
   };
 
-  const { data, error } = useSWR([offset, limit, 'conversationsSidebar'], fetcher);
+  const { data, error } = useSWR(`http://localhost:8000/conversations/continue?offset=${offset}&limit=${limit}`, fetcher);
 
   return {
     data: data,

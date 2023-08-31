@@ -20,6 +20,7 @@ import { useQueryConversationsContinue } from '@/hooks/useConversations'
 import { useClonesPagination } from '@/hooks/useClonesPagination'
 
 export default function HomeScreen() {
+  const [searchInput, setSearchInput] = useState('')
   const [showSearchGrid, setShowSearchGrid] = useState(false)
   const duration = 500
 
@@ -27,29 +28,26 @@ export default function HomeScreen() {
     require('preline')
   }, [])
 
-
-  // search grid characters state
-  const [searchInput, setSearchInput] = useState('')
-
+  // fetch chars
   const topQueryParams = {
-    sort: CloneSortType["TOP"]
+    sort: CloneSortType["TOP"],
+    limit: 9
   }
 
-  let conversationsSidebarParams = {
-    convoLimit: 3,
+  const trendingQueryParams = {
+    sort: CloneSortType["HOT"],
+    limit: 21
+  }
+
+  let continueQueryParams = {
     offset: 0,
     limit: 20
   }
 
-  const trendingQueryParams = {
-    sort: CloneSortType["HOT"]
-  }
-
   // chars data
-  // const { data: searchedCharacters, isLoading: isTopLoadingSearch } = useQueryClones(topSearchQueryParams);
   const { data: trendingChars, isLoading: isTrendingLoading } = useQueryClones(trendingQueryParams);
   const { data: topChars, isLoading: isTopLoading } = useQueryClones(topQueryParams);
-  const { data: continueChars, isLoading: isLoadingContinue } = useQueryConversationsContinue(conversationsSidebarParams)
+  const { data: continueChars, isLoading: isContinueLoading } = useQueryConversationsContinue(continueQueryParams)
 
   useEffect(() => {
     if (searchInput === '') {
@@ -81,12 +79,6 @@ export default function HomeScreen() {
     setSize
   } = useClonesPagination(queryParamsSearch)
 
-  if (isTopLoading || isTrendingLoading || isLoadingContinue || !topChars || !trendingChars || !continueChars) {
-    return (
-      <div> Loading.. </div>
-    )
-  }
-
   return (
     <div className='pb-[75px]'>
       <AlertBar />
@@ -109,7 +101,7 @@ export default function HomeScreen() {
 
       {!showSearchGrid && (
         <ScaleFadeIn loaded={!searchInput} duration={duration}>
-          {(!topChars || !continueChars || !trendingChars || topChars.length === 0 || trendingChars.length === 0) ? (
+          {(isTrendingLoading || isContinueLoading || isTopLoading) ? (
             <div className='grid place-items-center'
               style={{
                 height: 'calc(100vh - 48px - 84px)'
@@ -134,12 +126,14 @@ export default function HomeScreen() {
                 zIndex={40}
               />
               {/* <StatBar /> */}
-              <Carousel
-                characters={continueChars}
-                name='Continue Chatting'
-                isBigCarousel={false}
-                zIndex={30}
-              />
+              {continueChars?.length > 0 && (
+                <Carousel
+                  characters={continueChars}
+                  name='Continue Chatting'
+                  isBigCarousel={false}
+                  zIndex={30}
+                />
+              )}
               <Carousel
                 characters={trendingChars}
                 name='Trending'
