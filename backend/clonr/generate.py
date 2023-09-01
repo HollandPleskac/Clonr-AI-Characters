@@ -662,9 +662,7 @@ async def summarize_with_context(
             system_prompt=system_prompt,
         )
     else:
-        prompt = templates.SummarizeWithContext.render_instruct(
-            passage=passage,
-        )
+        raise NotImplementedError()
     kwargs["template"] = templates.SummarizeWithContext.__name__
     kwargs["subroutine"] = summarize_with_context.__name__
     r = await llm.agenerate(
