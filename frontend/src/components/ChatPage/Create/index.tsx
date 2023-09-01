@@ -19,31 +19,6 @@ type CreateProps = {
     characterId: string
 }
 
-const tags = [
-    {
-        id: '1',
-        created_at: new Date(),
-        updated_at: new Date(),
-        color_code: '48FF83',
-        name: "Anime"
-    }, {
-        id: '2',
-        created_at: new Date(),
-        updated_at: new Date(),
-        color_code: 'FF0392',
-        name: "Warrior"
-    },
-    , {
-        id: '2',
-        created_at: new Date(),
-        updated_at: new Date(),
-        color_code: 'DD04FF',
-        name: "Female"
-    }
-]
-
-
-
 const Create = ({ characterId }: CreateProps) => {
     const router = useRouter();
 
@@ -64,13 +39,15 @@ const Create = ({ characterId }: CreateProps) => {
     async function createCharacterConversation(
         characterId: string,
         memoryStrategy: string,
+        informationStrategy: string = 'INTERNAL',
+        adaptationStrategy: string = 'ZERO',
     ) {
         const conversationData = {
             name: 'Test Conversation',
             user_name: 'Test User',
             memory_strategy: MemoryStrategy[memoryStrategy],
-            information_strategy: InformationStrategy['internal'],
-            adaptation_strategy: AdaptationStrategy["zero"],
+            information_strategy: InformationStrategy[informationStrategy],
+            adaptation_strategy: AdaptationStrategy[adaptationStrategy],
             clone_id: characterId,
         }
         console.log("conv data", conversationData)
@@ -81,8 +58,6 @@ const Create = ({ characterId }: CreateProps) => {
     useEffect(() => {
         require('preline')
     }, [])
-
-    const lastConversationId = "test"
 
     return (
         <div className='w-[100%] border-r-[2px] border-[#252525] bg-[#121212] lg:inline'>
@@ -162,7 +137,7 @@ const Create = ({ characterId }: CreateProps) => {
 
                             <button
                                 onClick={async () => {
-                                    const conversationId = await createCharacterConversation(characterId, 'short_term')
+                                    const conversationId = await createCharacterConversation(characterId, 'ZERO')
                                     const new_url = `http://localhost:3000/clones/${characterId}/conversations/${conversationId}`
                                     console.log("NEW URL -> ", new_url)
                                     router.push(new_url)
@@ -174,7 +149,7 @@ const Create = ({ characterId }: CreateProps) => {
                             </button>
                             <button
                                 onClick={async () => {
-                                    const conversationId = await createCharacterConversation(characterId, 'long_term')
+                                    const conversationId = await createCharacterConversation(characterId, 'LONG_TERM')
                                     const new_url = `http://localhost:3000/clones/${characterId}/conversations/${conversationId}`
                                     router.push(new_url)
                                 }}
@@ -188,7 +163,7 @@ const Create = ({ characterId }: CreateProps) => {
                             <h2 className='text-lg sm:text-4xl font-semibold mb-4 text-white'>
                                 {character.name}
                             </h2>
-                            <TagsComponent tags={tags} />
+                            <TagsComponent tags={character.tags} />
                             <p className='mb-4 mt-4 text-lg text-gray-400'>
                                 {character.short_description}{' '}
                             </p>
@@ -213,7 +188,7 @@ const Create = ({ characterId }: CreateProps) => {
                                 </svg>
                             </h2>
                             <p className='text-gray-400 line-clamp-3' >
-                                {character.long_description}{' '}
+                                {character.greeting_message}{' '}
                             </p>
 
                         </div>
