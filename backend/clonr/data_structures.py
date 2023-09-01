@@ -32,8 +32,8 @@ class Document(BaseModel):
     embedding_model: str | None = Field(default=None, repr=False)
     hash: str = ""
     text_splitter: str | None = None
-    max_chunk_size: str | None = None
-    chunk_overlap: str | None = None
+    max_chunk_size: int | None = None
+    chunk_overlap: int | None = None
 
     @validator("hash", always=True)
     def doc_hash(cls, v, values) -> str:

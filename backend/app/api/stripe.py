@@ -1,4 +1,3 @@
-import uuid
 from typing import Annotated
 
 import sqlalchemy as sa
@@ -54,7 +53,7 @@ class PortalResponse(BaseModel):
 
 @router.get("/checkout-token", response_model=StripeCheckoutTokenResponse)
 async def create_checkout_token(
-    user: Annotated[uuid.UUID, Depends(deps.get_current_active_user)],
+    user: Annotated[models.User, Depends(deps.get_current_active_user)],
     # expire_seconds: Annotated[int, Query(ge=60)] = 60 * 60 * 24 * 7,
 ):
     # Stripe allows up to 200 tokens, and for long expire times, we could go over that limit.
@@ -102,6 +101,7 @@ async def webhook_received(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
 
     logger.info(f"Received Stripe event: {event.type}. EventID: {event.id}")
+    sub: stripe.Subscription | None = None
     match event.type:
         case "checkout.session.completed":
             checkout_session: stripe.checkout.Session = event.data.object
@@ -180,7 +180,7 @@ async def webhook_received(
             await db.commit()
 
         case "customer.subscription.deleted":
-            sub: stripe.Subscription = event.data.object
+            sub = event.data.object
             logger.info(f"Subscription ID: {sub.id}")
             await db.execute(
                 sa.update(models.Subscription)

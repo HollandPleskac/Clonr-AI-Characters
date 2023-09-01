@@ -451,10 +451,10 @@ class DynamicTextSplitter(TextSplitter):
     def __init__(self, sentence_splitter: ST, token_splitter: TokenSplitter):
         self.sentence_splitter = sentence_splitter
         self.token_splitter = token_splitter
-        self._max_chunk_size = None
-        self._min_chunk_size = None
-        self._chunk_overlap = None
-        self._name = None
+        self._max_chunk_size: int | None = None
+        self._min_chunk_size: int | None = None
+        self._chunk_overlap: int | None = None
+        self._name: str | None = None
         self._rep = "DynamicTextSplitter()"
 
     def _split_text(self, text: str) -> list[str]:

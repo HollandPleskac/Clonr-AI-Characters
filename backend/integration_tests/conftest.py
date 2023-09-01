@@ -10,12 +10,26 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app import schemas
 from app.main import app as main_app
-from app.settings import settings
 
 
 class LoginData(BaseModel):
     email: str
     password: str
+
+
+@pytest.fixture(scope="session")
+def superuser_headers():
+    return {"Cookie": "next-auth.session-token=SUPERUSER_TOKEN"}
+
+
+@pytest.fixture(scope="session")
+def user_headers():
+    return {"Cookie": "next-auth.session-token=NORMAL_USER_TOKEN"}
+
+
+@pytest.fixture(name="creator_headers", scope="session")
+def creator_headers() -> dict[str, str]:
+    return {"Cookie": "next-auth.session-token=CREATOR_USER_TOKEN"}
 
 
 def load_makima_create() -> dict:
@@ -50,83 +64,83 @@ def creator_data() -> LoginData:
     return LoginData(email="creator@example.com", password="password")
 
 
-@pytest.fixture(name="user_headers", scope="session")
-def user_headers(client: TestClient, user_data: LoginData) -> dict[str, str]:
-    input_data = {
-        **user_data.model_dump(),
-        "is_active": False,
-        "is_superuser": True,
-        "is_verified": True,
-    }
+# @pytest.fixture(name="user_headers", scope="session")
+# def user_headers(superuser_headers) -> dict[str, str]:
+#     return superuser_headers
+# input_data = {
+#     **user_data.model_dump(),
+#     "is_active": False,
+#     "is_superuser": True,
+#     "is_verified": True,
+# }
 
-    # Register user
-    r = client.post("/auth/register", json=input_data)
-    assert r.status_code == 201, r.json()
-    data = r.json()
-    assert data["is_active"], data
-    assert not data["is_superuser"], data
-    assert not data["is_verified"], data
+# # Register user
+# r = client.post("/auth/register", json=input_data)
+# assert r.status_code == 201, r.json()
+# data = r.json()
+# assert data["is_active"], data
+# assert not data["is_superuser"], data
+# assert not data["is_verified"], data
 
-    # Login user
-    r = client.post(
-        "/auth/cookies/login",
-        data=dict(username=user_data.email, password=user_data.password),
-    )
-    assert r.status_code == 204, r.json()
-    assert r.cookies
-    # idk I just hacked this because fuck, this is annoying
-    headers = {
-        "Cookie": "; ".join(
-            [f"{name}={value}" for name, value in client.cookies.items()][-1:]
-        )
-    }
+# # Login user
+# r = client.post(
+#     "/auth/cookies/login",
+#     data=dict(username=user_data.email, password=user_data.password),
+# )
+# assert r.status_code == 204, r.json()
+# assert r.cookies
+# # idk I just hacked this because fuck, this is annoying
+# headers = {
+#     "Cookie": "; ".join(
+#         [f"{name}={value}" for name, value in client.cookies.items()][-1:]
+#     )
+# }
 
-    yield headers
+# yield headers
 
-    # get user info
-    r = client.get("/users/me", headers=headers)
-    data = r.json()
-    assert r.status_code == 200, r.json()
-    assert data["email"] == input_data["email"]
+# # get user info
+# r = client.get("/users/me", headers=headers)
+# data = r.json()
+# assert r.status_code == 200, r.json()
+# assert data["email"] == input_data["email"]
 
-    # Logout user
-    r = client.post("/auth/cookies/logout", json={}, headers=headers)
-    assert r.status_code == 204, r.json()
-    assert not r.cookies
+# # Logout user
+# r = client.post("/auth/cookies/logout", json={}, headers=headers)
+# assert r.status_code == 204, r.json()
+# assert not r.cookies
 
 
-@pytest.fixture(name="creator_headers", scope="session")
-def creator_headers(
-    client: TestClient, creator_data: LoginData, db: Session
-) -> dict[str, str]:
-    # Register user
-    r = client.post(
-        "/auth/register",
-        json=creator_data.model_dump(),
-    )
-    assert r.status_code == 201, r.status_code
+# @pytest.fixture(name="creator_headers", scope="session")
+# def creator_headers(superuser_headers) -> dict[str, str]:
+#     return superuser_headers
+# # Register user
+# r = client.post(
+#     "/auth/register",
+#     json=creator_data.model_dump(),
+# )
+# assert r.status_code == 201, r.status_code
 
-    print(client.cookies)
-    # Login user
-    r = client.post(
-        "/auth/cookies/login",
-        data=dict(username=creator_data.email, password=creator_data.password),
-    )
-    assert r.status_code == 204, r.json()
-    headers = {"Cookie": r.headers["set-cookie"].split(";")[0]}
+# print(client.cookies)
+# # Login user
+# r = client.post(
+#     "/auth/cookies/login",
+#     data=dict(username=creator_data.email, password=creator_data.password),
+# )
+# assert r.status_code == 204, r.json()
+# headers = {"Cookie": r.headers["set-cookie"].split(";")[0]}
 
-    # Upgrade to Creator
-    r = client.post(
-        "/creators/upgrade", headers=headers, json={"username": "cool-creator-20"}
-    )
-    assert r.status_code == 201, r.json()
+# # Upgrade to Creator
+# r = client.post(
+#     "/creators/upgrade", headers=headers, json={"username": "cool-creator-20"}
+# )
+# assert r.status_code == 201, r.json()
 
-    yield headers
+# yield headers
 
-    # Logout user
-    r = client.post("/auth/cookies/logout", json={}, headers=headers)
-    assert r.status_code == 204, r.json()
-    assert not r.cookies
+# # Logout user
+# r = client.post("/auth/cookies/logout", json={}, headers=headers)
+# assert r.status_code == 204, r.json()
+# assert not r.cookies
 
 
 @pytest.fixture(name="makima", scope="session")
@@ -150,30 +164,30 @@ def makima_fixture(client: TestClient, creator_headers: dict[str, str], db: Sess
     yield creator_headers, clone_id
 
 
-@pytest.fixture(name="superuser_headers", scope="session")
-def superuser_headers(client: TestClient) -> dict[str, str]:
-    # Login user
-    r = client.post(
-        "/auth/cookies/login",
-        data=dict(
-            username=settings.SUPERUSER_EMAIL, password=settings.SUPERUSER_PASSWORD
-        ),
-    )
-    assert r.status_code == 204, r.json()
-    assert r.cookies
-    # idk I just hacked this because fuck, this is annoying
-    headers = {
-        "Cookie": "; ".join(
-            [f"{name}={value}" for name, value in client.cookies.items()][-1:]
-        )
-    }
+# @pytest.fixture(name="superuser_headers", scope="session")
+# def superuser_headers(client: TestClient) -> dict[str, str]:
+#     # Login user
+#     r = client.post(
+#         "/auth/cookies/login",
+#         data=dict(
+#             username=settings.SUPERUSER_EMAIL, password=settings.SUPERUSER_PASSWORD
+#         ),
+#     )
+#     assert r.status_code == 204, r.json()
+#     assert r.cookies
+#     # idk I just hacked this because fuck, this is annoying
+#     headers = {
+#         "Cookie": "; ".join(
+#             [f"{name}={value}" for name, value in client.cookies.items()][-1:]
+#         )
+#     }
 
-    yield headers
+#     yield headers
 
-    # Logout user
-    r = client.post("/auth/cookies/logout", json={}, headers=headers)
-    assert r.status_code == 204, r.json()
-    assert not r.cookies
+#     # Logout user
+#     r = client.post("/auth/cookies/logout", json={}, headers=headers)
+#     assert r.status_code == 204, r.json()
+#     assert not r.cookies
 
 
 @pytest.fixture(name="makima_id", scope="session")

@@ -21,7 +21,7 @@ from .db import get_async_redis, get_async_session
 from .embedding import get_embedding_client
 from .llm import _get_llm
 from .text import get_tokenizer
-from .users import UserAndPlan, get_free_or_paying_user
+from .users import Plan, UserAndPlan, get_free_or_paying_user
 
 
 @lru_cache(maxsize=1)
@@ -95,7 +95,7 @@ async def get_controller(
         clonedb=clonedb,
         conversation=conversation,
         background_tasks=background_tasks,
-        subscription_plan=subscription_plan,
+        subscription_plan=Plan(subscription_plan),
     )
 
     yield controller
