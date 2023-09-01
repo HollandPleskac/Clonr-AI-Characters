@@ -1,6 +1,5 @@
 import logging
 
-from fastapi_users.password import PasswordHelper
 from loguru import logger
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 from sqlalchemy import text
@@ -63,16 +62,48 @@ async def clear_db():
 
 
 async def create_superuser() -> models.User:
+    from datetime import datetime, timedelta
+
     async with async_session_maker() as db:
-        password = settings.SUPERUSER_PASSWORD
-        hashed_password = PasswordHelper().hash(password=password)
         user = models.User(
+            name="superuser",
             email=settings.SUPERUSER_EMAIL,
             is_superuser=True,
-            hashed_password=hashed_password,
         )
         creator = models.Creator(user=user, username="superuser")
+        session = models.Session(
+            session_token="SUPERUSER_TOKEN",
+            expires=datetime.now() + timedelta(days=1),
+            user=user,
+        )
+        user2 = models.User(
+            name="normal_user",
+            email="normal@user.com",
+            is_superuser=False,
+        )
+        creator2 = models.Creator(user=user2, username="normal_user")
+        session2 = models.Session(
+            session_token="NORMAL_USER_TOKEN",
+            expires=datetime.now() + timedelta(days=1),
+            user=user2,
+        )
+        user3 = models.User(
+            name="creator_user",
+            email="creeator@user.com",
+            is_superuser=False,
+        )
+        creator3 = models.Creator(user=user3, username="creator_user")
+        session3 = models.Session(
+            session_token="CREATOR_USER_TOKEN",
+            expires=datetime.now() + timedelta(days=1),
+            user=user3,
+        )
         db.add(creator)
+        db.add(session)
+        db.add(creator2)
+        db.add(session2)
+        db.add(creator3)
+        db.add(session3)
         try:
             await db.commit()
         except Exception as e:

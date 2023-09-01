@@ -5,7 +5,7 @@ import uuid
 from enum import Enum
 from typing import Annotated
 
-from fastapi_users.schemas import BaseUser, BaseUserCreate, BaseUserUpdate
+from fastapi_users.schemas import BaseUserUpdate
 from pydantic import (
     AfterValidator,
     BaseModel,
@@ -59,17 +59,17 @@ class Plan(str, Enum):
     plus: str = "plus"
 
 
-class UserRead(BaseUser[uuid.UUID]):
-    model_config = ConfigDict(from_attributes=True)
-
-    private_chat_name: str
-    is_banned: bool
-    nsfw_enabled: bool
-    num_free_messages_sent: int
+class CommonMixin(BaseModel):
+    id: uuid.UUID
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
 
 
-class UserCreate(BaseUserCreate):
-    pass
+class UserCreate(BaseModel):
+    name: str | None = None
+    email: str | None = None
+    email_verified: str | None = None
+    image: str | None = None
 
 
 class UserUpdate(BaseUserUpdate):
@@ -80,10 +80,17 @@ class UserUpdate(BaseUserUpdate):
     )
 
 
-class CommonMixin(BaseModel):
-    id: uuid.UUID
-    created_at: datetime.datetime
-    updated_at: datetime.datetime
+class User(CommonMixin, BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    name: str
+    email: str | None
+    image: str | None
+    is_superuser: bool
+    private_chat_name: str
+    is_banned: bool
+    nsfw_enabled: bool
+    num_free_messages_sent: int
 
 
 class CreatorCreate(BaseModel):
@@ -484,7 +491,6 @@ class Subscription(CommonMixin, BaseModel):
     currency: str
     interval: str
     stripe_customer_id: str
-    stripe_subscription_id: str
     stripe_status: str
     stripe_created: int
     stripe_current_period_start: int

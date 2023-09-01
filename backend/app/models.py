@@ -5,10 +5,6 @@ from typing import Any, Optional
 
 import randomname
 import sqlalchemy as sa
-from fastapi_users.db import (
-    SQLAlchemyBaseOAuthAccountTableUUID,
-    SQLAlchemyBaseUserTableUUID,
-)
 from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.ext.hybrid import Comparator, hybrid_property
@@ -78,14 +74,6 @@ class CommonMixin:
     )
 
 
-class OAuthAccount(SQLAlchemyBaseOAuthAccountTableUUID, Base):
-    # FixMe: (Jonny) I remember this being an issue during migrations, where we have to edit the first db
-    # migration to use fastapi_users GUID, but I cannot figure out how to solve this type issue
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
-    )
-
-
 # Each created clone can have many users talking to it
 # And each user can talk to many clones
 users_to_clones = sa.Table(
@@ -96,31 +84,22 @@ users_to_clones = sa.Table(
 )
 
 
-class User(Base, SQLAlchemyBaseUserTableUUID):
-    """Contains the fields:
-    id, email, hashed_password, is_active, is_superuser, is_verified
-    """
-
+class User(CommonMixin, Base):
     __tablename__ = "users"
-    created_at: Mapped[datetime.datetime] = mapped_column(
-        sa.DateTime(timezone=True), server_default=sa.func.now()
-    )
-    updated_at: Mapped[datetime.datetime] = mapped_column(
-        sa.DateTime(timezone=True),
-        server_default=sa.func.now(),
-        onupdate=sa.func.current_timestamp(),
-    )
+
+    name: Mapped[str] = mapped_column(nullable=True)
+    email: Mapped[str] = mapped_column(nullable=True, unique=True)
+    email_verified: Mapped[datetime.datetime] = mapped_column(nullable=True)
+    image: Mapped[str] = mapped_column(nullable=True)
+    is_superuser: Mapped[bool] = mapped_column(default=False)
     private_chat_name: Mapped[str] = mapped_column(default="user")
     is_banned: Mapped[bool] = mapped_column(default=False)
+    is_active: Mapped[bool] = mapped_column(default=True)
     # Whether user is subscribed to premium plan, i.e. is paid
     stripe_customer_id: Mapped[str] = mapped_column(nullable=True)
     nsfw_enabled: Mapped[bool] = mapped_column(default=False)
     # Number of free msgs sent
     num_free_messages_sent: Mapped[int] = mapped_column(default=0)
-    # (Jonny): Idk why, but select breaks with greenlet spawn error and this doesn't
-    oauth_accounts: Mapped[list[OAuthAccount]] = relationship(
-        "OAuthAccount", lazy="joined"
-    )
     # (Jonny): probably never a situation where you don't need clones when grabbing a user.
     clones: Mapped[list["Clone"]] = relationship(
         secondary=users_to_clones, back_populates="users"
@@ -136,9 +115,63 @@ class User(Base, SQLAlchemyBaseUserTableUUID):
     subscriptions: Mapped[list["Subscription"]] = relationship(
         "Subscription", back_populates="user"
     )
+    # (Jonny): Idk why, but select breaks with greenlet spawn error and this doesn't
+    accounts: Mapped[list["Account"]] = relationship("Account", back_populates="user")
+    sessions: Mapped[list["Session"]] = relationship("Session", back_populates="user")
 
     def __repr__(self):
         return f"User(id={self.id})"
+
+
+class Account(Base):
+    __tablename__ = "accounts"
+    __table_args__ = (
+        sa.UniqueConstraint(
+            "provider", "provider_account_id", name="provider__provider_account_id"
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        primary_key=True, server_default=sa.text("gen_random_uuid()")
+    )
+    type: Mapped[str]
+    provider: Mapped[str]
+    provider_account_id: Mapped[str]
+    refresh_token: Mapped[str] = mapped_column(nullable=True)
+    access_token: Mapped[str] = mapped_column(nullable=True)
+    expires_at: Mapped[int] = mapped_column(nullable=True)
+    token_type: Mapped[str] = mapped_column(nullable=True)
+    scope: Mapped[str] = mapped_column(nullable=True)
+    id_token: Mapped[str] = mapped_column(nullable=True)
+    session_state: Mapped[str] = mapped_column(nullable=True)
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
+    user: Mapped["User"] = relationship("User", back_populates="accounts")
+
+
+class Session(Base):
+    __tablename__ = "sessions"
+
+    session_token: Mapped[str] = mapped_column(unique=True, primary_key=True)
+    expires: Mapped[datetime.datetime]
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
+    )
+    user: Mapped["User"] = relationship("User", back_populates="sessions")
+
+
+class VerificationToken(Base):
+    __tablename__ = "verification_tokens"
+    __table_args__ = (
+        sa.UniqueConstraint("identifier", "token", name="identifier__token"),
+    )
+
+    identifier: Mapped[str]
+    token: Mapped[str] = mapped_column(unique=True, primary_key=True)
+    expires: Mapped[datetime.datetime]
 
 
 class Creator(Base):
@@ -844,7 +877,6 @@ class Subscription(CommonMixin, Base):
     currency: Mapped[str]
     interval: Mapped[str]
     stripe_customer_id: Mapped[str]
-    stripe_subscription_id: Mapped[str]
     stripe_status: Mapped[str]
     stripe_created: Mapped[int]
     stripe_current_period_start: Mapped[int]
@@ -861,7 +893,7 @@ class Subscription(CommonMixin, Base):
     user: Mapped["User"] = relationship("User", back_populates="subscriptions")
 
 
-class CreatorPartnerProgramSignup(CommonMixin, Base):
+class CreatorPartnerProgramSignup(Base):
     __tablename__ = "creator_partner_signups"
 
     id: Mapped[int] = mapped_column(autoincrement=True, primary_key=True)

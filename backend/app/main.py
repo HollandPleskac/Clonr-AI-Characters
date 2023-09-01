@@ -10,16 +10,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 from opentelemetry import metrics
 
-from app import api, schemas
-from app.auth.users import (
-    auth_backend,
-    discord_oauth_client,
-    facebook_oauth_client,
-    google_oauth_client,
-    reddit_oauth_client,
-)
+from app import api
+
+# from app.auth.users import (
+#     auth_backend,
+#     discord_oauth_client,
+#     facebook_oauth_client,
+#     google_oauth_client,
+#     reddit_oauth_client,
+# )
 from app.db import clear_db, create_superuser, init_db, wait_for_db, wait_for_redis
-from app.deps.users import fastapi_users
+
+# from app.deps.users import fastapi_users
 from app.embedding import wait_for_embedding
 from app.middleware.rate_limiter import IpAddrRateLimitMiddleware
 from app.middleware.tracing import setup_tracing
@@ -83,9 +85,14 @@ async def lifespan(app: FastAPI):
         logger.info("Creating database")
         await init_db()
 
-    logger.info(f"Creating superuser: {settings.SUPERUSER_EMAIL}")
-    user = await create_superuser()
-    logger.info(json.dumps(jsonable_encoder(user, exclude={"creator"}), indent=2))
+    if settings.DEV:
+        logger.info(f"Creating superuser: {settings.SUPERUSER_EMAIL}")
+        user = await create_superuser()
+        logger.info(
+            json.dumps(
+                jsonable_encoder(user, exclude={"creator", "sessions"}), indent=2
+            )
+        )
 
     yield
 
@@ -113,64 +120,8 @@ app.include_router(router=api.tags_router)
 app.include_router(router=api.stripe_router)
 app.include_router(router=api.subscriptions_router)
 app.include_router(router=api.signups_router)
+app.include_router(router=api.users_router)
 
-
-app.include_router(
-    fastapi_users.get_auth_router(auth_backend), prefix="/auth/cookies", tags=["auth"]
-)
-
-if settings.DEV:
-    app.include_router(
-        fastapi_users.get_register_router(schemas.UserRead, schemas.UserCreate),
-        prefix="/auth",
-        tags=["auth"],
-    )
-
-app.include_router(
-    fastapi_users.get_users_router(schemas.UserRead, schemas.UserUpdate),
-    prefix="/users",
-    tags=["users"],
-)
-app.include_router(
-    fastapi_users.get_oauth_router(
-        google_oauth_client,
-        auth_backend,
-        settings.AUTH_SECRET,
-        redirect_url=settings.OAUTH_REDIRECT_URL,
-    ),
-    prefix="/auth/google",
-    tags=["auth"],
-)
-app.include_router(
-    fastapi_users.get_oauth_router(
-        facebook_oauth_client,
-        auth_backend,
-        settings.AUTH_SECRET,
-        redirect_url=settings.OAUTH_REDIRECT_URL,
-    ),
-    prefix="/auth/facebook",
-    tags=["auth"],
-)
-app.include_router(
-    fastapi_users.get_oauth_router(
-        reddit_oauth_client,
-        auth_backend,
-        settings.AUTH_SECRET,
-        redirect_url=settings.OAUTH_REDIRECT_URL,
-    ),
-    prefix="/auth/reddit",
-    tags=["auth"],
-)
-app.include_router(
-    fastapi_users.get_oauth_router(
-        discord_oauth_client,
-        auth_backend,
-        settings.AUTH_SECRET,
-        redirect_url=settings.OAUTH_REDIRECT_URL,
-    ),
-    prefix="/auth/discord",
-    tags=["auth"],
-)
 
 app.add_middleware(
     CORSMiddleware,

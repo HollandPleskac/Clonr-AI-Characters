@@ -211,8 +211,8 @@ async def get_clone_by_id(
         )
     # Hide non-public fields
     clone_response = schemas.Clone.model_validate(clone)
-    if not clone.is_short_description_public:
-        clone_response.short_description = None
+    # if not clone.is_short_description_public:
+    #     clone_response.short_description = None
     if not clone.is_long_description_public:
         clone_response.long_description = None
     if not clone.is_greeting_message_public:
