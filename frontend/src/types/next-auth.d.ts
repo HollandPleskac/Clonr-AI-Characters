@@ -4,7 +4,12 @@ import NextAuth from "next-auth"
 declare module "next-auth" {
   interface User {
     privateChatName: string,
+    name: string,
     numFreeMessagesSent: number,
     isActive: boolean
+  }
+
+ interface Session extends DefaultSession {
+    user?: User;
   }
 }

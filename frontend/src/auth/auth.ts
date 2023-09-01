@@ -5,7 +5,7 @@ import GoogleProvider from "next-auth/providers/google"
 import FacebookProvider from "next-auth/providers/facebook"
 import TwitterProvider from "next-auth/providers/twitter"
 import DiscordProvider from "next-auth/providers/discord"
-import PostgresAdapter from "./authAdapter"
+import PostgresAdapter from "./PostgresAdapter"
 import pool from "./db"
 
 
