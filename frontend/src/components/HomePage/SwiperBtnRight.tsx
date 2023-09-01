@@ -10,7 +10,7 @@ interface SwiperBtnRightProps {
 
 const SwiperBtnRight: React.FC<SwiperBtnRightProps> = ({ setRef, hideArrow }) => {
   return (
-    <button className={'group w-[4%]'} ref={setRef}>
+    <button className={'group w-[4%] min-w-[4%]'} ref={setRef}>
       <div className='bg-bluef-400 h-full grid place-items-center '>
         {!hideArrow && (
           <ArrowRightWhite className='opacity-0 transform scale-[2.75] group-hover:scale-[3.5] group-hover/swiper:opacity-100 transition duration-100 ease-in-out' />
