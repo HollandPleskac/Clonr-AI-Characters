@@ -5,7 +5,7 @@ export function formatDate(date: Date): string {
 
   // If difference is less than 1 minute, return an empty string
   if (diffInMinutes < 1) {
-    return 'a few seconds ago';
+    return 'a few seconds';
   }
 
   // If difference is less than 30 minutes, return in minutes

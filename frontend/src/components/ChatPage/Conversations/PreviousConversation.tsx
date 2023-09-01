@@ -3,6 +3,7 @@ import ChevronRightPurple600 from '@/svg/ChatPage/Chat/chevron-right-purple-600.
 import ChevronRightPurple500 from '@/svg/ChatPage/Chat/chevron-right-purple-500.svg'
 import Link from 'next/link'
 import { Conversation } from '@/types'
+import { formatDate } from '@/utils/formatDate'
 
 type PreviousConversationsProps = {
   conversation: Conversation
@@ -12,13 +13,14 @@ type PreviousConversationsProps = {
 const PreviousConversations = ({
   conversation,
 }: PreviousConversationsProps) => {
+  console.log("In PreviousConversations, this is conversation: ", conversation)
   return (
     <Link
       href={`/chat/${conversation.clone_id}/${conversation.id}`}
       className='group rounded-lg flex justify-between items-center bg-[#121212] hover:bg-gray-800 transition duration-200 w-full rounded-lg p-4 '
     >
       <div className='flex flex-col items-start mr-[5%]'>
-        <h3 className='text-white text-xl font-semibold mb-2'>23 Days Ago</h3>
+        <h3 className='text-white text-xl font-semibold mb-2'> {formatDate(new Date(conversation.updated_at)) + " ago"} </h3>
         <h4 className='text-gray-400 mb-1 text-[14px]'>
           You: <span className='italic'>{"TODO MAKE THIS LAST_USER_MESSAGE"}</span>
         </h4>

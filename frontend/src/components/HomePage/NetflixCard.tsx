@@ -23,7 +23,7 @@ export default function Cards({
   const style = defaultCard ? styles.card : styles.longCard
   const infoStyle = defaultCard ? styles.cardInfo : styles.more
   console.log("In Cards(), this is item: ", item)
-  const { name, short_description, num_messages, tags, avatar_uri } = item
+  const { name, short_description, num_messages, tags, avatar_uri, num_conversations } = item
   // const image = defaultCard ? banner : poster
 
   let edgeClass = ''
@@ -56,7 +56,7 @@ export default function Cards({
           <div className={`${styles.row} justify-between`}>
             {/* <span className={styles.greenText}>{`${rating * 10}% match`}</span> */}
             <span className={styles.greenText}>{`${formatNumber(
-              num_messages
+              num_conversations
             )} chats`}</span>
           </div>
           <div className={styles.row}>

@@ -19,31 +19,6 @@ type CreateProps = {
     characterId: string
 }
 
-const tags = [
-    {
-        id: '1',
-        created_at: new Date(),
-        updated_at: new Date(),
-        color_code: '48FF83',
-        name: "Anime"
-    }, {
-        id: '2',
-        created_at: new Date(),
-        updated_at: new Date(),
-        color_code: 'FF0392',
-        name: "Warrior"
-    },
-    , {
-        id: '2',
-        created_at: new Date(),
-        updated_at: new Date(),
-        color_code: 'DD04FF',
-        name: "Female"
-    }
-]
-
-
-
 const Create = ({ characterId }: CreateProps) => {
     const router = useRouter();
 
@@ -81,8 +56,6 @@ const Create = ({ characterId }: CreateProps) => {
     useEffect(() => {
         require('preline')
     }, [])
-
-    const lastConversationId = "test"
 
     return (
         <div className='w-[100%] border-r-[2px] border-[#252525] bg-[#121212] lg:inline'>
@@ -188,7 +161,7 @@ const Create = ({ characterId }: CreateProps) => {
                             <h2 className='text-lg sm:text-4xl font-semibold mb-4 text-white'>
                                 {character.name}
                             </h2>
-                            <TagsComponent tags={tags} />
+                            <TagsComponent tags={character.tags} />
                             <p className='mb-4 mt-4 text-lg text-gray-400'>
                                 {character.short_description}{' '}
                             </p>
