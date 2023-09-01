@@ -184,39 +184,8 @@ export default function useClones() {
     }
   };
 
-  const queryGeneratedLongDescription = async (cloneId: string) => {
-    try {
-      const response = await axios.get<string>(
-        `http://localhost:8000/clones/${cloneId}/generate_long_description`,
-        {
-          withCredentials: true
-        }
-      );
-      return response.data;
-    } catch (error) {
-      throw new Error('Error fetching generated long description: ' + error.message);
-    }
-  };
-
-  const createDocument = async (cloneId: string, content: string) => {
-    try {
-      const response = await axios.post<Document>(
-        `http://localhost:8000/clones/${cloneId}/documents`,
-        { content },
-        {
-          withCredentials: true
-        }
-      );
-      return response.data;
-    } catch (error) {
-      throw new Error('Error creating document: ' + error.message);
-    }
-  };
-
   return {
     createClone,
     generateLongDescription,
-    queryGeneratedLongDescription,
-    createDocument
   };
 }

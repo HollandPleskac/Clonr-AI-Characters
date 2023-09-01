@@ -92,7 +92,7 @@ def clone_sort_selectable(query: sa.Select, sort: CloneSortType):
             score = (like_factor + time_factor).label("score")
             return query.order_by(score.desc())
         case CloneSortType.top:
-            return query.order_by(models.Clone.num_messages)
+            return query.order_by(models.Clone.num_messages.desc())
     raise TypeError(f"Invalid sort type: {sort}")
 
 

@@ -18,6 +18,7 @@ import { ColorRing } from "react-loader-spinner"
 import { CloneSortType } from '@/client/models/CloneSortType'
 import { useQueryConversationsContinue } from '@/hooks/useConversations'
 import { useClonesPagination } from '@/hooks/useClonesPagination'
+import { useCarouselSlidesPerView } from '@/hooks/useCarouselSlidesPerView'
 
 export default function HomeScreen() {
   const [searchInput, setSearchInput] = useState('')
@@ -48,6 +49,7 @@ export default function HomeScreen() {
   const { data: trendingChars, isLoading: isTrendingLoading } = useQueryClones(trendingQueryParams);
   const { data: topChars, isLoading: isTopLoading } = useQueryClones(topQueryParams);
   const { data: continueChars, isLoading: isContinueLoading } = useQueryConversationsContinue(continueQueryParams)
+  const {slidesPerView, isLoadingSlidesPerView} = useCarouselSlidesPerView()
 
   useEffect(() => {
     if (searchInput === '') {
@@ -101,7 +103,7 @@ export default function HomeScreen() {
 
       {!showSearchGrid && (
         <ScaleFadeIn loaded={!searchInput} duration={duration}>
-          {(isTrendingLoading || isContinueLoading || isTopLoading) ? (
+          {(isTrendingLoading || isContinueLoading || isTopLoading || isLoadingSlidesPerView) ? (
             <div className='grid place-items-center'
               style={{
                 height: 'calc(100vh - 48px - 84px)'
@@ -123,23 +125,26 @@ export default function HomeScreen() {
                 characters={topChars}
                 name='Top Characters'
                 isBigCarousel={true}
+                slidesPerView={slidesPerView!.big}
                 zIndex={40}
               />
               {/* <StatBar /> */}
-              {continueChars?.length > 0 && (
-                <Carousel
-                  characters={continueChars}
-                  name='Continue Chatting'
-                  isBigCarousel={false}
-                  zIndex={30}
-                />
-              )}
               <Carousel
                 characters={trendingChars}
                 name='Trending'
                 isBigCarousel={false}
+                slidesPerView={slidesPerView!.normal}
                 zIndex={20}
               />
+              {continueChars && continueChars.length > 0 && (
+                <Carousel
+                  characters={continueChars}
+                  name='Continue Chatting'
+                  isBigCarousel={false}
+                  slidesPerView={slidesPerView!.normal}
+                  zIndex={30}
+                />
+              )}
               {/* <Carousel
             characters={anime}
             name='Anime'

@@ -14,12 +14,14 @@ import { CloneSearchResult } from '@/client/models/CloneSearchResult'
 import NetflixCard from './NetflixCard'
 import { Character } from '@/types'
 import { Navigation, Pagination, Scrollbar } from 'swiper/modules'
+import { useCarouselSlidesPerView } from '@/hooks/useCarouselSlidesPerView'
 
 interface CarouselProps {
   characters: CloneSearchResult[]
   name: String
   isBigCarousel: boolean
   zIndex: number
+  slidesPerView: number
 }
 
 export default function Carousel({
@@ -27,6 +29,7 @@ export default function Carousel({
   name,
   isBigCarousel = false,
   zIndex,
+  slidesPerView
 }: CarouselProps) {
   // carousel state
   const [leftSwiperIndex, setLeftSwiperIndex] = useState(0)
@@ -34,61 +37,28 @@ export default function Carousel({
   const [prevEl, setPrevEl] = useState<HTMLElement | null>(null)
   const [nextEl, setNextEl] = useState<HTMLElement | null>(null)
 
-  const [slidesPerView, setSlidesPerView] = useState(6)
-
-  const updateSlidesPerView = () => {
-    if (isBigCarousel) {
-      if (window.matchMedia('(min-width: 1096px)').matches) {
-        setSlidesPerView(3)
-      } else if (window.matchMedia('(min-width: 800px)').matches) {
-        setSlidesPerView(2)
-      } else {
-        setSlidesPerView(1)
-      }
-    } else {
-      if (window.matchMedia('(min-width: 1400px)').matches) {
-        setSlidesPerView(6)
-      } else if (window.matchMedia('(min-width: 1096px)').matches) {
-        setSlidesPerView(5)
-      } else if (window.matchMedia('(min-width: 800px)').matches) {
-        setSlidesPerView(4)
-      } else if (window.matchMedia('(min-width: 500px)').matches) {
-        setSlidesPerView(3)
-      } else {
-        setSlidesPerView(2)
-      }
-    }
-  }
-
-  useEffect(() => {
-    updateSlidesPerView() // Call on mount to set the initial value
-    window.addEventListener('resize', updateSlidesPerView) // Call on resize
-
-    return () => {
-      window.removeEventListener('resize', updateSlidesPerView)
-    }
-  }, [])
-
   return (
     <div className='pt-4 mb-4 text-white'>
       <div className='px-[4%] mb-4'>
         <h2 className='text-[#E5E5E5] text-2xl font-semibold mb-1'>{name}</h2>
       </div>
       <div className='group/swiper flex w-full h-full'>
-        <SwiperBtnLeft setRef={(node) => setPrevEl(node)} />
+        <SwiperBtnLeft setRef={(node) => setPrevEl(node)} hideArrow={leftSwiperIndex === 0 && characters.length < slidesPerView * 2} />
         <Swiper
           modules={[Navigation, Pagination, Scrollbar]}
           navigation={{ prevEl, nextEl }}
           spaceBetween={4}
           slidesPerView={slidesPerView}
           slidesPerGroup={slidesPerView}
-          loop={true}
+          loop={characters.length >= slidesPerView * 2 ? true : false}
           speed={1100}
           onSlideChange={(swiper) => setLeftSwiperIndex(swiper.realIndex)}
           onSwiper={(swiper) => setLeftSwiperIndex(swiper.realIndex)}
           className={`w-full`}
           style={{
             zIndex: zIndex,
+            marginLeft: characters.length < slidesPerView ? '4%' : '',
+            marginRight: characters.length < slidesPerView ? '4%' : ''
           }}
         >
           {characters.map((item, index) => {
@@ -110,19 +80,19 @@ export default function Carousel({
                       ? 'left'
                       : index === leftSwiperIndex + slidesPerView - 1 ||
                         index ===
-                          leftSwiperIndex +
-                            slidesPerView -
-                            1 -
-                            characters.length
-                      ? 'right'
-                      : undefined
+                        leftSwiperIndex +
+                        slidesPerView -
+                        1 -
+                        characters.length
+                        ? 'right'
+                        : undefined
                   }
                 />
               </SwiperSlide>
             )
           })}
         </Swiper>
-        <SwiperBtnRight setRef={(node) => setNextEl(node)} />
+        <SwiperBtnRight setRef={(node) => setNextEl(node)} hideArrow={characters.length <= slidesPerView || characters.length < slidesPerView * 2 && characters.length - leftSwiperIndex === slidesPerView} />
       </div>
     </div>
   )

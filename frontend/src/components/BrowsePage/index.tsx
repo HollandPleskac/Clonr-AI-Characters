@@ -157,8 +157,12 @@ export default function BrowsePage() {
                                     >
                                         <TagComponent
                                             name={tag.name}
-                                            onClick={() => {
-                                                setActiveTag(tag)
+                                            onClick={(tagName) => {
+                                                if (tagName) {
+                                                    setActiveTag(tag);
+                                                } else {
+                                                    setActiveTag(null);
+                                                }
                                             }}
                                             active={tag.id === activeTag?.id}
 
