@@ -1,10 +1,11 @@
 import time
 import uuid
 from datetime import datetime, timedelta
+from functools import lru_cache
 
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from fastapi import HTTPException, status
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from pydantic import BaseModel
 
 from app.settings import settings
@@ -17,9 +18,6 @@ class StripeCheckoutToken(BaseModel):
 
 class StripeCheckoutTokenResponse(BaseModel):
     token: str
-
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def create_stripe_checkout_token(
@@ -44,9 +42,6 @@ def decode_stripe_checkout_token(token: str) -> StripeCheckoutToken:
             algorithms=[settings.JWT_ALGORITHM],
         )
         if not payload.get("user_id"):
-            from loguru import logger
-
-            logger.error(f"Stripe decode error. Token: {token}. payload: {payload}")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate credentials",
@@ -63,3 +58,18 @@ def decode_stripe_checkout_token(token: str) -> StripeCheckoutToken:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
         )
+
+
+@lru_cache(maxsize=1)
+def encrypt_secret_key(
+    secret: str, length: int, salt: bytes, algorithm, context: bytes
+) -> bytes:
+    hkdf = HKDF(algorithm=algorithm, length=length, salt=salt, info=context)
+    return hkdf.derive(bytes(secret, "ascii"))
+
+
+def check_expiry(exp: int, cur_time: int = None):
+    if cur_time is None:
+        cur_time = time.time()
+    if exp < cur_time:
+        raise HTTPException(403, "Token Expired")

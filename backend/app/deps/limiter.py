@@ -1,15 +1,20 @@
 import time
-from typing import Annotated, Awaitable
+from typing import Annotated, Any, Callable, Coroutine, Optional
 
-from fastapi import Cookie, Depends, Request
+import sqlalchemy as sa
+from fastapi import Depends, Request
 from fastapi.exceptions import HTTPException
 from limits import parse
 from limits.aio.storage import RedisStorage
 from limits.aio.strategies import FixedWindowRateLimiter, MovingWindowRateLimiter
 from loguru import logger
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.users import AUTH_KEY_PREFIX
+from app import models
 from app.settings import settings
+
+from .db import get_async_session
+from .users import next_auth_cookie
 
 # the limits library uses coredis, which I think is now deprecated
 # Note, the user is always default for some reason: https://github.com/redis/node-redis/issues/1591
@@ -33,7 +38,7 @@ async def get_redis_storage():
 
 def user_id_cookie_fixed_window_ratelimiter(
     window: str,
-) -> Awaitable:
+) -> Callable[[RedisStorage, AsyncSession, Optional[str]], Coroutine[Any, Any, Any]]:
     try:
         parse(window)
     except Exception as e:
@@ -42,26 +47,31 @@ def user_id_cookie_fixed_window_ratelimiter(
 
     async def inner(
         storage: Annotated[RedisStorage, Depends(get_redis_storage)],
-        clonrauth: Annotated[
-            str | None, Cookie(regex=r"[a-zA-Z0-9_\-]")
-        ] = None,  # var must match the cookie key
+        db: Annotated[AsyncSession, Depends(get_async_session)],
+        token: Annotated[str | None, Depends(next_auth_cookie)],
     ):
-        if clonrauth is None:
-            logger.info("Failed to provide clonrauth cookie")
-            raise HTTPException(status_code=401)
+        if token is None:
+            detail = "Failed to provide Authorization cookie"
+            logger.info(detail)
+            raise HTTPException(status_code=401, detail=detail)
+        user_id = await db.scalar(
+            sa.select(models.User.id)
+            .join(models.Session, models.Session.user_id == models.User.id)
+            .where(models.Session.session_token == token)
+        )
         # use the redis connection from storage to avoid holding two connections
-        token = f"{AUTH_KEY_PREFIX}{clonrauth}"
-        if not (user_id_bytes := await storage.storage.get(token)):
-            logger.info(f"Could not find clonr auth token: {token} in redis")
+        if not user_id:
+            logger.info("Provided session ID does not correspond to a user")
             raise HTTPException(status_code=401)
+        user_id_str = str(user_id)
         try:
             window_obj = parse(window)
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
         limiter = FixedWindowRateLimiter(storage=storage)
-        ok = await limiter.hit(window_obj, user_id_bytes, cost=1)
+        ok = await limiter.hit(window_obj, user_id_str, cost=1)
         if not ok:
-            stats = await limiter.get_window_stats(window_obj, user_id_bytes)
+            stats = await limiter.get_window_stats(window_obj, user_id_str)
             wait_time = stats.reset_time - time.time()
             detail = f"Wait time: {wait_time:.02f}s"
             raise HTTPException(status_code=429, detail=detail)
@@ -71,7 +81,7 @@ def user_id_cookie_fixed_window_ratelimiter(
 
 def ip_addr_moving_ratelimiter(
     window: str,
-) -> Awaitable:
+) -> Callable[[Optional[str], RedisStorage], Coroutine[Any, Any, Any]]:
     try:
         window_obj = parse(window)
     except Exception as e:
