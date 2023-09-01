@@ -161,15 +161,7 @@ async def create_miles_moralse(headers):
 
 
 async def main(n: int):
-    print("Getting Superuser credentials")
-    r = requests.post(
-        "http://localhost:8000/auth/cookies/login",
-        data=dict(
-            username=settings.SUPERUSER_EMAIL, password=settings.SUPERUSER_PASSWORD
-        ),
-    )
-
-    headers = {"Cookie": r.headers["set-cookie"].split(";")[0]}
+    headers = {"Cookie": "next-auth.session-token=SUPERUSER_TOKEN"}
     r = requests.get("http://localhost:8000/users/me", headers=headers)
 
     print("Loading scraped c.ai data")
