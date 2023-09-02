@@ -5,7 +5,7 @@ declare global {
           key: string;
           'pricing-table-id': string;
           'publishable-key': string;
-          'client-reference-id'?: string;
+          'client-reference-id': string;
         };
       }
     }

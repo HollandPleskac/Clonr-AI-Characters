@@ -10,8 +10,8 @@ declare module "next-auth" {
   }
 
  interface Session extends DefaultSession {
-    // user?: User;
-    email?: string;
-    image?: string | null;
+    email?: string,
+    image?: string | null,
+    privateChatName?: string
   }
 }

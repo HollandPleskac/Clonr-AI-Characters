@@ -14,10 +14,7 @@ export default function AccountPage() {
   }
   if (!loading && session) {
     return (
-      <>
-      <p className='text-white' > {JSON.stringify(session)} </p>
       <Account />
-      </>
     )
   }
 }

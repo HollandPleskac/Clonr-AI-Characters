@@ -197,20 +197,19 @@ async def query_clones(
 async def get_clone_by_id(
     clone: Annotated[models.Clone, Depends(get_clone)],
     user: Annotated[models.User, Depends(deps.get_optional_current_active_user)],
-):
+) -> models.Clone:
     if (
         user is not None
         and user.is_active
         and (user.is_superuser or clone.creator_id == user.id)
     ):
         return clone
-
     if not clone.is_public:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Clone does not exist."
         )
     # Hide non-public fields
-    clone_response = schemas.Clone.model_validate(clone)
+    clone_response = schemas.Clone.model_validate(clone, from_attributes=True)
     # if not clone.is_short_description_public:
     #     clone_response.short_description = None
     if not clone.is_long_description_public:

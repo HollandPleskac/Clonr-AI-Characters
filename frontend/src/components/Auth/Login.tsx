@@ -1,25 +1,13 @@
 'use client'
 import Link from 'next/link'
-import React, { useEffect, useState } from 'react'
-import { googleAuthorize } from '@/utils/auth'
-import { redirect, useRouter } from 'next/navigation'
-import { signIn, useSession } from "next-auth/react"
+import React, { useState } from 'react'
+import { signIn } from "next-auth/react"
 import Image from 'next/image'
 
 
 const LoginModal = () => {
-  const { data: session, status, } = useSession({ required: false })
-
   const [isChecked, setIsChecked] = useState(false)
   const [showAlert, setShowAlert] = useState(false)
-
-  if (status === "loading") {
-    return <p></p>
-  }
-
-  if (status === "authenticated") {
-    redirect('/')
-  }
 
   return (
     <main className='w-full max-w-md mx-auto p-6'>
@@ -56,7 +44,7 @@ const LoginModal = () => {
               onClick={() => {
                 isChecked ? signIn("google") : setShowAlert(true)
               }}
-              className='relative flex justify-center items-center bg-[#f0f0f0] active:opacity-90 text-black w-full py-3  gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f0f0f0] transition-all text-sm border-[#f0f0f0] focus:ring-offset-gray-800'
+              className='relative hover:bg-opacity-80 flex justify-center items-center bg-[#f0f0f0] active:opacity-90 text-black w-full py-3  gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f0f0f0] transition-all text-sm border-[#f0f0f0] focus:ring-offset-gray-800'
             >
               <div className='w-full flex items-center' >
                 <svg
@@ -92,7 +80,7 @@ const LoginModal = () => {
               onClick={() => {
                 isChecked ? signIn("discord") : setShowAlert(true)
               }}
-              className='relative flex justify-center items-center bg-[#5661F7] active:opacity-90 text-white w-full py-3  gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5661F7] transition-all text-sm border-[#5661F7] focus:ring-offset-gray-800'
+              className='relative hover:bg-opacity-80 flex justify-center items-center bg-[#5661F7] active:opacity-90 text-white w-full py-3  gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5661F7] transition-all text-sm border-[#5661F7] focus:ring-offset-gray-800'
             >
               <div className='w-full flex items-center' >
                 <svg
@@ -116,7 +104,7 @@ const LoginModal = () => {
               onClick={() => {
                 isChecked ? signIn("facebook") : setShowAlert(true)
               }}
-              className='relative flex justify-center items-center bg-[#4267B2] active:opacity-90 text-white w-full py-3  gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4267B2] transition-all text-sm border-[#4267B2] focus:ring-offset-gray-800'
+              className='relative hover:bg-opacity-80 flex justify-center items-center bg-[#4267B2] active:opacity-90 text-white w-full py-3  gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4267B2] transition-all text-sm border-[#4267B2] focus:ring-offset-gray-800'
             >
               <div className='w-full flex items-center' >
                 <svg
@@ -137,7 +125,7 @@ const LoginModal = () => {
               onClick={() => {
                 isChecked ? signIn("reddit") : setShowAlert(true)
               }}
-              className='relative flex justify-center items-center bg-[#FF4500] active:opacity-90 text-white w-full py-3  gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF4500] transition-all text-sm border-[#FF4500] focus:ring-offset-gray-800'
+              className='relative hover:bg-opacity-80 flex justify-center items-center bg-[#FF4500] active:opacity-90 text-white w-full py-3  gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF4500] transition-all text-sm border-[#FF4500] focus:ring-offset-gray-800'
             >
               <div className='w-full flex items-center' >
                 <svg
@@ -151,6 +139,28 @@ const LoginModal = () => {
                   <path d='M 17.662109 2 C 15.565005 2 14 3.7131367 14 5.6621094 L 14 9.0351562 C 11.24971 9.1810926 8.7344872 9.9143634 6.7265625 11.064453 C 5.9527826 10.321405 4.9166871 9.991448 3.9121094 9.9921875 C 2.8229214 9.9929893 1.7094525 10.370413 0.94140625 11.234375 L 0.92382812 11.253906 L 0.90625 11.273438 C 0.16947928 12.194228 -0.12225605 13.427747 0.07421875 14.652344 C 0.25365009 15.770711 0.90137168 16.893419 2.0273438 17.628906 C 2.0199689 17.753058 2 17.874618 2 18 C 2 22.962 7.832 27 15 27 C 22.168 27 28 22.962 28 18 C 28 17.874618 27.980031 17.753058 27.972656 17.628906 C 29.098628 16.893419 29.74635 15.770711 29.925781 14.652344 C 30.122256 13.427747 29.830521 12.194228 29.09375 11.273438 L 29.076172 11.253906 L 29.058594 11.234375 C 28.290448 10.370294 27.177168 9.9929893 26.087891 9.9921875 C 25.08323 9.991448 24.046988 10.321133 23.273438 11.064453 C 21.265513 9.9143634 18.75029 9.1810926 16 9.0351562 L 16 5.6621094 C 16 4.6830821 16.565214 4 17.662109 4 C 18.182797 4 18.817104 4.2609042 19.810547 4.609375 C 20.650361 4.9039572 21.743308 5.2016984 23.140625 5.2910156 C 23.474875 6.2790874 24.402814 7 25.5 7 C 26.875 7 28 5.875 28 4.5 C 28 3.125 26.875 2 25.5 2 C 24.561213 2 23.747538 2.5304211 23.320312 3.3007812 C 22.125831 3.2346294 21.248238 2.9947078 20.472656 2.7226562 C 19.568849 2.4056271 18.738422 2 17.662109 2 z M 3.9121094 11.992188 C 4.3072494 11.991896 4.6826692 12.095595 4.9921875 12.263672 C 3.8881963 13.18517 3.0505713 14.261821 2.5449219 15.4375 C 2.2764358 15.106087 2.114647 14.734002 2.0507812 14.335938 C 1.9430146 13.664243 2.1440212 12.966045 2.4628906 12.552734 C 2.7642172 12.228395 3.3144613 11.992626 3.9121094 11.992188 z M 26.085938 11.992188 C 26.683756 11.992627 27.235874 12.22849 27.537109 12.552734 C 27.855979 12.966045 28.056985 13.664243 27.949219 14.335938 C 27.885353 14.734002 27.723564 15.106087 27.455078 15.4375 C 26.949429 14.261821 26.111804 13.18517 25.007812 12.263672 C 25.316626 12.095792 25.690955 11.991896 26.085938 11.992188 z M 10 14 C 11.105 14 12 14.895 12 16 C 12 17.105 11.105 18 10 18 C 8.895 18 8 17.105 8 16 C 8 14.895 8.895 14 10 14 z M 20 14 C 21.105 14 22 14.895 22 16 C 22 17.105 21.105 18 20 18 C 18.895 18 18 17.105 18 16 C 18 14.895 18.895 14 20 14 z M 20.238281 19.533203 C 19.599281 21.400203 17.556 23 15 23 C 12.444 23 10.400719 21.400969 9.7617188 19.667969 C 10.911719 20.600969 12.828 21.267578 15 21.267578 C 17.172 21.267578 19.088281 20.600203 20.238281 19.533203 z' />
                 </svg>
                 <p className='grow' >Reddit</p>
+              </div>
+            </button>
+
+            <button
+              type='button'
+              onClick={() => {
+                isChecked ? signIn("twitter") : setShowAlert(true)
+              }}
+              className='relative hover:bg-opacity-80 flex justify-center items-center bg-[#2e2e2e] active:opacity-90 text-white w-full py-3  gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ffffff] transition-all text-sm border-[#141414] focus:ring-offset-gray-800'
+            >
+              <div className='w-full flex items-center' >
+                <svg
+                  width='24px'
+                  height='24px'
+                  viewBox='0 0 1227 1200'
+                  fill='black'
+                  className='ml-4 absolute w-[30px]'
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                <path d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.854V687.828Z" fill="white"/>
+                </svg>
+                <p className='grow' >X (Twitter)</p>
               </div>
             </button>
             {/* <p className='mt-2 text-center text-sm text-gray-600 dark:text-gray-400'>

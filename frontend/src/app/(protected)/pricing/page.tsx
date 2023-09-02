@@ -5,21 +5,8 @@ import PricingTable from './PricingTable'
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-export default function PrivacyPage({
-  params,
-}: {
-  params: { characterId: string; conversationId: string }
-}) {
 
-  // Route Protection
-  // make request to /users/me
-  const cookieStore = cookies()
-  const userCookie = cookieStore.get('clonrauth')
-
-  if (!userCookie) {
-    redirect("/login")
-  }
-
+export default function PrivacyPage() {
   return (
     <>
       <main className='w-full flex flex-col h-full'>

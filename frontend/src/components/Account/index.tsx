@@ -1,72 +1,96 @@
 'use client'
 
 import TopBarStatic from '@/components/TopBarStatic'
-import React, { useReducer } from 'react'
+import React from 'react'
 import Link from 'next/link'
 import axios from 'axios';
 import { useRouter } from 'next/navigation'
-
+import useSWR from "swr"
+import { Subscription, SubscriptionsService } from '@/client';
 
 function SubscriptionPortal() {
-  const stripe_id = "stripe_id";
-  const interval = "interval";
-  const price = "14.99";
-  const product_name = "Buckwheat";
-  const email = 'test@example.com';
-  const status = 'active';
+  async function fetcher(url: string): Promise<Subscription> {
+    // const res = await axios.get(url, {
+    //   withCredentials: true
+    // })
+    // return res.data
+    const subscription = await SubscriptionsService.getMySubscriptionsSubscriptionsMeGet()
+    return subscription
+  }
 
-  const {push} = useRouter()
+  const { data: subscription, isLoading, error } = useSWR('http://localhost:8000/subscriptions/me', fetcher);
+
+
+  const { push } = useRouter()
+  
+  if (isLoading || !subscription) {
+    return <p>Loading</p>
+  }
 
   return (
-    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 py-10 space-y-4">
+    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-2">
 
-      <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-      <div className="rounded-md bg-[#240b65] p-4">
+      <h1 className="text-3xl font-bold text-gray-200">Current Plan</h1>
+      <div className="rounded-md bg-[#5424cd] p-4">
         <div className="flex">
           <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-[#6b40d7]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <svg className="h-5 w-5 text-[#966cff]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
             </svg>
           </div>
           <div className="ml-3 flex-1 md:flex md:justify-between">
-            <p className="text-sm text-blue-700">This dashboard is only for paying users like you.</p>
+            <p className="text-sm text-blue-100">This dashboard is only for paying users like you.</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+      <div className="bg-[#1c1c1c] border-gray-400 shadow overflow-hidden sm:rounded-lg">
         <div className="px-4 py-5 sm:px-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">Billing Information</h3>
-          <p className="mt-1 max-w-2xl text-sm text-gray-500">Personal details and application.</p>
+          <h3 className="text-lg leading-6 font-medium text-gray-200">Billing Information</h3>
+          <p className="mt-1 max-w-2xl text-sm text-gray-400">Personal details and application.</p>
         </div>
-        <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
-          <dl className="sm:divide-y sm:divide-gray-200">
+        <div className="px-4 border-t-gray-800 border-t-[1px] py-5 sm:p-0">
+          <dl className="sm:divide-y sm:divide-[#2c2c2c]">
             <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">Stripe Customer</dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{stripe_id}</dd>
+              <dt className="text-sm font-medium text-gray-400">
+                Stripe Customer
+              </dt>
+              <dd className="mt-1 text-sm text-purple-400 sm:mt-0 sm:col-span-2">
+                {subscription.stripe_customer_id}
+              </dd>
             </div>
-            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">Stripe Subscription</dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {stripe_id}
-                <span className="inline-flex items-center ml-4 px-3 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800"> {status}</span>
+            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 ">
+              <dt className="text-sm font-medium text-gray-400 ">
+                Stripe Subscription
+              </dt>
+              <dd className="mt-1 text-sm text-purple-400 sm:mt-0 sm:col-span-2">
+                {subscription.stripe_subscription_id}
+                <span className="inline-flex items-center ml-4 px-3 py-0.5 rounded-full text-sm font-medium bg-green-800 text-green-300"> {subscription.stripe_status}</span>
               </dd>
             </div>
             <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">Plan</dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {product_name}
-                {price}
-                {interval}
+              <dt className="text-sm font-medium text-gray-400">Plan</dt>
+              <dd className="mt-1 text-sm text-purple-400 sm:mt-0 sm:col-span-2 font-semibold">
+                {subscription.stripe_product_name}
               </dd>
             </div>
             <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">Email address</dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{email}</dd>
+              <dt className="text-sm font-medium text-gray-400">
+                Price
+              </dt>
+              <dd className="mt-1 text-sm text-purple-400 sm:mt-0 sm:col-span-2">
+                $14.99 {subscription.currency.toUpperCase()} / {subscription.interval}
+              </dd>
             </div>
             <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">Manage</dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              <dt className="text-sm font-medium text-gray-400">Email address</dt>
+              <dd className="mt-1 text-sm text-purple-400 sm:mt-0 sm:col-span-2">
+                {"TODO"}
+              </dd>
+            </div>
+            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 items-center">
+              <dt className="text-sm font-medium  text-gray-400">Change Plan</dt>
+              <dd className="mt-1 text-sm text-purple-400 sm:mt-0 sm:col-span-2">
                 <button onClick={async () => {
                   try {
                     const res = await axios.get('http://localhost:8000/stripe/create-portal-session', {
@@ -78,7 +102,7 @@ function SubscriptionPortal() {
                     console.log("Error",e)
                   }
                 }}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium text-emerald-900 bg-emerald-400 hover:bg-gray-700"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium text-gray-300 rounded-xl bg-[#5424cd] hover:bg-[#5f38c2]"
                 >Manage</button>
               </dd>
             </div>
@@ -96,7 +120,7 @@ export default function Login() {
     <>
       <main className='w-full flex flex-col h-full'>
         <TopBarStatic />
-        <div className='flex flex-col sm:flex-row'>
+        <div className='flex flex-col sm:flex-row overflow-auto'>
           {/* MOBILE NAV */}
           <div
             id='docs-sidebar'
@@ -111,7 +135,7 @@ export default function Login() {
                 <li className='flex-grow'>
                   <button
                     className={` ${activeTab === 'billing'
-                      ? 'bg-gray-900 text-white'
+                      ? 'bg-gray-900 text-gray-400'
                       : 'hover:bg-gray-900 text-slate-400 hover:text-slate-300'
                       } flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-md w-full`}
                     onClick={() => setActiveTab('billing')}
@@ -140,7 +164,7 @@ export default function Login() {
                 <li className='flex-grow'>
                   <button
                     className={` ${activeTab === 'usage'
-                      ? 'bg-gray-900 text-white'
+                      ? 'bg-gray-900 text-gray-400'
                       : 'hover:bg-gray-900 text-slate-400 hover:text-slate-300'
                       } flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-md w-full`}
                     onClick={() => setActiveTab('usage')}
@@ -162,7 +186,7 @@ export default function Login() {
                 <li className='flex-grow'>
                   <button
                     className={` ${activeTab === 'settings'
-                      ? 'bg-gray-900 text-white'
+                      ? 'bg-gray-900 text-gray-400'
                       : 'hover:bg-gray-900 text-slate-400 hover:text-slate-300'
                       } flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-md w-full`}
                     onClick={() => setActiveTab('settings')}
@@ -188,12 +212,12 @@ export default function Login() {
 
           <div
             id='docs-sidebar'
-            className='hidden sm:block  hs-overlay z-[60] w-64 border-r pt-7 pb-10 overflow-y-auto scrollbar-y  scrollbar-y bg-black border-[#1d1e1e]'
+            className='hidden sm:block hs-overlay z-[0] w-64 border-r pt-7 pb-10 overflow-y-auto scrollbar-y  scrollbar-y bg-black border-[#1d1e1e]'
             style={{ height: 'calc(100vh - 72px)' }}
           >
             <div className='px-6'>
               <a
-                className='flex-none text-xl font-semibold dark:text-white'
+                className='flex-none text-xl font-semibold dark:text-gray-400'
                 href='javascript:;'
                 aria-label='Brand'
               >
@@ -208,7 +232,7 @@ export default function Login() {
                 <li>
                   <button
                     className={` ${activeTab === 'billing'
-                      ? 'bg-gray-900 text-white'
+                      ? 'bg-gray-900 text-gray-400'
                       : 'hover:bg-gray-900 text-slate-400 hover:text-slate-300'
                       } flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-md w-full`}
                     onClick={() => setActiveTab('billing')}
@@ -237,7 +261,7 @@ export default function Login() {
                 <li>
                   <button
                     className={` ${activeTab === 'usage'
-                      ? 'bg-gray-900 text-white'
+                      ? 'bg-gray-900 text-gray-400'
                       : 'hover:bg-gray-900 text-slate-400 hover:text-slate-300'
                       } flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-md w-full`}
                     onClick={() => setActiveTab('usage')}
@@ -259,7 +283,7 @@ export default function Login() {
                 <li>
                   <button
                     className={` ${activeTab === 'settings'
-                      ? 'bg-gray-900 text-white'
+                      ? 'bg-gray-900 text-gray-400'
                       : 'hover:bg-gray-900 text-slate-400 hover:text-slate-300'
                       } flex items-center gap-x-3.5 py-2 px-2.5 text-sm rounded-md w-full`}
                     onClick={() => setActiveTab('settings')}
@@ -283,7 +307,7 @@ export default function Login() {
           <div className='text-red-400 w-full p-8'>
             {activeTab === 'deprecated' && (
               <div>
-                <h2 className='text-lg sm:text-xl font-semibold mb-4 text-white'>
+                <h2 className='text-lg sm:text-xl font-semibold mb-4 text-gray-400'>
                   Current Plan: Startup
                 </h2>
                 <div className='inline-flex flex-col text-start shadow-xl rounded-xl'>
@@ -291,7 +315,7 @@ export default function Login() {
                     <span className='font-bold text-lg mr-1'>$</span>
                     39
                   </span>
-                  <p className='mt-2 text-sm text-gray-500'>
+                  <p className='mt-2 text-sm text-gray-400'>
                     All the basics for starting a new business
                   </p>
 
@@ -365,12 +389,12 @@ export default function Login() {
 
             {activeTab === 'usage' && (
               <div>
-                <h2 className='text-lg sm:text-xl font-semibold mb-4 text-white'>
+                <h2 className='text-lg sm:text-xl font-semibold mb-4 text-gray-400'>
                   Message Limit for this month
                 </h2>
                 <div className='flex w-[50%] h-4 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-700'>
                   <div
-                    className='flex flex-col justify-center overflow-hidden bg-purple-500 text-xs text-white text-center'
+                    className='flex flex-col justify-center overflow-hidden bg-purple-500 text-xs text-gray-400 text-center'
                     role='progressbar'
                     style={{ width: '57%' }}
                     aria-valuenow='57'
@@ -385,7 +409,7 @@ export default function Login() {
 
             {activeTab === 'settings' && (
               <div>
-                <h2 className='text-lg sm:text-xl font-semibold mb-4 text-white'>
+                <h2 className='text-lg sm:text-xl font-semibold mb-4 text-gray-400'>
                   Change private chat name
                 </h2>
                 <label htmlFor='hs-trailing-button-add-on' className='sr-only'>
@@ -400,14 +424,14 @@ export default function Login() {
                   />
                   <button
                     type='button'
-                    className='py-3 px-4 inline-flex flex-shrink-0 justify-center items-center gap-2 rounded-r-md border border-transparent font-semibold bg-purple-500 text-white hover:bg-purple-600 focus:z-10 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm'
+                    className='py-3 px-4 inline-flex flex-shrink-0 justify-center items-center gap-2 rounded-r-md border border-transparent font-semibold bg-purple-500 text-gray-400 hover:bg-purple-600 focus:z-10 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm'
                   >
                     Update
                   </button>
                 </div>
                 <button
                   type='button'
-                  className='block py-3 px-4 justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-red-500 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800'
+                  className='block py-3 px-4 justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-red-500 text-gray-400 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800'
                 >
                   Deactivate Account
                 </button>
