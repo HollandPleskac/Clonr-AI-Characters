@@ -71,13 +71,15 @@ services:
     build:
       context: ./frontend
       dockerfile: dev.Dockerfile
+    env_file:
+      - .env
     volumes:
       - ./frontend/src:/app/src
       - ./frontend/public:/app/public
     restart: always
     depends_on:
       - backend
-    #     condition: service_healthy
+        # condition: service_healthy
     ports:
       - 3000:3000
 

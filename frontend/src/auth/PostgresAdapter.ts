@@ -59,6 +59,8 @@ export default function PostgresAdapter(pool: typeof Pool): Adapter {
             }
             const userResult: AdapterUser = {
               id: u.id,
+              name: u.name,
+              image: u.image,
               email: u.email,
               emailVerified: u.email_verified,
               privateChatName: u.private_chat_name,
@@ -87,6 +89,8 @@ export default function PostgresAdapter(pool: typeof Pool): Adapter {
             }
             const userResult: AdapterUser = {
               id: u.id,
+              name: u.name,
+              image: u.image,
               email: u.email,
               emailVerified: u.email_verified,
               privateChatName: u.private_chat_name,
@@ -112,6 +116,8 @@ export default function PostgresAdapter(pool: typeof Pool): Adapter {
             }
             const userResult: AdapterUser = {
               id: u.id,
+              name: u.name,
+              image: u.image,
               email: u.email,
               emailVerified: u.email_verified,
               privateChatName: u.private_chat_name,
@@ -139,6 +145,8 @@ export default function PostgresAdapter(pool: typeof Pool): Adapter {
             }
             const userResult: AdapterUser = {
               id: u.id,
+              name: u.name,
+              image: u.image,
               email: u.email,
               emailVerified: u.email_verified,
               privateChatName: u.private_chat_name,
@@ -169,6 +177,8 @@ export default function PostgresAdapter(pool: typeof Pool): Adapter {
               }
               const userResult: AdapterUser = {
                 id: u.id,
+                name: u.name,
+                image: u.image,
                 email: u.email,
                 emailVerified: u.email_verified,
                 privateChatName: u.private_chat_name,
@@ -201,6 +211,8 @@ export default function PostgresAdapter(pool: typeof Pool): Adapter {
               }
               const userResult: AdapterUser = {
                 id: u.id,
+                name: u.name,
+                image: u.image,
                 email: u.email,
                 emailVerified: u.email_verified,
                 privateChatName: u.private_chat_name,
@@ -379,6 +391,8 @@ export default function PostgresAdapter(pool: typeof Pool): Adapter {
             }
             user = {
               id: u.id,
+              name: u.name,
+              image: u.image,
               email: u.email,
               emailVerified: u.email_verified,
               privateChatName: u.private_chat_name,

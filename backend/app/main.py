@@ -145,8 +145,8 @@ if __name__ == "__main__":
     reload_dirs = [str((p / x).resolve()) for x in ["app", "clonr"]]
     uvicorn.run(
         "app.main:app",
-        host=settings.HOST,
-        port=settings.PORT,
+        host=settings.BACKEND_HOST,
+        port=settings.BACKEND_PORT,
         reload=settings.DEV,
         reload_dirs=reload_dirs,
     )

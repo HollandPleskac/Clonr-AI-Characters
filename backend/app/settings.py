@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     POSTGRES_PORT: str
     NEXTAUTH_SECRET: str
     NEXTAUTH_URL: str
-    PORT: int
+    BACKEND_PORT: int
     REDIS_PASSWORD: str
     REDIS_PORT: int
     REDIS_HOST: str
@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "clonr.server"
     DEV: bool = True
     IP_ADDR_RATE_LIMIT: str
-    HOST: str
+    BACKEND_HOST: str
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str
     NUM_FREE_MESSAGES: int

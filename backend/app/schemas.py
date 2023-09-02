@@ -72,7 +72,7 @@ class UserCreate(BaseModel):
     image: str | None = None
 
 
-class UserUpdate(BaseUserUpdate):
+class UserUpdate(BaseModel):
     private_chat_name: Annotated[str, AfterValidator(special_char_validator)] = Field(
         default=None,
         min_length=1,

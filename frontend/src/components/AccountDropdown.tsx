@@ -1,13 +1,17 @@
 import { User } from '@/types'
 import Link from 'next/link'
 import React from 'react'
+import { signOut, useSession } from "next-auth/react"
+import Image from 'next/image'
 
 interface AccountDropdownProps {
   userObject: User
 }
 
-const AccountDropdown = ({userObject}:AccountDropdownProps) => {
+const AccountDropdown = ({ userObject }: AccountDropdownProps) => {
   console.log("user object", userObject)
+  const { data: session } = useSession({ required: false })
+
   return (
     <div className='hs-dropdown relative inline-flex justify-center items-center'>
       <button
@@ -16,8 +20,33 @@ const AccountDropdown = ({userObject}:AccountDropdownProps) => {
         disabled={!userObject}
         className='hs-dropdown-toggle text-white h-[40px] w-[40px] bg-[#979797] rounded-full grid place-items-center hover:ring-1 hover:ring-[rgba(255,255,255,0.2)] '
       >
-        {userObject?.email?.charAt(0) || ''}
+        {
+          (session && session?.image) ? (
+            <div className='h-[40px] w-[40px] relative'>
+              <Image
+                src={session?.image}
+                alt={"alt"}
+                layout='fill'
+                objectFit='cover'
+                className='rounded-full'
+              />
+            </div>
+          ) : (
+            userObject?.email?.charAt(0) || ''
+          )
+        }
+
       </button>
+
+      {/* <div className='h-[40px] w-[40px] relative'>
+          <Image
+            src={session.image}
+            alt={"alt"}
+            layout='fill'
+            objectFit='cover'
+            className='rounded-full'
+          />
+        </div> */}
 
       <div
         className='hs-dropdown-menu transition-[opacity,margin] duration hs-dropdown-open:opacity-100 opacity-0 hidden min-w-[15rem]  shadow-md rounded-lg p-2 mt-2 bg-black border border-gray-700'
@@ -45,7 +74,7 @@ const AccountDropdown = ({userObject}:AccountDropdownProps) => {
           </Link>
           <button
             className='w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-purple-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300'
-            onClick={() => {}}
+            onClick={() => { signOut() }}
           >
             <svg
               className='flex-none'

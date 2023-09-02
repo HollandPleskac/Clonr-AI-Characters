@@ -1,44 +1,23 @@
-import { redirect } from 'next/navigation'
+'use client'
 import Account from '@/components/Account'
-import { cookies } from 'next/headers'
-import cookiesToString from '@/utils/cookiesToString'
+import { useSession } from "next-auth/react"
 
 
-export default async function AccountPage() {
-  console.log("status")
-  const isAuthenticated = await getAuthStatus()
-  console.log("status", isAuthenticated)
+export default function AccountPage() {
+  const { data: session, status } = useSession({required: true})
+  const loading = status === "loading"
 
-  if (!isAuthenticated) {
-    redirect("/login")
+  if (loading) {
+    return (
+      <div className='text-white' ></div>
+    )
   }
-  return (
-    <Account />
-  )
-}
-
-
-// Return Character based on characterId
-async function getAuthStatus(): Promise<boolean> {
-  // look at auth gen function for this
-  const cookieStore = cookies()
-  const all = cookieStore.getAll()
-  console.log("all::::::::::::",all)
-  console.log("cookies",cookiesToString(all))
-  try {
-    const res = await fetch(`http://localhost:8000/users/me`, {
-    cache: 'no-store',
-    method: 'GET',
-    headers: {
-      'Cookie': cookiesToString(cookieStore.getAll())
-    },
-    credentials: 'include'
-  });
-  return true
-  } catch(e) {
-    console.log("error",e)
-    return true
+  if (!loading && session) {
+    return (
+      <>
+      <p className='text-white' > {JSON.stringify(session)} </p>
+      <Account />
+      </>
+    )
   }
-
-  return true
 }
