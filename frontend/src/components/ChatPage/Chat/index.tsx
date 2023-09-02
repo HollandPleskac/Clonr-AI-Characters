@@ -18,16 +18,19 @@ import { useRouter } from 'next/navigation'
 import { useSession } from "next-auth/react"
 import { Message } from '@/types'
 import axios from 'axios'
+import { useSidebarClonesPagination } from '@/hooks/useSidebarClonesPagination'
 
 interface ChatScreenProps {
   characterId: string
   conversationId: string
+  mutateSidebar: () => void
 }
 
 
 export default function ChatScreen({
   characterId,
   conversationId,
+  mutateSidebar
 }: ChatScreenProps) {
   const [message, setMessage] = useState('')
   const [isFetchingServerMessage, setIsFetchingServerMessage] = useState(false)
@@ -124,6 +127,7 @@ export default function ChatScreen({
       console.error(error)
     }
 
+    mutateSidebar()
     setIsFetchingServerMessage(false)
   }
 
@@ -189,6 +193,7 @@ export default function ChatScreen({
     );
     setRemovableMessages([])
     mutateMessages()
+    mutateSidebar()
     return response.data;
   }
 
@@ -196,7 +201,6 @@ export default function ChatScreen({
     setRemovableMessages([])
     setRemoveMode(false)
   }
-
   
 
   return (

@@ -1,3 +1,4 @@
+'use client'
 // import { useEffect, useState } from 'react'
 //import { cookies } from 'next/headers'
 // import Cookies from 'js-cookie';
@@ -8,25 +9,49 @@ import CharactersSidebar from '@/components/ChatPage/Characters/Sidebar'
 import ChatScreen from '@/components/ChatPage/Chat'
 import { useQueryClonesById } from '@/hooks/useClones'
 import Create from '@/components/ChatPage/Create'
+import { useState } from 'react';
+import { useSidebarClonesPagination } from '@/hooks/useSidebarClonesPagination';
 
-export default async function CreatePage({
+export default function CreatePage({
   params,
 }: {
-  params: { cloneId: string}
+  params: { cloneId: string }
 }) {
+
+
+  const [searchParam, setSearchParam] = useState('')
+
+  const sidebarClonesQueryParams = {
+    limit: 10,
+    name: searchParam,
+  }
+
+  const {
+    paginatedData: cloneChats,
+    isLoading,
+    isLastPage,
+    size,
+    setSize,
+    mutate
+  } = useSidebarClonesPagination(sidebarClonesQueryParams)
+
 
 
   // Render Page
   return (
-    <div
-        className='bg-gray-900 w-full flex justify-center items-center overflow-hidden'
-        style={{ height: 'calc(100vh)' }}
-      >
-        <CharactersSidebar
-          currentCharacterId={params.cloneId}
-        />
-        <Create characterId={params.cloneId} />
-      </div>
+    <>
+      <CharactersSidebar
+        currentCharacterId={params.cloneId}
+        cloneChats={cloneChats}
+        isLoading={isLoading}
+        isLastPage={isLastPage}
+        size={size}
+        setSize={setSize}
+        setSearchParam={setSearchParam}
+        mutate={mutate}
+      />
+      <Create characterId={params.cloneId} />
+    </>
   )
 }
 

@@ -15,16 +15,29 @@ import { useAuth } from '@/hooks/useAuth'
 
 interface CharactersProps {
     currentCharacterId: string
+    cloneChats: any
+    isLoading: boolean
+    isLastPage: boolean | undefined
+    size: number
+    setSize: (x:number) => void
+    setSearchParam: (x: string) => void
+    mutate: () => void
 }
 
 export default function Characters({
     currentCharacterId,
+    cloneChats,
+    isLoading,
+    isLastPage,
+    size,
+    setSize,
+    setSearchParam,
+    mutate
 }: CharactersProps) {
     const duration = 500
 
     // search state
     const [searchInput, setSearchInput] = useState('')
-    const [searchParam, setSearchParam] = useState('')
     const [isInputActive, setInputActive] = useState(false)
     const handleInputFocus = () => setInputActive(true)
     const handleInputBlur = () => setInputActive(false)
@@ -37,21 +50,6 @@ export default function Characters({
         return () => clearTimeout(timer)
     }, [searchInput])
 
-    const sidebarClonesQueryParams = {
-        limit: 10,
-        name: searchParam,
-    }
-
-    const {
-        paginatedData: cloneChats,
-        isLoading,
-        isLastPage,
-        size,
-        setSize
-    } = useSidebarClonesPagination(sidebarClonesQueryParams)
-
-    console.log("clone chats", cloneChats)
-
 
 
     // Component
@@ -61,6 +59,7 @@ export default function Characters({
             style={{ height: 'calc(100vh)' }}
         >
             {/* Brand Logo */}
+           
             <div className='flex items-center px-4 justify-between py-6'>
                 <div className='flex items-center cursor-pointer '>
                     <Link href='/' className='flex items-center cursor-pointer'>

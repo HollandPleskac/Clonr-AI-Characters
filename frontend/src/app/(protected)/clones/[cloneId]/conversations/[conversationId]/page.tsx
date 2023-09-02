@@ -1,16 +1,17 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { cloneElement, useEffect, useState } from 'react'
 //import { cookies } from 'next/headers'
 // import Cookies from 'js-cookie';
 import { redirect } from 'next/navigation'
-import { Character } from '@/types';
+import { Character, SidebarClone } from '@/types';
 import cookiesToString from '@/utils/cookiesToString';
 import CharactersSidebar from '@/components/ChatPage/Characters/Sidebar'
 import ChatScreen from '@/components/ChatPage/Chat'
 import { useQueryClonesById } from '@/hooks/useClones'
 import Chat from '@/components/ChatPage/Chat';
 import { useSession } from 'next-auth/react';
+import { useSidebarClonesPagination } from '@/hooks/useSidebarClonesPagination';
 
 export default function ConversationsPage({
   params,
@@ -33,34 +34,44 @@ export default function ConversationsPage({
     require('preline')
   }, [])
 
-  const { data: session, status } = useSession({ required: true })
-  const loading = status === "loading"
+  const [searchParam, setSearchParam] = useState('')
 
-  if (loading) {
-    return (
-      <div > </div>
-    )
+  const sidebarClonesQueryParams = {
+    limit: 10,
+    name: searchParam,
   }
 
-  if (!loading && !session) {
-    return redirect("/login")
-  }
+  const {
+    paginatedData: cloneChats,
+    isLoading,
+    isLastPage,
+    size,
+    setSize,
+    mutate
+  } = useSidebarClonesPagination(sidebarClonesQueryParams)
+
+  console.log("clone chats", cloneChats)
 
 
   // Render Page
   return (
-    <div
-      className='bg-gray-900 w-full flex justify-center items-center overflow-hidden'
-      style={{ height: 'calc(100vh)' }}
-    >
+    <>
       <CharactersSidebar
         currentCharacterId={params.cloneId}
+        cloneChats={cloneChats}
+        isLoading={isLoading}
+        isLastPage={isLastPage}
+        size={size}
+        setSize={setSize}
+        setSearchParam={setSearchParam}
+        mutate={mutate}
       />
       <Chat
         characterId={params.cloneId}
         conversationId={params.conversationId}
+        mutateSidebar={mutate}
       />
-    </div>
+    </>
   )
 }
 

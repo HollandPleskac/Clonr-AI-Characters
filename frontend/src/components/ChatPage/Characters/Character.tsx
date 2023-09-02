@@ -49,11 +49,13 @@ const Character: React.FC<MyComponentProps> = ({
                 </h3>
                 <h4 className='text-sm font-light leading-[18px] text-[#979797]'>
                   {/* {username} */}
-                  {sidebarClone.clone_id !== currentCharacterId && ' • ' + formatDate(new Date(sidebarClone.updated_at))}
+                  {/* {sidebarClone.clone_id !== currentCharacterId && ' • ' + formatDate(new Date(sidebarClone.updated_at))} */}
+                  {' • ' + formatDate(new Date(sidebarClone.updated_at))}
                 </h4>
               </div>
               <div className='text-smibold text-[14px] leading-[18px] line-clamp-1'>
-                {sidebarClone.clone_id !== currentCharacterId ? sidebarClone.last_message : "Current conversation"}
+                {/* {sidebarClone.clone_id !== currentCharacterId ? sidebarClone.last_message : "Current conversation"} */}
+                {sidebarClone.last_message}
               </div>
             </div>
           </div>

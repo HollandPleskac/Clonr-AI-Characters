@@ -9,7 +9,7 @@ export function formatDate(date: Date): string {
   }
 
   // If difference is less than 30 minutes, return in minutes
-  if (diffInMinutes < 30) {
+  if (diffInMinutes < 60) {
     return `${diffInMinutes}m`;
   }
 

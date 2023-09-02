@@ -43,7 +43,7 @@ export const useSidebarClonesPagination = (queryParams: SidebarClonesQueryParams
         return url
     }
 
-    const { data, size, setSize, isLoading } = useSWRInfinite(getKey, fetcher)
+    const { data, size, setSize, isLoading, mutate } = useSWRInfinite(getKey, fetcher)
     const paginatedData = data?.flat()
 
     const isLastPage = data && data[data.length - 1]?.length < limit // last batch if data < limit
@@ -54,5 +54,6 @@ export const useSidebarClonesPagination = (queryParams: SidebarClonesQueryParams
         isLoading,
         size,
         setSize,
+        mutate
     }
 }
