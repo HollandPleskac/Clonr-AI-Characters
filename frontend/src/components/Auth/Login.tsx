@@ -6,17 +6,11 @@ import Image from 'next/image'
 
 
 const LoginModal = () => {
-  const [isChecked, setIsChecked] = useState(false)
-  const [showAlert, setShowAlert] = useState(false)
-
   return (
-    <main className='w-full max-w-md mx-auto p-6'>
-      <div className='mt-7 rounded-xl shadow-sm dark:bg-black '>
+    <main className='w-full max-w-md mx-auto p-6 bg-transparent '>
+      <div className='mt-7 rounded-xl shadow-sm border-white border-[1px] border-opacity-50 bg-[#141414] rounded-2xl'>
         <div className='p-4 sm:p-7'>
           <div className='text-center flex justify-start'>
-            {/* <h1 className='text-left block text-[30px] font-bold text-white'>
-              Sign in
-            </h1> */}
             <Link href='/' className=' flex items-center justify-start cursor-pointer'>
               <div className='h-8 w-8 relative'>
                 <Image
@@ -31,19 +25,11 @@ const LoginModal = () => {
                 sign in
               </h3>
             </Link>
-
           </div>
-
-
-
           <div className='mt-5 flex flex-col gap-y-4 '>
-
-
             <button
               type='button'
-              onClick={() => {
-                isChecked ? signIn("google") : setShowAlert(true)
-              }}
+              onClick={() => signIn('google')}
               className='relative hover:bg-opacity-80 flex justify-center items-center bg-[#f0f0f0] active:opacity-90 text-black w-full py-3  gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f0f0f0] transition-all text-sm border-[#f0f0f0] focus:ring-offset-gray-800'
             >
               <div className='w-full flex items-center' >
@@ -77,9 +63,7 @@ const LoginModal = () => {
 
             <button
               type='button'
-              onClick={() => {
-                isChecked ? signIn("discord") : setShowAlert(true)
-              }}
+              onClick={() => signIn("discord")}
               className='relative hover:bg-opacity-80 flex justify-center items-center bg-[#5661F7] active:opacity-90 text-white w-full py-3  gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5661F7] transition-all text-sm border-[#5661F7] focus:ring-offset-gray-800'
             >
               <div className='w-full flex items-center' >
@@ -101,9 +85,7 @@ const LoginModal = () => {
 
             <button
               type='button'
-              onClick={() => {
-                isChecked ? signIn("facebook") : setShowAlert(true)
-              }}
+              onClick={() => signIn("facebook")}
               className='relative hover:bg-opacity-80 flex justify-center items-center bg-[#4267B2] active:opacity-90 text-white w-full py-3  gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4267B2] transition-all text-sm border-[#4267B2] focus:ring-offset-gray-800'
             >
               <div className='w-full flex items-center' >
@@ -122,9 +104,7 @@ const LoginModal = () => {
 
             <button
               type='button'
-              onClick={() => {
-                isChecked ? signIn("reddit") : setShowAlert(true)
-              }}
+              onClick={() => signIn("reddit")}
               className='relative hover:bg-opacity-80 flex justify-center items-center bg-[#FF4500] active:opacity-90 text-white w-full py-3  gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FF4500] transition-all text-sm border-[#FF4500] focus:ring-offset-gray-800'
             >
               <div className='w-full flex items-center' >
@@ -144,10 +124,8 @@ const LoginModal = () => {
 
             <button
               type='button'
-              onClick={() => {
-                isChecked ? signIn("twitter") : setShowAlert(true)
-              }}
-              className='relative hover:bg-opacity-80 flex justify-center items-center bg-[#2e2e2e] active:opacity-90 text-white w-full py-3  gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ffffff] transition-all text-sm border-[#141414] focus:ring-offset-gray-800'
+              onClick={() => signIn("twitter")}
+              className='relative flex justify-center items-center bg-[#454545] hover:bg-opacity-70 active:opacity-90 text-white w-full py-3  gap-2 rounded-md font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#ffffff] transition-all text-sm focus:ring-offset-gray-800'
             >
               <div className='w-full flex items-center' >
                 <svg
@@ -173,56 +151,23 @@ const LoginModal = () => {
               </Link>
             </p> */}
             <div className='mt-2 flex items-center justify-center'>
-              <div className='flex items-center h-5'>
-                <input
-                  id='remember'
-                  aria-describedby='remember'
-                  checked={isChecked}
-                  onChange={() => {
-                    setIsChecked(prevState => !prevState)
-                    setShowAlert(false)
-                  }}
-                  type='checkbox'
-                  className='w-4 h-4 border focus:ring-transparent border-gray-300 rounded bg-gray-50  dark:bg-gray-700 dark:border-gray-600  checked:text-purple-500'
-                  required={false}
-                  style={{ boxShadow: 'none' }}
-                />
-              </div>
-              <div className='ml-3 text-sm'>
-                <label
-                  htmlFor='terms'
-                  className='font-light text-gray-500 dark:text-gray-300'
+              <div className='ml-3 text-sm font-light text-gray-500 dark:text-gray-300'>
+                By signing up, you confirm that you have read, understood, accept the Clonr {' '}
+                <a
+                  className='font-medium text-purple-600 hover:underline dark:text-purple-500'
+                  href='#'
                 >
-                  I accept the{' '}
-                  <a
-                    className='font-medium text-purple-600 hover:underline dark:text-purple-500'
-                    href='#'
-                  >
-                    Terms and Conditions
-                  </a>
-                </label>
+                  Terms and Conditions
+                </a>
+                {' '} and {' '}
+                <a
+                  className='font-medium text-purple-600 hover:underline dark:text-purple-500'
+                  href='#'
+                >
+                  Privacy Policy
+                </a>
               </div>
             </div>
-
-            {showAlert && (
-              <div className='' >
-                <div className="max-w-xs bg-red-500 text-sm text-white rounded-md shadow-lg" role="alert">
-                  <div className="flex p-4">
-                    You must first accept the Terms and Conditions
-
-                    {/* <div className="ml-auto">
-                    <button type="button" className="inline-flex flex-shrink-0 justify-center items-center h-4 w-4 rounded-md text-white/[.5] hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-red-800 focus:ring-red-500 transition-all text-sm dark:focus:ring-offset-red-500 dark:focus:ring-red-700">
-                      <span className="sr-only">Close</span>
-                      <svg className="w-3.5 h-3.5" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M0.92524 0.687069C1.126 0.486219 1.39823 0.373377 1.68209 0.373377C1.96597 0.373377 2.2382 0.486219 2.43894 0.687069L8.10514 6.35813L13.7714 0.687069C13.8701 0.584748 13.9882 0.503105 14.1188 0.446962C14.2494 0.39082 14.3899 0.361248 14.5321 0.360026C14.6742 0.358783 14.8151 0.38589 14.9468 0.439762C15.0782 0.493633 15.1977 0.573197 15.2983 0.673783C15.3987 0.774389 15.4784 0.894026 15.5321 1.02568C15.5859 1.15736 15.6131 1.29845 15.6118 1.44071C15.6105 1.58297 15.5809 1.72357 15.5248 1.85428C15.4688 1.98499 15.3872 2.10324 15.2851 2.20206L9.61883 7.87312L15.2851 13.5441C15.4801 13.7462 15.588 14.0168 15.5854 14.2977C15.5831 14.5787 15.4705 14.8474 15.272 15.046C15.0735 15.2449 14.805 15.3574 14.5244 15.3599C14.2437 15.3623 13.9733 15.2543 13.7714 15.0591L8.10514 9.38812L2.43894 15.0591C2.23704 15.2543 1.96663 15.3623 1.68594 15.3599C1.40526 15.3574 1.13677 15.2449 0.938279 15.046C0.739807 14.8474 0.627232 14.5787 0.624791 14.2977C0.62235 14.0168 0.730236 13.7462 0.92524 13.5441L6.59144 7.87312L0.92524 2.20206C0.724562 2.00115 0.611816 1.72867 0.611816 1.44457C0.611816 1.16047 0.724562 0.887983 0.92524 0.687069Z" fill="currentColor" />
-                      </svg>
-                    </button>
-                  </div> */}
-                  </div>
-                </div>
-              </div>
-            )}
-
           </div>
         </div>
 

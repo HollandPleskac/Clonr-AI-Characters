@@ -85,7 +85,7 @@ function SubscriptionPortal() {
                 Price
               </dt>
               <dd className="mt-1 text-sm text-purple-400 sm:mt-0 sm:col-span-2">
-                $14.99 {subscription.currency.toUpperCase()} / {subscription.interval}
+                ${subscription.amount / 100} {subscription.currency.toUpperCase()} / {subscription.interval}
               </dd>
             </div>
             <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
