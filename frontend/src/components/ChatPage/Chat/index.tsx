@@ -14,6 +14,8 @@ import ChatTopBar from './ChatTopBar'
 import useConversations from '@/hooks/useConversations'
 import { useMessagesPagination } from '@/hooks/useMessagesPagination'
 import { useQueryClonesById } from '@/hooks/useClones'
+import { useRouter } from 'next/navigation'
+import { useSession } from "next-auth/react"
 
 interface ChatScreenProps {
   characterId: string
@@ -29,6 +31,18 @@ export default function ChatScreen({
   const [isFetchingServerMessage, setIsFetchingServerMessage] = useState(false)
 
   const [scrollToNewMessage, setScrollToNewMessage] = useState<boolean>(false)
+
+  const router = useRouter();
+
+  const { data: session, status } = useSession({required: true})
+  const loading = status === "loading"
+
+  if (!session) {
+      router.push('/login');
+      return (
+          <div> No session! </div>
+      )
+  }
 
   const { data: character, error, isLoading: isLoadingCharacter } = useQueryClonesById({
     cloneId: characterId

@@ -13,14 +13,22 @@ import NetflixCard from './NetflixCard'
 import { Character } from '@/types'
 import Image from 'next/image'
 import InfiniteScroll from 'react-infinite-scroll-component'
+import { CloneSearchResult } from '@/client/models/CloneSearchResult'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
+type CustomCloneSearchResult = CloneSearchResult & {
+  conversation_id?: string;
+};
 
 interface SearchGridProps {
-  characters: any[]
+  characters: CustomCloneSearchResult[]
   loading: boolean
   fetchMoreData: () => void
   hasMoreData: boolean
   showPadding2?: boolean
+  conversationId?: string
+  onCharacterClick: (characterId: string, convoId?: string) => void;
 }
 
 export default function CharacterGrid({
@@ -30,6 +38,24 @@ export default function CharacterGrid({
   hasMoreData,
   showPadding2 = false,
 }: SearchGridProps) {
+
+  const router = useRouter()
+  const { data: session, status } = useSession();
+
+  const handleCharacterClick = (item: CustomCloneSearchResult) => {
+    if (session) {
+      const characterId = item.id;
+      const convoId = item?.conversation_id; // use if exists
+
+      if (convoId) {
+        router.push(`/clones/${characterId}/conversations/${convoId}`);
+      } else {
+        router.push(`/clones/${characterId}/create`);
+      }
+    } else {
+      router.push('/login');
+    }
+  };
 
   function calcEdgeCard(n: number): 'left' | 'right' | undefined {
     if (n % 6 === 0) {
@@ -82,7 +108,9 @@ export default function CharacterGrid({
             const edgeCard = calcEdgeCard(index)
             return (
               <div className='w-full z-0 hover:z-10' key={item.id}>
-                <NetflixCard item={item} edgeCard={edgeCard} />
+                <NetflixCard item={item} edgeCard={edgeCard} onClick={() => {
+                  handleCharacterClick(item);
+                }} />
               </div>
             )
           })}

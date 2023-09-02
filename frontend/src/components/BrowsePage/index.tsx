@@ -10,7 +10,6 @@ import 'swiper/css/scrollbar'
 import TopBar from '@/components/TopBar'
 import AlertBar from '@/components/AlertBar'
 import { Character, Tag } from '@/types'
-import AuthModal from '../AuthModal'
 import CharacterGrid from '@/components/HomePage/CharacterGrid'
 import TagComponent from './Tag'
 import Dropdown from './Dropdown'
@@ -204,8 +203,6 @@ export default function BrowsePage() {
                 )}
             </ScaleFadeIn>
             )}
-
-            <AuthModal />
         </div>
     )
 }

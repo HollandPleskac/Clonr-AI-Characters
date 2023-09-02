@@ -13,18 +13,18 @@ interface CardsProps {
   defaultCard?: boolean
   item: CloneSearchResult
   edgeCard?: 'left' | 'right' | undefined
+  onClick?: () => void
 }
 
 export default function Cards({
   defaultCard = true,
   item,
   edgeCard,
+  onClick,
 }: CardsProps): React.ReactElement {
   const style = defaultCard ? styles.card : styles.longCard
   const infoStyle = defaultCard ? styles.cardInfo : styles.more
-  console.log("In Cards(), this is item: ", item)
   const { name, short_description, num_messages, tags, avatar_uri, num_conversations } = item
-  // const image = defaultCard ? banner : poster
 
   let edgeClass = ''
   if (edgeCard === 'left') {
@@ -37,6 +37,7 @@ export default function Cards({
     <div
       className={`${style} ${edgeClass}`}
       data-hs-overlay='#hs-slide-down-animation-modal'
+      onClick={onClick}
     >
       <div className={styles.cardPoster}>
         <img
