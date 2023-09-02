@@ -10,11 +10,12 @@ import CharactersSidebar from '@/components/ChatPage/Characters/Sidebar'
 import ChatScreen from '@/components/ChatPage/Chat'
 import { useQueryClonesById } from '@/hooks/useClones'
 import Chat from '@/components/ChatPage/Chat';
+import { useSession } from 'next-auth/react';
 
 export default function ConversationsPage({
   params,
 }: {
-  params: { cloneId: string, conversationId: string}
+  params: { cloneId: string, conversationId: string }
 }) {
 
   //const { queryCloneById } = useClones()
@@ -30,24 +31,36 @@ export default function ConversationsPage({
 
   useEffect(() => {
     require('preline')
-}, [])
+  }, [])
 
-  
+  const { data: session, status } = useSession({ required: true })
+  const loading = status === "loading"
+
+  if (loading) {
+    return (
+      <div > </div>
+    )
+  }
+
+  if (!loading && !session) {
+    return redirect("/login")
+  }
+
 
   // Render Page
   return (
     <div
-        className='bg-gray-900 w-full flex justify-center items-center overflow-hidden'
-        style={{ height: 'calc(100vh)' }}
-      >
-         <CharactersSidebar
-          currentCharacterId={params.cloneId}
-        />
-        <Chat
-          characterId={params.cloneId}
-          conversationId={params.conversationId}
-        />
-      </div>
+      className='bg-gray-900 w-full flex justify-center items-center overflow-hidden'
+      style={{ height: 'calc(100vh)' }}
+    >
+      <CharactersSidebar
+        currentCharacterId={params.cloneId}
+      />
+      <Chat
+        characterId={params.cloneId}
+        conversationId={params.conversationId}
+      />
+    </div>
   )
 }
 

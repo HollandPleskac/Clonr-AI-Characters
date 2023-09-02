@@ -14,9 +14,12 @@ interface MessageProps {
   character: Character
   clone_avatar_uri: string
   isLast: boolean
+  isRemoveMode: boolean
+  isRemoveMessage: boolean
+  handleRemoveMessage: (id:string) => void
 }
 
-const Message: React.FC<MessageProps> = ({ mutateMessages, conversationId, message, clone_avatar_uri, isLast }) => {
+const Message: React.FC<MessageProps> = ({ mutateMessages, conversationId, message, clone_avatar_uri, isLast, isRemoveMode, isRemoveMessage, handleRemoveMessage }) => {
 
   const [currentIndex, setCurrentIndex] = useState(0)
   const [messages, setMessages] = useState<Message[]>([message])
@@ -73,18 +76,29 @@ const Message: React.FC<MessageProps> = ({ mutateMessages, conversationId, messa
     setCurrentIndex(prevState => prevState + 1)
   }
 
-
   return (
     <div className='relative flex flex-grow w-full items-stretch py-4'>
+      {
+        (isRemoveMode && message.sender_name === 'Test User' ) && (
+          <div className='h-[40px] flex items-center justify-center w-[40px]' >
+            <input
+              id='remember'
+              aria-describedby='remember'
+              type='checkbox'
+              className='self-center w-4 h-4 border focus:ring-transparent border-gray-300 rounded bg-gray-50  dark:bg-gray-700 dark:border-gray-600  checked:text-purple-500'
+              required={false}
+              checked={isRemoveMessage}
+              onChange={() => {
+                handleRemoveMessage(message.id)
+              }}
+              style={{ boxShadow: 'none' }}
+            />
+          </div>
+        )}
+        {(isRemoveMode && message.sender_name !== 'Test User') && (
+          <div className='w-[40px] h-[40px]' ></div>
+        )}
       <div className='flex flex-col shrink-0 w-[40px] justify-between items-center'>
-        {/* <Image
-          key={0}
-          src={message.sender_name == 'Test User' ? '/user-profile.png' : clone_avatar_uri}
-          alt={message.sender_name}
-          width={40}
-          height={40}
-          className='rounded-full'
-        /> */}
         <div className='h-[40px] w-[40px] relative'>
           <Image
             src={message.sender_name == 'Test User' ? '/user-profile.png' : clone_avatar_uri}

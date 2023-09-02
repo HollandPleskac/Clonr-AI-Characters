@@ -16,6 +16,8 @@ import { useMessagesPagination } from '@/hooks/useMessagesPagination'
 import { useQueryClonesById } from '@/hooks/useClones'
 import { useRouter } from 'next/navigation'
 import { useSession } from "next-auth/react"
+import { Message } from '@/types'
+import axios from 'axios'
 
 interface ChatScreenProps {
   characterId: string
@@ -29,20 +31,11 @@ export default function ChatScreen({
 }: ChatScreenProps) {
   const [message, setMessage] = useState('')
   const [isFetchingServerMessage, setIsFetchingServerMessage] = useState(false)
-
   const [scrollToNewMessage, setScrollToNewMessage] = useState<boolean>(false)
 
   const router = useRouter();
 
-  const { data: session, status } = useSession({required: true})
-  const loading = status === "loading"
-
-  if (!session) {
-      router.push('/login');
-      return (
-          <div> No session! </div>
-      )
-  }
+  const [removeMode, setRemoveMode] = useState(false)
 
   const { data: character, error, isLoading: isLoadingCharacter } = useQueryClonesById({
     cloneId: characterId
@@ -157,6 +150,55 @@ export default function ChatScreen({
     import('preline')
   }, [])
 
+  const [removableMessages, setRemovableMessages] = useState<Message[]>([])
+
+  function findAllDescendantMessages(messages: Message[], parentId, descendants: Message[] = []) {
+    const child = messages.find(message => message.parent_id === parentId);
+
+    // push Message of checkbox clicked
+    const parent = messages.find(message => message.id === parentId);
+    if (descendants.length === 0 && parent) {
+      descendants.push(parent)
+    }
+
+    if (child) {
+      descendants.push(child);
+      findAllDescendantMessages(messages, child.id, descendants);
+    }
+
+    return descendants;
+  }
+
+  // if already checked instead, need to remove all checks of messages below
+  // write function to remove descendents of list above the id clicked and stuff
+  function handleRemoveMessage(id: string) {
+    const descendants = findAllDescendantMessages(messages, id)
+    if (id === removableMessages[0]?.id) {
+      setRemovableMessages([])
+    } else {
+      setRemovableMessages(descendants)
+    }
+  }
+
+  async function confirmRemoveMessages() {
+    const response = await axios.delete(
+      `http://localhost:8000/conversations/${conversationId}/messages/${removableMessages[0].id}`,
+      {
+        withCredentials: true
+      }
+    );
+    setRemovableMessages([])
+    mutateMessages()
+    return response.data;
+  }
+
+  async function cancelRemoveMessages() {
+    setRemovableMessages([])
+    setRemoveMode(false)
+  }
+
+  
+
   return (
     <div className='w-[100%] border-r-[2px] border-[#252525] bg-[#121212] lg:inline'>
       {isLoadingCharacter && (<div className='h-screen w-full grid place-items-center' >
@@ -182,6 +224,10 @@ export default function ChatScreen({
             character={character}
             characterId={characterId}
             conversationId={conversationId}
+            toggleRemoveMode={() => {
+              setRemoveMode(prevState => !prevState)
+              console.log('changing remove')
+            }}
           />
           {isLoadingMessages && (
             <div className='text-white grid place-items-center'
@@ -250,6 +296,9 @@ export default function ChatScreen({
                     isLast={
                       message.is_clone && index === 0 ? true : false
                     }
+                    isRemoveMode={removeMode}
+                    isRemoveMessage={removableMessages.some(removableMessage => removableMessage.id === message.id)}
+                    handleRemoveMessage={handleRemoveMessage}
                     key={message.id}
                   />
 
@@ -259,34 +308,54 @@ export default function ChatScreen({
           )}
 
           <div className='flex h-[92px] items-center border-t  border-[#252525] px-6'>
-            <div className='relative w-full'>
-              {/* <div className='absolute right-4 top-3'>
+            {removeMode && (
+              <div className='flex justify-between items-center w-full px-3' >
+                <p className='text-[#979797]' >Select the message to remove. All following messages will be removed.</p>
+                <div className='flex gap-x-2' >
+                  <button 
+                    onClick={cancelRemoveMessages}
+                    className='px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition duration-200' >Cancel</button>
+                  <button
+                    onClick={confirmRemoveMessages}
+                    disabled={removableMessages.length === 0}
+                    className={`px-4 py-2 ${removableMessages.length === 0 ? "bg-gray-400 text-white" : "bg-red-500 hover:bg-red-600 text-white"}  rounded-lg transition duration-200`} >Remove</button>
+                </div>
+              </div>
+            )}
+            {
+              !removeMode && (
+                <div className='flex w-full items-center' >
+                  <div className='relative w-full'>
+                    {/* <div className='absolute right-4 top-3'>
                     <SmileIcon />
                   </div> */}
-              <input
-                className='h-[48px] w-full rounded-[14px] border-none bg-[#1E1E1E] py-4 pl-4 pr-[50px] text-[15px] font-light leading-6 text-[#979797] transition-all duration-100 focus:ring-1 focus:ring-transparent'
-                type='text'
-                placeholder='Type a message'
-                value={message}
-                onChange={(event: any) => setMessage(event.target.value)}
-                style={{ outline: 'none', resize: 'none' }}
-                onKeyDown={handleOnKeyDown}
-              />
-            </div>
-            <div className='ml-[10px] transition-all duration-100 '>
-              <button
-                onClick={async () => {
-                  !isFetchingServerMessage && sendMessage()
-                }}
-                disabled={isFetchingServerMessage}
-              >
-                <SendIcon
-                  strokeClasses={
-                    isFetchingServerMessage ? 'stroke-[#515151] fill-[#515151]' : ''
-                  }
-                />
-              </button>
-            </div>
+                    <input
+                      className='h-[48px] w-full rounded-[14px] border-none bg-[#1E1E1E] py-4 pl-4 pr-[50px] text-[15px] font-light leading-6 text-[#979797] transition-all duration-100 focus:ring-1 focus:ring-transparent'
+                      type='text'
+                      placeholder='Type a message'
+                      value={message}
+                      onChange={(event: any) => setMessage(event.target.value)}
+                      style={{ outline: 'none', resize: 'none' }}
+                      onKeyDown={handleOnKeyDown}
+                    />
+                  </div>
+
+                  <button
+                    className='ml-[10px] transition-all duration-100'
+                    onClick={async () => {
+                      !isFetchingServerMessage && sendMessage()
+                    }}
+                    disabled={isFetchingServerMessage}
+                  >
+                    <SendIcon
+                      strokeClasses={
+                        isFetchingServerMessage ? 'stroke-[#515151] fill-[#515151]' : ''
+                      }
+                    />
+                  </button>
+                </div>
+              )
+            }
           </div>
 
         </>

@@ -9,6 +9,8 @@ import cookiesToString from '@/utils/cookiesToString';
 import CharactersSidebar from '@/components/ChatPage/Characters/Sidebar'
 import ChatScreen from '@/components/ChatPage/Chat'
 import { useQueryClonesById } from '@/hooks/useClones'
+import router from 'next/router';
+import { useSession } from 'next-auth/react';
 
 export default function ChatPage({
   params,
@@ -16,52 +18,25 @@ export default function ChatPage({
   params: { characterId: string; conversationId: string }
 }) {
 
-  //const { queryCloneById } = useClones()
-
-  // Route Protection
-  //const cookieStore = cookies()
-  //const userCookie = cookieStore.get('clonrauth')
-  //const userCookie = Cookies.get('clonrauth');
-
-  // if (!userCookie) {
-  //   redirect("/login")
-  // }
-
   useEffect(() => {
     require('preline')
-}, [])
+  }, [])
 
-  const queryParams = {
-    cloneId: params["characterId"]
-  }
+  
 
-  const { data: character, error, isLoading } = useQueryClonesById(queryParams);
-
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  }
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  // Render Page
   return (
     <div
-        className='bg-gray-900 w-full flex justify-center items-center overflow-hidden'
-        style={{ height: 'calc(100vh)' }}
-      >
-        <CharactersSidebar
-          currentCharacterId={params.characterId}
-          conversationId={params.conversationId}
-          character={character}
-        />
-        <ChatScreen
-          characterId={params.characterId}
-          conversationId={params.conversationId}
-          character={character}
-        />
-      </div>
+      className='bg-gray-900 w-full flex justify-center items-center overflow-hidden'
+      style={{ height: 'calc(100vh)' }}
+    >
+      <CharactersSidebar
+        currentCharacterId={params.characterId}
+      />
+      <ChatScreen
+        characterId={params.characterId}
+        conversationId={params.conversationId}
+      />
+    </div>
   )
 }
 

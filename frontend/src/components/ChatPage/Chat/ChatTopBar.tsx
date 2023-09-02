@@ -18,6 +18,7 @@ type ChatTopBarProps = {
   handleInputBlur: () => void
   characterId: string
   conversationId: string
+  toggleRemoveMode: () => void
 }
 
 const ChatTopBar = ({
@@ -29,7 +30,8 @@ const ChatTopBar = ({
   handleInputBlur,
   handleInputFocus,
   characterId,
-  conversationId
+  conversationId,
+  toggleRemoveMode
 }: ChatTopBarProps) => {
   if (!character) {
     return (
@@ -96,7 +98,7 @@ const ChatTopBar = ({
             />
           </div>
 
-          <ChatDropdown characterId={character.id} />
+          <ChatDropdown characterId={character.id} toggleRemoveMode={toggleRemoveMode} />
         </div>
      
     </div>
