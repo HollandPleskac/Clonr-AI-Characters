@@ -15,13 +15,21 @@ import NetflixCard from './NetflixCard'
 import { Character } from '@/types'
 import { Navigation, Pagination, Scrollbar } from 'swiper/modules'
 import { useCarouselSlidesPerView } from '@/hooks/useCarouselSlidesPerView'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+
+type CustomCloneSearchResult = CloneSearchResult & {
+  conversation_id?: string;
+};
 
 interface CarouselProps {
-  characters: CloneSearchResult[]
+  characters: CustomCloneSearchResult[]
   name: String
   isBigCarousel: boolean
   zIndex: number
   slidesPerView: number
+  conversationId?: string
+  onCharacterClick: (characterId: string, convoId?: string) => void;
 }
 
 export default function Carousel({
@@ -36,6 +44,24 @@ export default function Carousel({
 
   const [prevEl, setPrevEl] = useState<HTMLElement | null>(null)
   const [nextEl, setNextEl] = useState<HTMLElement | null>(null)
+
+  const router = useRouter()
+  const { data: session, status } = useSession();
+
+  const handleCharacterClick = (item: CustomCloneSearchResult) => {
+    if (session) {
+      const characterId = item.id;
+      const convoId = item?.conversation_id; // use if exists
+
+      if (convoId) {
+        router.push(`/clones/${characterId}/conversations/${convoId}`);
+      } else {
+        router.push(`/clones/${characterId}/create`);
+      }
+    } else {
+      router.push('/login');
+    }
+  };
 
   return (
     <div className='pt-4 mb-4 text-white'>
@@ -87,6 +113,9 @@ export default function Carousel({
                         ? 'right'
                         : undefined
                   }
+                  onClick={() => {
+                    handleCharacterClick(item);
+                  }}
                 />
               </SwiperSlide>
             )

@@ -13,7 +13,6 @@ import CharacterGrid from './CharacterGrid'
 import StatBar from '../Statistics/StatBar'
 import ScaleFadeIn from '../Transitions/ScaleFadeIn'
 import { useQueryClones } from '@/hooks/useClones'
-import AuthModal from '../AuthModal'
 import { ColorRing } from "react-loader-spinner"
 import { CloneSortType } from '@/client/models/CloneSortType'
 import { useQueryConversationsContinue } from '@/hooks/useConversations'
@@ -155,7 +154,6 @@ export default function HomeScreen() {
         </ScaleFadeIn>
       )}
 
-      <AuthModal />
     </div>
   )
 }

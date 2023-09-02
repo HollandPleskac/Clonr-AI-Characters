@@ -23,8 +23,14 @@ function SubscriptionPortal() {
 
   const { push } = useRouter()
   
-  if (isLoading || !subscription) {
+  if (isLoading) {
     return <p>Loading</p>
+  }
+
+  if (!subscription) {
+    return (
+      <div> Not a paying susbscriber! </div>
+    )
   }
 
   return (

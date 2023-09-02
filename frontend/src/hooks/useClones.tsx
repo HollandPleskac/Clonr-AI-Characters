@@ -30,40 +30,6 @@ interface CloneCreate {
     tags: Tag[];
 }
 
-interface Clone {
-  id: string;
-  created_at: string;
-  updated_at: string;
-  creator_id: string;
-  name: string;
-  short_description: string;
-  avatar_uri: string;
-  num_messages: number;
-  num_conversations: number;
-  tags: Tag[];
-}
-
-interface Monologue {
-  id: string;
-  content: string;
-  source: string;
-  created_at: string;
-  updated_at: string;
-  clone_id: string;
-}
-
-interface Document {
-  id: string;
-  content: string;
-  name: string;
-  description: string;
-  type: string;
-  url: string;
-  created_at: string;
-  updated_at: string;
-  clone_id: string;
-}
-
 interface CloneQueryByIdParams {
   cloneId: string;
 }

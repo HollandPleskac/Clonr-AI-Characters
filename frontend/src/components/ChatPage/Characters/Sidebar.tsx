@@ -10,7 +10,8 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 import { ColorRing } from 'react-loader-spinner'
 import { useSidebarClonesPagination } from '@/hooks/useSidebarClonesPagination'
 import XIcon from '@/components/XIcon'
-
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
 
 interface CharactersProps {
     currentCharacterId: string
