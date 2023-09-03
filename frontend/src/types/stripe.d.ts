@@ -1,12 +1,9 @@
+import * as React from 'react'
+
 declare global {
     export namespace JSX {
       interface IntrinsicElements {
-        'stripe-pricing-table': {
-          key: string;
-          'pricing-table-id': string;
-          'publishable-key': string;
-          'client-reference-id': string;
-        };
+        'stripe-pricing-table': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>
       }
     }
   }

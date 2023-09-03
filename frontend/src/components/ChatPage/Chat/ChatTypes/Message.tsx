@@ -180,7 +180,7 @@ const Message: React.FC<MessageProps> = ({ mutateMessages, conversationId, messa
             />
           )}
         </div>
-        <span className='text-xs font-light leading-[18px] text-white'>
+        <span className='text-[14px] font-light leading-[18px] text-white'>
           {!isFetchingRegenMessage && messages[currentIndex].content}
           {isFetchingRegenMessage && (<ThreeDots
             height='18'

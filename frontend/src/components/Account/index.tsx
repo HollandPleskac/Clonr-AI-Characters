@@ -10,6 +10,7 @@ import { Subscription, SubscriptionsService } from '@/client';
 
 function SubscriptionPortal() {
   const { push } = useRouter()
+
   const { data: subscription, isLoading, error } = useSWR(
     'http://localhost:8000/subscriptions/me',
     async () =>  await SubscriptionsService.getMySubscriptionsSubscriptionsMeGet()
@@ -65,7 +66,10 @@ function SubscriptionPortal() {
               </dt>
               <dd className="mt-1 text-sm text-purple-400 sm:mt-0 sm:col-span-2">
                 {subscription.stripe_subscription_id}
-                <span className="inline-flex items-center ml-4 px-3 py-0.5 rounded-full text-sm font-medium bg-green-800 text-green-300"> {subscription.stripe_status}</span>
+                {subscription.stripe_status === 'active' ? 
+                <span className="inline-flex items-center ml-4 px-3 py-0.5 rounded-md text-sm font-medium bg-[#48d24d] text-[#220808]"> {subscription.stripe_status}</span> :
+                <span className="inline-flex items-center ml-4 px-2 rounded-md text-sm font-medium bg-[#d24848] text-[#220808]"> {subscription.stripe_status}</span>
+                }
               </dd>
             </div>
             <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">

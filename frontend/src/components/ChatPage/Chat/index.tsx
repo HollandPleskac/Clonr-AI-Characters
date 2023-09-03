@@ -110,7 +110,7 @@ export default function ChatScreen({
   const fetchMessageFromServer = async (in_msg: String) => {
     setIsFetchingServerMessage(true)
 
-    await new Promise((resolve) => setTimeout(resolve, 20000))
+    await new Promise((resolve) => setTimeout(resolve, 1000))
 
     try {
       let serverMessage = await generateCloneMessage(conversationId);
@@ -194,6 +194,7 @@ export default function ChatScreen({
     setRemovableMessages([])
     mutateMessages()
     mutateSidebar()
+    setRemoveMode(false)
     return response.data;
   }
 
