@@ -16,7 +16,7 @@ const PreviousConversations = ({
   console.log("In PreviousConversations, this is conversation: ", conversation)
   return (
     <Link
-      href={`/chat/${conversation.clone_id}/${conversation.id}`}
+      href={`/clones/${conversation.clone_id}/conversations/${conversation.id}`}
       className='group rounded-lg flex justify-between items-center bg-[#121212] hover:bg-gray-800 transition duration-200 w-full rounded-lg p-4 '
     >
       <div className='flex flex-col items-start mr-[5%]'>

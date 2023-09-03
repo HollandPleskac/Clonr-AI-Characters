@@ -110,7 +110,7 @@ export default function ChatScreen({
   const fetchMessageFromServer = async (in_msg: String) => {
     setIsFetchingServerMessage(true)
 
-    // await new Promise((resolve) => setTimeout(resolve, 500))
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
     try {
       let serverMessage = await generateCloneMessage(conversationId);
@@ -201,7 +201,7 @@ export default function ChatScreen({
     setRemovableMessages([])
     setRemoveMode(false)
   }
-  
+
 
   return (
     <div className='w-[100%] border-r-[2px] border-[#252525] bg-[#000000] lg:inline'>
@@ -236,7 +236,7 @@ export default function ChatScreen({
           {isLoadingMessages && (
             <div className='text-white grid place-items-center'
               style={{
-                height: 'calc(100vh - 122px - 92px)',
+                height: 'calc(100vh - 122px - 100px)',
               }}
             >
               <ColorRing
@@ -255,7 +255,7 @@ export default function ChatScreen({
             <div
               id='scrollableMessagesDiv'
               style={{
-                height: 'calc(100vh - 122px - 92px)',
+                height: 'calc(100vh - 122px - 100px)',
                 overflow: 'auto',
                 display: 'flex',
                 flexDirection: 'column-reverse',
@@ -274,7 +274,7 @@ export default function ChatScreen({
                 scrollableTarget='scrollableMessagesDiv'
                 className='pt-4'
               >
-                <div
+                {/* <div
                   className={`${isFetchingServerMessage
                     ? 'text-white flex'
                     : 'text-transparent hidden'
@@ -289,7 +289,7 @@ export default function ChatScreen({
                     wrapperStyle={{}}
                     visible={isFetchingServerMessage}
                   />
-                </div>
+                </div> */}
                 {messages?.map((message, index) => (
                   <MessageComponent
                     mutateMessages={mutateMessages}
@@ -311,12 +311,12 @@ export default function ChatScreen({
             </div>
           )}
 
-          <div className='flex h-[92px] items-center border-t border-[#252525] px-6'>
+          <div className='flex h-[92px] items-center border-t  border-[#252525] px-6'>
             {removeMode && (
               <div className='flex justify-between items-center w-full px-3' >
                 <p className='text-[#979797]' >Select the message to remove. All following messages will be removed.</p>
                 <div className='flex gap-x-2' >
-                  <button 
+                  <button
                     onClick={cancelRemoveMessages}
                     className='px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition duration-200' >Cancel</button>
                   <button
@@ -326,40 +326,53 @@ export default function ChatScreen({
                 </div>
               </div>
             )}
-            {
-              !removeMode && (
-                <div className='flex w-full items-center' >
-                  <div className='relative w-full'>
-                    {/* <div className='absolute right-4 top-3'>
-                    <SmileIcon />
-                  </div> */}
-                    <input
-                      className='h-[48px] w-full rounded-[14px] border-none bg-[#1E1E1E] py-4 pl-4 pr-[50px] text-[15px] font-light leading-6 text-[#979797] transition-all duration-100 focus:ring-1 focus:ring-transparent'
-                      type='text'
-                      placeholder='Type a message'
-                      value={message}
-                      onChange={(event: any) => setMessage(event.target.value)}
-                      style={{ outline: 'none', resize: 'none' }}
-                      onKeyDown={handleOnKeyDown}
-                    />
-                  </div>
-
-                  <button
-                    className='ml-[10px] transition-all duration-100'
-                    onClick={async () => {
-                      !isFetchingServerMessage && sendMessage()
-                    }}
-                    disabled={isFetchingServerMessage}
-                  >
-                    <SendIcon
-                      strokeClasses={
-                        isFetchingServerMessage ? 'stroke-[#515151] fill-[#515151]' : ''
-                      }
-                    />
-                  </button>
+            {!removeMode && (
+              <div className='flex w-full items-center mb-2' >
+                <div className='relative w-full'>
+                  {/* <div className='absolute right-4 top-3'>
+                          <SmileIcon />
+                    </div> */}
+                  <input
+                    className='h-[48px] w-full rounded-[14px] border-none bg-[#1E1E1E] py-4 pl-4 pr-[50px] text-[15px] font-light leading-6 text-[#979797] transition-all duration-100 focus:ring-1 focus:ring-transparent'
+                    type='text'
+                    placeholder='Type a message'
+                    value={message}
+                    onChange={(event: any) => setMessage(event.target.value)}
+                    style={{ outline: 'none', resize: 'none' }}
+                    onKeyDown={handleOnKeyDown}
+                  />
                 </div>
-              )
-            }
+
+                <button
+                  className='ml-[10px] transition-all duration-100'
+                  onClick={async () => {
+                    !isFetchingServerMessage && sendMessage()
+                  }}
+                  disabled={isFetchingServerMessage}
+                >
+                  <SendIcon
+                    strokeClasses={
+                      isFetchingServerMessage ? 'stroke-[#515151] fill-[#515151]' : ''
+                    }
+                  />
+                </button>
+
+
+              </div>
+
+            )}
+            <div className={` ${!isFetchingServerMessage && 'hidden'} flex items-center h-[22px] mb-1 text-[#979797] gap-x-2 text-xs absolute left-6 bottom-0`} >
+                  <ThreeDots
+                    height='22'
+                    width='22'
+                    radius='4'
+                    color='#979797'
+                    ariaLabel='three-dots-loading'
+                    wrapperStyle={{}}
+                    visible={isFetchingServerMessage}
+                  />
+                  {character.name} is typing...
+                </div>
           </div>
 
         </>
