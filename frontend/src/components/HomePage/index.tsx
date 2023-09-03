@@ -18,6 +18,7 @@ import { CloneSortType } from '@/client/models/CloneSortType'
 import { useQueryConversationsContinue } from '@/hooks/useConversations'
 import { useClonesPagination } from '@/hooks/useClonesPagination'
 import { useCarouselSlidesPerView } from '@/hooks/useCarouselSlidesPerView'
+import AuthModal from '../AuthModal'
 
 export default function HomeScreen() {
   const [searchInput, setSearchInput] = useState('')
@@ -153,7 +154,7 @@ export default function HomeScreen() {
           )}
         </ScaleFadeIn>
       )}
-
+      <AuthModal/>
     </div>
   )
 }

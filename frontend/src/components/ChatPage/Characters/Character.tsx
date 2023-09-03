@@ -27,11 +27,11 @@ const Character: React.FC<MyComponentProps> = ({
     >
       <div
         className={`${sidebarClone.clone_id === currentCharacterId
-          ? ' border-[#252525] bg-[#282348]'
-          : 'border-[#252525] bg-[#121212]'
-          } border-r-none cursor-pointer border-b px-0`}
+          ? ' border-[#252525] bg-[#302e32]'
+          : 'border-[#252525] bg-transparent hover:border-[#252525] hover:bg-[#1f1e21]'
+          } border-r-none cursor-pointer mr-0 pr-0 my-0 py-0`}
       >
-        <div className='flex items-center justify-between px-4 py-[22px]'>
+        <div className='flex items-center justify-between px-4 py-4'>
           <div className='flex items-center'>
             <div className='h-[55px] w-[55px] min-w-[55px] min-h-[55px] relative'>
               <Image

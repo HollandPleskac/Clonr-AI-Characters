@@ -3,7 +3,7 @@ import 'regenerator-runtime/runtime'
 import type { Metadata } from 'next'
 // import { Inter } from 'next/font/google'
 // const inter = Inter({ subsets: ['latin'] })
-import NextAuthProvider from '@/auth/providers'
+import NextAuthProvider from '@/auth/Providers'
 
 export const metadata: Metadata = {
   title: 'Clonr',
@@ -19,7 +19,7 @@ export default function RootLayout({
     <html lang='en'>
       <body
         // className={inter.className}
-        className='w-full bg-black lg:inline'
+        className='w-full bg-[#141414] lg:inline'
       >
         <NextAuthProvider>
           {children}

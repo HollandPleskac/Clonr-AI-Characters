@@ -1,11 +1,19 @@
 'use client'
 
 import Link from 'next/link'
-import React from 'react'
+import React, { useState } from 'react'
+import { getURL } from 'next/dist/shared/lib/utils'
 
 export default function AlertBar() {
+  const url = getURL();
+  const [hidden, setHidden] = useState(url !== '/');
+
+  if (url !== '/' || hidden) {
+    return (<></>)
+  }
+  
   return (
-    <div className='relative isolate flex items-center gap-x-6 overflow-hidden bg-black text-white px-6 py-2.5 sm:px-3.5 sm:before:flex-1'>
+    <div className='relative isolate flex items-center gap-x-6 overflow-hidden bg-gradient-to-r from-[#470013] via-[#510040] to-[#5d00af] text-white px-6 py-2.5 sm:px-3.5 sm:before:flex-1'>
       <div
         className='absolute left-[max(-7rem,calc(50%-52rem))] top-1/2 -z-10 -translate-y-1/2 transform-gpu blur-2xl'
         aria-hidden='true'
@@ -53,11 +61,11 @@ export default function AlertBar() {
         <button
           type='button'
           className='-m-3 p-3 focus-visible:outline-offset-[-4px]'
+          onClick={() => setHidden(true)}
         >
-          <span className='sr-only'>Dismiss</span>
-          <h2 className='h-5 w-5 text-gray-900' aria-hidden='true'>
-            X
-          </h2>
+<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="12" height="12" viewBox="0,0,256,256">
+<g fill="#ffffff" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none"><g transform="scale(8.53333,8.53333)"><path d="M7,4c-0.25587,0 -0.51203,0.09747 -0.70703,0.29297l-2,2c-0.391,0.391 -0.391,1.02406 0,1.41406l7.29297,7.29297l-7.29297,7.29297c-0.391,0.391 -0.391,1.02406 0,1.41406l2,2c0.391,0.391 1.02406,0.391 1.41406,0l7.29297,-7.29297l7.29297,7.29297c0.39,0.391 1.02406,0.391 1.41406,0l2,-2c0.391,-0.391 0.391,-1.02406 0,-1.41406l-7.29297,-7.29297l7.29297,-7.29297c0.391,-0.39 0.391,-1.02406 0,-1.41406l-2,-2c-0.391,-0.391 -1.02406,-0.391 -1.41406,0l-7.29297,7.29297l-7.29297,-7.29297c-0.1955,-0.1955 -0.45116,-0.29297 -0.70703,-0.29297z"></path></g></g>
+</svg>
         </button>
       </div>
     </div>

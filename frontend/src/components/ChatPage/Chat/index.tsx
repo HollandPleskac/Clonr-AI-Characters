@@ -204,7 +204,7 @@ export default function ChatScreen({
   
 
   return (
-    <div className='w-[100%] border-r-[2px] border-[#252525] bg-[#121212] lg:inline'>
+    <div className='w-[100%] border-r-[2px] border-[#252525] bg-[#000000] lg:inline'>
       {isLoadingCharacter && (<div className='h-screen w-full grid place-items-center' >
         <ColorRing
           visible={true}
@@ -261,7 +261,7 @@ export default function ChatScreen({
                 flexDirection: 'column-reverse',
                 scrollBehavior: 'smooth',
               }}
-              className='px-6'
+              className='px-[18px]'
               ref={divRef}
             >
               <InfiniteScroll
@@ -311,7 +311,7 @@ export default function ChatScreen({
             </div>
           )}
 
-          <div className='flex h-[92px] items-center border-t  border-[#252525] px-6'>
+          <div className='flex h-[92px] items-center border-t border-[#252525] px-6'>
             {removeMode && (
               <div className='flex justify-between items-center w-full px-3' >
                 <p className='text-[#979797]' >Select the message to remove. All following messages will be removed.</p>

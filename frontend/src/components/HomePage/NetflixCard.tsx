@@ -8,6 +8,7 @@ import { formatNumber } from '@/utils/formatNumber'
 import { Tag } from '@/types'
 import TagsComponent from './Tags'
 import { CloneSearchResult } from '@/client/models/CloneSearchResult'
+import { useSession } from 'next-auth/react'
 
 interface CardsProps {
   defaultCard?: boolean
@@ -22,6 +23,7 @@ export default function Cards({
   edgeCard,
   onClick,
 }: CardsProps): React.ReactElement {
+  const { status } = useSession();
   const style = defaultCard ? styles.card : styles.longCard
   const infoStyle = defaultCard ? styles.cardInfo : styles.more
   const { name, short_description, num_messages, tags, avatar_uri, num_conversations } = item
@@ -33,11 +35,12 @@ export default function Cards({
     edgeClass = 'origin-right'
   }
 
+  const options = status !== 'authenticated' ? { 'data-hs-overlay': '#hs-slide-down-animation-modal' } : { 'onClick': onClick }
+  
   return (
     <div
       className={`${style} ${edgeClass}`}
-      data-hs-overlay='#hs-slide-down-animation-modal'
-      onClick={onClick}
+      {...options}
     >
       <div className={styles.cardPoster}>
         <img

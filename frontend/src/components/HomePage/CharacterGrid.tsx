@@ -16,6 +16,7 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 import { CloneSearchResult } from '@/client/models/CloneSearchResult'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import AuthModal from '../AuthModal'
 
 type CustomCloneSearchResult = CloneSearchResult & {
   conversation_id?: string;
@@ -52,10 +53,10 @@ export default function CharacterGrid({
       } else {
         router.push(`/clones/${characterId}/create`);
       }
-    } else {
-      router.push('/login');
     }
   };
+
+  
 
   function calcEdgeCard(n: number): 'left' | 'right' | undefined {
     if (n % 6 === 0) {
@@ -80,6 +81,7 @@ export default function CharacterGrid({
 
   return (
     <div className=''>
+      <AuthModal/>
       {loading && (
          <div
          className='text-white grid place-items-center'
@@ -116,7 +118,6 @@ export default function CharacterGrid({
           })}
         </InfiniteScroll>
       )}
-
     </div>
   )
 }

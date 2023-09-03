@@ -12,9 +12,7 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 import { CloneSearchResult } from '@/client/models/CloneSearchResult'
 
 import NetflixCard from './NetflixCard'
-import { Character } from '@/types'
 import { Navigation, Pagination, Scrollbar } from 'swiper/modules'
-import { useCarouselSlidesPerView } from '@/hooks/useCarouselSlidesPerView'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 
@@ -58,8 +56,6 @@ export default function Carousel({
       } else {
         router.push(`/clones/${characterId}/create`);
       }
-    } else {
-      router.push('/login');
     }
   };
 

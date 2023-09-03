@@ -35,6 +35,7 @@ export default function Characters({
     mutate
 }: CharactersProps) {
     const duration = 500
+    const sideBarBgColor = '#2A2D31'
 
     // search state
     const [searchInput, setSearchInput] = useState('')
@@ -51,11 +52,11 @@ export default function Characters({
     }, [searchInput])
 
 
-
+ 
     // Component
     return (
         <div
-            className={`hidden lg:flex flex-col w-[375px] flex-grow border-r-[2px] border-[#252525] bg-[#121212] text-white`}
+            className={`hidden md:flex flex-col w-[300px] flex-grow border-r-[2px] border-[#252525] bg-[#000000] text-white`}
             style={{ height: 'calc(100vh)' }}
         >
             {/* Brand Logo */}
@@ -81,7 +82,7 @@ export default function Characters({
             </div>
 
             {/* Search Bar  */}
-            <div className={` flex w-[375px] min-w-[375px] max-w-[375px] items-center gap-x-2 pb-4`}>
+            <div className={` flex w-[375px] min-w-[300px] max-w-[300px] items-center gap-x-2 pb-4`}>
                 <div className='relative w-full'>
                     <div className='absolute left-4 top-3'>
                         <SearchIcon
@@ -94,7 +95,7 @@ export default function Characters({
                         onChange={(e) => setSearchInput(e.target.value)}
                         onFocus={handleInputFocus}
                         onBlur={handleInputBlur}
-                        className='py-auto h-[48px] pr-[42px] w-full border-none bg-[#1E1E1E] pl-[50px] text-[15px] font-light leading-6 text-[#979797] transition duration-100 focus:ring-1 focus:ring-transparent'
+                        className='py-auto h-[48px] pr-[42px] w-full border-none bg-[#16181A] pl-[50px] text-[15px] font-light leading-6 text-[#979797] transition duration-100 focus:ring-1 focus:ring-transparent'
                         type='text'
                         placeholder='Search'
                         style={{ outline: 'none', resize: 'none' }}

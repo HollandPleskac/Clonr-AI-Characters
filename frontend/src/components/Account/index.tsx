@@ -9,19 +9,13 @@ import useSWR from "swr"
 import { Subscription, SubscriptionsService } from '@/client';
 
 function SubscriptionPortal() {
-  async function fetcher(url: string): Promise<Subscription> {
-    // const res = await axios.get(url, {
-    //   withCredentials: true
-    // })
-    // return res.data
-    const subscription = await SubscriptionsService.getMySubscriptionsSubscriptionsMeGet()
-    return subscription
-  }
-
-  const { data: subscription, isLoading, error } = useSWR('http://localhost:8000/subscriptions/me', fetcher);
-
-
   const { push } = useRouter()
+  const { data: subscription, isLoading, error } = useSWR(
+    'http://localhost:8000/subscriptions/me',
+    async () =>  await SubscriptionsService.getMySubscriptionsSubscriptionsMeGet()
+  );
+
+
   
   if (isLoading) {
     return <p>Loading</p>

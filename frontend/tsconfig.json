@@ -32,7 +32,7 @@
   },
   "include": [
     "next-env.d.ts",
-    "./stripe.d.ts",
+    "src/types/stripe.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
