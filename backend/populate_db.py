@@ -8,7 +8,6 @@ import tqdm.asyncio
 from fastapi.encoders import jsonable_encoder
 
 from app.schemas import CloneCreate, DocumentCreate, MonologueCreate
-from app.settings import settings
 from clonr.data.parsers import FandomParser, WikipediaParser, WikiQuotesParser
 
 wiki_parser = WikipediaParser()

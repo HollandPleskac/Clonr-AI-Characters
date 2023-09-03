@@ -5,7 +5,6 @@ import uuid
 from enum import Enum
 from typing import Annotated
 
-from fastapi_users.schemas import BaseUserUpdate
 from pydantic import (
     AfterValidator,
     BaseModel,
@@ -495,6 +494,7 @@ class Subscription(CommonMixin, BaseModel):
     amount: int
     currency: str
     interval: str
+    stripe_email: str
     stripe_customer_id: str
     stripe_status: str
     stripe_created: int

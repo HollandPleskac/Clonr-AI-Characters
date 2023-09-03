@@ -877,6 +877,7 @@ class Subscription(CommonMixin, Base):
     amount: Mapped[int]
     currency: Mapped[str]
     interval: Mapped[str]
+    stripe_email: Mapped[str]
     stripe_customer_id: Mapped[str]
     stripe_status: Mapped[str]
     stripe_created: Mapped[int]

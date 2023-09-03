@@ -127,12 +127,15 @@ async def webhook_received(
             sub = stripe.Subscription.retrieve(
                 checkout_session.subscription, expand=["items.data.price.product"]
             )
+            customer = stripe.Customer.retrieve(sub.customer)
+            stripe_email = customer.email
 
             subscription_model = models.Subscription(
                 user_id=user_id,
                 amount=int(sub.plan.amount),
                 currency=sub.plan.currency,
                 interval=sub.plan.interval,
+                stripe_email=stripe_email,
                 stripe_customer_id=checkout_session.customer,
                 stripe_subscription_id=sub.stripe_id,
                 stripe_status=sub.status,
@@ -155,11 +158,15 @@ async def webhook_received(
             sub = stripe.Subscription.retrieve(
                 id=raw_sub.id, expand=["items.data.price.product"]
             )
+            customer = stripe.Customer.retrieve(sub.customer)
+            stripe_email = customer.email
+
             values = dict(
                 amount=int(sub.plan.amount),
                 currency=sub.plan.currency,
                 interval=sub.plan.interval,
                 stripe_customer_id=sub.customer,
+                stripe_email=stripe_email,
                 stripe_subscription_id=sub.stripe_id,
                 stripe_status=sub.status,
                 stripe_created=int(sub.created),
