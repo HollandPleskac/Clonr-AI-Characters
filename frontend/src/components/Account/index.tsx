@@ -8,10 +8,11 @@ import { useRouter } from 'next/navigation'
 import useSWR from "swr"
 import { Subscription, SubscriptionsService } from '@/client';
 
+
 function SubscriptionPortal() {
   const { push } = useRouter()
 
-  const { data: subscription, isLoading, error } = useSWR(
+  const { data: subscription, isLoading, error } = useSWR<Subscription>(
     'http://localhost:8000/subscriptions/me',
     async () =>  await SubscriptionsService.getMySubscriptionsSubscriptionsMeGet()
   );
