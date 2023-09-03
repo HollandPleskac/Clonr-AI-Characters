@@ -311,7 +311,7 @@ export default function ChatScreen({
             </div>
           )}
 
-          <div className='flex h-[92px] items-center border-t  border-[#252525] px-6'>
+          <div className='relative flex items-center border-t h-[100px] border-[#252525] px-6'>
             {removeMode && (
               <div className='flex justify-between items-center w-full px-3' >
                 <p className='text-[#979797]' >Select the message to remove. All following messages will be removed.</p>
