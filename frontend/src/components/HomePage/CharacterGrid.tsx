@@ -81,7 +81,6 @@ export default function CharacterGrid({
 
   return (
     <div className=''>
-      <AuthModal/>
       {loading && (
          <div
          className='text-white grid place-items-center'

@@ -7,7 +7,7 @@ import Image from 'next/image'
 
 const LoginModal = () => {
   return (
-    <main className='w-full max-w-md mx-auto p-6 bg-transparent '>
+    <main className='w-full max-w-md mx-auto p-6 bg-transparent'>
       <div className='mt-7 rounded-xl shadow-sm border-white border-[1px] border-opacity-50 bg-[#141414] rounded-2xl'>
         <div className='p-4 sm:p-7'>
           <div className='text-center flex justify-start'>

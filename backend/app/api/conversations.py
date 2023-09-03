@@ -161,6 +161,7 @@ async def get_sidebar_conversations(
     subquery = (
         sa.select(models.Conversation, rank, group_updated_at, models.Clone.avatar_uri)
         .where(models.Conversation.user_id == user.id)
+        .where(models.Conversation.hidden_in_sidebar == False)  # noqa
         .join(models.Clone, models.Clone.id == models.Conversation.clone_id)
         .subquery()
     )

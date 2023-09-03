@@ -331,6 +331,7 @@ class Conversation(CommonMixin, Base):
     last_message: Mapped[str] = mapped_column(nullable=True)
     # total num messages ever sent/received, including inactive ones
     num_messages_ever: Mapped[int] = mapped_column(default=0)
+    hidden_in_sidebar: Mapped[bool] = mapped_column(default=False)
     user_id: Mapped[uuid.UUID] = mapped_column(
         sa.ForeignKey("users.id", ondelete="cascade"), nullable=False
     )

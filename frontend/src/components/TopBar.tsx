@@ -10,6 +10,7 @@ import XIcon from './XIcon'
 import { usePathname } from 'next/navigation'
 import AccountDropdown from './AccountDropdown'
 import { useUser } from '@/hooks/useUser'
+import { useSession } from 'next-auth/react'
 
 
 interface TopBarProps {
@@ -79,7 +80,7 @@ export default function TopBar({
   onSearchInput,
   clearSearchInput
 }: TopBarProps): React.ReactElement {
-  const { userObject, isUserLoading } = useUser()
+  const { data: session, status } = useSession()
 
   const pathname = usePathname()
 
@@ -209,7 +210,7 @@ export default function TopBar({
                 >
                   Browse
                 </Link>
-                {(!isUserLoading && userObject) && (
+                {(status !== "loading" && session) && (
                   <Link
                   href='/pricing'
                   className={`transition duration-200 ${pathname === '/create'
@@ -342,13 +343,13 @@ export default function TopBar({
                   </button>
                 </div>
 
-                {(userObject && !isUserLoading) && <AccountDropdown userObject={userObject} />}
-                {(!userObject && !isUserLoading) && (
+                {(status !== 'loading' && session) && <AccountDropdown />}
+                {(status !== 'loading' && !session) && (
                   <div className='flex items-center gap-x-3 text-white font-semibold' >
-                    <Link href='/login' className='text-[#e5e5e5] hover:text-[#979797]' >Sign in</Link>
+                    <Link href='/login' className='text-[#e5e5e5] hover:text-[#979797]' >Login</Link>
                   </div>
                 )}
-                {isUserLoading && (
+                {status === "loading" && (
                   <div className='h-[40px] w-[40px] ' >&nbsp;</div>
                 )}
               </div>

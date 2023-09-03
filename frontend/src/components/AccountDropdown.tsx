@@ -4,12 +4,8 @@ import React from 'react'
 import { signOut, useSession } from "next-auth/react"
 import Image from 'next/image'
 
-interface AccountDropdownProps {
-  userObject: User
-}
 
-const AccountDropdown = ({ userObject }: AccountDropdownProps) => {
-  console.log("user object", userObject)
+export default function AccountDropdown() {
   const { data: session } = useSession({ required: false })
 
   return (
@@ -17,7 +13,7 @@ const AccountDropdown = ({ userObject }: AccountDropdownProps) => {
       <button
         id='hs-dropdown-with-header'
         type='button'
-        disabled={!userObject}
+        disabled={!session}
         className='hs-dropdown-toggle text-white h-[40px] w-[40px] bg-[#979797] rounded-full grid place-items-center hover:ring-1 hover:ring-[rgba(255,255,255,0.2)] '
       >
         {
@@ -32,7 +28,7 @@ const AccountDropdown = ({ userObject }: AccountDropdownProps) => {
               />
             </div>
           ) : (
-            userObject?.email?.charAt(0) || ''
+            session?.email?.charAt(0) || ''
           )
         }
 
@@ -54,7 +50,7 @@ const AccountDropdown = ({ userObject }: AccountDropdownProps) => {
       >
         <div className='py-3 px-5 -m-2 rounded-t-lg bg-gray-700'>
           <p className='text-sm text-gray-400'>Signed in as</p>
-          <p className='text-sm font-medium text-gray-300'>{userObject?.email || ''}</p>
+          <p className='text-sm font-medium text-gray-300'>{session?.email || ''}</p>
         </div>
         <div className='mt-2 py-2 first:pt-0 last:pb-0'>
           <Link
@@ -93,5 +89,3 @@ const AccountDropdown = ({ userObject }: AccountDropdownProps) => {
     </div>
   )
 }
-
-export default AccountDropdown

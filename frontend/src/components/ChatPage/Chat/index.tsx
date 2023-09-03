@@ -110,7 +110,7 @@ export default function ChatScreen({
   const fetchMessageFromServer = async (in_msg: String) => {
     setIsFetchingServerMessage(true)
 
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    await new Promise((resolve) => setTimeout(resolve, 20000))
 
     try {
       let serverMessage = await generateCloneMessage(conversationId);
@@ -274,22 +274,6 @@ export default function ChatScreen({
                 scrollableTarget='scrollableMessagesDiv'
                 className='pt-4'
               >
-                {/* <div
-                  className={`${isFetchingServerMessage
-                    ? 'text-white flex'
-                    : 'text-transparent hidden'
-                    } w-full py-4 h-[56px]`}
-                >
-                  <ThreeDots
-                    height='25'
-                    width='25'
-                    radius='4'
-                    color='#979797'
-                    ariaLabel='three-dots-loading'
-                    wrapperStyle={{}}
-                    visible={isFetchingServerMessage}
-                  />
-                </div> */}
                 {messages?.map((message, index) => (
                   <MessageComponent
                     mutateMessages={mutateMessages}
@@ -311,7 +295,8 @@ export default function ChatScreen({
             </div>
           )}
 
-          <div className='relative flex items-center border-t h-[100px] border-[#252525] px-6'>
+          <div className='flex flex-col'>
+          <div className='flex h-[92px] items-center border-t border-[#252525] px-6 mt-1'>
             {removeMode && (
               <div className='flex justify-between items-center w-full px-3' >
                 <p className='text-[#979797]' >Select the message to remove. All following messages will be removed.</p>
@@ -326,55 +311,59 @@ export default function ChatScreen({
                 </div>
               </div>
             )}
-            {!removeMode && (
-              <div className='flex w-full items-center mb-2' >
-                <div className='relative w-full'>
-                  {/* <div className='absolute right-4 top-3'>
-                          <SmileIcon />
-                    </div> */}
-                  <input
-                    className='h-[48px] w-full rounded-[14px] border-none bg-[#1E1E1E] py-4 pl-4 pr-[50px] text-[15px] font-light leading-6 text-[#979797] transition-all duration-100 focus:ring-1 focus:ring-transparent'
-                    type='text'
-                    placeholder='Type a message'
-                    value={message}
-                    onChange={(event: any) => setMessage(event.target.value)}
-                    style={{ outline: 'none', resize: 'none' }}
-                    onKeyDown={handleOnKeyDown}
-                  />
+            {
+              !removeMode && (
+                <div className='flex w-full items-center' >
+                  <div className='relative w-full'>
+                    {/* <div className='absolute right-4 top-3'>
+                    <SmileIcon />
+                  </div> */}
+                    <input
+                      className='h-[48px] w-full rounded-[14px] border-none bg-[#1E1E1E] p-4 pl-4 pr-[50px] text-[15px] font-light leading-6 text-[#979797] transition-all duration-100 focus:ring-1 focus:ring-transparent'
+                      type='text'
+                      placeholder='Type a message'
+                      value={message}
+                      onChange={(event: any) => setMessage(event.target.value)}
+                      style={{ outline: 'none', resize: 'none' }}
+                      onKeyDown={handleOnKeyDown}
+                    />
+                  </div>
+
+                  <button
+                    className='ml-[10px] transition-all duration-100'
+                    onClick={async () => {
+                      !isFetchingServerMessage && sendMessage()
+                    }}
+                    disabled={isFetchingServerMessage}
+                  >
+                    <SendIcon
+                      strokeClasses={
+                        isFetchingServerMessage ? 'stroke-[#515151] fill-[#515151]' : ''
+                      }
+                    />
+                  </button>
                 </div>
-
-                <button
-                  className='ml-[10px] transition-all duration-100'
-                  onClick={async () => {
-                    !isFetchingServerMessage && sendMessage()
-                  }}
-                  disabled={isFetchingServerMessage}
+              )
+            }
+            </div>
+                <div
+                  className={`${isFetchingServerMessage
+                    ? 'text-white flex'
+                    : 'text-transparent hidden'
+                    } w-full py-4 h-[56px] -translate-y-8 ml-8`}
                 >
-                  <SendIcon
-                    strokeClasses={
-                      isFetchingServerMessage ? 'stroke-[#515151] fill-[#515151]' : ''
-                    }
-                  />
-                </button>
-
-
-              </div>
-
-            )}
-            <div className={` ${!isFetchingServerMessage && 'hidden'} flex items-center h-[22px] mb-1 text-[#979797] gap-x-2 text-xs absolute left-6 bottom-0`} >
                   <ThreeDots
-                    height='22'
-                    width='22'
+                    height='25'
+                    width='25'
                     radius='4'
                     color='#979797'
                     ariaLabel='three-dots-loading'
                     wrapperStyle={{}}
                     visible={isFetchingServerMessage}
-                  />
-                  {character.name} is typing...
+              />
+              <span className='ml-2 text-[#919494]'>Amadeus is typing</span>
                 </div>
           </div>
-
         </>
       )}
 

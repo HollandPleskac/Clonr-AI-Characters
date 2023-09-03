@@ -146,6 +146,19 @@ const Message: React.FC<MessageProps> = ({ mutateMessages, conversationId, messa
             className='rounded-full'
           />
         </div>
+        {
+          (isLast && messages.length > 1 && currentIndex !== 0) && (
+            <button
+              className='mt-6 w-full flex justify-center'
+              onClick={() => {
+                setCurrentIndex(prevState => prevState - 1)
+              }} >
+              <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 6L9 12L15 18" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          )
+        }
 
       </div>
       <div className='ml-3 flex flex-col'>

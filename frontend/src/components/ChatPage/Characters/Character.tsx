@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { SidebarClone } from '@/types'
 import { formatDate } from '@/utils/formatDate'
 import { useRouter } from 'next/navigation'
+import { ConversationsService } from '@/client'
+import { ConversationUpdate } from '@/client'
 
 interface MyComponentProps {
   sidebarClone: SidebarClone
@@ -14,6 +16,14 @@ const Character: React.FC<MyComponentProps> = ({
   currentCharacterId,
 }) => {
   const router = useRouter()
+
+  async function hideConversation(conversationId) {
+    const payload: ConversationUpdate = {
+      hidden_in_sidebar: true
+    }
+    await ConversationsService.patchConversationConversationsConversationIdPatch(conversationId, payload)
+  }
+
   return (
     <button
       // href={`/clones/${sidebarClone.clone_id}/conversations/${sidebarClone.id}`}
@@ -27,13 +37,14 @@ const Character: React.FC<MyComponentProps> = ({
     >
       <div
         className={`${sidebarClone.clone_id === currentCharacterId
-          ? ' border-[#252525] bg-[#302e32]'
-          : 'border-[#252525] bg-transparent hover:border-[#252525] hover:bg-[#1f1e21]'
-          } border-r-none cursor-pointer mr-0 pr-0 my-0 py-0`}
+          ? 'bg-[#2c2b2e]'
+          : 'bg-transparent'
+          } hover:bg-[#232225] border-r-none cursor-pointer mx-4 mt-2 rounded-lg flex justify-between items-center`}
       >
-        <div className='flex items-center justify-between px-4 py-4'>
+        <div>
+        <div className='flex items-center justify-between p-2 m-[1px]'>
           <div className='flex items-center'>
-            <div className='h-[55px] w-[55px] min-w-[55px] min-h-[55px] relative'>
+            <div className='h-[45px] w-450px] min-w-[45px] min-h-[45px] relative'>
               <Image
                 src={sidebarClone.avatar_uri}
                 alt='Character Profile Picture'
@@ -44,7 +55,7 @@ const Character: React.FC<MyComponentProps> = ({
             </div>
             <div className='ml-3 flex flex-col'>
               <div className='mb-1 flex items-center'>
-                <h3 className='mr-2 text-[16px] font-bold leading-[22px]'>
+                <h3 className='mr-2 text-[16px] font-bold leading-[22px] text-left'>
                   {sidebarClone.clone_name}
                 </h3>
                 <h4 className='text-sm font-light leading-[18px] text-[#979797]'>
@@ -53,7 +64,7 @@ const Character: React.FC<MyComponentProps> = ({
                   {' • ' + formatDate(new Date(sidebarClone.updated_at))}
                 </h4>
               </div>
-              <div className='text-smibold text-[14px] leading-[18px] line-clamp-1'>
+              <div className='text-semibold text-[14px] text-left leading-[18px] line-clamp-1 text-[#919494]'>
                 {/* {sidebarClone.clone_id !== currentCharacterId ? sidebarClone.last_message : "Current conversation"} */}
                 {sidebarClone.last_message}
               </div>
@@ -63,6 +74,14 @@ const Character: React.FC<MyComponentProps> = ({
             {3}
           </div> */}
         </div>
+        </div>
+        <button
+          type='button'
+          className='focus-visible:outline-offset-[-4px] rounded-full p-1 hover:bg-[#361f1f] mr-1'
+          onClick={hideConversation}
+          >
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g id="Edit / Hide"> <path id="Vector" d="M3.99989 4L19.9999 20M16.4999 16.7559C15.1473 17.4845 13.6185 17.9999 11.9999 17.9999C8.46924 17.9999 5.36624 15.5478 3.5868 13.7788C3.1171 13.3119 2.88229 13.0784 2.7328 12.6201C2.62619 12.2933 2.62616 11.7066 2.7328 11.3797C2.88233 10.9215 3.11763 10.6875 3.58827 10.2197C4.48515 9.32821 5.71801 8.26359 7.17219 7.42676M19.4999 14.6335C19.8329 14.3405 20.138 14.0523 20.4117 13.7803L20.4146 13.7772C20.8832 13.3114 21.1182 13.0779 21.2674 12.6206C21.374 12.2938 21.3738 11.7068 21.2672 11.38C21.1178 10.9219 20.8827 10.6877 20.4133 10.2211C18.6338 8.45208 15.5305 6 11.9999 6C11.6624 6 11.3288 6.02241 10.9999 6.06448M13.3228 13.5C12.9702 13.8112 12.5071 14 11.9999 14C10.8953 14 9.99989 13.1046 9.99989 12C9.99989 11.4605 10.2135 10.9711 10.5608 10.6113" stroke="#525252" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g> </g></svg>
+          </button>
       </div>
     </button>
   )

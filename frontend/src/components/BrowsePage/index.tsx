@@ -21,6 +21,7 @@ import { Navigation, Pagination, Scrollbar } from 'swiper/modules'
 import { ColorRing } from 'react-loader-spinner'
 import { useClonesPagination } from '@/hooks/useClonesPagination'
 import ScaleFadeIn from '../Transitions/ScaleFadeIn'
+import AuthModal from '../AuthModal'
 
 export default function BrowsePage() {
 
@@ -106,7 +107,7 @@ export default function BrowsePage() {
     return (
         <div className=''>
             <AlertBar />
-
+            <AuthModal/>
             <TopBar
                 searchInput={searchInput}
                 onSearchInput={(x) => setSearchInput(x)}

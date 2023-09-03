@@ -221,9 +221,9 @@ async def main(n: int):
                     print("Error: ", e)
             await tqdm.asyncio.tqdm_asyncio.gather(*tasks)
 
-    await create_makima(headers=headers)
-    await create_feynman(headers=headers)
-    await create_miles_moralse(headers=headers)
+    # await create_makima(headers=headers)
+    # await create_feynman(headers=headers)
+    # await create_miles_moralse(headers=headers)
 
 
 if __name__ == "__main__":
@@ -232,5 +232,5 @@ if __name__ == "__main__":
     try:
         n = int(sys.argv[1])
     except Exception:
-        n = 100
+        n = 1000
     asyncio.run(main(n))

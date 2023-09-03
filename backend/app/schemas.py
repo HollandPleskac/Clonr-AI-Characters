@@ -351,6 +351,10 @@ class ConversationUpdate(BaseModel):
     is_active: bool | None = Field(
         default=None, description="Wether to archive the conversation or not."
     )
+    hidden_in_sidebar: bool | None = Field(
+        default=None,
+        description="Whether to hide this clone in the sidebar at loading time. It can be unhidden by searching for this clone or creating a new chat.",
+    )
 
 
 class Conversation(CommonMixin, ConversationCreate):
@@ -362,6 +366,7 @@ class Conversation(CommonMixin, ConversationCreate):
     num_messages_ever: int
     last_message: str | None
     clone_name: str
+    hidden_in_sidebar: bool | None = None
 
 
 class ConversationInSidebar(Conversation):
