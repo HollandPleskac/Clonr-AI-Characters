@@ -68,8 +68,8 @@ function SubscriptionPortal() {
               <dd className="mt-1 text-sm text-purple-400 sm:mt-0 sm:col-span-2">
                 {subscription.stripe_subscription_id}
                 {subscription.stripe_status === 'active' ? 
-                <span className="inline-flex items-center ml-4 px-3 py-0.5 rounded-md text-sm font-medium bg-[#48d24d] text-[#220808]"> {subscription.stripe_status}</span> :
-                <span className="inline-flex items-center ml-4 px-2 rounded-md text-sm font-medium bg-[#d24848] text-[#220808]"> {subscription.stripe_status}</span>
+                <span className="inline-flex items-center ml-4 px-2 py-0.5 rounded-md text-sm font-medium bg-[#D7F7C2] text-[#016808]"> {subscription.stripe_status}</span> :
+                <span className="inline-flex items-center ml-4 px-2 rounded-md text-sm font-medium bg-[#f7c2c2] text-[#680101]"> {subscription.stripe_status}</span>
                 }
               </dd>
             </div>
