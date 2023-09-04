@@ -1,293 +1,125 @@
 import requests
 import json
 import os
-import io
-import guidance
-from dotenv import load_dotenv
-from bs4 import BeautifulSoup
-import requests
-from urllib.parse import urljoin, urlparse
-from clonr.data.parsers import FullURLParser, FandomParser
-from clonr.data.parsers import WikiQuotesParser
-from clonr.data.parsers import WikipediaParser
-from .utils import find_links_with_same_base_url
-#from PIL import Image
-#from google.cloud import storage
+import time
+import random
 
-def extract_character_info_via_api(char_id, token):
-    url = "https://beta.character.ai/chat/character/info/"
-    # example char_id: qtEICpGfFS8f5Zr5kCHR1EsGsHlawNutYSZJq_IEZDY
-    # example token: ?
-    payload = {
-        'external_id': char_id
-    }
+# Use up-to-date token!
+def get_token():
+    token = "Token 9443a6fb1927b0acaa251ab25a3e75717d23680a"
+    return token
+
+# Make sure to use up-to-date cookie!
+def get_cookie():
+    #cookie = "_gcl_au=1.1.1239282306.1692981331; _gid=GA1.2.1732984568.1693680763; _legacy_auth0.dyD3gE281MqgISG7FuIXYhL2WEknqZzv.is.authenticated=true; auth0.dyD3gE281MqgISG7FuIXYhL2WEknqZzv.is.authenticated=true; messages=W1siX19qc29uX21lc3NhZ2UiLDAsMjUsIlN1Y2Nlc3NmdWxseSBzaWduZWQgaW4gYXMgZHZkc2hhdzEyMy4iLCIiXV0:1qcpeF:lHg70ewHQCyxs4N0X9I9txqFHsH9YeAkTi3BzS-TnOk; sessionid=3a9e6xopso0vvz1cen3vmf7c7hvwr7ef; csrftoken=j12eSqfpJp9PHJksWpvWd4Qc6GsaKPAc; __cuid=80f0a08c6bec47f48384c3a34c3e39be; amp_fef1e8=3cb0be49-aee7-4be9-8fba-a6c4fef00cccR...1h9e178qo.1h9e18p6b.7.0.7; cf_clearance=9auVkuHdBSgcNRzSSKF1urdlWjshF_mhJk_mF8NMisc-1693804022-0-1-511a64bf.115f2b6c.61b3b5f-0.2.1693804022; __cf_bm=HH5FpCzjEqperE_bj9BdMKWqDUxaViYNyydVCoS5Gaw-1693805295-0-ARlNgrAjtyxidjCuJIAvI+WBjXoRi96WWOdxI4xhOZtu4Uc11QpDGk+dJzt7gLOpblpE9u4C8AFMEI36+kCBPjg=; _gat=1; _ga=GA1.1.564753635.1692154906; _ga_VG80HET2CQ=GS1.1.1693801129.8.1.1693805301.54.0.0; __cfwaitingroom=ChhBZlk4Ylh5Z1JhdWtHL3BWWVRxb293PT0SrAIyc1gwbGFXMzM4dWxFbGtyMzdOYWxuVWJLNXNTT2RJNksvR08vSVR3SXNDdjBxWnJPMXdvOEVUMC9OdytiS1VoUGlrK0lESVdVc3VzQU9SREFkS2F1S0lxeVVyUzBQbVBMVGY5UGI2alJZL2RVRHpVbHdvb3BETUU3NDlyaXU1ZmROVytDVEZjQXd0NGthWUVYM3o2U0h3Q0MwcWxpZXFFbVBkUGhMenlrKzRHREZnTjUya3JJOGhwbHZRcTBYcHlTc2M0VW9MYjFBZllMNVBHY2Mrc3NmdXFGaHZwOFVkUU0wUDJvUTRLUUdnRVU4QUExblovVkpObldZVFZYdFNCci96MmVDN2EwaWttTlFnTkVGMlBkN2QvVGFLZm5CMGRTRUR2WlFTRmFCMD0%3D"
+    cookie = "_gcl_au=1.1.1239282306.1692981331; _gid=GA1.2.1732984568.1693680763; _legacy_auth0.dyD3gE281MqgISG7FuIXYhL2WEknqZzv.is.authenticated=true; auth0.dyD3gE281MqgISG7FuIXYhL2WEknqZzv.is.authenticated=true; messages=W1siX19qc29uX21lc3NhZ2UiLDAsMjUsIlN1Y2Nlc3NmdWxseSBzaWduZWQgaW4gYXMgZHZkc2hhdzEyMy4iLCIiXV0:1qcpeF:lHg70ewHQCyxs4N0X9I9txqFHsH9YeAkTi3BzS-TnOk; sessionid=3a9e6xopso0vvz1cen3vmf7c7hvwr7ef; csrftoken=j12eSqfpJp9PHJksWpvWd4Qc6GsaKPAc; __cuid=80f0a08c6bec47f48384c3a34c3e39be; amp_fef1e8=3cb0be49-aee7-4be9-8fba-a6c4fef00cccR...1h9e178qo.1h9e18p6b.7.0.7; cf_clearance=QpMfrKlqmPCAJwGRi9tnOmtiff8w1g2pK.UCPXQ95cc-1693806138-0-1-511a64bf.b723e8ef.61b3b5f-0.2.1693806138; __cf_bm=6_pXbtBxMaZSWdd3VnlJCAy8zvTM6nEVmAref6i7CZU-1693807811-0-AS/xj0ffVVmnFE3PGQLtN++fa3GM9qc6T4xftswwLmIgCsj8THuoGdarBd36AR/+j8p3OEDXeRercev+yuJzYWc=; _ga_VG80HET2CQ=GS1.1.1693801129.8.1.1693807813.59.0.0; _ga=GA1.1.564753635.1692154906; _gat=1; __cfwaitingroom=Chh3M2kyY0N5Nk1GMTk4YUxDTFJIVEJnPT0SrAJHQmtMeGFpa29BQnBMbkljbHo4R2VMSFRiRVMyc2F5SjIydG84VzJNRC9keXJRSXg3Q05Qb3VrQjJIT2loYzlGYmFiZ3FLajZTSlZLbnZCL1ZrS2pmbjZpYWR6MkNNVEh1aHRJUG1KaUFUc3hLWUVYRHJSSUlwVlZscUtjcUhlOTVvSURubTUxdjZpeXRRM3lndnN3VWo5dENOVUVFRnJGV205UmdUR1Mybmc1bUhWbjhZSHdJc2lKb2ZMalpWTGVvdENRRzBQYWNST2o5c1JDQkF5Qk4xUG9BU3FCaEJLbHRTdjdYUXFXZ0xLZEpCTXVESUVUVFpLRFlQSFVQTEZWaGJ2YXFXcDVmU2hSMVozMnNFTUJGR2JKd2M4RUlVRi8zV3BFK3NxeVBwMD0%3D"
+    return cookie
+
+# Chars by category
+def scrape_characterai_chars_by_category():
+    url = 'https://beta.character.ai/chat/curated_categories/characters/'
+
+    token = get_token()
+    cookie = get_cookie()
     headers = {
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Authorization": "Token " + token,
-        "Content-Type": "application/json"
-    }
-
-    try:
-        response = requests.post(url, json=payload, headers=headers)
-        response.raise_for_status()
-        data = response.json()
-        return data
-    except requests.exceptions.RequestException as e:
-        print("Error fetching data:", e)
-        return None
-
-def extract_all_character_info(html_content):
-    soup = BeautifulSoup(html_content, "html.parser")
-    character_elements = soup.find_all("div", class_="character-slide-card-v3")
-
-    characters_info = {}
-    for character_element in character_elements:
-        name_element = character_element.find("div", style="font-size: 14px; font-weight: bold;")
-        description_element = character_element.find("div", style="font-size: 12px; max-width: 100%;")
-        username_element = character_element.find("div", class_="username-truncated")
-
-        if name_element and description_element and username_element:
-            name = name_element.text.strip()
-            description = description_element.text.strip()
-            username = username_element.find("div").text.strip()
-
-            characters_info[name] = {
-                "description": description,
-                "username": username,
+                "Authorization": token,
+                "Cookie": cookie,
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
             }
 
-    return characters_info
-
-def scrape_characterai():
-    url = "https://beta.character.ai"
-
     try:
-        response = requests.get(url)
-        chars_info = extract_all_character_info(response.text)
-        print("Characters info:", chars_info)
-        for character, info in chars_info.items():
-            print(f"Character: {character}")
-            print(f"Description: {info['description']}")
-            print(f"Username: {info['username']}")
+        response = requests.get(url, headers=headers)
+        print("Response:", response)
+        response.raise_for_status()
+        print("Response text: ", response.text)
+
+        response_json = response.json()
+
+        current_directory = os.path.dirname(os.path.abspath(__file__))
+        relative_file_path = "./characterai_data/characterai_chars_by_category.json"
+        absolute_file_path = os.path.join(current_directory, relative_file_path)
+
+        if os.path.exists(absolute_file_path):
+            with open(absolute_file_path, "r") as f:
+                existing_data = json.load(f)
+        else:
+            existing_data = []
+        
+        existing_data.append(response_json)
+        
+        with open(absolute_file_path, "w") as f:
+            json.dump(existing_data, f)
+        
+        print("Done getting chars by category")
+        
     except requests.exceptions.RequestException as e:
         print("Error fetching data:", e)
     return 
 
-# Found via: https://beta.character.ai/chat/curated_categories/characters/
-def parse_results():
-    current_directory = os.path.dirname(os.path.abspath(__file__))
-    relative_file_path = "results.json"
-    absolute_file_path = os.path.join(current_directory, relative_file_path)
-    sorted_results = []
-    with open(absolute_file_path, "r") as f:
-        data = json.load(f)
-        categories = data['characters_by_curated_category'].keys()
-        characters_by_category = data['characters_by_curated_category']
-
-        for category, characters in characters_by_category.items():
-            for character in characters:
-                character['character_category'] = category
-                sorted_results.append(character)
-        
-        sorted_results = sorted(sorted_results, key=lambda k: k['participant__num_interactions'], reverse=True)
-        
-        for i in range(min(len(sorted_results), 10)):
-            print(sorted_results[i])
-         
-    return sorted_results
-
-def generate_example_quotes(char_name, char_title, char_greeting, char_category):
-    load_dotenv()
-
-    example_quotes = """
-    {{#system~}}
-    You are a helpful AI assistant that can generate character profiles.
-    {{~/system}}
-    {{#user~}}
-    Please answer the following questions to generate a character profile based on the given information.
-
-    Here is the name of the character: {{char_name}}
-
-    Here is the title of the character: {{char_title}}
-
-    Here is an example greeting of the character: {{char_greeting}}
-
-    Here is the category of the character: {{char_category}}
-
-    Could you produce five example quotes that the character would say?
-
-    {{~/user}}
-    {{#assistant~}}
-    {{gen 'result' temperature=0.1 max_tokens=1000}}
-    {{~/assistant}}
-    """
-
-    gpt_turbo = guidance.llms.OpenAI('gpt-3.5-turbo', api_key=os.getenv('OPENAI_API_KEY'))
-    char_name = 'Raiden Shogun and Ei'
-    char_title = 'From Genshin Impact'
-    char_greeting = 'Shogun: No salutations needed. My exalted status shall not be disclosed as we travel among the common folk. I acknowledge that you are a person of superior ability. Henceforth, you will be my guard. Worry not. Should any danger arise, I shall dispose of it.'
-    char_category = 'Anime Game Characters'
-    example_quotes = guidance(example_quotes, llm=gpt_turbo)
-
-    result = example_quotes(char_name=char_name, char_title=char_title, char_greeting=char_greeting, char_category=char_category)
-    print(result)
-    return result
-
-# def download_webp_image(image_url: str) -> Image.Image:
-#     response = requests.get(image_url)
-#     response.raise_for_status() 
-#     return Image.open(io.BytesIO(response.content))
-
-# def upload_to_gcs(file_data: bytes, filename: str, content_type: str):
-#     bucket_name = "TODO"
-#     client = storage.Client()
-#     bucket = client.get_bucket(bucket_name)
-#     blob = bucket.blob(filename)
-#     #content_type='image/webp'
-#     blob.upload_from_string(file_data, content_type=content_type)
-#     return
-
-def generate_character_profile(char_data):
-    char_title = char_data['title']
-    char_name = char_data['participant__name']
-    char_greeting = char_data['greeting']
-    char_category = char_data['character_category']
-    avatar_file_name = char_data['avatar_file_name']
-
-    print("This is char_name: ", char_name)
-    if 'from' in char_title.lower():
-        char_wiki = char_title.lower().split("from ")[1]
-        char_wiki = char_wiki.replace(" ", "-")
-    else:
-        return 
-    print("This is char_wiki: ", char_wiki)
-    fandom_parser = FandomParser()
-    fandom_content = None
-    try:
-        fandom_result = fandom_parser.extract(char_name, char_wiki)
-        fandom_content = fandom_result.content
-    except Exception as e:
-        print("Cannot get Fandom result: ", e)
-
-    wikiquotes_parser = WikiQuotesParser()
-    wikiquotes_content = None
-    try:
-        wikiquotes_result = wikiquotes_parser.extract(char_name)
-        wikiquotes_content = wikiquotes_result.content
-    except Exception as e:
-        print("Cannot get WikiQuotes result: ", e)
-
-    if wikiquotes_content is None:
-        print("Generating synthetic quotes..")
-        #generate_example_quotes()
+# Get char info
+def scrape_char_info(char_id):
+    url = f"https://beta.character.ai/chat/character/"
+    token = get_token()
+    cookie = get_cookie()
+    headers = {
+                "Authorization": token,
+                "Cookie": cookie,
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+            }
     
-    img_prefix = 'https://characterai.io/i/80/static/avatars/'
-    img = None
-    
-    # try:
-    #     img = download_webp_image(img_prefix + avatar_file_name)
-    # except Exception as e:
-    #     print("Cannot download image: ", e)
-
-    return {
-        fandom_content: fandom_content,
-        wikiquotes_content: wikiquotes_content,
-        img: img,
+    data = {
+        "external_id": char_id,
     }
 
-## NEW FLOW - FANDOM 
+    time.sleep(random.random()*2)
 
-def find_links_with_same_base_url(base_url):
     try:
-        response = requests.get(base_url)
+        response = requests.post(url, headers=headers, json=data)
+        print("Response:", response)
         response.raise_for_status()
+
+        response_json = response.json()
+        
+        current_directory = os.path.dirname(os.path.abspath(__file__))
+        relative_file_path = "./characterai_data/characterai_chars.json"
+        absolute_file_path = os.path.join(current_directory, relative_file_path)
+
+        if os.path.exists(absolute_file_path):
+            with open(absolute_file_path, "r") as f:
+                existing_data = json.load(f)
+        else:
+            existing_data = []
+        
+        existing_data.append(response_json)
+        
+        with open(absolute_file_path, "w") as f:
+            json.dump(existing_data, f)
+        
+        print(f"Done getting char_id = {char_id}")
+        print("Len of existing data:", len(existing_data))
+
     except requests.exceptions.RequestException as e:
-        print("Error fetching the webpage:", e)
-        return []
+        print("Error fetching data:", e)
+    return 
 
-    soup = BeautifulSoup(response.content, 'html.parser')
-    p = urlparse(base_url)
-    page_domain = p.scheme + "://" + p.netloc + p.path
+def get_all_char_infos():
+    file_path = "./character_data/characterai_chars_by_category.json"
+    absolute_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), file_path)
 
-    links = []
-    for link in soup.find_all('a', href=True):
-        link_url = link['href']
-        full_url = urljoin(base_url, link_url)
+    with open(absolute_file_path, "r") as f:
+        data = json.load(f)
 
-        # Check if the full_url contains the original webpage domain
-        if full_url.startswith(page_domain):
-            p = urlparse(full_url)
-            if not p.params and not p.query and '#' not in full_url:
-                links.append(full_url)
+    for category in data["characters_by_curated_category"]:
+        for char in data["characters_by_curated_category"][category]:
+            char_id = char["external_id"]
+            scrape_char_info(char_id)
+    return 
 
-    return sorted(set(links))
-
-def find_char_url(char_name, char_wiki):
-    modified_char_name = char_name.replace(" ", "_")
-    try:
-        base_url = f"https://{char_wiki}.fandom.com/wiki/{modified_char_name}"
-        response = requests.get(base_url)
-        response.raise_for_status()
-        if response.status_code == 200:
-            return base_url
-    except requests.exceptions.RequestException as e:
-        print("Error fetching the webpage:", e)
-        return None
-    return None
-
-def extract_quotes_from_url(parser, url):
-    fandom_result = parser.extract(url)
-    if fandom_result:
-        return fandom_result.content
-    else:
-        return None
-
-def get_all_example_dialogues(char_name, char_wiki, parser):
-    char_url = find_char_url(char_name, char_wiki)
-    results = []
-    if char_url:
-        found_links = find_links_with_same_base_url(char_url)
-        print("Links on the webpage that contain the original webpage URL:")
-        print(found_links)
-        for found_link in found_links:
-            print("Processing link: ", found_link)
-            result = extract_quotes_from_url(parser, found_link)
-            if result:
-                results.append(result)
+if __name__ == "__main__":
+    #char_id = "OkQhIQ0WNko1Wx-phdqhUFI0vV3NLIpC8L6Ryyz2-Xo"
+    #char_id = "aBOwEZHooxA-puwaqdKbgU5NJ-BNns-FrLGlQNB8794"
+    #scrape_characterai()
+    #scrape_char_info(char_id)
+    #get_all_char_infos()
+    scrape_characterai_chars_by_category()
     
-    results = "\n\n".join(results)
-
-    if len(results) < 100:
-        print("No results found for this character.")
-        return None
-
-    file_path = f'clonr/data/examples/{char_name}_{char_wiki}.txt'
-
-    if not os.path.exists(file_path):
-        with open(file_path, 'x') as f:
-            f.write(results)
-    else:
-        print(f"File '{file_path}' already exists. Won't overwrite.")
-    return results
-
-parser = FullURLParser()
-
-results = parse_results()
-
-for result in results:
-    char_name = result['participant__name']
-    char_title = result['title']
-    char_wiki = ''
-    if 'from' in char_title.lower():
-        char_wiki = char_title.lower().split("from ")[1]
-        char_wiki = char_wiki.replace(" ", "-").strip('.').strip('!')
-    if 'of' in char_title.lower():
-        char_wiki = char_title.lower().split("of")[1].strip("of ")
-        char_wiki = char_wiki.replace(" ", "-").strip('.').strip('!')
-    
-    if char_wiki == '':
-        continue 
-
-    print(f"Processing char_name = {char_name}, char_wiki = {char_wiki}")
-    total_results = get_all_example_dialogues(char_name, char_wiki, parser)
