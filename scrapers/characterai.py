@@ -17,7 +17,6 @@ def scrape_characterai():
     #url = "https://beta.character.ai"
     url = 'https://beta.character.ai/chat/curated_categories/characters/'
 
-
     token = get_token()
     cookie = get_cookie()
     headers = {
@@ -30,13 +29,26 @@ def scrape_characterai():
         response = requests.get(url, headers=headers)
         print("Response:", response)
         response.raise_for_status()
-        print("RESPONSE TEXT: ", response.text)
-        #chars_info = extract_all_character_info(response.text)
-        #print("Characters info:", chars_info)
-        # for character, info in chars_info.items():
-        #     print(f"Character: {character}")
-        #     print(f"Description: {info['description']}")
-        #     print(f"Username: {info['username']}")
+        print("Response text: ", response.text)
+    except requests.exceptions.RequestException as e:
+        print("Error fetching data:", e)
+    return 
+
+def scrape_char_info(char_id):
+    url = f"https://beta.character.ai/chat/character/info/{char_id}"
+    token = get_token()
+    cookie = get_cookie()
+    headers = {
+                "Authorization": "Bearer " + token,
+                "Cookie": cookie,
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+            }
+
+    try:
+        response = requests.get(url, headers=headers)
+        print("Response:", response)
+        response.raise_for_status()
+        print("Response text: ", response.text)
     except requests.exceptions.RequestException as e:
         print("Error fetching data:", e)
     return 
