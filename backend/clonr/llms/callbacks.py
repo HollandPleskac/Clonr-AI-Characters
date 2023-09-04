@@ -20,7 +20,7 @@ from clonr.llms.schemas import (
     OpenAIStreamResponse,
 )
 
-meter = metrics.get_meter(settings.APP_NAME)
+meter = metrics.get_meter(settings.BACKEND_APP_NAME)
 
 req_meter = meter.create_counter(
     name="llm_requests_total",

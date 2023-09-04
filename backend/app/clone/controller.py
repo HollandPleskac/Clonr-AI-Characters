@@ -34,7 +34,7 @@ from .types import (
 )
 
 tracer = trace.get_tracer(__name__)
-meter = metrics.get_meter(settings.APP_NAME)
+meter = metrics.get_meter(settings.BACKEND_APP_NAME)
 
 special_subroutine_meter = meter.create_up_down_counter(
     name="controller_current_special_subroutines",

@@ -38,7 +38,7 @@ from .schemas import (
     RoleEnum,
 )
 
-meter = metrics.get_meter(settings.APP_NAME)
+meter = metrics.get_meter(settings.BACKEND_APP_NAME)
 
 exc_meter = meter.create_counter(
     name="llm_exceptions_total",

@@ -67,7 +67,7 @@ async def create_superuser() -> models.User:
     async with async_session_maker() as db:
         user = models.User(
             name="superuser",
-            email=settings.SUPERUSER_EMAIL,
+            email="admin@example.com",
             is_superuser=True,
         )
         creator = models.Creator(user=user, username="superuser")

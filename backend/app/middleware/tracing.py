@@ -26,7 +26,7 @@ from app.settings import settings
 otlp_endpoint = settings.OTEL_EXPORTER_OTLP_ENDPOINT
 
 # Service name is required for most backends
-resource = Resource(attributes={SERVICE_NAME: settings.APP_NAME})
+resource = Resource(attributes={SERVICE_NAME: settings.BACKEND_APP_NAME})
 
 # If these are not set right away, then silently, nothing will be tracked!
 trace_provider = TracerProvider(resource=resource)
@@ -41,7 +41,7 @@ reader = PeriodicExportingMetricReader(
 meter_provider = MeterProvider(resource=resource, metric_readers=[reader])
 metrics.set_meter_provider(meter_provider)
 
-meter = metrics.get_meter(settings.APP_NAME)
+meter = metrics.get_meter(settings.BACKEND_APP_NAME)
 
 info_meter = meter.create_up_down_counter(
     name="fastapi_app_info", description="FastAPI application information."
@@ -154,7 +154,7 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
 def setup_tracing(
     app: FastAPI,
 ):
-    app.add_middleware(PrometheusMiddleware, app_name=settings.APP_NAME)
+    app.add_middleware(PrometheusMiddleware, app_name=settings.BACKEND_APP_NAME)
     FastAPIInstrumentor.instrument_app(
         app, tracer_provider=trace_provider, meter_provider=meter_provider
     )

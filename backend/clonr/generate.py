@@ -29,7 +29,7 @@ MIN_CHUNK_SIZE = 256
 
 
 tracer = trace.get_tracer(__name__)
-meter = metrics.get_meter(settings.APP_NAME)
+meter = metrics.get_meter(settings.BACKEND_APP_NAME)
 
 output_parsing_exception_meter = meter.create_counter(
     name="llm_output_parsing_exceptions",

@@ -30,7 +30,7 @@ tracer = trace.get_tracer(__name__)
 # TODO (Kevin or Jonny): Run this for all of our query
 # methods. Track if it's vsearch, rerank, or gen-agents querying
 # get the duration, and number of query characters
-meter = metrics.get_meter(settings.APP_NAME)
+meter = metrics.get_meter(settings.BACKEND_APP_NAME)
 
 query_processing_time_meter = meter.create_histogram(
     name="query_processing_time",

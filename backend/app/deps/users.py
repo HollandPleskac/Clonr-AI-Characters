@@ -15,7 +15,7 @@ from jose.exceptions import JWEError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import models
-from app.auth.csrf import check_csrf_token, check_csrf_token_from_request
+from app.auth.csrf import check_csrf_cookie, check_csrf_cookie_from_request
 from app.auth.jwt import check_expiry, encrypt_secret_key
 from app.schemas import Plan
 from app.settings import settings
@@ -132,7 +132,7 @@ class NextAuthJWT:
             return None
 
         if self.csrf_prevention_enabled:
-            check_csrf_token_from_request(
+            check_csrf_cookie_from_request(
                 req, self.csrf_cookie_name, self.csrf_header_name
             )
 
@@ -158,8 +158,8 @@ async def next_auth_cookie(
     secure_session_id: Annotated[
         str | None, Cookie(alias="__Secure-next-auth.session-token")
     ] = None,
-    csrf_token: Annotated[str | None, Cookie(alias="next-auth.csrf-token")] = None,
-    secure_csrf_token: Annotated[
+    csrf_cookie: Annotated[str | None, Cookie(alias="next-auth.csrf-token")] = None,
+    secure_csrf_cookie: Annotated[
         str | None, Cookie(alias="__Host-next-auth.csrf-token")
     ] = None,
     csrf_header_token: Annotated[str | None, Header(alias="X-XSRF-Token")] = None,
@@ -167,16 +167,16 @@ async def next_auth_cookie(
     csrf_prevention_enabled: bool = not settings.DEV
 
     if settings.NEXTAUTH_URL.startswith("https://"):
-        csrf_token = secure_csrf_token
+        csrf_cookie = secure_csrf_cookie
         session_id = secure_session_id
 
     if session_id is None:
         return None
 
     if csrf_prevention_enabled:
-        check_csrf_token(
-            csrf_token=csrf_token,
-            csrf_header_token=csrf_header_token,
+        check_csrf_cookie(
+            cookie=csrf_cookie,
+            header_token=csrf_header_token,
         )
 
     return session_id

@@ -36,7 +36,7 @@ if not settings.DEV:
     )
 
 
-meter = metrics.get_meter(settings.APP_NAME)
+meter = metrics.get_meter(settings.BACKEND_APP_NAME)
 
 req_meter = meter.create_counter(
     name="io_requests_total",
@@ -86,7 +86,6 @@ async def lifespan(app: FastAPI):
         await init_db()
 
     if settings.DEV:
-        logger.info(f"Creating superuser: {settings.SUPERUSER_EMAIL}")
         user = await create_superuser()
         logger.info(
             json.dumps(
