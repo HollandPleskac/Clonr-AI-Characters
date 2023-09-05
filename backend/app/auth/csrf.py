@@ -1,9 +1,10 @@
 import secrets
 import urllib.parse
-from pydantic import BaseModel
+
 from cryptography.hazmat.primitives import hashes
 from fastapi import HTTPException, Request
 from loguru import logger
+from pydantic import BaseModel
 
 from app.settings import settings
 
