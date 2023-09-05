@@ -1,6 +1,7 @@
 import hashlib
 import secrets
 from pathlib import Path
+from functools import lru_cache
 
 from dateutil.parser import isoparse
 
@@ -67,3 +68,44 @@ def remove_overlaps_in_list_of_strings(arr: list[str]) -> list[str]:
             else:
                 arr[i - 1] = arr[i - 1][:idx]
     return arr
+
+
+@lru_cache()
+def calc_likes_z(confidence):
+    import scipy.stats as st
+
+    return st.norm.ppf(1 - (1 - confidence) / 2)
+
+
+# https://www.evanmiller.org/how-not-to-sort-by-average-rating.html
+def likes_score(pos, n, confidence=0.95):
+    """Used for ranking items that have likes and dislikes"""
+    import math
+
+    if n <= 0:
+        return 0
+    z = calc_likes_z(confidence)
+    p = pos / n
+    lower_bound = (
+        p + z**2 / (2 * n) - z * math.sqrt((p * (1 - p) + z**2 / (4 * n)) / n)
+    ) / (1 + z**2 / n)
+    return lower_bound
+
+
+# https://www.evanmiller.org/ranking-items-with-star-ratings.html#changes
+def ratings_rank_score(scores: list[int], K: int, confidence: float = 0.95):
+    """Used for rankings items that have a history rankings. scores is the list of ratings
+    for this item. K is the max score allowed (i.e. 5 on a 1-5 star rating system)
+    The last factor z is computed as"""
+    assert K > 0, "ratings must be from 1 -> K"
+    import numpy as np
+
+    z = calc_likes_z(confidence)
+    nk = np.bincount(np.array(scores) - 1, minlength=K)
+    sk = np.arange(1, K + 1)
+    N = len(scores)
+    bias = sk @ ((nk + 1) / (N + K))
+    v1 = np.square(sk) @ ((nk + 1) / (N + K))
+    v2 = np.square(bias)
+    variance = -z * np.sqrt(((v1 - v2) / (N + K + 1)))
+    return bias + variance

@@ -34,7 +34,7 @@ def is_docker() -> bool:
 def _get_llm(
     model_name: str, tokenizer: Tokenizer, callbacks: list[LLMCallback]
 ) -> LLM:
-    if settings.DEV or model_name == "mock":
+    if model_name == "mock":
         return MockLLM(callbacks=callbacks)
     elif model_name == "llamacpp":
         model = model_name

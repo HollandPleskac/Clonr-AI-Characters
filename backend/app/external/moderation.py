@@ -28,10 +28,12 @@ class ModerationResponse(BaseModel):
     before_sleep=before_sleep_log(logger, logging.INFO),  # type: ignore
     after=after_log(logger, logging.WARN),  # type: ignore
 )
-async def openai_moderation_check(text: str) -> ModerationResult:
+async def openai_moderation_check(
+    text: str, api_key: str | None = None
+) -> ModerationResult:
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {settings.OPENAI_API_KEY}",
+        "Authorization": f"Bearer {api_key or settings.OPENAI_API_KEY}",
     }
     data = {"input": text}
     async with aiohttp.ClientSession(raise_for_status=True) as session:
