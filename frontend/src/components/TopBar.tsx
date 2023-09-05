@@ -95,7 +95,7 @@ export default function TopBar({
 
   return (
     <>
-      <header className='sticky top-0 flex flex-wrap lg:justify-start lg:flex-nowrap w-full bg-black text-sm py-[19.2px] border-b border-[#141414] px-[4%] z-[50]'>
+      <header className='sticky top-0 flex flex-wrap lg:justify-start lg:flex-nowrap w-full bg-black text-sm py-[19.2px] border-b border-[#141414] px-[4%] z-[50] shadow-md shadow-[rgb(255,255,255,0.02)]'>
         <nav
           className=' w-full mx-auto px-4 lg:flex lg:items-center lg:justify-between'
           aria-label='Global'

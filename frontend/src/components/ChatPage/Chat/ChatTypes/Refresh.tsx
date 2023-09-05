@@ -44,7 +44,7 @@ const Date: React.FC<DateProps> = ({ currentIndex, messagesLength, handleLeftArr
                         </button>
                         <span className="flex-grow flex-shrink-0 text-white">{leftArrowNumber} / {!isFetchingRegenMessage ? messagesLength : messagesLength + 1}</span>
                         <button
-                            disabled={isFetchingRegenMessage}
+                            disabled={currentIndex === messagesLength - 1 || isFetchingRegenMessage}
                             onClick={handleRightArrow}
                             className="dark:text-white disabled:text-gray-300 dark:disabled:text-gray-400">
                             <svg stroke="currentColor" fill="none" stroke-width="1.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" className="h-3 w-3" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><polyline points="9 18 15 12 9 6"></polyline>

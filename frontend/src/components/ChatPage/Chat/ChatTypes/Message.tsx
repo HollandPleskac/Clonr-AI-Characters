@@ -63,24 +63,6 @@ const Message: React.FC<MessageProps> = ({ mutateMessages, conversationId, messa
     setIsFetchingRegenMessage(true)
     await new Promise((resolve) => setTimeout(resolve, 500))
 
-    // const newMessage: Message = {
-    //   id: message.id,
-    //   content: "some new content",
-    //   created_at: message.created_at,
-    //   updated_at: message.updated_at,
-    //   sender_name: message.sender_name,
-    //   timestamp: message.timestamp,
-    //   is_clone: true,
-    //   is_main: true,
-    //   is_active: true,
-    //   parent_id: message.parent_id,
-    //   clone_id: message.clone_id,
-    //   user_id: message.user_id,
-    //   conversation_id: message.conversation_id,
-    // };
-
-    // await new Promise((resolve) => setTimeout(resolve, 500))
-
     const newMessage = await generateCloneMessage(conversationId)
 
     setMessages([...messages, newMessage])
@@ -96,12 +78,7 @@ const Message: React.FC<MessageProps> = ({ mutateMessages, conversationId, messa
   }
 
   async function handleRightArrow() {
-    console.log("current index", currentIndex, messages.length)
-    if (currentIndex === messages.length - 1) {
-      console.log("trigger")
-      await generateNewMessage()
-      setCurrentIndex(prevState => prevState + 1)
-    } else {
+    if (currentIndex < messages.length - 1) {
       setCurrentIndex(prevState => prevState + 1)
     }
   }
@@ -115,7 +92,7 @@ const Message: React.FC<MessageProps> = ({ mutateMessages, conversationId, messa
   }
       
   return (
-    <div className="relative flex items-stretch m-1 py-3 rounded-xl px-3 bg-[#16181A]">
+    <div className={`relative flex items-stretch m-1 py-3 rounded-xl px-3 ${isRemoveMessage ? "bg-[#a53d098c]" : "bg-[#16181A]"}`}>
       {
         (isRemoveMode && message.sender_name === 'Test User') && (
           <div className='h-[40px] flex items-center justify-center w-[40px]' >
@@ -134,7 +111,7 @@ const Message: React.FC<MessageProps> = ({ mutateMessages, conversationId, messa
           </div>
         )}
       {(isRemoveMode && message.sender_name !== 'Test User') && (
-        <div className='w-[40px] h-[40px]' ></div>
+        <div className={'w-[40px] h-[40px]'} ></div>
       )}
       <div className='flex flex-col shrink-0 w-[40px] justify-between items-center'>
         <div className='h-[40px] w-[40px] relative'>
