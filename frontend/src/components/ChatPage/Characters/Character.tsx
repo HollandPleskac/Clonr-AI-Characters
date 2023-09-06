@@ -24,6 +24,25 @@ const Character: React.FC<MyComponentProps> = ({
     await ConversationsService.patchConversationConversationsConversationIdPatch(conversationId, payload)
   }
 
+  const formatTime = (date: Date) => {
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+  
+    // Convert hours to 12-hour format
+    hours = hours % 12;
+  
+    // Convert 0 hours to 12 in 12-hour format
+    hours = hours ? hours : 12;
+  
+    // Pad the minutes with a leading zero if needed
+    const paddedMinutes = String(minutes).padStart(2, '0');
+  
+    return `${hours}:${paddedMinutes} ${ampm}`;
+  };
+  
+  
+
   return (
     <button
       // href={`/clones/${sidebarClone.clone_id}/conversations/${sidebarClone.id}`}
@@ -55,13 +74,13 @@ const Character: React.FC<MyComponentProps> = ({
             </div>
             <div className='ml-3 flex flex-col -translate-y-[1px]'>
               <div className='mb-1 flex items-center justify-between'>
-                <h3 className='mr-2 text-[16px] font-bold leading-[22px] text-left'>
+                <h3 className='mr-2 text-[16px] font-bold leading-[22px] text-left line-clamp-1'>
                   {sidebarClone.clone_name}
                 </h3>
                 <h4 className='text-sm font-light leading-[18px] text-[#979797]  text-right'>
                   {/* {username} */}
                   {/* {sidebarClone.clone_id !== currentCharacterId && ' • ' + formatDate(new Date(sidebarClone.updated_at))} */}
-                  {' • ' + formatDate(new Date(sidebarClone.updated_at))}
+                  {' • ' + formatTime(new Date(sidebarClone.updated_at))}
                 </h4>
               </div>
               <div className='text-semibold text-[14px] text-left leading-[18px] line-clamp-1 text-[#919494] pr-2'>

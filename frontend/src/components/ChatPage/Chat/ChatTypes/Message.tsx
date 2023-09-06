@@ -8,7 +8,7 @@ import { Character } from '@/types'
 import Refresh from './Refresh'
 import { ThreeDots } from 'react-loader-spinner'
 import { useSession } from 'next-auth/react'
-import { ConversationsService } from '@/client'
+import { ConversationsService, MessageGenerate } from '@/client'
 
 interface MessageProps {
   mutateMessages: any
@@ -63,7 +63,14 @@ const Message: React.FC<MessageProps> = ({ mutateMessages, conversationId, messa
     setIsFetchingRegenMessage(true)
     await new Promise((resolve) => setTimeout(resolve, 500))
 
-    const newMessage = await generateCloneMessage(conversationId)
+    // const newMessage = await generateCloneMessage(conversationId)
+
+    const requestBody: MessageGenerate = {
+      is_revision: true
+    }
+    const newMessage = await ConversationsService.generateCloneMessageConversationsConversationIdGeneratePost(
+      conversationId, requestBody
+    )
 
     setMessages([...messages, newMessage])
     setIsFetchingRegenMessage(false)
@@ -111,7 +118,7 @@ const Message: React.FC<MessageProps> = ({ mutateMessages, conversationId, messa
           </div>
         )}
       {(isRemoveMode && message.sender_name !== 'Test User') && (
-        <div className={'w-[40px] h-[40px]'} ></div>
+        <div className={'w-[40px] h-[40px] min-w-[40px] min-h-[40px]'} ></div>
       )}
       <div className='flex flex-col shrink-0 w-[40px] justify-between items-center'>
         <div className='h-[40px] w-[40px] relative'>
@@ -123,19 +130,6 @@ const Message: React.FC<MessageProps> = ({ mutateMessages, conversationId, messa
             className='rounded-full'
           />
         </div>
-        {
-          (isLast && messages.length > 1 && currentIndex !== 0) && (
-            <button
-              className='mt-6 w-full flex justify-center'
-              onClick={() => {
-                setCurrentIndex(prevState => prevState - 1)
-              }} >
-              <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M15 6L9 12L15 18" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          )
-        }
 
       </div>
       <div className='ml-3 flex flex-col'>

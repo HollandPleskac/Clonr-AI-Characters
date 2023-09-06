@@ -43,7 +43,7 @@ const ChatTopBar = ({
     <div className='flex h-[122px] w-full items-center justify-between border-b border-[#252525] px-10'>
       <div className='flex items-center'>
         <SmallNav characterId={characterId} />
-        <div className='h-[55px] w-[55px] relative'>
+        <div className='h-[55px] w-[55px] min-w-[55px] relative'>
           <Image
             src={character.avatar_uri}
             alt='Character Profile Picture'
@@ -55,7 +55,7 @@ const ChatTopBar = ({
 
         {character ? (
           <div className='flex flex-col ml-6 gap-y-3'>
-            <h3 className='text-3xl font-bold leading-5 text-white'>
+            <h3 className='text-3xl font-bold leading-5 text-white line-clamp-1'>
               {character.name}
             </h3>
             <p className='text-gray-400 text-sm line-clamp-1'>
