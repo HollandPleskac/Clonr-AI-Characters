@@ -76,7 +76,7 @@ const ChatTopBar = ({
                   inputRef.current.focus()
                 }
               }}
-              className='group absolute peer left-[10px] top-2 peer cursor-default'
+              className='group absolute peer left-[10px] top-2 peer cursor-default hover:cursor-pointer'
             >
               <MagnifyingGlass />
 
