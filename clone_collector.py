@@ -346,6 +346,21 @@ def clean_spicychat(path: str = "scraped_chars/spicychat_chars.json") -> pd.Data
 
 
 def clean_chub_ai(path: str = "scraped_chars/chub.json") -> pd.DataFrame:
+    """Note, this contains a Wilson Score that was already computed, offline. We should add
+    it to the scrape script, but I don't wanna mess it up. Basically, it performs this calc
+    (also found in app/utils.py)
+
+    def likes_score_vectorized(pos, n, confidence=0.95):
+        n = n + 1e-2
+        z = calc_likes_z(confidence)
+        phat = 1.0 * pos / n
+        lower_bound = (phat + z**2 / (2 * n) - z * np.sqrt((phat * (1 - phat) + z**2 / (4 * n)) / n)) / (1 + z**2 / n)
+        return lower_bound
+
+    to make sure that things with high rating but a small amount of ratings aren't at the top.
+    Mathematically, it ranks by the lower bound of a 95% confidence interval that, given some variance of ratings,
+    the true rating is above some value.
+    """
     tmp = pd.read_json(path)
     cols = [k for k in tmp if k != "definition"]
     df = pd.DataFrame(tmp.definition.to_list())
@@ -355,6 +370,34 @@ def clean_chub_ai(path: str = "scraped_chars/chub.json") -> pd.DataFrame:
     data = df.progress_apply(
         lambda x: ScrapedClone.from_chub_ai(x).model_dump(), axis=1
     ).to_list()
+
+
+def _scrape_character_ai_by_letter_search(
+    token: str, cookie: str, agent: str
+) -> pd.DataFrame:
+    """To get your token, cookie, and user agent, go to characte ai in a browser and find the /characters
+    request, then it should be in the headers. token is in front of the Authorization header. You also need all
+    of the cookies unfortunately, haven't investigated why. Also, the cookies appear to be linked to your user agent
+    as a fake user agent will 403
+
+    this gets all of the characters on C.ai that I could find. Note, none of these have character profiles, they are just
+    the names available.
+    """
+    import requests
+
+    all_chars = []
+    for x in tqdm("abcdefghijklmnopqrstuvwxyz"):
+        for y in tqdm("abcdefghijklmnopqrstuvwxyz"):
+            url = f"https://beta.character.ai/chat/characters/search/?query={x}{y}"
+            r = requests.get(
+                url,
+                headers={"User-Agent": agent, "Cookie": cookie, "Authorization": token},
+            )
+            r.raise_for_status()
+            data = r.json()["characters"]
+            # print("Character:", x, "Results:", len(data))
+            all_chars.extend(data)
+    return pd.DataFrame(all_chars)
 
 
 def clean_everything() -> pd.DataFrame:

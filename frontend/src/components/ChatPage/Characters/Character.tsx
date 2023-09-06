@@ -9,7 +9,7 @@ import { ConversationUpdate } from '@/client'
 
 interface MyComponentProps {
   sidebarClone: SidebarClone
-  currentCharacterId: string
+  currentCharacterId: string | null
 }
 const Character: React.FC<MyComponentProps> = ({
   sidebarClone,
@@ -37,14 +37,14 @@ const Character: React.FC<MyComponentProps> = ({
     >
       <div
         className={`${sidebarClone.clone_id === currentCharacterId
-          ? 'bg-[#2c2b2e]'
-          : 'bg-transparent'
-          } hover:bg-[#232225] border-r-none cursor-pointer mx-4 mt-2 rounded-lg flex justify-between items-center`}
+          ? 'bg-[#5748bc3d] bg-opacity-5'
+          : 'bg-transparent border-b-[0.5px]'
+          } hover:bg-[#5748bc38] hover:bg-opacity-5 w-[350px] border-b-none border-b-white border-opacity-20 cursor-pointer py-2 flex justify-between items-center`}
       >
         <div>
-        <div className='flex items-center justify-between p-2 m-[1px]'>
+          <div className={`flex items-center justify-between pl-4 py-2 m-[1px]`}>
           <div className='flex items-center'>
-            <div className='h-[45px] w-450px] min-w-[45px] min-h-[45px] relative'>
+            <div className='h-[45px] min-w-[45px] min-h-[45px] relative'>
               <Image
                 src={sidebarClone.avatar_uri}
                 alt='Character Profile Picture'
@@ -53,18 +53,18 @@ const Character: React.FC<MyComponentProps> = ({
                 className='rounded-full'
               />
             </div>
-            <div className='ml-3 flex flex-col'>
-              <div className='mb-1 flex items-center'>
+            <div className='ml-3 flex flex-col -translate-y-[1px]'>
+              <div className='mb-1 flex items-center justify-between'>
                 <h3 className='mr-2 text-[16px] font-bold leading-[22px] text-left'>
                   {sidebarClone.clone_name}
                 </h3>
-                <h4 className='text-sm font-light leading-[18px] text-[#979797]'>
+                <h4 className='text-sm font-light leading-[18px] text-[#979797]  text-right'>
                   {/* {username} */}
                   {/* {sidebarClone.clone_id !== currentCharacterId && ' • ' + formatDate(new Date(sidebarClone.updated_at))} */}
                   {' • ' + formatDate(new Date(sidebarClone.updated_at))}
                 </h4>
               </div>
-              <div className='text-semibold text-[14px] text-left leading-[18px] line-clamp-1 text-[#919494]'>
+              <div className='text-semibold text-[14px] text-left leading-[18px] line-clamp-1 text-[#919494] pr-2'>
                 {/* {sidebarClone.clone_id !== currentCharacterId ? sidebarClone.last_message : "Current conversation"} */}
                 {sidebarClone.last_message}
               </div>
