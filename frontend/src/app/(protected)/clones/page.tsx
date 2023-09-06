@@ -131,20 +131,23 @@ export default function DefaultClonesPage({
 
   const newWelcome = (
     <>
-      <h1>Welcome to Clonr Chat!</h1>
-      <p>To begin chatting, please select a Clone from either the <Link href="/">Home</Link>{" "}page (by clicking the logo in the top left of the page) or the <Link href="/browse">Browse</Link>{" "}page (by clicking the browse icon at the top of the sidebar).</p>
-      <br></br>
-      <p>We're stoked to see you, and happy chatting 🎉</p>
+      <h1 className='text-4xl'> <span className='font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-700 '>Welcome to Clonr Chat</span></h1>
+      <p className='leading-8 text-lg'>To begin chatting, please select a Clone from either the <Link href="/" className='text-blue-400 hover:cursor-pointer'>Home</Link>{" "}page or the <Link href="/browse" className='text-blue-400 hover:cursor-pointer'>Browse</Link>{" "}page. These pages can be reached by clicking the icons located at the top of the sidebar 👈.
+      <br/><br/>
+      All of the clones you are chatting with will appear on the left sidebar, and, any conversations with them will appear here.
+      <br /><br/>
+      We're stoked to see you 🙌, and happy chatting 🎉</p>
     </>
   )
 
   const oldWelcome = (
     <>
-      <h1>Welcome Back 🙌!</h1>
-      <p>To pick up where you left off, or to create a new conversation, please select a clone from the left.</p>
-      <p>If you're looking to try something new, head back to either the <Link href="/">Home</Link>{" "}page (by clicking the logo in the top left of the page) or the <Link href="/browse">Browse</Link>{" "}page (by clicking the browse icon at the top of the sidebar).</p>
-      <br></br>
-      <p>We're stoked to see you back, and happy chatting 🎉</p>
+      <h1 className='text-4xl'> <span className='font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-700 '>Welcome Back </span></h1>
+      <p className='leading-8 text-lg'>To pick up where you left off, or to create a new conversation 🌱, please select a clone from the left 👈.
+      <br /><br/>
+      Looking to try something new? Head back to either the <Link href="/browse" className='text-blue-400 hover:cursor-pointer'>Home</Link>{" "}page or the <Link href="/browse" className='text-blue-400 hover:cursor-pointer'>Browse</Link>{" "}page (by clicking the icons located above the sidebar).
+      <br/><br/>
+      We're stoked to see you back 🙌, and happy chatting 🎉</p>
     </>
   )
 
@@ -170,21 +173,17 @@ export default function DefaultClonesPage({
             <WavingRobot height={600} width={600} />
           </div>          
         </div> */}
-        <div className='h-screen w-full grid place-items-center' >
-                    {/* <ColorRing
-                        visible={true}
-                        height="80"
-                        width="80"
-                        ariaLabel="blocks-loading"
-                        wrapperStyle={{}}
-                        wrapperClass="blocks-wrapper"
-                        colors={['#9333ea', '#9333ea', '#9333ea', '#9333ea', '#9333ea']}
-                    /> */}
-                    <div className='bg-red-400' >
-                    <WavingRobot height={300} width={300} />
-                    </div>
-                    
-                </div>
+        <div className='h-screen w-full place-items-center grid' >
+          {/* <div className='grid'> */}
+            {/* <div className=''>
+              <WavingRobot height={300} width={300} />                    
+            </div> */}
+            <div className='text-white text-left w-1/2'>
+              {
+                cloneChats && cloneChats.length > 0 ? oldWelcome : newWelcome 
+              }
+            </div>
+        </div>
       </div>
     </div>
   )
