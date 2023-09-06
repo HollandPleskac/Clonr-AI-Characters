@@ -12,6 +12,7 @@ import { useQueryClonesById } from '@/hooks/useClones'
 import Conversations from '@/components/ChatPage/Conversations';
 import { useSidebarClonesPagination } from '@/hooks/useSidebarClonesPagination';
 import Link from 'next/link';
+import { ColorRing } from 'react-loader-spinner';
 
 
 interface SizeProps {
@@ -149,7 +150,9 @@ export default function DefaultClonesPage({
 
   // Render Page
   return (
-    <div className='flex'>
+    <div
+      className='bg-gray-900 w-full flex justify-center items-center overflow-hidden'
+      style={{ height: 'calc(100vh)' }}>
       <CharactersSidebar
         currentCharacterId={params.cloneId}
         cloneChats={cloneChats}
@@ -160,13 +163,28 @@ export default function DefaultClonesPage({
         setSearchParam={setSearchParam}
         mutate={mutate}
       />
-      <div className='w-full border-r-[2px] border-[#252525] bg-[#121212] lg:inline' style={{height: 'calc(100vh - 122px)'}}>
-        <div
-        className="flex flex-col items-center h-screen">
+      <div className='w-[100%] border-r-[2px] border-[#252525] bg-[#121212] lg:inline'>
+        {/* <div
+          className="flex flex-col items-center h-screen">
           <div className='text-left w-[100vh]'>
             <WavingRobot height={600} width={600} />
           </div>          
-        </div>
+        </div> */}
+        <div className='h-screen w-full grid place-items-center' >
+                    {/* <ColorRing
+                        visible={true}
+                        height="80"
+                        width="80"
+                        ariaLabel="blocks-loading"
+                        wrapperStyle={{}}
+                        wrapperClass="blocks-wrapper"
+                        colors={['#9333ea', '#9333ea', '#9333ea', '#9333ea', '#9333ea']}
+                    /> */}
+                    <div className='bg-red-400' >
+                    <WavingRobot height={300} width={300} />
+                    </div>
+                    
+                </div>
       </div>
     </div>
   )
