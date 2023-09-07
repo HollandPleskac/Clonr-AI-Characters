@@ -57,7 +57,7 @@ export default function Characters({
     // Component
     return (
         <div
-            className={`hidden md:flex flex-col w-[350px] flex-grow border-r-[2px] border-[#252525] bg-[#000000] text-white`}
+            className={`hidden lg:flex flex-col w-[350px] flex-grow border-r-[2px] border-[#252525] bg-[#000000] text-white`}
             style={{ height: 'calc(100vh)' }}
         >
             {/* Brand Logo */}

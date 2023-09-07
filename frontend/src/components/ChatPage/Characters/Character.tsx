@@ -58,11 +58,11 @@ const Character: React.FC<MyComponentProps> = ({
         className={`${sidebarClone.clone_id === currentCharacterId
           ? 'bg-[#5748bc3d] bg-opacity-5'
           : 'bg-transparent border-b-[0.5px]'
-          } hover:bg-[#5748bc38] hover:bg-opacity-5 w-[350px] border-b-none border-b-white border-opacity-20 cursor-pointer py-2 flex justify-between items-center`}
+          } hover:bg-[#5748bc38] hover:bg-opacity-5 w-[348px] border-b-none border-b-white border-opacity-20 cursor-pointer py-2 flex justify-between items-center`}
       >
-        <div>
+        <div className='w-full' >
           <div className={`flex items-center justify-between pl-4 py-2 m-[1px]`}>
-          <div className='flex items-center'>
+          <div className='flex items-center w-full'>
             <div className='h-[45px] min-w-[45px] min-h-[45px] relative'>
               <Image
                 src={sidebarClone.avatar_uri}
@@ -72,8 +72,8 @@ const Character: React.FC<MyComponentProps> = ({
                 className='rounded-full'
               />
             </div>
-            <div className='ml-3 flex flex-col -translate-y-[1px]'>
-              <div className='mb-1 flex items-center justify-between'>
+            <div className='ml-3 flex flex-col -translate-y-[1px] w-full'>
+              <div className='mb-1 flex items-center justify-between w-full'>
                 <h3 className='mr-2 text-[16px] font-bold leading-[22px] text-left line-clamp-1'>
                   {sidebarClone.clone_name}
                 </h3>
