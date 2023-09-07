@@ -9,11 +9,13 @@ import Refresh from './Refresh'
 import { ThreeDots } from 'react-loader-spinner'
 import { useSession } from 'next-auth/react'
 import { ConversationsService, MessageGenerate } from '@/client'
+import { useRevisions } from '@/hooks/useRevisions'
 
 interface MessageProps {
-  mutateMessages: any
   conversationId: string
   message: Message
+  revisions: Message[]
+  mutateRevisions: () => {}
   character: Character
   clone_avatar_uri: string
   isLast: boolean
@@ -22,37 +24,21 @@ interface MessageProps {
   handleRemoveMessage: (id: string) => void
 }
 
-const Message: React.FC<MessageProps> = ({ mutateMessages, conversationId, message, clone_avatar_uri, isLast, isRemoveMode, isRemoveMessage, handleRemoveMessage }) => {
+const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, mutateRevisions, clone_avatar_uri, isLast, isRemoveMode, isRemoveMessage, handleRemoveMessage }) => {
   const { data: session } = useSession()
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [messages, setMessages] = useState<Message[]>([message])
+
   const [isFetchingRegenMessage, setIsFetchingRegenMessage] = useState(false)
   const [pressedRefreshIcon, setPressedRefreshIcon] = useState(false)
 
-  async function getRevisions(conversationId: string) {
-    const messages = await ConversationsService.getCurrentRevisionsConversationsConversationIdCurrentRevisionsGet(conversationId = conversationId)
-    return messages
-  }
-
-  // This needs to turn off retries
-  // const { data: revisions, isLoading, error } = useSWR(conversationId, getRevisions);
-  const revisions = null;
-
-
-  const textBoxColor = '#16181A'
-  const textColor = '#ECEDEE'
-  const rolePlayColor = '#0AB7DB'
-
-  const { createMessage, generateCloneMessage } = useConversations();
+  const currentIndex = revisions.findIndex(obj => obj.is_main === true);
+  
 
   function formatTime(date: Date): string {
     let hours = date.getHours()
-    const minutes = date.getMinutes().toString().padStart(2, '0') // Pads with 0 if needed to get 2 digits
+    const minutes = date.getMinutes().toString().padStart(2, '0')
     const ampm = hours >= 12 ? 'PM' : 'AM'
 
-    // Convert 24-hour format to 12-hour format
     hours = hours % 12
-    // If hours become 0 (midnight), set it to 12
     hours = hours ? hours : 12
 
     return `${hours.toString().padStart(2, '0')}:${minutes} ${ampm}`
@@ -63,41 +49,44 @@ const Message: React.FC<MessageProps> = ({ mutateMessages, conversationId, messa
     setIsFetchingRegenMessage(true)
     await new Promise((resolve) => setTimeout(resolve, 500))
 
-    // const newMessage = await generateCloneMessage(conversationId)
-
     const requestBody: MessageGenerate = {
       is_revision: true
     }
     const newMessage = await ConversationsService.generateCloneMessageConversationsConversationIdGeneratePost(
       conversationId, requestBody
     )
+    mutateRevisions()
 
-    setMessages([...messages, newMessage])
     setIsFetchingRegenMessage(false)
-
-    // mutateMessages((prevMessages) => [...prevMessages, newMessage]);
   }
 
-  function handleLeftArrow() {
+  async function handleLeftArrow() {
     if (currentIndex > 0) {
-      setCurrentIndex(prevState => prevState - 1)
+      await ConversationsService.setRevisionAsMainConversationsConversationIdMessagesMessageIdIsMainPost(
+        revisions[currentIndex-1].id,conversationId
+      )
+      mutateRevisions()
     }
   }
 
   async function handleRightArrow() {
-    if (currentIndex < messages.length - 1) {
-      setCurrentIndex(prevState => prevState + 1)
+    if (currentIndex < revisions.length-1) {
+      await ConversationsService.setRevisionAsMainConversationsConversationIdMessagesMessageIdIsMainPost(
+        revisions[currentIndex+1].id,conversationId
+      )
+      mutateRevisions()
     }
   }
 
   async function handleRefresh() {
     setPressedRefreshIcon(true)
     await generateNewMessage()
-    console.log("len", messages.length - 1)
-    setCurrentIndex(messages.length)
     setPressedRefreshIcon(false)
   }
-      
+
+  const messageContent = (isLast && revisions.length!==0) ? revisions[currentIndex].content : message.content
+  const messageTimestamp = (isLast && revisions.length!==0) ? revisions[currentIndex].timestamp : message.timestamp
+  
   return (
     <div className={`relative flex items-stretch m-1 py-3 rounded-xl px-3 ${isRemoveMessage ? "bg-[#a53d098c]" : "bg-[#16181A]"}`}>
       {
@@ -134,15 +123,15 @@ const Message: React.FC<MessageProps> = ({ mutateMessages, conversationId, messa
       </div>
       <div className='ml-3 flex flex-col'>
         <div className='mb-[2px] flex items-center'>
-          <span className={`mr-2 text-[15px] font-semibold leading-5 ${messages[currentIndex].is_clone ? "text-transparent bg-clip-text bg-gradient-to-r from-[#a974f3] to-[#ed74f3]" : "text-white"}`}>
-            {messages[currentIndex].sender_name}
+          <span className={`mr-2 text-[15px] font-semibold leading-5 ${message.is_clone ? "text-transparent bg-clip-text bg-gradient-to-r from-[#a974f3] to-[#ed74f3]" : "text-white"}`}>
+            {message.sender_name}
           </span>
           <span className='text-xs font-light text-[#979797]'>
-            {formatTime(new Date(messages[currentIndex].timestamp))}
+            {isFetchingRegenMessage ? formatTime(new Date()) : formatTime(new Date(messageTimestamp))}
           </span>
           {isLast && (
             <Refresh currentIndex={currentIndex}
-              messagesLength={messages.length}
+              messagesLength={isLast?revisions.length:1}
               handleLeftArrow={handleLeftArrow}
               handleRightArrow={handleRightArrow}
               handleRefresh={handleRefresh}
@@ -152,7 +141,7 @@ const Message: React.FC<MessageProps> = ({ mutateMessages, conversationId, messa
           )}
         </div>
         <span className='text-[14px] font-light leading-[18px] text-white'>
-          {!isFetchingRegenMessage && messages[currentIndex].content}
+          {!isFetchingRegenMessage && messageContent}
           {isFetchingRegenMessage && (<ThreeDots
             height='18'
             width='22'

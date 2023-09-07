@@ -19,11 +19,14 @@ import { useSession } from "next-auth/react"
 import { Message } from '@/types'
 import axios from 'axios'
 import { useSidebarClonesPagination } from '@/hooks/useSidebarClonesPagination'
+import { ConversationsService } from '@/client'
+import { useRevisions } from '@/hooks/useRevisions'
 
 interface ChatScreenProps {
   characterId: string
   conversationId: string
   mutateSidebar: () => void
+
 }
 
 
@@ -69,7 +72,6 @@ export default function ChatScreen({
     setSize: setMessagesSize,
     mutate: mutateMessages
   } = useMessagesPagination(queryParamsMessages)
-
 
   useEffect(() => {
     if (scrollToNewMessage && divRef.current) {
@@ -128,6 +130,7 @@ export default function ChatScreen({
     }
 
     mutateSidebar()
+    mutateRevisions()
     setIsFetchingServerMessage(false)
   }
 
@@ -148,10 +151,11 @@ export default function ChatScreen({
     }
   }
 
-  // import preline and collapse sidebar if needed
+  // import preline and mutate sidebar if needed
   useEffect(() => {
     // @ts-ignore
     import('preline')
+    mutateSidebar()
   }, [])
 
   const [removableMessages, setRemovableMessages] = useState<Message[]>([])
@@ -194,6 +198,7 @@ export default function ChatScreen({
     setRemovableMessages([])
     mutateMessages()
     mutateSidebar()
+    mutateRevisions()
     setRemoveMode(false)
     return response.data;
   }
@@ -203,6 +208,10 @@ export default function ChatScreen({
     setRemoveMode(false)
   }
 
+  // get revisions
+  const { data:revisions, isLoading: isLoadingRevisions, mutate: mutateRevisions } = useRevisions({
+    conversationId: conversationId
+  });
 
   return (
     <div className='w-[100%] border-r-[2px] border-[#252525] bg-[#000000] lg:inline'>
@@ -234,7 +243,7 @@ export default function ChatScreen({
               console.log('changing remove')
             }}
           />
-          {isLoadingMessages && (
+          {(isLoadingMessages || isLoadingRevisions) && (
             <div className='text-white grid place-items-center'
               style={{
                 height: 'calc(100vh - 122px - 112px)',
@@ -252,7 +261,7 @@ export default function ChatScreen({
             </div>
           )}
 
-          {!isLoadingMessages && (
+          {!(isLoadingMessages || isLoadingRevisions) && (
             <div
               id='scrollableMessagesDiv'
               style={{
@@ -275,23 +284,25 @@ export default function ChatScreen({
                 scrollableTarget='scrollableMessagesDiv'
                 className='pt-4'
               >
-                {messages?.map((message, index) => (
-                  <MessageComponent
-                    mutateMessages={mutateMessages}
-                    conversationId={conversationId}
-                    message={message}
-                    character={character}
-                    clone_avatar_uri={character.avatar_uri}
-                    isLast={
-                      message.is_clone && index === 0 ? true : false
-                    }
-                    isRemoveMode={removeMode}
-                    isRemoveMessage={removableMessages.some(removableMessage => removableMessage.id === message.id)}
-                    handleRemoveMessage={handleRemoveMessage}
-                    key={message.id}
-                  />
+                {messages?.map((message, index) => {
+                  const isLast = message.is_clone && index === 0 ? true : false
+                  return (
+                    <MessageComponent
+                      conversationId={conversationId}
+                      message={message}
+                      revisions={revisions}
+                      mutateRevisions={mutateRevisions}
+                      character={character}
+                      clone_avatar_uri={character.avatar_uri}
+                      isLast={isLast}
+                      isRemoveMode={removeMode}
+                      isRemoveMessage={removableMessages.some(removableMessage => removableMessage.id === message.id)}
+                      handleRemoveMessage={handleRemoveMessage}
+                      key={message.id}
+                    />
 
-                ))}
+                  )
+                })}
               </InfiniteScroll>
             </div>
           )}
