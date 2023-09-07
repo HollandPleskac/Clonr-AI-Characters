@@ -17,6 +17,7 @@ import { CloneSearchResult } from '@/client/models/CloneSearchResult'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import AuthModal from '../AuthModal'
+import { useCarouselSlidesPerView } from '@/hooks/useCarouselSlidesPerView'
 
 type CustomCloneSearchResult = CloneSearchResult & {
   conversation_id?: string;
@@ -42,6 +43,9 @@ export default function CharacterGrid({
 
   const router = useRouter()
   const { data: session, status } = useSession();
+  const { slidesPerView, isLoadingSlidesPerView } = useCarouselSlidesPerView()
+  console.log("slides per view view", slidesPerView, isLoadingSlidesPerView)
+
 
   const handleCharacterClick = (item: CustomCloneSearchResult) => {
     if (session) {
@@ -56,20 +60,19 @@ export default function CharacterGrid({
     }
   };
 
-  
+
 
   function calcEdgeCard(n: number): 'left' | 'right' | undefined {
-    if (n % 6 === 0) {
+    if (n % slidesPerView!.normal === 0) {
       return 'left'
-    } else if ((n - 5) % 6 === 0) {
+    } else if ((n - (slidesPerView!.normal - 1)) % slidesPerView!.normal === 0) {
       return 'right'
     } else {
       return undefined
     }
-  }
 
-  // if characters is undefined, spinner with loading
-  // if characters is empty, no matches
+
+  }
 
   if (!characters) {
     return (
@@ -82,12 +85,12 @@ export default function CharacterGrid({
   return (
     <div className=''>
       {loading && (
-         <div
-         className='text-white grid place-items-center'
-         style={{ minHeight: 'calc(100vh - 72px - 48px)' }}
-       >
-         <p></p>
-       </div>
+        <div
+          className='text-white grid place-items-center'
+          style={{ minHeight: 'calc(100vh - 72px - 48px)' }}
+        >
+          <p></p>
+        </div>
       )}
       {!loading && characters.length === 0 && (
         <div
@@ -97,13 +100,16 @@ export default function CharacterGrid({
           <p>Your search did not return any matches.</p>
         </div>
       )}
-      {!loading && characters.length > 0 && (
+      {(!loading && !isLoadingSlidesPerView) && characters.length > 0 && (
         <InfiniteScroll
           dataLength={characters?.length ?? 0}
           next={fetchMoreData}
           hasMore={hasMoreData}
           loader={<h4>Loading...</h4>}
-          className={`grid grid-cols-6 gap-1 gap-y-10 ${showPadding2 ? 'pt-[50px]' : 'pt-[100px]'} pb-[100px] px-[4%]`}
+          className={`grid gap-1 gap-y-10 ${showPadding2 ? 'pt-[50px]' : 'pt-[100px]'} pb-[100px] px-[4%]`}
+          style={{
+            gridTemplateColumns: `repeat(${slidesPerView!.normal}, 1fr)`,
+          }}
         >
           {characters.map((item, index) => {
             const edgeCard = calcEdgeCard(index)
