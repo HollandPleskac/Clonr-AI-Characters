@@ -31,17 +31,61 @@ const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, m
   const [pressedRefreshIcon, setPressedRefreshIcon] = useState(false)
 
   const currentIndex = revisions.findIndex(obj => obj.is_main === true);
+
+
+  // function formatTime(date: Date): string {
+  //   let hours = date.getHours()
+  //   const minutes = date.getMinutes().toString().padStart(2, '0')
+  //   const ampm = hours >= 12 ? 'PM' : 'AM'
+
+  //   hours = hours % 12
+  //   hours = hours ? hours : 12
+
+  //   return `${hours.toString().padStart(2, '0')}:${minutes} ${ampm}`
+  // }
+
+  function isYesterday(date: Date): boolean {
+    // Get the current date and reset time to the start of today (midnight)
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
   
+    // Get the start of yesterday by subtracting 24 hours from the start of today
+    const yesterdayStart = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000);
+  
+    return date >= yesterdayStart && date < todayStart;
+  }
+
+  function isAnyDayBeforeYesterday(date: Date): boolean {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+  
+    const yesterdayStart = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000);
+  
+    return date < yesterdayStart;
+  } 
 
   function formatTime(date: Date): string {
-    let hours = date.getHours()
-    const minutes = date.getMinutes().toString().padStart(2, '0')
-    const ampm = hours >= 12 ? 'PM' : 'AM'
+    const now = new Date();
 
-    hours = hours % 12
-    hours = hours ? hours : 12
+    // Check if the date is between 24 and 48 hours ago
+    if (isYesterday(date)) {
+      return "Yesterday";
+    } else if (isAnyDayBeforeYesterday(date)) {
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear().toString().slice(2);
 
-    return `${hours.toString().padStart(2, '0')}:${minutes} ${ampm}`
+      return `${month}/${day}/${year}`;
+    }
+
+    let hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+
+    return `${hours.toString().padStart(2, '0')}:${minutes} ${ampm}`;
   }
 
   async function generateNewMessage() {
@@ -63,16 +107,16 @@ const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, m
   async function handleLeftArrow() {
     if (currentIndex > 0) {
       await ConversationsService.setRevisionAsMainConversationsConversationIdMessagesMessageIdIsMainPost(
-        revisions[currentIndex-1].id,conversationId
+        revisions[currentIndex - 1].id, conversationId
       )
       mutateRevisions()
     }
   }
 
   async function handleRightArrow() {
-    if (currentIndex < revisions.length-1) {
+    if (currentIndex < revisions.length - 1) {
       await ConversationsService.setRevisionAsMainConversationsConversationIdMessagesMessageIdIsMainPost(
-        revisions[currentIndex+1].id,conversationId
+        revisions[currentIndex + 1].id, conversationId
       )
       mutateRevisions()
     }
@@ -84,9 +128,9 @@ const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, m
     setPressedRefreshIcon(false)
   }
 
-  const messageContent = (isLast && revisions.length!==0) ? revisions[currentIndex].content : message.content
-  const messageTimestamp = (isLast && revisions.length!==0) ? revisions[currentIndex].timestamp : message.timestamp
-  
+  const messageContent = (isLast && revisions.length !== 0) ? revisions[currentIndex].content : message.content
+  const messageTimestamp = (isLast && revisions.length !== 0) ? revisions[currentIndex].timestamp : message.timestamp
+
   return (
     <div className={`relative flex items-stretch m-1 py-3 rounded-xl px-3 ${isRemoveMessage ? "bg-[#a53d098c]" : "bg-[#16181A]"}`}>
       {
@@ -129,9 +173,9 @@ const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, m
           <span className='text-xs font-light text-[#979797]'>
             {isFetchingRegenMessage ? formatTime(new Date()) : formatTime(new Date(messageTimestamp))}
           </span>
-          {(isLast && revisions.length!==0) && (
+          {(isLast && revisions.length !== 0) && (
             <Refresh currentIndex={currentIndex}
-              messagesLength={isLast?revisions.length:1}
+              messagesLength={isLast ? revisions.length : 1}
               handleLeftArrow={handleLeftArrow}
               handleRightArrow={handleRightArrow}
               handleRefresh={handleRefresh}

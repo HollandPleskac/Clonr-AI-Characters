@@ -107,7 +107,7 @@ export default function BrowsePage() {
     return (
         <div className=''>
             <AlertBar />
-            <AuthModal/>
+            <AuthModal />
             <TopBar
                 searchInput={searchInput}
                 onSearchInput={(x) => setSearchInput(x)}
@@ -129,31 +129,15 @@ export default function BrowsePage() {
                 <ScaleFadeIn loaded={!searchInput} duration={duration}>
 
 
-                <div className='flex px-[4%] gap-x-8 mt-[50px]'  >
-                    {isLoadingTags && (
-                        <div className='w-full flex-grow text-white' >&nbsp;</div>
-                    )}
-                    {!isLoadingTags && (
-                        <Swiper
-                            modules={[Navigation, Pagination, Scrollbar]}
-                            navigation={true}
-                            spaceBetween={4}
-                            slidesPerView={'auto'}
-                            slidesPerGroup={5}
-                            speed={1100}
-                            className={`w-full flex gap-x-2`}
-                            style={{
-                                zIndex: 50,
-                            }}
-                        >
-                            {tags!.map((tag, index) => {
-                                return (
-                                    <SwiperSlide
+                    <div className='flex px-[4%] gap-x-8 mt-[50px]'  >
+                        {isLoadingTags && (
+                            <div className='w-full flex-grow' >&nbsp;</div>
+                        )}
+                        {!isLoadingTags && (
+                            <div className='flex flex-wrap gap-[6px]' >
+                                {tags!.map((tag, idnex) => (
+                                    <div
                                         key={tag.id}
-                                        className='w-auto inline-flex flex-grow flex-shrink-0'
-                                        style={{
-                                            width: 'auto'
-                                        }}
                                     >
                                         <TagComponent
                                             name={tag.name}
@@ -167,42 +151,41 @@ export default function BrowsePage() {
                                             active={tag.id === activeTag?.id}
 
                                         />
-                                    </SwiperSlide>
-                                )
-                            })}
-                        </Swiper>
-                    )}
-                    <Dropdown onItemClick={handleSortClick} activeSort={activeSort} />
-                </div>
-
-                {isLoadingCharacters && (
-                    <div className="grid place-items-center"
-                        style={{
-                            height: "calc(100vh - 50px - 75px - 80px)"
-                        }}>
-                        <ColorRing
-                            visible={true}
-                            height="80"
-                            width="80"
-                            ariaLabel="blocks-loading"
-                            wrapperStyle={{}}
-                            wrapperClass="blocks-wrapper"
-                            colors={['#9333ea', '#9333ea', '#9333ea', '#9333ea', '#9333ea']}
-                        />
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        <Dropdown onItemClick={handleSortClick} activeSort={activeSort} />
                     </div>
-                )}
 
-                {!isLoadingCharacters && (
-                    <CharacterGrid
-                        characters={characters}
-                        loading={isLoadingCharacters}
-                        fetchMoreData={() => setSize(size + 1)}
-                        hasMoreData={!isLastCharactersPage}
-                        showPadding2={true}
+                    {isLoadingCharacters && (
+                        <div className="grid place-items-center"
+                            style={{
+                                height: "calc(100vh - 50px - 75px - 80px)"
+                            }}>
+                            <ColorRing
+                                visible={true}
+                                height="80"
+                                width="80"
+                                ariaLabel="blocks-loading"
+                                wrapperStyle={{}}
+                                wrapperClass="blocks-wrapper"
+                                colors={['#9333ea', '#9333ea', '#9333ea', '#9333ea', '#9333ea']}
+                            />
+                        </div>
+                    )}
 
-                    />
-                )}
-            </ScaleFadeIn>
+                    {!isLoadingCharacters && (
+                        <CharacterGrid
+                            characters={characters}
+                            loading={isLoadingCharacters}
+                            fetchMoreData={() => setSize(size + 1)}
+                            hasMoreData={!isLastCharactersPage}
+                            showPadding2={true}
+
+                        />
+                    )}
+                </ScaleFadeIn>
             )}
         </div>
     )

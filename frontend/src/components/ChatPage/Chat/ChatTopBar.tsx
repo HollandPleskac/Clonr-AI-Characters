@@ -54,8 +54,8 @@ const ChatTopBar = ({
         </div>
 
         {character ? (
-          <div className='flex flex-col ml-6 gap-y-3'>
-            <h3 className='text-3xl font-bold leading-5 text-white line-clamp-1'>
+          <div className='flex flex-col ml-6 gap-y-1'>
+            <h3 className='text-3xl font-bold text-white line-clamp-1'>
               {character.name}
             </h3>
             <p className='text-gray-400 text-sm line-clamp-1'>
@@ -69,7 +69,7 @@ const ChatTopBar = ({
 
       </div>
         <div className='flex items-center gap-x-4'>
-          <div className='relative group'>
+          {/* <div className='relative group'>
             <button
               onClick={() => {
                 if (inputRef.current) {
@@ -96,7 +96,7 @@ const ChatTopBar = ({
               placeholder='Search'
               style={{ outline: 'none', resize: 'none' }}
             />
-          </div>
+          </div> */}
 
           <ChatDropdown characterId={character.id} toggleRemoveMode={toggleRemoveMode} />
         </div>

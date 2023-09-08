@@ -49,41 +49,14 @@ const Dropdown = ({ characterId, lastConversationId }: ChatDropdownProps) => {
             View previous conversations
           </Link>
 
-          {/* <button className='w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-purple-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300'>
-            <svg
-              width='16'
-              height='12'
-              viewBox='0 -0.5 21 21'
-              version='1.1'
-              xmlns='http://www.w3.org/2000/svg'
-              xmlnsXlink='http://www.w3.org/1999/xlink'
-            >
-              <title>report_flag [#1421]</title>
-              <desc>Created with Sketch.</desc>
-              <defs></defs>
-              <g
-                id='Page-1'
-                stroke='none'
-                strokeWidth='1'
-                fill='none'
-                fillRule='evenodd'
-              >
-                <g
-                  id='Dribbble-Light-Preview'
-                  transform='translate(-419.000000, -600.000000)'
-                  fill='currentColor'
-                >
-                  <g id='icons' transform='translate(56.000000, 160.000000)'>
-                    <path
-                      d='M381.9,440 L369.3,440 C368.13975,440 367.2,440.895 367.2,442 L367.2,450 C367.2,451.105 368.13975,452 369.3,452 L381.9,452 C383.06025,452 384,451.105 384,450 L384,442 C384,440.895 383.06025,440 381.9,440 M365.1,441 L365.1,459 C365.1,459.552 364.6296,460 364.05,460 C363.4704,460 363,459.552 363,459 L363,441 C363,440.448 363.4704,440 364.05,440 C364.6296,440 365.1,440.448 365.1,441'
-                      id='report_flag-[#1421]'
-                    ></path>
-                  </g>
-                </g>
-              </g>
-            </svg>
+          <button
+            onClick={() => {}}
+            className='w-full flex items-center gap-x-3.5 py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 focus:ring-2 focus:ring-purple-500 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300'>
+            <div className='w-4 h-4' >
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5 22V14M5 14V4M5 14L7.47067 13.5059C9.1212 13.1758 10.8321 13.3328 12.3949 13.958C14.0885 14.6354 15.9524 14.7619 17.722 14.3195L17.9364 14.2659C18.5615 14.1096 19 13.548 19 12.9037V5.53669C19 4.75613 18.2665 4.18339 17.5092 4.3727C15.878 4.78051 14.1597 4.66389 12.5986 4.03943L12.3949 3.95797C10.8321 3.33284 9.1212 3.17576 7.47067 3.50587L5 4M5 4V2" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"></path> </g></svg>
+            </div>
             Report
-          </button> */}
+          </button>
         </div>
         {/* <div className='py-2 first:pt-0 last:pb-0'>
           <span className='block py-2 px-3 text-xs font-medium uppercase text-gray-400 dark:text-gray-500'>

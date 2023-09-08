@@ -24,24 +24,50 @@ const Character: React.FC<MyComponentProps> = ({
     await ConversationsService.patchConversationConversationsConversationIdPatch(conversationId, payload)
   }
 
-  const formatTime = (date: Date) => {
+  function isYesterday(date: Date): boolean {
+    // Get the current date and reset time to the start of today (midnight)
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+  
+    // Get the start of yesterday by subtracting 24 hours from the start of today
+    const yesterdayStart = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000);
+  
+    return date >= yesterdayStart && date < todayStart;
+  }
+
+  function isAnyDayBeforeYesterday(date: Date): boolean {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+  
+    const yesterdayStart = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000);
+  
+    return date < yesterdayStart;
+  } 
+
+  function formatTime(date: Date): string {
+    const now = new Date();
+
+    // Check if the date is between 24 and 48 hours ago
+    if (isYesterday(date)) {
+      return "Yesterday";
+    } else if (isAnyDayBeforeYesterday(date)) {
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear().toString().slice(2);
+
+      return `${month}/${day}/${year}`;
+    }
+
     let hours = date.getHours();
     let minutes = date.getMinutes();
     const ampm = hours >= 12 ? 'PM' : 'AM';
   
-    // Convert hours to 12-hour format
     hours = hours % 12;
-  
-    // Convert 0 hours to 12 in 12-hour format
     hours = hours ? hours : 12;
-  
-    // Pad the minutes with a leading zero if needed
     const paddedMinutes = String(minutes).padStart(2, '0');
   
     return `${hours}:${paddedMinutes} ${ampm}`;
-  };
-  
-  
+  }
 
   return (
     <button
