@@ -129,7 +129,7 @@ const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, m
           <span className='text-xs font-light text-[#979797]'>
             {isFetchingRegenMessage ? formatTime(new Date()) : formatTime(new Date(messageTimestamp))}
           </span>
-          {isLast && (
+          {(isLast && revisions.length!==0) && (
             <Refresh currentIndex={currentIndex}
               messagesLength={isLast?revisions.length:1}
               handleLeftArrow={handleLeftArrow}

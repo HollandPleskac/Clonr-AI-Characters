@@ -118,7 +118,7 @@ function SubscriptionPortal() {
   )
 }
 
-export default function Login() {
+export default function AccountComponent() {
   const {push} = useRouter()
   const [activeTab, setActiveTab] = React.useState('billing')
   return (
