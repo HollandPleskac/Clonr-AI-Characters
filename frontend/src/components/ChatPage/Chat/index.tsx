@@ -236,7 +236,7 @@ export default function ChatScreen({
           {(isLoadingMessages || isLoadingRevisions) && (
             <div className='text-white grid place-items-center'
               style={{
-                height: 'calc(100vh - 122px - 112px)',
+                height: 'calc(100vh - 122px - 116px)',
               }}
             >
               <ColorRing
@@ -255,7 +255,7 @@ export default function ChatScreen({
             <div
               id='scrollableMessagesDiv'
               style={{
-                height: 'calc(100vh - 122px - 112px)',
+                height: 'calc(100vh - 122px - 116px)',
                 overflow: 'auto',
                 display: 'flex',
                 flexDirection: 'column-reverse',

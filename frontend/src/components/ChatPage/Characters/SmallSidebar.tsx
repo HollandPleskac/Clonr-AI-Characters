@@ -69,14 +69,14 @@ export default function SmallNav({
         {/* Brand Logo */}
         <div className='flex items-center px-4 justify-between py-6'>
           {/* Should we put an onClick back to clones? */}
-          <div className='flex items-center cursor-default'>
+          <button className='flex items-center' onClick={() => pushToUrl("/")}>
             <div className='h-8 w-8 relative'>
               <Image
                 src='/clonr-logo.png'
                 alt='logo'
                 layout='fill'
                 objectFit='cover'
-                onClick={() => pushToUrl("/")}
+                
                 className='hover:cursor-pointer'
               />
             </div>
@@ -84,13 +84,13 @@ export default function SmallNav({
               chat
             </h3>
             {/* <p className='text-white font-thin ml-2 align-middle'>users</p> */}
-          </div>
+          </button>
           <div className="div flex">
             <button onClick={() => pushToUrl("/")}
               className="w-10 h-10 hover:bg-white hover:bg-opacity-20 p-2 rounded-full hover:cursor-pointer transition-all duration-200"
             >
 
-              <svg fill="#ffffff" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" height={20}>
+              <svg fill="#ffffff" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
                 <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
                 <g id="SVGRepo_iconCarrier">

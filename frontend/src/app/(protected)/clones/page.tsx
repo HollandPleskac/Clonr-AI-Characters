@@ -13,6 +13,7 @@ import Conversations from '@/components/ChatPage/Conversations';
 import { useSidebarClonesPagination } from '@/hooks/useSidebarClonesPagination';
 import Link from 'next/link';
 import { ColorRing } from 'react-loader-spinner';
+import SmallNav from '@/components/ChatPage/Characters/SmallSidebar'
 
 
 interface SizeProps {
@@ -178,6 +179,9 @@ export default function DefaultClonesPage({
             {/* <div className=''>
               <WavingRobot height={300} width={300} />                    
             </div> */}
+            <div className='absolute top-6 left-6' >
+              <SmallNav characterId={params.cloneId} />
+            </div>
             <div className='text-white text-left w-1/2'>
               {
                 cloneChats && cloneChats.length > 0 ? oldWelcome : newWelcome 

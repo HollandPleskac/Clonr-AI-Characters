@@ -64,26 +64,24 @@ export default function Characters({
            
             <div className='flex items-center px-4 justify-between py-6'>
                 {/* Should we put an onClick back to clones? */}
-                <div className='flex items-center cursor-default'>
+                <Link className='flex items-center' href='/'>
                     <div className='h-8 w-8 relative'>
                         <Image
                             src='/clonr-logo.png'
                             alt='logo'
                             layout='fill'
                             objectFit='cover'
-                            onClick={() => push("/")}
-                            className='hover:cursor-pointer'
                         />
                     </div>
                     <h3 className='ml-2 text-[30px] font-semibold leading-5 text-white font-fabada'>
                         chat
                     </h3>
                     {/* <p className='text-white font-thin ml-2 align-middle'>users</p> */}
-                </div>
+                </Link>
                 <div className="div flex">
-                    <Link href="/" className="w-10 h-10 translate-y-[2px] hover:bg-white hover:bg-opacity-20 p-2 rounded-full hover:cursor-pointer transition-all duration-200">
+                    <Link href="/" className="w-10 h-10 hover:bg-white hover:bg-opacity-20 p-2 rounded-full hover:cursor-pointer transition-all duration-200">
 
-                        <svg fill="#ffffff" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" height={20}>
+                        <svg fill="#ffffff" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
                             <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
                             <g id="SVGRepo_iconCarrier">
