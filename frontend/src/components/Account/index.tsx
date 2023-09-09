@@ -7,10 +7,14 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation'
 import useSWR from "swr"
 import { Subscription, SubscriptionsService } from '@/client';
+import router from 'next/router';
+import { Session } from 'next-auth';
+import { useUser } from '@/hooks/useUser';
 
 
 function SubscriptionPortal() {
   const { push } = useRouter()
+  const {userObject, isUserLoading} = useUser()
 
   const { data: subscription, isLoading, error } = useSWR<Subscription>(
     'http://localhost:8000/subscriptions/me',
@@ -23,13 +27,58 @@ function SubscriptionPortal() {
 
 
 
-  if (isLoading) {
-    return <p>Loading</p>
+  if (isLoading || isUserLoading) {
+    return <p></p>
   }
 
   if (!subscription) {
     return (
-      <div> Not a paying susbscriber! </div>
+      <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-2">
+
+      <h1 className="text-3xl font-bold text-gray-200">Current Plan</h1>
+
+      <div className="bg-[#1c1c1c] border-gray-400 shadow overflow-hidden sm:rounded-lg">
+        <div className="px-4 py-5 sm:px-6">
+          <h3 className="text-lg leading-6 font-medium text-gray-200">Billing Information</h3>
+          <p className="mt-1 max-w-2xl text-sm text-gray-400">Personal details and application.</p>
+        </div>
+        <div className="px-4 border-t-gray-800 border-t-[1px] py-5 sm:p-0">
+          <dl className="sm:divide-y sm:divide-[#2c2c2c]">
+            
+            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-400">Plan</dt>
+              <dd className="mt-1 text-sm text-purple-400 sm:mt-0 sm:col-span-2 font-semibold">
+                Free Tier
+              </dd>
+            </div>
+            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-400">
+                Free messages
+              </dt>
+              <dd className="mt-1 text-sm text-purple-400 sm:mt-0 sm:col-span-2">
+                {10-(userObject?.num_free_messages_sent??0)}/10
+              </dd>
+            </div>
+            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-400">Email address</dt>
+              <dd className="mt-1 text-sm text-purple-400 sm:mt-0 sm:col-span-2">
+                {userObject?.email ?? ""}
+              </dd>
+            </div>
+            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 items-center">
+              <dt className="text-sm font-medium  text-gray-400">Change Plan</dt>
+              <dd className="mt-1 text-sm text-purple-400 sm:mt-0 sm:col-span-2">
+                <button onClick={() => {
+                  push('/pricing')
+                }}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium text-gray-300 rounded-xl bg-[#5424cd] hover:bg-[#5f38c2]"
+                >Manage</button>
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </div>
     )
   }
 
@@ -122,6 +171,8 @@ function SubscriptionPortal() {
   )
 }
 
+
+
 export default function AccountComponent() {
   const { push } = useRouter()
   const [activeTab, setActiveTab] = React.useState('billing')
@@ -129,7 +180,7 @@ export default function AccountComponent() {
     <>
       <main className='w-full flex flex-col h-full'>
         <TopBarStatic />
-        <div className='flex flex-col sm:flex-row overflow-auto bg-red-400'
+        <div className='flex flex-col sm:flex-row overflow-auto'
           style={{height:"100vh - 76px"}}
         >
           {/* MOBILE NAV */}
@@ -399,8 +450,11 @@ export default function AccountComponent() {
             )}
 
             {activeTab === 'usage' && (
-              <div>
-                <h2 className='text-lg sm:text-xl font-semibold mb-4 text-gray-400'>
+              <div className='grid place-items-center h-full' >
+                <h2 className='text-lg sm:text-xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-[#a974f3] to-[#ed74f3]'>
+                  Not enough data yet
+                </h2>
+                {/* <h2 className='text-lg sm:text-xl font-semibold mb-4 text-gray-400'>
                   Message Limit for this month
                 </h2>
                 <div className='flex w-[50%] h-4 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-700'>
@@ -414,7 +468,7 @@ export default function AccountComponent() {
                   >
                     57%
                   </div>
-                </div>
+                </div> */}
               </div>
             )}
 
@@ -450,7 +504,7 @@ export default function AccountComponent() {
             )}
 
             {activeTab === 'billing' && (
-              <SubscriptionPortal />
+              <SubscriptionPortal/>
             )}
           </div>
         </div>
