@@ -282,6 +282,7 @@ export default function ChatScreen({
                       message={message}
                       revisions={revisions}
                       mutateRevisions={mutateRevisions}
+                      mutateSidebar={mutateSidebar}
                       character={character}
                       clone_avatar_uri={character.avatar_uri}
                       isLast={isLast}

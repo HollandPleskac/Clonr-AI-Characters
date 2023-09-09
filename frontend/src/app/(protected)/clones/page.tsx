@@ -144,7 +144,13 @@ export default function DefaultClonesPage({
   const oldWelcome = (
     <>
       <h1 className='text-4xl'> <span className='font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-700 '>Welcome Back </span></h1>
-      <p className='leading-8 text-lg'>To pick up where you left off, or to create a new conversation 🌱, please select a clone from the left 👈.
+      <p className='hidden lg:inline-block leading-8 text-lg'>To pick up where you left off, or to create a new conversation 🌱, please select a clone from the left 👈.
+      <br /><br/>
+      Looking to try something new? Head back to either the <Link href="/browse" className='text-blue-400 hover:cursor-pointer'>Home</Link>{" "}page or the <Link href="/browse" className='text-blue-400 hover:cursor-pointer'>Browse</Link>{" "}page (by clicking the icons located above the sidebar).
+      <br/><br/>
+      We're stoked to see you back 🙌, and happy chatting 🎉</p>
+
+      <p className='lg:hidden leading-8 text-lg'>To pick up where you left off, or to create a new conversation 🌱, please select a clone from the expandable sidebar on the left 👈.
       <br /><br/>
       Looking to try something new? Head back to either the <Link href="/browse" className='text-blue-400 hover:cursor-pointer'>Home</Link>{" "}page or the <Link href="/browse" className='text-blue-400 hover:cursor-pointer'>Browse</Link>{" "}page (by clicking the icons located above the sidebar).
       <br/><br/>
@@ -184,7 +190,10 @@ export default function DefaultClonesPage({
             </div>
             <div className='text-white text-left w-1/2'>
               {
-                cloneChats && cloneChats.length > 0 ? oldWelcome : newWelcome 
+                (!isLoading && cloneChats && cloneChats.length > 0) && oldWelcome
+              }
+              {
+                (!isLoading && (!cloneChats || cloneChats.length === 0)) && newWelcome
               }
             </div>
         </div>

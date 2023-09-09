@@ -22,6 +22,7 @@ import AuthModal from '../AuthModal'
 
 export default function HomeScreen() {
   const [searchInput, setSearchInput] = useState('')
+  const [searchParam, setSearchParam] = useState('')
   const [showSearchGrid, setShowSearchGrid] = useState(false)
   const duration = 500
 
@@ -49,7 +50,7 @@ export default function HomeScreen() {
   const { data: trendingChars, isLoading: isTrendingLoading } = useQueryClones(trendingQueryParams);
   const { data: topChars, isLoading: isTopLoading } = useQueryClones(topQueryParams);
   const { data: continueChars, isLoading: isContinueLoading } = useQueryConversationsContinue(continueQueryParams)
-  const {slidesPerView, isLoadingSlidesPerView} = useCarouselSlidesPerView()
+  const { slidesPerView, isLoadingSlidesPerView } = useCarouselSlidesPerView()
 
   useEffect(() => {
     if (searchInput === '') {
@@ -65,11 +66,19 @@ export default function HomeScreen() {
     }
   }, [searchInput])
 
+  // search delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchParam(searchInput)
+    }, duration)
+    return () => clearTimeout(timer)
+  }, [searchInput])
+
   // character grid state
   const queryParamsSearch = {
-    name: searchInput,
+    // name: searchParam,
     sort: CloneSortType["TOP"],
-    similar: searchInput,
+    similar: searchParam,
     limit: 30
   }
 
@@ -154,7 +163,7 @@ export default function HomeScreen() {
           )}
         </ScaleFadeIn>
       )}
-      <AuthModal/>
+      <AuthModal />
     </div>
   )
 }

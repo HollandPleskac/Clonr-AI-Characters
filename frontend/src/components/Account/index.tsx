@@ -1,7 +1,7 @@
 'use client'
 
 import TopBarStatic from '@/components/TopBarStatic'
-import React from 'react'
+import React, { useEffect } from 'react'
 import Link from 'next/link'
 import axios from 'axios';
 import { useRouter } from 'next/navigation'
@@ -14,11 +14,15 @@ function SubscriptionPortal() {
 
   const { data: subscription, isLoading, error } = useSWR<Subscription>(
     'http://localhost:8000/subscriptions/me',
-    async () =>  await SubscriptionsService.getMySubscriptionsSubscriptionsMeGet()
+    async () => await SubscriptionsService.getMySubscriptionsSubscriptionsMeGet()
   );
 
+  useEffect(() => {
+    require('preline')
+  }, [])
 
-  
+
+
   if (isLoading) {
     return <p>Loading</p>
   }
@@ -67,9 +71,9 @@ function SubscriptionPortal() {
               </dt>
               <dd className="mt-1 text-sm text-purple-400 sm:mt-0 sm:col-span-2">
                 {subscription.stripe_subscription_id}
-                {subscription.stripe_status === 'active' ? 
-                <span className="inline-flex items-center ml-4 px-2 py-0.5 rounded-md text-sm font-medium bg-[#D7F7C2] text-[#016808]"> {subscription.stripe_status}</span> :
-                <span className="inline-flex items-center ml-4 px-2 rounded-md text-sm font-medium bg-[#f7c2c2] text-[#680101]"> {subscription.stripe_status}</span>
+                {subscription.stripe_status === 'active' ?
+                  <span className="inline-flex items-center ml-4 px-2 py-0.5 rounded-md text-sm font-medium bg-[#D7F7C2] text-[#016808]"> {subscription.stripe_status}</span> :
+                  <span className="inline-flex items-center ml-4 px-2 rounded-md text-sm font-medium bg-[#f7c2c2] text-[#680101]"> {subscription.stripe_status}</span>
                 }
               </dd>
             </div>
@@ -103,8 +107,8 @@ function SubscriptionPortal() {
                     })
                     console.log("response", res)
                     push(res.data)
-                  } catch(e){
-                    console.log("Error",e)
+                  } catch (e) {
+                    console.log("Error", e)
                   }
                 }}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium text-gray-300 rounded-xl bg-[#5424cd] hover:bg-[#5f38c2]"
@@ -119,13 +123,15 @@ function SubscriptionPortal() {
 }
 
 export default function AccountComponent() {
-  const {push} = useRouter()
+  const { push } = useRouter()
   const [activeTab, setActiveTab] = React.useState('billing')
   return (
     <>
       <main className='w-full flex flex-col h-full'>
         <TopBarStatic />
-        <div className='flex flex-col sm:flex-row overflow-auto'>
+        <div className='flex flex-col sm:flex-row overflow-auto bg-red-400'
+          style={{height:"100vh - 76px"}}
+        >
           {/* MOBILE NAV */}
           <div
             id='docs-sidebar'
@@ -218,7 +224,7 @@ export default function AccountComponent() {
           <div
             id='docs-sidebar'
             className='hidden sm:block hs-overlay z-[0] w-64 border-r pt-7 pb-10 overflow-y-auto scrollbar-y  scrollbar-y bg-black border-[#1d1e1e]'
-            style={{ height: 'calc(100vh - 72px)' }}
+            style={{ height: 'calc(100vh - 76px)' }}
           >
             <div className='px-6'>
               <a

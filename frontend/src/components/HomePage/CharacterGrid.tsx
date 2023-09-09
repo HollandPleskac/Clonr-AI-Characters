@@ -77,7 +77,7 @@ export default function CharacterGrid({
   if (!characters) {
     return (
       <div>
-        <p>Loading...</p>
+        
       </div>
     )
   }
