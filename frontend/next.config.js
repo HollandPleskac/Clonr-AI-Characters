@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: false,
   images: {
-    domains: ['lh3.googleusercontent.com','example.com', 'characterai.io','upload.wikimedia.org','static1.cbrimages.com'],
+    domains: ['lh3.googleusercontent.com','example.com', 'characterai.io','upload.wikimedia.org','static1.cbrimages.com', 'imagedelivery.net'],
   },
   webpack: (config) => {
     config.module.rules.push({

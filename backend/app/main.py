@@ -11,17 +11,7 @@ from loguru import logger
 from opentelemetry import metrics
 
 from app import api
-
-# from app.auth.users import (
-#     auth_backend,
-#     discord_oauth_client,
-#     facebook_oauth_client,
-#     google_oauth_client,
-#     reddit_oauth_client,
-# )
 from app.db import clear_db, create_superuser, init_db, wait_for_db, wait_for_redis
-
-# from app.deps.users import fastapi_users
 from app.embedding import wait_for_embedding
 from app.middleware.rate_limiter import IpAddrRateLimitMiddleware
 from app.middleware.tracing import setup_tracing

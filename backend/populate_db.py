@@ -80,7 +80,7 @@ async def create_feynman(headers):
         is_public=True,
         greeting_message="Nobody ever figures out what life is all about, and it doesn't matter. Explore the world. Nearly everything is really interesting if you go into it deeply enough.",
         tags=[tag2int[x] for x in ["Famous People", "History"]],
-        avatar_uri="https://upload.wikimedia.org/wikipedia/en/4/42/Richard_Feynman_Nobel.jpg",
+        avatar_uri="https://imagedelivery.net/OOxo2StR8LH0BSRGk88IKw/65a42883-49d5-44f4-7471-a2f030b89900/public",  # "https://upload.wikimedia.org/wikipedia/en/4/42/Richard_Feynman_Nobel.jpg",
     )
 
     r = requests.post(
@@ -220,8 +220,8 @@ async def main(n: int):
                     print("Error: ", e)
             await tqdm.asyncio.tqdm_asyncio.gather(*tasks)
 
-    # await create_makima(headers=headers)
-    # await create_feynman(headers=headers)
+    await create_makima(headers=headers)
+    await create_feynman(headers=headers)
     # await create_miles_moralse(headers=headers)
 
 

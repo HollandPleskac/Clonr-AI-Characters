@@ -43,7 +43,7 @@ const ChatTopBar = ({
     <div className='flex h-[122px] w-full items-center justify-between border-b border-[#252525] px-10'>
       <div className='flex items-center'>
         <SmallNav characterId={characterId} />
-        <div className='h-[55px] w-[55px] relative'>
+        <div className='h-[55px] w-[55px] min-w-[55px] relative'>
           <Image
             src={character.avatar_uri}
             alt='Character Profile Picture'
@@ -54,8 +54,8 @@ const ChatTopBar = ({
         </div>
 
         {character ? (
-          <div className='flex flex-col ml-6 gap-y-3'>
-            <h3 className='text-3xl font-bold leading-5 text-white'>
+          <div className='flex flex-col ml-6 gap-y-1'>
+            <h3 className='text-3xl font-bold text-white line-clamp-1'>
               {character.name}
             </h3>
             <p className='text-gray-400 text-sm line-clamp-1'>
@@ -69,14 +69,14 @@ const ChatTopBar = ({
 
       </div>
         <div className='flex items-center gap-x-4'>
-          <div className='relative group'>
+          {/* <div className='relative group'>
             <button
               onClick={() => {
                 if (inputRef.current) {
                   inputRef.current.focus()
                 }
               }}
-              className='group absolute peer left-[10px] top-2 peer cursor-default'
+              className='group absolute peer left-[10px] top-2 peer cursor-default hover:cursor-pointer'
             >
               <MagnifyingGlass />
 
@@ -96,7 +96,7 @@ const ChatTopBar = ({
               placeholder='Search'
               style={{ outline: 'none', resize: 'none' }}
             />
-          </div>
+          </div> */}
 
           <ChatDropdown characterId={character.id} toggleRemoveMode={toggleRemoveMode} />
         </div>

@@ -46,13 +46,13 @@ const ConversationsTopBar = ({
         </div>
 
         {character ? (
-          <div className='flex flex-col ml-6 gap-y-3'>
-            <h3 className='text-3xl font-bold leading-5 text-white'>
+          <div className='flex flex-col ml-6 gap-y-1'>
+            <h3 className='text-3xl font-bold text-white line-clamp-1'>
               {character.name}
             </h3>
-            {/* <p className='text-gray-400 text-sm line-clamp-1'>
+            <p className='text-gray-400 text-sm line-clamp-1'>
               {character.short_description}
-            </p> */}
+            </p>
           </div>
         ) : (
           <p>Loading character</p>

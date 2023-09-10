@@ -1,31 +1,84 @@
 'use client'
 
 import TopBarStatic from '@/components/TopBarStatic'
-import React from 'react'
+import React, { useEffect } from 'react'
 import Link from 'next/link'
 import axios from 'axios';
 import { useRouter } from 'next/navigation'
 import useSWR from "swr"
 import { Subscription, SubscriptionsService } from '@/client';
+import router from 'next/router';
+import { Session } from 'next-auth';
+import { useUser } from '@/hooks/useUser';
 
 
 function SubscriptionPortal() {
   const { push } = useRouter()
+  const {userObject, isUserLoading} = useUser()
 
   const { data: subscription, isLoading, error } = useSWR<Subscription>(
     'http://localhost:8000/subscriptions/me',
-    async () =>  await SubscriptionsService.getMySubscriptionsSubscriptionsMeGet()
+    async () => await SubscriptionsService.getMySubscriptionsSubscriptionsMeGet()
   );
 
+  useEffect(() => {
+    require('preline')
+  }, [])
 
-  
-  if (isLoading) {
-    return <p>Loading</p>
+
+
+  if (isLoading || isUserLoading) {
+    return <p></p>
   }
 
   if (!subscription) {
     return (
-      <div> Not a paying susbscriber! </div>
+      <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-2">
+
+      <h1 className="text-3xl font-bold text-gray-200">Current Plan</h1>
+
+      <div className="bg-[#1c1c1c] border-gray-400 shadow overflow-hidden sm:rounded-lg">
+        <div className="px-4 py-5 sm:px-6">
+          <h3 className="text-lg leading-6 font-medium text-gray-200">Billing Information</h3>
+          <p className="mt-1 max-w-2xl text-sm text-gray-400">Personal details and application.</p>
+        </div>
+        <div className="px-4 border-t-gray-800 border-t-[1px] py-5 sm:p-0">
+          <dl className="sm:divide-y sm:divide-[#2c2c2c]">
+            
+            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-400">Plan</dt>
+              <dd className="mt-1 text-sm text-purple-400 sm:mt-0 sm:col-span-2 font-semibold">
+                Free Tier
+              </dd>
+            </div>
+            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-400">
+                Free messages
+              </dt>
+              <dd className="mt-1 text-sm text-purple-400 sm:mt-0 sm:col-span-2">
+                {10-(userObject?.num_free_messages_sent??0)}/10
+              </dd>
+            </div>
+            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-400">Email address</dt>
+              <dd className="mt-1 text-sm text-purple-400 sm:mt-0 sm:col-span-2">
+                {userObject?.email ?? ""}
+              </dd>
+            </div>
+            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 items-center">
+              <dt className="text-sm font-medium  text-gray-400">Change Plan</dt>
+              <dd className="mt-1 text-sm text-purple-400 sm:mt-0 sm:col-span-2">
+                <button onClick={() => {
+                  push('/pricing')
+                }}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium text-gray-300 rounded-xl bg-[#5424cd] hover:bg-[#5f38c2]"
+                >Manage</button>
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </div>
     )
   }
 
@@ -37,7 +90,7 @@ function SubscriptionPortal() {
         <div className="flex">
           <div className="flex-shrink-0">
             <svg className="h-5 w-5 text-[#966cff]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
             </svg>
           </div>
           <div className="ml-3 flex-1 md:flex md:justify-between">
@@ -67,9 +120,9 @@ function SubscriptionPortal() {
               </dt>
               <dd className="mt-1 text-sm text-purple-400 sm:mt-0 sm:col-span-2">
                 {subscription.stripe_subscription_id}
-                {subscription.stripe_status === 'active' ? 
-                <span className="inline-flex items-center ml-4 px-2 py-0.5 rounded-md text-sm font-medium bg-[#D7F7C2] text-[#016808]"> {subscription.stripe_status}</span> :
-                <span className="inline-flex items-center ml-4 px-2 rounded-md text-sm font-medium bg-[#f7c2c2] text-[#680101]"> {subscription.stripe_status}</span>
+                {subscription.stripe_status === 'active' ?
+                  <span className="inline-flex items-center ml-4 px-2 py-0.5 rounded-md text-sm font-medium bg-[#D7F7C2] text-[#016808]"> {subscription.stripe_status}</span> :
+                  <span className="inline-flex items-center ml-4 px-2 rounded-md text-sm font-medium bg-[#f7c2c2] text-[#680101]"> {subscription.stripe_status}</span>
                 }
               </dd>
             </div>
@@ -103,8 +156,8 @@ function SubscriptionPortal() {
                     })
                     console.log("response", res)
                     push(res.data)
-                  } catch(e){
-                    console.log("Error",e)
+                  } catch (e) {
+                    console.log("Error", e)
                   }
                 }}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium text-gray-300 rounded-xl bg-[#5424cd] hover:bg-[#5f38c2]"
@@ -118,14 +171,18 @@ function SubscriptionPortal() {
   )
 }
 
-export default function Login() {
-  const {push} = useRouter()
+
+
+export default function AccountComponent() {
+  const { push } = useRouter()
   const [activeTab, setActiveTab] = React.useState('billing')
   return (
     <>
       <main className='w-full flex flex-col h-full'>
         <TopBarStatic />
-        <div className='flex flex-col sm:flex-row overflow-auto'>
+        <div className='flex flex-col sm:flex-row overflow-auto'
+          style={{height:"100vh - 76px"}}
+        >
           {/* MOBILE NAV */}
           <div
             id='docs-sidebar'
@@ -154,11 +211,11 @@ export default function Login() {
                       viewBox='0 0 16 16'
                     >
                       <path
-                        fill-rule='evenodd'
+                        fillRule='evenodd'
                         d='M2 13.5V7h1v6.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V7h1v6.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5zm11-11V6l-2-2V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5z'
                       />
                       <path
-                        fill-rule='evenodd'
+                        fillRule='evenodd'
                         d='M7.293 1.5a1 1 0 0 1 1.414 0l6.647 6.646a.5.5 0 0 1-.708.708L8 2.207 1.354 8.854a.5.5 0 1 1-.708-.708L7.293 1.5z'
                       />
                     </svg>
@@ -218,7 +275,7 @@ export default function Login() {
           <div
             id='docs-sidebar'
             className='hidden sm:block hs-overlay z-[0] w-64 border-r pt-7 pb-10 overflow-y-auto scrollbar-y  scrollbar-y bg-black border-[#1d1e1e]'
-            style={{ height: 'calc(100vh - 72px)' }}
+            style={{ height: 'calc(100vh - 76px)' }}
           >
             <div className='px-6'>
               <a
@@ -251,11 +308,11 @@ export default function Login() {
                       viewBox='0 0 16 16'
                     >
                       <path
-                        fill-rule='evenodd'
+                        fillRule='evenodd'
                         d='M2 13.5V7h1v6.5a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5V7h1v6.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5zm11-11V6l-2-2V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5z'
                       />
                       <path
-                        fill-rule='evenodd'
+                        fillRule='evenodd'
                         d='M7.293 1.5a1 1 0 0 1 1.414 0l6.647 6.646a.5.5 0 0 1-.708.708L8 2.207 1.354 8.854a.5.5 0 1 1-.708-.708L7.293 1.5z'
                       />
                     </svg>
@@ -393,8 +450,11 @@ export default function Login() {
             )}
 
             {activeTab === 'usage' && (
-              <div>
-                <h2 className='text-lg sm:text-xl font-semibold mb-4 text-gray-400'>
+              <div className='grid place-items-center h-full' >
+                <h2 className='text-lg sm:text-xl font-semibold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-[#a974f3] to-[#ed74f3]'>
+                  Not enough data yet
+                </h2>
+                {/* <h2 className='text-lg sm:text-xl font-semibold mb-4 text-gray-400'>
                   Message Limit for this month
                 </h2>
                 <div className='flex w-[50%] h-4 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-700'>
@@ -408,7 +468,7 @@ export default function Login() {
                   >
                     57%
                   </div>
-                </div>
+                </div> */}
               </div>
             )}
 
@@ -444,7 +504,7 @@ export default function Login() {
             )}
 
             {activeTab === 'billing' && (
-              <SubscriptionPortal />
+              <SubscriptionPortal/>
             )}
           </div>
         </div>

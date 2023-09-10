@@ -409,3 +409,89 @@ Respond only as {{char}} and do not break character.
             cur_time=cur_time,
             use_timestamps=use_timestamps,
         )
+
+
+class ZeroMemoryMessageV2(Template):
+    chat_template = env.from_string(
+        """\
+{{ llm.system_start -}}
+Name: {{char}}. {{short_description}}
+{{long_description}}
+
+{%- if (facts) %}
+Relevant facts:
+{% for f in facts -%}
+{{loop.index}}. {{f}}
+{%- if not loop.last %}
+{% endif %}
+{%- endfor %} 
+{%- endif %}
+
+{%- if (monologues) %}
+
+### Quotes from {{char}}
+{% for m in monologues -%}
+* {{m.content}}
+{%- if not loop.last %}
+{% endif %}
+{%- endfor %} 
+{%- endif %}
+
+
+
+### Task
+You are {{char}}. Carry out a conversation with {{user_name}} as {{char}}. \
+Respond only as {{char}} and do not break character.
+{{- llm.system_end }}
+
+{% for msg in messages -%}
+{%- if (msg.is_clone) -%}
+{{ llm.assistant_start -}}
+{% if (use_timestamps) -%}[{{ msg.time_str }}] {% endif -%}{{ msg.content }}
+{{- llm.assistant_end }}
+{%- else -%}
+{{ llm.user_start -}}
+{% if (use_timestamps) -%}[{{ msg.time_str }}] {% endif -%}{{ msg.content }}
+{{- llm.user_end }}
+{%- endif %}
+{%- if not loop.last %}
+{% endif %}
+{%- endfor %} 
+{{ llm.assistant_start -}}
+{% if (use_timestamps) -%}[{{cur_time}}] {% endif -%}
+{{- llm.assistant_end -}}
+"""
+    )
+
+    @classmethod
+    def render(
+        cls,
+        char: str,
+        user_name: str,
+        short_description: str,
+        long_description: str,
+        llm: LLM,
+        messages: list[MessageStruct],
+        monologues: list[Monologue] | None = None,
+        facts: list[str] | None = None,
+        use_timestamps: bool = False,
+    ):
+        cur_time = DateFormat.human_readable(
+            get_current_datetime(), use_today_and_yesterday=True
+        )
+        return cls.chat_template.render(
+            char=char,
+            user_name=user_name,
+            short_description=short_description,
+            long_description=long_description,
+            llm=llm,
+            messages=messages,
+            monologues=monologues,
+            facts=facts,
+            use_timestamps=use_timestamps,
+            cur_time=cur_time,
+        )
+
+    @classmethod
+    def render_instruct(cls, *args, **kwargs):
+        raise NotImplementedError()

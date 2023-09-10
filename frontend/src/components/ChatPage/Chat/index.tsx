@@ -19,11 +19,14 @@ import { useSession } from "next-auth/react"
 import { Message } from '@/types'
 import axios from 'axios'
 import { useSidebarClonesPagination } from '@/hooks/useSidebarClonesPagination'
+import { ConversationsService } from '@/client'
+import { useRevisions } from '@/hooks/useRevisions'
 
 interface ChatScreenProps {
   characterId: string
   conversationId: string
   mutateSidebar: () => void
+
 }
 
 
@@ -69,7 +72,6 @@ export default function ChatScreen({
     setSize: setMessagesSize,
     mutate: mutateMessages
   } = useMessagesPagination(queryParamsMessages)
-
 
   useEffect(() => {
     if (scrollToNewMessage && divRef.current) {
@@ -128,30 +130,22 @@ export default function ChatScreen({
     }
 
     mutateSidebar()
+    mutateRevisions()
     setIsFetchingServerMessage(false)
-  }
-
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60)
-    const remainingSeconds = seconds % 60
-
-    const paddedMinutes = String(minutes).padStart(2, '0')
-    const paddedSeconds = String(remainingSeconds).padStart(2, '0')
-
-    return `${paddedMinutes}:${paddedSeconds}`
   }
 
   const handleOnKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     //it triggers by pressing the enter key
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !isFetchingServerMessage) {
       sendMessage()
     }
   }
 
-  // import preline and collapse sidebar if needed
+  // import preline and mutate sidebar if needed
   useEffect(() => {
     // @ts-ignore
     import('preline')
+    mutateSidebar()
   }, [])
 
   const [removableMessages, setRemovableMessages] = useState<Message[]>([])
@@ -194,6 +188,7 @@ export default function ChatScreen({
     setRemovableMessages([])
     mutateMessages()
     mutateSidebar()
+    mutateRevisions()
     setRemoveMode(false)
     return response.data;
   }
@@ -203,6 +198,10 @@ export default function ChatScreen({
     setRemoveMode(false)
   }
 
+  // get revisions
+  const { data:revisions, isLoading: isLoadingRevisions, mutate: mutateRevisions } = useRevisions({
+    conversationId: conversationId
+  });
 
   return (
     <div className='w-[100%] border-r-[2px] border-[#252525] bg-[#000000] lg:inline'>
@@ -234,10 +233,10 @@ export default function ChatScreen({
               console.log('changing remove')
             }}
           />
-          {isLoadingMessages && (
+          {(isLoadingMessages || isLoadingRevisions) && (
             <div className='text-white grid place-items-center'
               style={{
-                height: 'calc(100vh - 122px - 100px)',
+                height: 'calc(100vh - 122px - 116px)',
               }}
             >
               <ColorRing
@@ -252,11 +251,11 @@ export default function ChatScreen({
             </div>
           )}
 
-          {!isLoadingMessages && (
+          {!(isLoadingMessages || isLoadingRevisions) && (
             <div
               id='scrollableMessagesDiv'
               style={{
-                height: 'calc(100vh - 122px - 100px)',
+                height: 'calc(100vh - 122px - 116px)',
                 overflow: 'auto',
                 display: 'flex',
                 flexDirection: 'column-reverse',
@@ -275,95 +274,94 @@ export default function ChatScreen({
                 scrollableTarget='scrollableMessagesDiv'
                 className='pt-4'
               >
-                {messages?.map((message, index) => (
-                  <MessageComponent
-                    mutateMessages={mutateMessages}
-                    conversationId={conversationId}
-                    message={message}
-                    character={character}
-                    clone_avatar_uri={character.avatar_uri}
-                    isLast={
-                      message.is_clone && index === 0 ? true : false
-                    }
-                    isRemoveMode={removeMode}
-                    isRemoveMessage={removableMessages.some(removableMessage => removableMessage.id === message.id)}
-                    handleRemoveMessage={handleRemoveMessage}
-                    key={message.id}
-                  />
+                {messages?.map((message, index) => {
+                  const isLast = message.is_clone && index === 0 ? true : false
+                  return (
+                    <MessageComponent
+                      conversationId={conversationId}
+                      message={message}
+                      revisions={revisions}
+                      mutateRevisions={mutateRevisions}
+                      mutateSidebar={mutateSidebar}
+                      character={character}
+                      clone_avatar_uri={character.avatar_uri}
+                      isLast={isLast}
+                      isRemoveMode={removeMode}
+                      isRemoveMessage={removableMessages.some(removableMessage => removableMessage.id === message.id)}
+                      handleRemoveMessage={handleRemoveMessage}
+                      key={message.id}
+                    />
 
-                ))}
+                  )
+                })}
               </InfiniteScroll>
             </div>
           )}
 
-          <div className='flex flex-col'>
-          <div className='flex h-[92px] items-center border-t border-[#252525] px-6 mt-1'>
-            {removeMode && (
-              <div className='flex justify-between items-center w-full px-3' >
-                <p className='text-[#979797]' >Select the message to remove. All following messages will be removed.</p>
-                <div className='flex gap-x-2' >
-                  <button
-                    onClick={cancelRemoveMessages}
-                    className='px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition duration-200' >Cancel</button>
-                  <button
-                    onClick={confirmRemoveMessages}
-                    disabled={removableMessages.length === 0}
-                    className={`px-4 py-2 ${removableMessages.length === 0 ? "bg-gray-400 text-white" : "bg-red-500 hover:bg-red-600 text-white"}  rounded-lg transition duration-200`} >Remove</button>
-                </div>
-              </div>
-            )}
-            {
-              !removeMode && (
-                <div className='flex w-full items-center' >
-                  <div className='relative w-full'>
-                    {/* <div className='absolute right-4 top-3'>
-                    <SmileIcon />
-                  </div> */}
-                    <input
-                      className='h-[48px] w-full rounded-[14px] border-none bg-[#1E1E1E] p-4 pl-4 pr-[50px] text-[15px] font-light leading-6 text-[#979797] transition-all duration-100 focus:ring-1 focus:ring-transparent'
-                      type='text'
-                      placeholder='Type a message'
-                      value={message}
-                      onChange={(event: any) => setMessage(event.target.value)}
-                      style={{ outline: 'none', resize: 'none' }}
-                      onKeyDown={handleOnKeyDown}
-                    />
+          <div className='relative flex flex-col'>
+            <div className='flex flex-col h-[112px] justify-end border-t border-[#252525] px-6 mt-1'>
+              {removeMode && (
+                <div className='flex justify-between items-center w-full px-3' >
+                  <p className='text-[#979797]' >Select the message to remove. All following messages will be removed.</p>
+                  <div className='flex gap-x-2' >
+                    <button
+                      onClick={cancelRemoveMessages}
+                      className='px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition duration-200' >Cancel</button>
+                    <button
+                      onClick={confirmRemoveMessages}
+                      disabled={removableMessages.length === 0}
+                      className={`px-4 py-2 ${removableMessages.length === 0 ? "bg-gray-400 text-white" : "bg-red-500 hover:bg-red-600 text-white"}  rounded-lg transition duration-200`} >Remove</button>
                   </div>
+                </div>
+              )}
+              {
+                !removeMode && (
+                  <div className='flex w-full items-center' >
+                    <div className='relative w-full'>
+                      {/* <div className='absolute right-4 top-3'>
+                            <SmileIcon />
+                          </div> */}
+                      <input
+                        className='h-[48px] w-full rounded-[14px] border-none bg-[#1E1E1E] p-4 pl-4 pr-[50px] text-[15px] font-light leading-6 text-[#979797] transition-all duration-100 focus:ring-1 focus:ring-transparent'
+                        type='text'
+                        placeholder='Type a message'
+                        value={message}
+                        onChange={(event: any) => setMessage(event.target.value)}
+                        style={{ outline: 'none', resize: 'none' }}
+                        onKeyDown={handleOnKeyDown}
+                      />
+                    </div>
 
-                  <button
-                    className='ml-[10px] transition-all duration-100'
-                    onClick={async () => {
-                      !isFetchingServerMessage && sendMessage()
-                    }}
-                    disabled={isFetchingServerMessage}
-                  >
-                    <SendIcon
-                      strokeClasses={
-                        isFetchingServerMessage ? 'stroke-[#515151] fill-[#515151]' : ''
-                      }
-                    />
-                  </button>
-                </div>
-              )
-            }
+                    <button
+                      className='ml-[10px] transition-all duration-100'
+                      onClick={async () => {
+                        !isFetchingServerMessage && sendMessage()
+                      }}
+                      disabled={isFetchingServerMessage}
+                    >
+                      <SendIcon
+                        strokeClasses={
+                          isFetchingServerMessage ? 'stroke-[#515151] fill-[#515151]' : ''
+                        }
+                      />
+                    </button>
+                  </div>
+                )
+              }
+              <div className={` ${!isFetchingServerMessage && 'invisible'} mb-[10px] mt-[6px] flex items-center h-[22px] text-[#979797] gap-x-2 text-xs`} >
+                <ThreeDots
+                  height='22'
+                  width='22'
+                  radius='4'
+                  color='#979797'
+                  ariaLabel='three-dots-loading'
+                  wrapperStyle={{}}
+                  visible={isFetchingServerMessage}
+                />
+                {character.name} is typing...
+              </div>
             </div>
-                <div
-                  className={`${isFetchingServerMessage
-                    ? 'text-white flex'
-                    : 'text-transparent hidden'
-                    } w-full py-4 h-[56px] -translate-y-8 ml-8`}
-                >
-                  <ThreeDots
-                    height='25'
-                    width='25'
-                    radius='4'
-                    color='#979797'
-                    ariaLabel='three-dots-loading'
-                    wrapperStyle={{}}
-                    visible={isFetchingServerMessage}
-              />
-              <span className='ml-2 text-[#919494]'>Amadeus is typing</span>
-                </div>
+
           </div>
         </>
       )}
