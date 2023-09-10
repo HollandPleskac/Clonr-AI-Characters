@@ -169,8 +169,7 @@ backend/demo.ipynb
 frontend/src/client/*
 
 *.DS_Store
-
-scraped_chars/*
-scrapers/fandom/*
-scrapers/fandom_cleaned/*
-scrapers/samples/*
+scraped_chars/
+scrapers/fandom/
+scrapers/fandom_cleaned/
+scrapers/samples/

@@ -10,6 +10,8 @@ from clone_collector import clean_everything
 from clonr.data.parsers import FullURLParser, FandomParser
 from scrapers.clone_gen_utils import find_char_url, find_links_with_same_base_url, get_all_example_dialogues
 
+parser = FullURLParser()
+
 # Check for missing and sparse values in cols
 def checking_missing_and_sparse_values(row, columns_to_check, sparse_threshold=5):
     missing_fields = []
@@ -57,7 +59,6 @@ def get_char_fandom_wiki(char_name, short_description):
 
     return char_wiki
 
-
 def get_fandom_content(df, name_col, wiki_col):
     parser = FullURLParser()
     df['fandom_content'] = df.progress_apply(lambda x: get_all_example_dialogues(x[name_col], x[wiki_col], parser), axis=1)
@@ -66,6 +67,12 @@ def get_fandom_content(df, name_col, wiki_col):
 def fandom_examples(total_df):
     from_df_sample = total_df[total_df['name'].str.contains(' from ', case=False) | total_df['short_description'].str.contains(' from ', case=False)]
     return from_df_sample
+
+def parse_fandom(char_name, char_wiki):
+    base_url = find_char_url(char_name, char_wiki)
+    found_links = find_links_with_same_base_url(base_url)
+    get_all_example_dialogues(char_name, char_wiki, parser)
+    return base_url
 
 # Using local fandom files
 def get_txt_files_in_directory(directory_path):
@@ -124,6 +131,19 @@ def get_curated_clones():
     clean_df = total_df[total_df['missing_or_sparse_fields'].apply(lambda x: len(x['missing_fields']) + len(x['sparse_fields']) == 0)]
     print(clean_df.shape)
     clean_df_sample = clean_df.head(2)
+
+    # get fandom data
+    for idx, row in clean_df_sample.iterrows():
+        char_name = row['name']
+        char_wiki = row['fandom_wiki']
+        print(f"Processing char_name: {char_name}, char_wiki: {char_wiki}")
+        parse_fandom(char_name, char_wiki)
+
+    # parse fandom outputs
+    dir_path = 'scrapers/fandom'
+    txt_files = get_txt_files_in_directory(dir_path)
+    for txt_file in txt_files:
+        parse_fandom_outputs_dir('scrapers/fandom_cleaned')
     return 
 
 
