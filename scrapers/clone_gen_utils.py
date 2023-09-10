@@ -1,6 +1,7 @@
 import io
 import os
 import guidance
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from clonr.data.parsers import FullURLParser, FandomParser
 from clonr.data.parsers import WikiQuotesParser
@@ -102,9 +103,29 @@ def extract_quotes_from_url(parser, url):
     else:
         return None
 
+# Get img url from fandom
+def get_character_image(base_url):
+    try:
+        response = requests.get(base_url)
+        response.raise_for_status()
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+            img_anchor = soup.find('a', {'class': 'image image-thumbnail', 'title': 'Card'})
+            
+            if img_anchor and 'href' in img_anchor.attrs:
+                image_url = img_anchor['href']
+                return image_url
+    except requests.exceptions.RequestException as e:
+        print("Error fetching the webpage:", e)
+    
+    return None
+
+# Getting example dialogues
 def get_all_example_dialogues(char_name, char_wiki, parser):
+    print(f"In get_all_example_dialogues, for char_name: {char_name}, char_wiki: {char_wiki}")
     char_url = find_char_url(char_name, char_wiki)
     results = []
+    print("this is char_url: ", char_url)
     if char_url:
         found_links = find_links_with_same_base_url(char_url)
         print("Links on the webpage that contain the original webpage URL:")
@@ -121,7 +142,7 @@ def get_all_example_dialogues(char_name, char_wiki, parser):
         print("No results found for this character.")
         return None
 
-    file_path = f'clonr/data/examples/{char_name}_{char_wiki}.txt'
+    file_path = f'scrapers/fandom/{char_name}_{char_wiki}.txt'
 
     if not os.path.exists(file_path):
         with open(file_path, 'x') as f:
@@ -130,23 +151,23 @@ def get_all_example_dialogues(char_name, char_wiki, parser):
         print(f"File '{file_path}' already exists. Won't overwrite.")
     return results
 
-parser = FullURLParser()
+# parser = FullURLParser()
 
-results = parse_results()
+# results = parse_results()
 
-for result in results:
-    char_name = result['participant__name']
-    char_title = result['title']
-    char_wiki = ''
-    if 'from' in char_title.lower():
-        char_wiki = char_title.lower().split("from ")[1]
-        char_wiki = char_wiki.replace(" ", "-").strip('.').strip('!')
-    if 'of' in char_title.lower():
-        char_wiki = char_title.lower().split("of")[1].strip("of ")
-        char_wiki = char_wiki.replace(" ", "-").strip('.').strip('!')
+# for result in results:
+#     char_name = result['participant__name']
+#     char_title = result['title']
+#     char_wiki = ''
+#     if 'from' in char_title.lower():
+#         char_wiki = char_title.lower().split("from ")[1]
+#         char_wiki = char_wiki.replace(" ", "-").strip('.').strip('!')
+#     if 'of' in char_title.lower():
+#         char_wiki = char_title.lower().split("of")[1].strip("of ")
+#         char_wiki = char_wiki.replace(" ", "-").strip('.').strip('!')
     
-    if char_wiki == '':
-        continue 
+#     if char_wiki == '':
+#         continue 
 
-    print(f"Processing char_name = {char_name}, char_wiki = {char_wiki}")
-    total_results = get_all_example_dialogues(char_name, char_wiki, parser)
+#     print(f"Processing char_name = {char_name}, char_wiki = {char_wiki}")
+#     total_results = get_all_example_dialogues(char_name, char_wiki, parser)
