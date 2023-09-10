@@ -138,6 +138,11 @@ def aggregate_with_overlaps(
             r += 1
         chunks.append(arr[l:r])
 
+        # once a chunk has made it to the end, we can stop. This prevents
+        # fringe effects where the last elements are much shorter like 4 3 2 1 etc.
+        if r == N:
+            break
+
         # backtrack until you've collected up to an amount "overlap" of tokens, but still at least one step
         # forward from the last chunk
         cur_overlap = 0
@@ -274,7 +279,7 @@ class BaseSentenceSplitter(TextSplitter):
             if no_edits:
                 return None
 
-    def _split_large_chunks(self, arr: list[T]) -> list[T]:
+    def split_large_chunks(self, arr: list[T]) -> list[T]:
         return [x for y in arr for x in chunk(y, self.max_chunk_size, overlap=0)]
 
     def _split_text(self, text: str) -> list[str]:
@@ -315,7 +320,7 @@ class SentenceSplitterTokens(BaseSentenceSplitter):
         sentences = self._text_to_sentences(text)
         ids = self.tokenizer.encode_batch(sentences)
         if self.chunk_overlap > 0:
-            ids = self._split_large_chunks(ids)
+            ids = self.split_large_chunks(ids)
             size_arr = [len(x) for x in ids]
             sentences = self.tokenizer.decode_batch(ids)
             groups = aggregate_with_overlaps(
@@ -327,7 +332,7 @@ class SentenceSplitterTokens(BaseSentenceSplitter):
             sentences = ["".join(g) for g in groups]
         else:
             self._aggregate_small_chunks_in_place(ids)
-            ids = self._split_large_chunks(ids)
+            ids = self.split_large_chunks(ids)
             sentences = self.tokenizer.decode_batch(ids)
         return sentences
 
@@ -356,7 +361,7 @@ class SentenceSplitterChars(BaseSentenceSplitter):
             )
         sentences = self._text_to_sentences(text)
         if self.chunk_overlap > 0:
-            sentences = self._split_large_chunks(sentences)
+            sentences = self.split_large_chunks(sentences)
             size_arr = [len(x) for x in sentences]
             groups = aggregate_with_overlaps(
                 sentences,
@@ -367,7 +372,7 @@ class SentenceSplitterChars(BaseSentenceSplitter):
             sentences = ["".join(g) for g in groups]
         else:
             self._aggregate_small_chunks_in_place(sentences)
-            sentences = self._split_large_chunks(sentences)
+            sentences = self.split_large_chunks(sentences)
         return sentences
 
 

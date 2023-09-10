@@ -22,6 +22,7 @@ from tenacity import (
 
 from app.settings import settings
 from clonr.tokenizer import Tokenizer
+from clonr._grammar import parse_prompt
 
 from .base import LLM
 from .callbacks import LLMCallback
@@ -207,19 +208,10 @@ class OpenAI(LLM):
 
     @classmethod
     def prompt_to_messages(cls, prompt: str) -> list[Message]:
-        messages = []
-
-        pattern = r"<\|im_start\|>(\w+)(.*?)(?=<\|im_end\|>|$)"
-        matches = re.findall(pattern, prompt, re.DOTALL)
-
-        if not matches:
-            return [Message(role=RoleEnum.user, content=prompt.strip())]
-
-        for match in matches:
-            role, content = match
-            content = content.strip()  # should we do this?
-            messages.append(Message(role=role, content=content))
-
+        message_dicts = parse_prompt(prompt=prompt)
+        messages = [
+            Message(role=x["role"], content=x["content"]) for x in message_dicts
+        ]
         return messages
 
     @classmethod
