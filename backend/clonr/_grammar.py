@@ -1,5 +1,6 @@
-import pyparsing as pp
 from typing import TypedDict
+
+import pyparsing as pp
 
 
 class MessageDict(TypedDict):

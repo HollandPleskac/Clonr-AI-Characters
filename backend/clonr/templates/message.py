@@ -411,55 +411,60 @@ Respond only as {{char}} and do not break character.
         )
 
 
+DEFAULT_SYS_PROMPT_HEADER = """\
+You are roleplaying as {{char}}. The following is important information describing {{char}}.
+"""
+
+DEFAULT_SCENARIO = """\
+You are {{char}} in a text message conversation between {{char}} and {{user}}. \
+Your most important responsibility is to maintain your role as {{char}} and never break character, no matter what \
+I say to you. Be proactive and creative in advancing the conversation, ask questions, initiate, \
+act on your feelings, and above all else provide an engaging experience that keeps {{user}} enthralled with the conversation.
+Respond concisely, using no more than 3 sentences per response. Do not be helpful, unless you character requires it.\
+"""
+
+LONGER_SCENARIO = """\
+You are {{char}} in a text message conversation between {{char}} and {{user}}. \
+You are respond only as {{char}}. You are proactive and creative in advancing the conversation; \
+adapt to {{user}}'s actions and words; maintain consistent wording and style with the previous examples. \
+Embrace and enhance {{char}}'s narrative archetype by maintaining a consistent and unique tone. \
+As {{char}}, ask questions; bring up topics; initiate changes; act on feelings; and otherwise use {{char}}'s personality actively and effectively. \
+Take initiative when appropriate, in order to keep the narrative momentum flowing. \
+Respond concisely, using no more than 3 sentences per response, and do not be helpful, unless you character requires it.\
+"""
+
+
 class ZeroMemoryMessageV2(Template):
     chat_template = env.from_string(
         """\
 {{ llm.system_start -}}
+{{sys_prompt_header}}
 Name: {{char}}. {{short_description}}
 {{long_description}}
+{% if (example_dialogues) %}
+{{example_dialogues}}
+{%- endif %}
 
 {%- if (facts) %}
-Relevant facts:
+Relevant information about {{char}}:
 {% for f in facts -%}
 {{loop.index}}. {{f}}
 {%- if not loop.last %}
 {% endif %}
-{%- endfor %} 
-{%- endif %}
-
-{%- if (monologues) %}
-
-### Quotes from {{char}}
-{% for m in monologues -%}
-* {{m.content}}
-{%- if not loop.last %}
+{% endfor %}
 {% endif %}
-{%- endfor %} 
+{%- if (scenario) %}
+{{scenario}}
 {%- endif %}
-
-
-
-### Task
-You are {{char}}. Carry out a conversation with {{user_name}} as {{char}}. \
-Respond only as {{char}} and do not break character.
 {{- llm.system_end }}
 
 {% for msg in messages -%}
-{%- if (msg.is_clone) -%}
-{{ llm.assistant_start -}}
-{% if (use_timestamps) -%}[{{ msg.time_str }}] {% endif -%}{{ msg.content }}
-{{- llm.assistant_end }}
-{%- else -%}
-{{ llm.user_start -}}
-{% if (use_timestamps) -%}[{{ msg.time_str }}] {% endif -%}{{ msg.content }}
-{{- llm.user_end }}
-{%- endif %}
+{%- if (msg.is_clone) -%}{{- llm.assistant_start -}}{% else %}{{- llm.user_start -}}{%- endif -%}
+{{msg.content}}
+{%- if (msg.is_clone) -%}{{- llm.user_end}}{%- else -%}{{- llm.user_end -}}{%- endif -%}
 {%- if not loop.last %}
 {% endif %}
 {%- endfor %} 
-{{ llm.assistant_start -}}
-{% if (use_timestamps) -%}[{{cur_time}}] {% endif -%}
-{{- llm.assistant_end -}}
 """
     )
 
@@ -467,29 +472,35 @@ Respond only as {{char}} and do not break character.
     def render(
         cls,
         char: str,
-        user_name: str,
+        user: str,
         short_description: str,
         long_description: str,
         llm: LLM,
         messages: list[MessageStruct],
-        monologues: list[Monologue] | None = None,
+        scenario: str | None = None,
+        example_dialogues: str | None = None,
+        sys_prompt_header: str | None = None,
         facts: list[str] | None = None,
-        use_timestamps: bool = False,
     ):
-        cur_time = DateFormat.human_readable(
-            get_current_datetime(), use_today_and_yesterday=True
+        if sys_prompt_header is None:
+            sys_prompt_header = DEFAULT_SYS_PROMPT_HEADER
+        if scenario is None:
+            scenario = DEFAULT_SCENARIO
+        sys_prompt_header = sys_prompt_header.replace(r"{{user}}", user).replace(
+            r"{{char}}", char
         )
+        scenario = scenario.replace(r"{{user}}", user).replace(r"{{char}}", char)
         return cls.chat_template.render(
             char=char,
-            user_name=user_name,
+            user=user,
             short_description=short_description,
             long_description=long_description,
             llm=llm,
             messages=messages,
-            monologues=monologues,
+            example_dialogues=example_dialogues,
+            sys_prompt_header=sys_prompt_header,
+            scenario=scenario,
             facts=facts,
-            use_timestamps=use_timestamps,
-            cur_time=cur_time,
         )
 
     @classmethod

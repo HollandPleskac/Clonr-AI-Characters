@@ -709,20 +709,20 @@ class Controller:
                 num_tokens=int(0.66 * self.llm.context_length),
             )
             # NOTE (Jonny): we don't want duplicate monologues, so make one query.
-            mashed_query = " ".join(queries)
-            results = await self.clonedb.query_monologues(
-                query=mashed_query,
-                params=VectorSearchParams(max_items=25, max_tokens=512),
-            )
-            monologues = [
-                Monologue(
-                    id=m.model.id,
-                    content=m.model.content,
-                    source=m.model.source,
-                    hash=m.model.hash,
-                )
-                for m in results
-            ]
+            # mashed_query = " ".join(queries)
+            # results = await self.clonedb.query_monologues(
+            #     query=mashed_query,
+            #     params=VectorSearchParams(max_items=25, max_tokens=512),
+            # )
+            # monologues = [
+            #     Monologue(
+            #         id=m.model.id,
+            #         content=m.model.content,
+            #         source=m.model.source,
+            #         hash=m.model.hash,
+            #     )
+            #     for m in results
+            # ]
 
             retrieved_nodes: list[models.Node] = []
             max_fact_tokens = get_num_fact_tokens(extra_space=True) + 50
@@ -744,23 +744,25 @@ class Controller:
             # TODO (Jonny): trying to avoid a ~500 token request by eliminating the
             # monologue query. We are always running for the thrill of it.
             # we have to duplicate this here, since we are not running message query generation!
-            monologues = [
-                Monologue(
-                    id=m.model.id,
-                    content=m.model.content,
-                    source=m.model.source,
-                    hash=m.model.hash,
-                )
-                for m in (await self.clonedb.get_monologues(num_tokens=512))
-            ]
+            # monologues = [
+            #     Monologue(
+            #         id=m.model.id,
+            #         content=m.model.content,
+            #         source=m.model.source,
+            #         hash=m.model.hash,
+            #     )
+            #     for m in (await self.clonedb.get_monologues(num_tokens=512))
+            # ]
             facts = None
 
         cur_prompt = templates.ZeroMemoryMessage.render(
             char=self.clone.name,
-            user_name=self.user_name,
+            user=self.user_name,
             short_description=self.clone.short_description,
             long_description=self.clone.long_description,
-            monologues=monologues,
+            example_dialogues=self.clone.fixed_dialogues,
+            scenario=self.clone.scenario,
+            sys_prompt_header=self.clone.sys_prompt_header,
             facts=facts,
             llm=self.llm,
             messages=[],
@@ -785,18 +787,20 @@ class Controller:
 
         # TODO (Jonny): it's possible that this thing spans multiple lines
         # so we need to return multiple messages
-        new_msg_content = await generate.generate_zero_memory_message(
+        content = await generate.generate_zero_memory_message(
             char=self.clone.name,
             user_name=self.user_name,
             short_description=self.clone.short_description,
             long_description=self.clone.long_description,
-            monologues=monologues,
+            example_dialogues=self.clone.fixed_dialogues,
             messages=messages,
+            scenario=self.clone.scenario,
+            sys_prompt_header=self.clone.sys_prompt_header,
             facts=facts,
             llm=self.llm,
             # TODO (Jonny): Figure out the use_timestamps logic here
         )
-        content = remove_timestamps_from_msg(new_msg_content)
+        # content = remove_timestamps_from_msg(new_msg_content)
         new_msg_struct = Message(
             content=content,
             sender_name=self.clone.name,

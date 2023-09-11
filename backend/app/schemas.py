@@ -28,9 +28,9 @@ def special_char_validator(v: str | None, info: ValidationInfo) -> str | None:
 
 
 # NOTE (Jonny): I forgot that this one is important, we don't want to allow users to
-# do like llm-injection
+# do like llm-injection, so just nuke the special characters altogether
 def sanitize_text(text: str):
-    return re.sub(r"\<\|.*?\|\>", "", text)
+    return re.sub(r"<\||\|>", "", text)
 
 
 def text_sanitation_validator(v: str | None, info: ValidationInfo) -> str | None:
@@ -153,6 +153,13 @@ class CloneCreate(BaseModel):
     greeting_message: Annotated[
         str | None, AfterValidator(special_char_validator)
     ] = None
+    fixed_dialogues: Annotated[
+        str | None, AfterValidator(text_sanitation_validator)
+    ] = None
+    scenario: Annotated[str | None, AfterValidator(text_sanitation_validator)] = None
+    sys_prompt_header: Annotated[
+        str | None, AfterValidator(text_sanitation_validator)
+    ] = None
     avatar_uri: str | None = None
     is_active: bool = True
     is_public: bool = False
@@ -174,6 +181,13 @@ class CloneUpdate(BaseModel):
     greeting_message: Annotated[
         str | None, AfterValidator(special_char_validator)
     ] = None
+    fixed_dialogues: Annotated[
+        str | None, AfterValidator(text_sanitation_validator)
+    ] = None
+    scenario: Annotated[str | None, AfterValidator(text_sanitation_validator)] = None
+    sys_prompt_header: Annotated[
+        str | None, AfterValidator(text_sanitation_validator)
+    ] = None
     avatar_uri: str | None = None
     is_active: bool | None = None
     is_public: bool | None = None
@@ -187,22 +201,19 @@ class CloneUpdate(BaseModel):
 class Clone(CommonMixin):
     model_config = ConfigDict(from_attributes=True)
 
-    name: Annotated[str, AfterValidator(special_char_validator)] = Field(min_length=2)
-    short_description: Annotated[str, AfterValidator(special_char_validator)] = Field(
-        min_length=3
-    )
-    long_description: Annotated[
-        str | None, AfterValidator(text_sanitation_validator)
-    ] = Field(default=None, min_length=32)
-    greeting_message: Annotated[
-        str | None, AfterValidator(special_char_validator)
-    ] = None
-    avatar_uri: str | None = None
-    is_active: bool = True
-    is_public: bool = False
-    is_short_description_public: bool = True
-    is_long_description_public: bool = False
-    is_greeting_message_public: bool = True
+    name: str
+    short_description: str
+    long_description: str | None
+    greeting_message: str | None
+    fixed_dialogues: str | None
+    scenario: str | None
+    sys_prompt_header: str | None
+    avatar_uri: str | None
+    is_active: bool
+    is_public: bool
+    is_short_description_public: bool
+    is_long_description_public: bool
+    is_greeting_message_public: bool
     creator_id: uuid.UUID
     num_messages: int
     num_conversations: int

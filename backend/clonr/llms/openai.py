@@ -1,5 +1,4 @@
 import asyncio
-import re
 import textwrap
 import time
 import uuid
@@ -21,8 +20,8 @@ from tenacity import (
 )
 
 from app.settings import settings
-from clonr.tokenizer import Tokenizer
 from clonr._grammar import parse_prompt
+from clonr.tokenizer import Tokenizer
 
 from .base import LLM
 from .callbacks import LLMCallback
@@ -36,7 +35,6 @@ from .schemas import (
     OpenAIModelEnum,
     OpenAIResponse,
     OpenAIStreamResponse,
-    RoleEnum,
 )
 
 meter = metrics.get_meter(settings.BACKEND_APP_NAME)
