@@ -22,6 +22,7 @@ import { ColorRing } from 'react-loader-spinner'
 import { useClonesPagination } from '@/hooks/useClonesPagination'
 import ScaleFadeIn from '../Transitions/ScaleFadeIn'
 import AuthModal from '../AuthModal'
+import { useClosePrelineModal } from '@/hooks/useClosePrelineModal'
 
 export default function BrowsePage() {
 
@@ -111,6 +112,8 @@ export default function BrowsePage() {
         require('preline')
     }, [])
 
+    useClosePrelineModal()
+
     return (
         <div className=''>
             <AlertBar />
@@ -149,7 +152,7 @@ export default function BrowsePage() {
                                         <TagComponent
                                             name={tag.name}
                                             onClick={(tagName) => {
-                                                if (tagName===activeTag?.name) {
+                                                if (tagName === activeTag?.name) {
                                                     setActiveTag(null);
                                                 } else {
                                                     setActiveTag(tag);
@@ -170,7 +173,7 @@ export default function BrowsePage() {
                             style={{
                                 height: "calc(100vh - 50px - 75px - 80px)"
                             }}>
-                                &nbsp;
+                            &nbsp;
                             {/* <ColorRing
                                 visible={true}
                                 height="80"

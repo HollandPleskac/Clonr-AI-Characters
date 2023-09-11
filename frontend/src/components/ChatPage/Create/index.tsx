@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import useConversations from '@/hooks/useConversations'
 import { useRouter } from 'next/navigation'
@@ -12,9 +12,12 @@ import { InformationStrategy } from '@/client/models/InformationStrategy'
 import { useQueryClonesById } from '@/hooks/useClones'
 import { ColorRing } from 'react-loader-spinner'
 import Dropdown from './DropdownCreate'
-import { AdaptationStrategy } from '@/client'
+import { AdaptationStrategy, ConversationCreate, ConversationsService } from '@/client'
 import { useSidebarClonesPagination } from '@/hooks/useSidebarClonesPagination'
 import { useAuth } from '@/hooks/useAuth'
+import FreeMessageLimitModal from '@/components/FreeMessageLimitModal'
+import Router from 'next/router';
+import { useClosePrelineModal } from '@/hooks/useClosePrelineModal'
 
 type CreateProps = {
     characterId: string
@@ -43,8 +46,9 @@ const Create = ({ characterId }: CreateProps) => {
         isLoading: isLoadingSidebarClone,
     } = useSidebarClonesPagination({ cloneId: characterId, limit: 1 })
 
+    useClosePrelineModal()
 
-    const { createConversation } = useConversations();
+
 
     async function createCharacterConversation(
         characterId: string,
@@ -52,25 +56,44 @@ const Create = ({ characterId }: CreateProps) => {
         informationStrategy: string = 'INTERNAL',
         adaptationStrategy: string = 'ZERO',
     ) {
-        const conversationData = {
-            name: 'Test Conversation',
-            user_name: 'Test User',
-            memory_strategy: MemoryStrategy[memoryStrategy],
-            information_strategy: InformationStrategy[informationStrategy],
-            adaptation_strategy: AdaptationStrategy[adaptationStrategy],
-            clone_id: characterId,
+
+        try {
+            const requestBody: ConversationCreate = {
+                name: 'Test Conversation',
+                user_name: 'Test User',
+                memory_strategy: MemoryStrategy[memoryStrategy],
+                information_strategy: InformationStrategy[informationStrategy],
+                adaptation_strategy: AdaptationStrategy[adaptationStrategy],
+                clone_id: characterId,
+            }
+
+            // fixme (holland): should be requestBody not null
+            const conversation = await ConversationsService.createConversationConversationsPost(
+                requestBody
+            );
+
+            const new_url = `http://localhost:3000/clones/${characterId}/conversations/${conversation.id}`
+            console.log("NEW URL -> ", new_url)
+            router.push(new_url)
+        } catch (e) {
+            const modalElement = document.querySelector("#hs-slide-down-animation-modal");
+            if (window.HSOverlay && typeof window.HSOverlay.close === 'function' && modalElement) {
+                window.HSOverlay.open(modalElement);
+            }
         }
-        console.log("conv data", conversationData)
-        const conversationId = await createConversation(conversationData)
-        return conversationId
+
     }
 
     useEffect(() => {
         require('preline')
     }, [])
 
+
+
     return (
-        <div className='w-[100%] border-r-[2px] border-[#252525] bg-[#121212] lg:inline'>
+        <div
+            className='w-[100%] border-r-[2px] border-[#252525] bg-[#121212] lg:inline'
+        >
             {isLoading && (
                 <div className='h-screen w-full grid place-items-center' >
                     <ColorRing
@@ -151,9 +174,6 @@ const Create = ({ characterId }: CreateProps) => {
                             <button
                                 onClick={async () => {
                                     const conversationId = await createCharacterConversation(characterId, 'ZERO')
-                                    const new_url = `http://localhost:3000/clones/${characterId}/conversations/${conversationId}`
-                                    console.log("NEW URL -> ", new_url)
-                                    router.push(new_url)
                                 }}
                                 className='flex items-center justify-between w-full py-2 px-4 inline-flex bg-purple-500 rounded-lg hover:bg-purple-600 text-white'
                             >
@@ -163,8 +183,6 @@ const Create = ({ characterId }: CreateProps) => {
                             <button
                                 onClick={async () => {
                                     const conversationId = await createCharacterConversation(characterId, 'LONG_TERM')
-                                    const new_url = `http://localhost:3000/clones/${characterId}/conversations/${conversationId}`
-                                    router.push(new_url)
                                 }}
                                 className='mt-2 flex items-center justify-between w-full py-2 px-4 inline-flex bg-purple-500 rounded-lg hover:bg-purple-600 text-white'
                             >
@@ -217,6 +235,7 @@ const Create = ({ characterId }: CreateProps) => {
                     </div>
                 </div>
             )}
+            <FreeMessageLimitModal />
         </div>
     )
 }

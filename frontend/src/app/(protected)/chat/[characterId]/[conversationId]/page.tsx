@@ -22,8 +22,6 @@ export default function ChatPage({
     require('preline')
   }, [])
 
-  
-
   return (
     <div
       className='bg-gray-900 w-full flex justify-center items-center overflow-hidden'

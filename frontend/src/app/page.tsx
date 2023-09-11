@@ -1,3 +1,4 @@
+
 import HomePage from '@/components/HomePage'
 import Footer from '@/components/Footer'
 export default async function Home() {

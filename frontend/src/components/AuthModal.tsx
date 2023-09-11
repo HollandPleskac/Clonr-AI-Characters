@@ -12,6 +12,7 @@ export default function AuthModal() {
         <div className='flex flex-col '>
           <div className='relative'>
             <LoginModal />
+            
           </div>
         </div>
       </div>

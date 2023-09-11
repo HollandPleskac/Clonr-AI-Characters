@@ -19,8 +19,10 @@ import { useSession } from "next-auth/react"
 import { Message } from '@/types'
 import axios from 'axios'
 import { useSidebarClonesPagination } from '@/hooks/useSidebarClonesPagination'
-import { ConversationsService } from '@/client'
+import { ConversationsService, MessageCreate, MessageGenerate } from '@/client'
 import { useRevisions } from '@/hooks/useRevisions'
+import { useClosePrelineModal } from '@/hooks/useClosePrelineModal'
+import FreeMessageLimitModal from '@/components/FreeMessageLimitModal'
 
 interface ChatScreenProps {
   characterId: string
@@ -39,11 +41,9 @@ export default function ChatScreen({
   const [isFetchingServerMessage, setIsFetchingServerMessage] = useState(false)
   const [scrollToNewMessage, setScrollToNewMessage] = useState<boolean>(false)
 
-  const router = useRouter();
-
   const [removeMode, setRemoveMode] = useState(false)
 
-  const { data: character, error, isLoading: isLoadingCharacter } = useQueryClonesById({
+  const { data: character, isLoading: isLoadingCharacter } = useQueryClonesById({
     cloneId: characterId
   });
 
@@ -56,7 +56,7 @@ export default function ChatScreen({
   const divRef = useRef<HTMLDivElement | null>(null)
 
   // handle messages state
-  const { createMessage, generateCloneMessage } = useConversations();
+  const { createMessage } = useConversations();
 
   const queryParamsMessages = {
     conversationId: conversationId,
@@ -80,42 +80,79 @@ export default function ChatScreen({
     }
   }, [messages, scrollToNewMessage])
 
-  const sendMessage = async () => {
-    setScrollToNewMessage(true)
+  class HttpError extends Error {
+    statusCode: number;
 
-    let sentMsg = await createMessage(conversationId, message);
-
-    const newMessage = {
-      id: window.Date.now().toString(),
-      content: message,
-      created_at: new window.Date().toString(),
-      updated_at: new window.Date().toString(),
-      sender_name: 'Test User',
-      timestamp: new window.Date().toString(),
-      is_clone: false,
-      is_main: true,
-      is_active: true,
-      parent_id: '',
-      clone_id: '',
-      user_id: '',
-      conversation_id: conversationId
+    constructor(message: string, statusCode: number) {
+      super(message);
+      this.statusCode = statusCode;
     }
-
-    let updatedMessages = [newMessage, ...messages]
-    mutateMessages(updatedMessages);
-
-    const message_copy = message
-    setMessage('')
-    await fetchMessageFromServer(message_copy)
   }
+
+  useClosePrelineModal()
+
+  const sendMessage = async () => {
+
+    try {
+
+      // let sentMsg = await createMessage(conversationId, message);
+      const requestBody: MessageCreate = {
+        content: message
+      }
+      // Fixme (holland): change this back to conversation id
+      const serverMessage = await ConversationsService.receiveMessageConversationsConversationIdMessagesPost(
+        conversationId, requestBody
+      )
+
+      const newMessage = {
+        id: window.Date.now().toString(),
+        content: message,
+        created_at: new window.Date().toString(),
+        updated_at: new window.Date().toString(),
+        sender_name: 'Test User',
+        timestamp: new window.Date().toString(),
+        is_clone: false,
+        is_main: true,
+        is_active: true,
+        parent_id: '',
+        clone_id: '',
+        user_id: '',
+        conversation_id: conversationId
+      }
+
+      let updatedMessages = [newMessage, ...messages]
+      mutateMessages(updatedMessages);
+
+      setScrollToNewMessage(true)
+
+      const message_copy = message
+      setMessage('')
+      await fetchMessageFromServer(message_copy)
+    } catch (e) {
+      const modalElement = document.querySelector("#hs-slide-down-animation-modal");
+      if (window.HSOverlay && typeof window.HSOverlay.close === 'function' && modalElement) {
+        window.HSOverlay.open(modalElement);
+      }
+    }
+  }
+
+  // const { generateCloneMessage } = useConversations();
+
 
   const fetchMessageFromServer = async (in_msg: String) => {
     setIsFetchingServerMessage(true)
 
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    // await new Promise((resolve) => setTimeout(resolve, 1000))
 
     try {
-      let serverMessage = await generateCloneMessage(conversationId);
+      const requestBody: MessageGenerate = {
+        is_revision: false
+      }
+      const serverMessage = await ConversationsService.generateCloneMessageConversationsConversationIdGeneratePost(
+        conversationId, requestBody
+      )
+
+      // let serverMessage = await generateCloneMessage(conversationId);
 
       // update frontend
       if (serverMessage) {
@@ -199,7 +236,7 @@ export default function ChatScreen({
   }
 
   // get revisions
-  const { data:revisions, isLoading: isLoadingRevisions, mutate: mutateRevisions } = useRevisions({
+  const { data: revisions, isLoading: isLoadingRevisions, mutate: mutateRevisions } = useRevisions({
     conversationId: conversationId
   });
 
@@ -365,7 +402,7 @@ export default function ChatScreen({
           </div>
         </>
       )}
-
+      <FreeMessageLimitModal />
     </div>
   )
 }

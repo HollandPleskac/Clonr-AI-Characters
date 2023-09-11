@@ -19,6 +19,7 @@ import { useQueryConversationsContinue } from '@/hooks/useConversations'
 import { useClonesPagination } from '@/hooks/useClonesPagination'
 import { useCarouselSlidesPerView } from '@/hooks/useCarouselSlidesPerView'
 import AuthModal from '../AuthModal'
+import { useClosePrelineModal } from '@/hooks/useClosePrelineModal'
 
 export default function HomeScreen() {
   const [searchInput, setSearchInput] = useState('')
@@ -29,6 +30,10 @@ export default function HomeScreen() {
   useEffect(() => {
     require('preline')
   }, [])
+
+  useClosePrelineModal()
+
+
 
   // fetch chars
   const topQueryParams = {

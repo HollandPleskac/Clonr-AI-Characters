@@ -7,6 +7,7 @@ import { stringify } from 'querystring'
 import { ColorRing } from 'react-loader-spinner'
 import ConversationsTopBar from './ConversationsTopbar'
 import { useQueryClonesById } from '@/hooks/useClones'
+import { useClosePrelineModal } from '@/hooks/useClosePrelineModal'
 
 interface ConversationsProps {
   characterId: string
@@ -26,6 +27,8 @@ const Conversations = ({ characterId }: ConversationsProps) => {
     size: conversationsSize,
     setSize: setConversationsSize,
   } = useConversationsPagination(conversationsQueryParams)
+
+  useClosePrelineModal()
 
 
   return (

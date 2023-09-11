@@ -1,13 +1,16 @@
 'use client'
 
-import axios from "axios"
 import Script from "next/script"
-import { useEffect } from "react"
 import useSWR from "swr"
 import { StripeService } from "@/client"
+import { useEffect } from "react"
+import { useClosePrelineModal } from "@/hooks/useClosePrelineModal"
 
 const NextStripePricingTable = () => {
+  
   const { data: tokenData, isLoading, error } = useSWR('fetchToken', StripeService.createCheckoutTokenStripeCheckoutTokenGet);
+
+  useClosePrelineModal()
 
   // Todo: redirect or error page with error page if cannot get tokenData.token
   return (

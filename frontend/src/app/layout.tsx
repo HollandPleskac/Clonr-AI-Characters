@@ -6,6 +6,8 @@ import type { Metadata } from 'next'
 import NextAuthProvider from '@/auth/Providers'
 
 import { Open_Sans } from 'next/font/google'
+import { useEffect } from 'react'
+import RootLayoutWrapper from './RootLayoutWrapper'
 
 //👇 Configure our font object
 const openSans = Open_Sans({

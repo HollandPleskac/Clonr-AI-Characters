@@ -1,8 +1,6 @@
 'use client'
 import { useSession } from "next-auth/react"
 import { redirect, useParams } from "next/navigation"
-import CharactersSidebar from '@/components/ChatPage/Characters/Sidebar'
-import { useSearchParams } from 'next/navigation';
 
 export default function Layout({
     children,

@@ -10,13 +10,10 @@ import 'swiper/css/pagination'
 import 'swiper/css/scrollbar'
 
 import NetflixCard from './NetflixCard'
-import { Character } from '@/types'
-import Image from 'next/image'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import { CloneSearchResult } from '@/client/models/CloneSearchResult'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import AuthModal from '../AuthModal'
 import { useCarouselSlidesPerView } from '@/hooks/useCarouselSlidesPerView'
 
 type CustomCloneSearchResult = CloneSearchResult & {

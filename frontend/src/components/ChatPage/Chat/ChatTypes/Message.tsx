@@ -10,6 +10,7 @@ import { ThreeDots } from 'react-loader-spinner'
 import { useSession } from 'next-auth/react'
 import { ConversationsService, MessageGenerate } from '@/client'
 import { useRevisions } from '@/hooks/useRevisions'
+import FreeMessageLimitModal from '@/components/FreeMessageLimitModal'
 
 interface MessageProps {
   conversationId: string
@@ -49,21 +50,21 @@ const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, m
     // Get the current date and reset time to the start of today (midnight)
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
-  
+
     // Get the start of yesterday by subtracting 24 hours from the start of today
     const yesterdayStart = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000);
-  
+
     return date >= yesterdayStart && date < todayStart;
   }
 
   function isAnyDayBeforeYesterday(date: Date): boolean {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
-  
+
     const yesterdayStart = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000);
-  
+
     return date < yesterdayStart;
-  } 
+  }
 
   function formatTime(date: Date): string {
     const now = new Date();
@@ -92,11 +93,13 @@ const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, m
   async function generateNewMessage() {
 
     setIsFetchingRegenMessage(true)
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    // await new Promise((resolve) => setTimeout(resolve, 500))
 
     const requestBody: MessageGenerate = {
       is_revision: true
     }
+
+    // fixme (holland): this should be conversationId not null
     const newMessage = await ConversationsService.generateCloneMessageConversationsConversationIdGeneratePost(
       conversationId, requestBody
     )
@@ -127,9 +130,18 @@ const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, m
   }
 
   async function handleRefresh() {
-    setPressedRefreshIcon(true)
-    await generateNewMessage()
-    setPressedRefreshIcon(false)
+    try {
+      setPressedRefreshIcon(true)
+      await generateNewMessage()
+      setPressedRefreshIcon(false)
+    } catch (e) {
+      const modalElement = document.querySelector("#hs-slide-down-animation-modal");
+      if (window.HSOverlay && typeof window.HSOverlay.close === 'function' && modalElement) {
+        window.HSOverlay.open(modalElement);
+      }
+      setPressedRefreshIcon(false)
+      setIsFetchingRegenMessage(false)
+    }
   }
 
   const messageContent = (isLast && revisions.length !== 0) ? revisions[currentIndex].content : message.content
@@ -202,6 +214,7 @@ const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, m
         </span>
 
       </div>
+      <FreeMessageLimitModal/>
     </div>
 
   )
