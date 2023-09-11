@@ -16,6 +16,7 @@ interface MessageProps {
   message: Message
   revisions: Message[]
   mutateRevisions: () => {}
+  mutateSidebar: () => void
   character: Character
   clone_avatar_uri: string
   isLast: boolean
@@ -24,7 +25,7 @@ interface MessageProps {
   handleRemoveMessage: (id: string) => void
 }
 
-const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, mutateRevisions, clone_avatar_uri, isLast, isRemoveMode, isRemoveMessage, handleRemoveMessage }) => {
+const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, mutateRevisions, mutateSidebar, clone_avatar_uri, isLast, isRemoveMode, isRemoveMessage, handleRemoveMessage }) => {
   const { data: session } = useSession()
 
   const [isFetchingRegenMessage, setIsFetchingRegenMessage] = useState(false)
@@ -100,6 +101,7 @@ const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, m
       conversationId, requestBody
     )
     mutateRevisions()
+    // mutateSidebar()
 
     setIsFetchingRegenMessage(false)
   }
@@ -110,6 +112,7 @@ const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, m
         revisions[currentIndex - 1].id, conversationId
       )
       mutateRevisions()
+      // mutateSidebar()
     }
   }
 
@@ -119,6 +122,7 @@ const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, m
         revisions[currentIndex + 1].id, conversationId
       )
       mutateRevisions()
+      // mutateSidebar()
     }
   }
 

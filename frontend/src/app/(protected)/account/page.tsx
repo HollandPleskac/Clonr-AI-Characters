@@ -18,6 +18,6 @@ export default function AccountPage() {
         return redirect("/login")
     }
 
-    return <Account/>
+    return <Account />
 }
 

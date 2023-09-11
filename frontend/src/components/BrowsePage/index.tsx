@@ -26,14 +26,15 @@ import AuthModal from '../AuthModal'
 export default function BrowsePage() {
 
     const [searchInput, setSearchInput] = useState('')
+    const [searchParam, setSearchParam] = useState('')
     const [showSearchGrid, setShowSearchGrid] = useState(false)
     const duration = 500
 
-    const [activeTag, setActiveTag] = useState<Tag | null>()
+    const [activeTag, setActiveTag] = useState<Tag | null>(null)
     const [activeSort, setActiveSort] = useState<string>("Trending")
 
     // tags state
-    const { data: tags, error: tagsError, isLoading: isLoadingTags } = useQueryTags();
+    const { data: tags, isLoading: isLoadingTags } = useQueryTags();
 
     // character grid state
     const queryParams = {
@@ -50,20 +51,26 @@ export default function BrowsePage() {
         setSize
     } = useClonesPagination(queryParams)
 
+    // search delay
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearchParam(searchInput)
+        }, duration)
+        return () => clearTimeout(timer)
+    }, [searchInput])
+
     // search grid state
     const queryParamsSearch = {
-        name: searchInput,
+        // name: searchParam,
         sort: CloneSortType["TOP"],
-        similar: searchInput,
+        similar: searchParam,
         limit: 30
     }
 
     const {
         paginatedData: searchedCharacters,
         isLastPage: isLastSearchedCharactersPage,
-        isLoading: isLoadingSearchedCharacters,
-        size: searchedCharactersSize,
-        setSize: setSearchedCharactersSize
+        isLoading: isLoadingSearchedCharacters
     } = useClonesPagination(queryParamsSearch)
 
     useEffect(() => {
@@ -142,10 +149,10 @@ export default function BrowsePage() {
                                         <TagComponent
                                             name={tag.name}
                                             onClick={(tagName) => {
-                                                if (tagName) {
-                                                    setActiveTag(tag);
-                                                } else {
+                                                if (tagName===activeTag?.name) {
                                                     setActiveTag(null);
+                                                } else {
+                                                    setActiveTag(tag);
                                                 }
                                             }}
                                             active={tag.id === activeTag?.id}
@@ -163,7 +170,8 @@ export default function BrowsePage() {
                             style={{
                                 height: "calc(100vh - 50px - 75px - 80px)"
                             }}>
-                            <ColorRing
+                                &nbsp;
+                            {/* <ColorRing
                                 visible={true}
                                 height="80"
                                 width="80"
@@ -171,7 +179,7 @@ export default function BrowsePage() {
                                 wrapperStyle={{}}
                                 wrapperClass="blocks-wrapper"
                                 colors={['#9333ea', '#9333ea', '#9333ea', '#9333ea', '#9333ea']}
-                            />
+                            /> */}
                         </div>
                     )}
 
