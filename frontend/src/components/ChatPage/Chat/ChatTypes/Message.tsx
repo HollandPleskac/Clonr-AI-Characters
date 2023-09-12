@@ -10,7 +10,7 @@ import { ThreeDots } from 'react-loader-spinner'
 import { useSession } from 'next-auth/react'
 import { ConversationsService, MessageGenerate } from '@/client'
 import { useRevisions } from '@/hooks/useRevisions'
-import FreeMessageLimitModal from '@/components/FreeMessageLimitModal'
+import FreeMessageLimitModal from '@/components/Modal/FreeMessageLimitModal'
 
 interface MessageProps {
   conversationId: string
@@ -135,7 +135,7 @@ const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, m
       await generateNewMessage()
       setPressedRefreshIcon(false)
     } catch (e) {
-      const modalElement = document.querySelector("#hs-slide-down-animation-modal");
+      const modalElement = document.querySelector("#hs-slide-down-animation-modal-free-message-limit");
       if (window.HSOverlay && typeof window.HSOverlay.close === 'function' && modalElement) {
         window.HSOverlay.open(modalElement);
       }

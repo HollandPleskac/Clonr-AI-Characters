@@ -18,8 +18,10 @@ import { CloneSortType } from '@/client/models/CloneSortType'
 import { useQueryConversationsContinue } from '@/hooks/useConversations'
 import { useClonesPagination } from '@/hooks/useClonesPagination'
 import { useCarouselSlidesPerView } from '@/hooks/useCarouselSlidesPerView'
-import AuthModal from '../AuthModal'
+import AuthModal from '../Modal/AuthModal'
 import { useClosePrelineModal } from '@/hooks/useClosePrelineModal'
+import RequestCloneModal from '@/components/Modal/RequestCloneModal'
+import CreatorProgramModal from '../Modal/CreatorProgramModal'
 
 export default function HomeScreen() {
   const [searchInput, setSearchInput] = useState('')
@@ -169,6 +171,8 @@ export default function HomeScreen() {
         </ScaleFadeIn>
       )}
       <AuthModal />
+      <RequestCloneModal />
+      <CreatorProgramModal/>
     </div>
   )
 }

@@ -147,7 +147,7 @@ export default function TopBarStatic() {
                 {(status !== "loading" && session) && (
                   <Link
                     href='/clones'
-                    className={`transition duration-200 ${pathname === '/pricing'
+                    className={`transition duration-200 ${pathname === '/clones'
                       ? 'text-white font-semibold'
                       : 'text-[#e5e5e5] hover:text-[#979797]'
                       } translate-y-[6px]`}

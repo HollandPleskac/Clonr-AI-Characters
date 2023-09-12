@@ -15,6 +15,8 @@ import { CloneSearchResult } from '@/client/models/CloneSearchResult'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useCarouselSlidesPerView } from '@/hooks/useCarouselSlidesPerView'
+import RequestCloneModal from '../Modal/RequestCloneModal'
+import FreeMessageLimitModal from '../Modal/FreeMessageLimitModal'
 
 type CustomCloneSearchResult = CloneSearchResult & {
   conversation_id?: string;
@@ -71,33 +73,88 @@ export default function CharacterGrid({
 
   }
 
-  if (!characters) {
-    return (
-      <div>
-        
-      </div>
-    )
-  }
-
   return (
     <div className=''>
-      {loading && (
+      {(loading || isLoadingSlidesPerView) && (
+        <div
+          className='text-white grid place-items-center text-white'
+          style={{ minHeight: 'calc(100vh - 72px - 48px)' }}
+        >
+          <p className='' >&nbsp;</p>
+        </div>
+      )}
+      {/* <div
+        className='text-white grid place-items-center'
+        style={{ minHeight: 'calc(100vh - 72px - 48px)' }}
+      >
+        <div className='flex flex-col items-center justify-center' >
+          <h1 className='text-4xl mb-8'> <span className='font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-700 '>No results found</span></h1>
+
+          <div className='w-[50%] flex items-center h-[150px]' >
+            <p
+              onClick={
+                () => {
+                  const modalElement = document.querySelector('#hs-slide-down-animation-modal-request');
+                  if (window.HSOverlay && typeof window.HSOverlay.close === 'function' && modalElement) {
+                    window.HSOverlay.open(modalElement);
+                  }
+                }
+              }
+              className='text-center text-lg cursor-pointer'
+            >Couldn’t find what your looking for, submit a <span className='text-blue-400 hover:cursor-pointer'>request</span> to us </p>
+            <div className='w-px bg-gray-400 h-full mx-4' >&nbsp;</div>
+            <p
+              onClick={
+                () => {
+                  const modalElement = document.querySelector('#hs-slide-down-animation-modal-creator-program');
+                  if (window.HSOverlay && typeof window.HSOverlay.close === 'function' && modalElement) {
+                    window.HSOverlay.open(modalElement);
+                  }
+                }
+              }
+              className='text-center text-lg cursor-pointer' >Don’t want to wait, <span className='text-blue-400 hover:cursor-pointer'>join</span> the creator partner program</p>
+
+          </div>
+        </div>
+      </div> */}
+      {((!loading && !isLoadingSlidesPerView) && characters.length === 0) && (
         <div
           className='text-white grid place-items-center'
           style={{ minHeight: 'calc(100vh - 72px - 48px)' }}
         >
-          <p></p>
+          {/* <p>Your search did not return any matches.</p> */}
+          <div className='flex flex-col items-center justify-center' >
+            <h1 className='text-4xl mb-8'> <span className='font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-700 '>No results found</span></h1>
+
+            <div className='w-[50%] flex items-center h-[150px]' >
+              <p
+                onClick={
+                  () => {
+                    const modalElement = document.querySelector('#hs-slide-down-animation-modal-request');
+                    if (window.HSOverlay && typeof window.HSOverlay.close === 'function' && modalElement) {
+                      window.HSOverlay.open(modalElement);
+                    }
+                  }
+                }
+                className='text-center text-lg cursor-pointer'
+              >Couldn’t find what your looking for, submit a <span className='text-blue-400 hover:cursor-pointer'>request</span> to us </p>
+              <div className='w-px bg-gray-400 h-full mx-4' >&nbsp;</div>
+              <p
+                onClick={
+                  () => {
+                    const modalElement = document.querySelector('#hs-slide-down-animation-modal-creator-program');
+                    if (window.HSOverlay && typeof window.HSOverlay.close === 'function' && modalElement) {
+                      window.HSOverlay.open(modalElement);
+                    }
+                  }
+                }
+                className='text-center text-lg cursor-pointer' >Don’t want to wait, <span className='text-blue-400 hover:cursor-pointer'>join</span> the creator partner program</p>
+
+            </div>
+          </div>
         </div>
       )}
-      {!loading && characters.length === 0 && (
-        <div
-          className='text-white grid place-items-center'
-          style={{ minHeight: 'calc(100vh - 72px - 48px)' }}
-        >
-          <p>Your search did not return any matches.</p>
-        </div>
-      )}
-      {(!loading && !isLoadingSlidesPerView) && characters.length > 0 && (
+      {((!loading && !isLoadingSlidesPerView) && characters.length > 0) && (
         <InfiniteScroll
           dataLength={characters?.length ?? 0}
           next={fetchMoreData}
@@ -120,6 +177,7 @@ export default function CharacterGrid({
           })}
         </InfiniteScroll>
       )}
+
     </div>
   )
 }

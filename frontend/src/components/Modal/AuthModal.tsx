@@ -1,5 +1,5 @@
 'use client'
-import LoginModal from './Auth/Login'
+import LoginModal from '../Auth/Login'
 
 
 export default function AuthModal() {

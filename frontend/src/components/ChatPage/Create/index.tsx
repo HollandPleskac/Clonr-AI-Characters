@@ -15,7 +15,7 @@ import Dropdown from './DropdownCreate'
 import { AdaptationStrategy, ConversationCreate, ConversationsService } from '@/client'
 import { useSidebarClonesPagination } from '@/hooks/useSidebarClonesPagination'
 import { useAuth } from '@/hooks/useAuth'
-import FreeMessageLimitModal from '@/components/FreeMessageLimitModal'
+import FreeMessageLimitModal from '@/components/Modal/FreeMessageLimitModal'
 import Router from 'next/router';
 import { useClosePrelineModal } from '@/hooks/useClosePrelineModal'
 
@@ -76,7 +76,7 @@ const Create = ({ characterId }: CreateProps) => {
             console.log("NEW URL -> ", new_url)
             router.push(new_url)
         } catch (e) {
-            const modalElement = document.querySelector("#hs-slide-down-animation-modal");
+            const modalElement = document.querySelector("#hs-slide-down-animation-modal-free-message-limit");
             if (window.HSOverlay && typeof window.HSOverlay.close === 'function' && modalElement) {
                 window.HSOverlay.open(modalElement);
             }

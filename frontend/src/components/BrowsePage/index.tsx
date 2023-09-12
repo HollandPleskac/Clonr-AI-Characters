@@ -21,8 +21,10 @@ import { Navigation, Pagination, Scrollbar } from 'swiper/modules'
 import { ColorRing } from 'react-loader-spinner'
 import { useClonesPagination } from '@/hooks/useClonesPagination'
 import ScaleFadeIn from '../Transitions/ScaleFadeIn'
-import AuthModal from '../AuthModal'
+import AuthModal from '../Modal/AuthModal'
 import { useClosePrelineModal } from '@/hooks/useClosePrelineModal'
+import RequestCloneModal from '../Modal/RequestCloneModal'
+import CreatorProgramModal from '../Modal/CreatorProgramModal'
 
 export default function BrowsePage() {
 
@@ -118,6 +120,8 @@ export default function BrowsePage() {
         <div className=''>
             <AlertBar />
             <AuthModal />
+            <RequestCloneModal />
+            <CreatorProgramModal />
             <TopBar
                 searchInput={searchInput}
                 onSearchInput={(x) => setSearchInput(x)}

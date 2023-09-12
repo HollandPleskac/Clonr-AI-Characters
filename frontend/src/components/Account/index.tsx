@@ -26,6 +26,8 @@ function SubscriptionPortal() {
     require('preline')
   }, [])
 
+  useClosePrelineModal()
+
 
 
   if (isLoading || isUserLoading) {
