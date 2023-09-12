@@ -81,7 +81,6 @@ def get_txt_files_in_directory(directory_path):
         for file in files:
             if file.endswith(".txt"):
                 txt_files.append(os.path.join(root, file))
-    
     return txt_files
 
 # Attempt to get char stories from fandom outputs
@@ -100,15 +99,17 @@ def parse_fandom_outputs_for_char_stories(input_file_path, output_directory):
             section_lines = section.strip().split('\n')
             
             if section_lines:
-                if not any(line.strip().startswith(('*', '-', '1.', '2.', '3.', '4.', '5.')) for line in section_lines[1:]):
+                if (
+                    not any(line.strip().startswith(('*', '-', '1.', '2.', '3.', '4.', '5.', '###', '##', '#')) for line in section_lines[1:])
+                    and any(line.strip() and not line.strip().startswith("#") for line in section_lines[1:])
+                ): 
                     output.write(section)
 
-# Parse through fandom outputs to a cleaned output dir
-def parse_fandom_outputs_dir(dir_path):
-    dir_path = 'scrapers/fandom'
-    txt_files = get_txt_files_in_directory(dir_path)
+# Parse initial fandom outputs from input dir to a cleaned output dir
+def parse_fandom_outputs_dir(input_dir_path, output_dir_path):
+    txt_files = get_txt_files_in_directory(input_dir_path)
     for txt_file in txt_files:
-        parse_fandom_outputs_for_char_stories(txt_file, 'scrapers/fandom_cleaned')
+        parse_fandom_outputs_for_char_stories(txt_file, output_dir_path)
     return 
 
 # Get fandom url from base name
@@ -123,7 +124,6 @@ def get_fandom_url_from_base_name(base_name):
 
 def get_curated_clones():
     total_df = clean_everything()
-    print(total_df.shape)
     
     columns_to_check = ['long_description', 'short_description', 'greeting', 'avatar_uri', 'example_dialogues']
     total_df['missing_or_sparse_fields'] = total_df.apply(checking_missing_and_sparse_values, axis=1, columns_to_check=columns_to_check)
@@ -132,18 +132,17 @@ def get_curated_clones():
     print(clean_df.shape)
     clean_df_sample = clean_df.head(2)
 
-    # get fandom data
+    # get initial fandom outputs
     for idx, row in clean_df_sample.iterrows():
         char_name = row['name']
         char_wiki = row['fandom_wiki']
         print(f"Processing char_name: {char_name}, char_wiki: {char_wiki}")
         parse_fandom(char_name, char_wiki)
 
-    # parse fandom outputs
-    dir_path = 'scrapers/fandom'
-    txt_files = get_txt_files_in_directory(dir_path)
-    for txt_file in txt_files:
-        parse_fandom_outputs_dir('scrapers/fandom_cleaned')
+    # clean fandom outputs
+    input_dir_path = 'scrapers/fandom'
+    output_dir_path = 'scrapers/fandom_cleaned'
+    parse_fandom_outputs_dir(input_dir_path, output_dir_path)
     return 
 
 
