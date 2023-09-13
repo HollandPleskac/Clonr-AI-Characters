@@ -755,17 +755,17 @@ class Controller:
             # ]
             facts = None
 
-        cur_prompt = templates.ZeroMemoryMessage.render(
+        cur_prompt = templates.ZeroMemoryMessageV2.render(
             char=self.clone.name,
             user=self.user_name,
             short_description=self.clone.short_description,
             long_description=self.clone.long_description,
-            example_dialogues=self.clone.fixed_dialogues,
-            scenario=self.clone.scenario,
-            sys_prompt_header=self.clone.sys_prompt_header,
-            facts=facts,
             llm=self.llm,
             messages=[],
+            scenario=self.clone.scenario,
+            example_dialogues=self.clone.fixed_dialogues,
+            sys_prompt_header=self.clone.sys_prompt_header,
+            facts=facts,
         )
         tokens_remaining = self.llm.context_length
         tokens_remaining -= self.llm.num_tokens(cur_prompt)

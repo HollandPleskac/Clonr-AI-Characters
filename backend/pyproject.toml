@@ -44,6 +44,7 @@ python-jose = "^3.3.0"
 safetensors = "0.3.2"
 transformers = "^4.32.0"
 limits = "^3.5.0"
+pyparsing = "^3.1.1"
 
 
 [tool.poetry.group.dev.dependencies]

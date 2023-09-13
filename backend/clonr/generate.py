@@ -726,25 +726,29 @@ async def generate_zero_memory_message(
     short_description: str,
     long_description: str,
     messages: list[Message],
-    monologues: list[Monologue] | None = None,
+    scenario: str | None = None,
+    example_dialogues: list[str] | None = None,
+    sys_prompt_header: str | None = None,
     facts: list[str] | None = None,
     use_timestamps: bool = False,
     **kwargs,
 ) -> str:
     if not llm.is_chat_model:
         raise NotImplementedError("Instruct for message gen not supported yet.")
-    prompt = templates.ZeroMemoryMessage.render(
-        llm=llm,
+    prompt = templates.ZeroMemoryMessageV2.render(
         char=char,
-        user_name=user_name,
+        user=user_name,
         short_description=short_description,
         long_description=long_description,
+        llm=llm,
         messages=messages,
-        monologues=monologues,
+        scenario=scenario,
+        example_dialogues=example_dialogues,
+        sys_prompt_header=sys_prompt_header,
         facts=facts,
-        use_timestamps=use_timestamps,
+        #use_timestamps=use_timestamps,
     )
-    kwargs["template"] = templates.ZeroMemoryMessage.__name__
+    kwargs["template"] = templates.ZeroMemoryMessageV2.__name__
     kwargs["subroutine"] = generate_long_term_memory_message.__name__
     r = await llm.agenerate(
         prompt_or_messages=prompt, params=Params.generate_zero_memory_message, **kwargs
