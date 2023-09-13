@@ -101,7 +101,7 @@ export default function ChatScreen({
       }
       // Fixme (holland): change this back to conversation id
       const serverMessage = await ConversationsService.receiveMessageConversationsConversationIdMessagesPost(
-        null, requestBody
+        conversationId, requestBody
       )
 
       const newMessage = {
@@ -129,9 +129,11 @@ export default function ChatScreen({
       setMessage('')
       await fetchMessageFromServer(message_copy)
     } catch (e) {
-      const modalElement = document.querySelector("#hs-slide-down-animation-modal-free-message-limit");
-      if (window.HSOverlay && typeof window.HSOverlay.close === 'function' && modalElement) {
-        window.HSOverlay.open(modalElement);
+      if (e.status === 402) {
+        const modalElement = document.querySelector("#hs-slide-down-animation-modal-free-message-limit");
+        if (window.HSOverlay && typeof window.HSOverlay.close === 'function' && modalElement) {
+          window.HSOverlay.open(modalElement);
+        }
       }
     }
   }

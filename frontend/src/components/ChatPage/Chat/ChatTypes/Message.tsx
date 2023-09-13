@@ -135,9 +135,11 @@ const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, m
       await generateNewMessage()
       setPressedRefreshIcon(false)
     } catch (e) {
-      const modalElement = document.querySelector("#hs-slide-down-animation-modal-free-message-limit");
-      if (window.HSOverlay && typeof window.HSOverlay.close === 'function' && modalElement) {
-        window.HSOverlay.open(modalElement);
+      if (e.status === 402) {
+        const modalElement = document.querySelector("#hs-slide-down-animation-modal-free-message-limit");
+        if (window.HSOverlay && typeof window.HSOverlay.close === 'function' && modalElement) {
+          window.HSOverlay.open(modalElement);
+        }
       }
       setPressedRefreshIcon(false)
       setIsFetchingRegenMessage(false)
@@ -214,7 +216,7 @@ const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, m
         </span>
 
       </div>
-      <FreeMessageLimitModal/>
+      <FreeMessageLimitModal />
     </div>
 
   )

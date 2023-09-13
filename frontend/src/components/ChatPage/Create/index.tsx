@@ -76,10 +76,13 @@ const Create = ({ characterId }: CreateProps) => {
             console.log("NEW URL -> ", new_url)
             router.push(new_url)
         } catch (e) {
-            const modalElement = document.querySelector("#hs-slide-down-animation-modal-free-message-limit");
-            if (window.HSOverlay && typeof window.HSOverlay.close === 'function' && modalElement) {
-                window.HSOverlay.open(modalElement);
+            if (e.status === 402) {
+                const modalElement = document.querySelector("#hs-slide-down-animation-modal-free-message-limit");
+                if (window.HSOverlay && typeof window.HSOverlay.close === 'function' && modalElement) {
+                    window.HSOverlay.open(modalElement);
+                }
             }
+
         }
 
     }
