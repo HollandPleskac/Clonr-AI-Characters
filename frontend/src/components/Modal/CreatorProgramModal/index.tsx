@@ -52,7 +52,7 @@ export default function CreatorProgramModal() {
                                                     }
                                                     setEmail(e.target.value)
                                                 }} type="email" name="name" id="name" className="text-gray-400 block w-full pl-3 block flex-1 border-0 rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="email address" />
-                                                <p className={`text-red-400 text-sm mt-1 ${isError ? 'visible' : 'hidden'}`} >Name needs to be filled out</p>
+                                                <p className={`text-red-400 text-sm mt-1 ${isError ? 'visible' : 'hidden'}`} >Email needs to be filled out</p>
 
                                             </div>
                                             <div>
