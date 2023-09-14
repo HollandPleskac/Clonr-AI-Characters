@@ -18,6 +18,7 @@ import { useAuth } from '@/hooks/useAuth'
 import FreeMessageLimitModal from '@/components/Modal/FreeMessageLimitModal'
 import Router from 'next/router';
 import { useClosePrelineModal } from '@/hooks/useClosePrelineModal'
+import { useUser } from '@/hooks/useUser';
 
 type CreateProps = {
     characterId: string
@@ -26,6 +27,7 @@ type CreateProps = {
 const Create = ({ characterId }: CreateProps) => {
     const router = useRouter();
     const { session, loading } = useAuth();
+    const { userObject, isUserLoading } = useUser()
 
     if (loading) {
         return <div>Loading...</div>;
@@ -60,7 +62,7 @@ const Create = ({ characterId }: CreateProps) => {
         try {
             const requestBody: ConversationCreate = {
                 name: 'Test Conversation',
-                user_name: 'Test User',
+                user_name: userObject?.name ?? 'Test User',
                 memory_strategy: MemoryStrategy[memoryStrategy],
                 information_strategy: InformationStrategy[informationStrategy],
                 adaptation_strategy: AdaptationStrategy[adaptationStrategy],

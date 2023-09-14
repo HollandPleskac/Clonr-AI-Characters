@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation'
 import { useSession } from "next-auth/react"
 import { Message } from '@/types'
 import axios from 'axios'
+import { useUser } from '@/hooks/useUser';
 import { useSidebarClonesPagination } from '@/hooks/useSidebarClonesPagination'
 import { ConversationsService, MessageCreate, MessageGenerate } from '@/client'
 import { useRevisions } from '@/hooks/useRevisions'
@@ -42,6 +43,8 @@ export default function ChatScreen({
   const [scrollToNewMessage, setScrollToNewMessage] = useState<boolean>(false)
 
   const [removeMode, setRemoveMode] = useState(false)
+
+  const { userObject, isUserLoading } = useUser()
 
   const { data: character, isLoading: isLoadingCharacter } = useQueryClonesById({
     cloneId: characterId
@@ -109,7 +112,7 @@ export default function ChatScreen({
         content: message,
         created_at: new window.Date().toString(),
         updated_at: new window.Date().toString(),
-        sender_name: 'Test User',
+        sender_name: userObject?.name ?? 'Test User',
         timestamp: new window.Date().toString(),
         is_clone: false,
         is_main: true,

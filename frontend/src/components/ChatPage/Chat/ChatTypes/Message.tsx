@@ -11,6 +11,7 @@ import { useSession } from 'next-auth/react'
 import { ConversationsService, MessageGenerate } from '@/client'
 import { useRevisions } from '@/hooks/useRevisions'
 import FreeMessageLimitModal from '@/components/Modal/FreeMessageLimitModal'
+import { useUser } from '@/hooks/useUser';
 
 interface MessageProps {
   conversationId: string
@@ -33,6 +34,8 @@ const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, m
   const [pressedRefreshIcon, setPressedRefreshIcon] = useState(false)
 
   const currentIndex = revisions.findIndex(obj => obj.is_main === true);
+
+  const { userObject, isUserLoading } = useUser()
 
 
   // function formatTime(date: Date): string {
@@ -152,7 +155,7 @@ const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, m
   return (
     <div className={`relative flex items-stretch m-1 py-3 rounded-xl px-3 ${isRemoveMessage ? "bg-[#a53d098c]" : "bg-[#16181A]"}`}>
       {
-        (isRemoveMode && message.sender_name === 'Test User') && (
+        (isRemoveMode && message.sender_name === userObject?.name) && (
           <div className='h-[40px] flex items-center justify-center w-[40px]' >
             <input
               id='remember'
@@ -168,13 +171,13 @@ const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, m
             />
           </div>
         )}
-      {(isRemoveMode && message.sender_name !== 'Test User') && (
+      {(isRemoveMode && message.sender_name !== userObject?.name) && (
         <div className={'w-[40px] h-[40px] min-w-[40px] min-h-[40px]'} ></div>
       )}
       <div className='flex flex-col shrink-0 w-[40px] justify-between items-center'>
         <div className='h-[40px] w-[40px] relative'>
           <Image
-            src={message.sender_name == 'Test User' ? session?.image || '/user-profile.png' : clone_avatar_uri}
+            src={message.sender_name == userObject?.name ? session?.image || '/user-profile.png' : clone_avatar_uri}
             alt={message.sender_name}
             layout='fill'
             objectFit='cover'

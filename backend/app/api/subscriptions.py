@@ -30,4 +30,6 @@ async def get_my_subscriptions(
     sub = await db.scalar(
         sa.select(models.Subscription).where(models.Subscription.user_id == user.id)
     )
+    if sub is None:
+        raise HTTPException(status_code=404, detail="No subscription found")
     return sub
