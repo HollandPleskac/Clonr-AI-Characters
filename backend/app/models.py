@@ -115,6 +115,7 @@ class User(CommonMixin, Base):
     subscriptions: Mapped[list["Subscription"]] = relationship(
         "Subscription", back_populates="user"
     )
+    is_allowed_beta_tester: Mapped[bool] = mapped_column(default=False)
     # (Jonny): Idk why, but select breaks with greenlet spawn error and this doesn't
     accounts: Mapped[list["Account"]] = relationship("Account", back_populates="user")
     sessions: Mapped[list["Session"]] = relationship("Session", back_populates="user")

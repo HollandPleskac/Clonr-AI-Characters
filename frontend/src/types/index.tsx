@@ -46,19 +46,6 @@ export type Tag = {
   name: string
 }
 
-// export type Character = {
-//   id: string
-//   created_at: Date
-//   updated_at: Date
-//   creator_id: string
-//   name: string
-//   short_description: string
-//   avatar_uri: string
-//   num_messages: number
-//   num_conversations: number
-//   tags: Tag[]
-// }
-
 export type Character = {
   id: string;
   created_at: string;
@@ -73,8 +60,6 @@ export type Character = {
   tags: Tag[];
 }
 
-// TODO: EDIT
-// TODO: make call for this 
 export type CharacterChat = {
   characterId: string
   characterName: string
@@ -85,17 +70,6 @@ export type CharacterChat = {
 }
 
 
-// export type Conversation = {
-//   id: string
-//   character: Character
-//   lastBotMessage: string
-//   lastUserMessage: string
-//   lastChatTime: Date
-//   memoryType: 'long' | 'short'
-// }
-
-// TODO: add character: Clone field here
-// TODO: lastBotMsg and lastUserMsg?
 export type Conversation = {
   name: string,
   user_name: string,
@@ -112,16 +86,6 @@ export type Conversation = {
   last_message: string,
   clone_name: string
 }
-
-// export type Message = {
-//   id: string
-//   img: string
-//   alt: string
-//   name: string
-//   content: string
-//   timeStamp: Date
-//   senderType: 'bot' | 'user'
-// }
 
 export type Message = {
   id: string;
@@ -159,6 +123,7 @@ export type User = {
   nsfw_enabled: boolean;
   num_free_messages_sent: number;
   is_subscribed: boolean;
+  is_allowed_beta_tester: boolean;
 }
 
 
