@@ -259,8 +259,7 @@ async def create_conversation(
     tokenizer: Annotated[Tokenizer, Depends(deps.get_tokenizer)],
     embedding_client: Annotated[EmbeddingClient, Depends(deps.get_embedding_client)],
 ):
-    user = user_and_plan.user
-    plan = user_and_plan.plan
+    user, plan = user_and_plan.user, user_and_plan.plan
     if obj.memory_strategy != MemoryStrategy.zero and plan != schemas.Plan.plus:
         # TODO (Jonny): is this for clonr+ or for normal subscribers?
         raise HTTPException(
@@ -302,6 +301,14 @@ async def create_conversation(
     )
 
     if plan == schemas.Plan.free:
+        if user.num_free_messages_sent >= FREE_MESSAGE_LIMIT:
+            raise HTTPException(
+                status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                detail=(
+                    f"Free users are limited to {FREE_MESSAGE_LIMIT} messages per month. "
+                    "Please upgrade to a paying plan for more messages."
+                ),
+            )
         user.num_free_messages_sent = user.num_free_messages_sent + 1
         await db.commit()
 
@@ -518,13 +525,20 @@ async def generate_clone_message(
         )
     await controller.clonedb.cache.conn.set(key, b"", ex=60)
     try:
-        msg = await controller.generate_message(msg_gen)
-
         if controller.subscription_plan == schemas.Plan.free:
+            if controller.user.num_free_messages_sent >= FREE_MESSAGE_LIMIT:
+                raise HTTPException(
+                    status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                    detail=(
+                        f"Free users are limited to {FREE_MESSAGE_LIMIT} messages per month. "
+                        "Please upgrade to a paying plan for more messages."
+                    ),
+                )
             controller.user.num_free_messages_sent = (
                 controller.user.num_free_messages_sent + 1
             )
             await controller.clonedb.db.commit()
+        msg = await controller.generate_message(msg_gen)
 
     finally:
         await controller.clonedb.cache.conn.delete(key)

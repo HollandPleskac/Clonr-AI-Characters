@@ -246,6 +246,10 @@ async def get_current_active_creator(
         detail="Current user is not signed up as a creator or is not active.",
     )
 
+async def get_allowed_beta_tester(user: Annotated[models.User, Depends(get_current_active_user)]):
+    if not user.is_allowed_beta_tester:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    return user
 
 async def get_free_or_paying_user(
     user: Annotated[models.User, Depends(get_current_active_user)],

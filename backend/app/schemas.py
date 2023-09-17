@@ -90,6 +90,7 @@ class User(CommonMixin, BaseModel):
     is_banned: bool
     nsfw_enabled: bool
     num_free_messages_sent: int
+    is_allowed_beta_tester: bool
 
 
 class CreatorCreate(BaseModel):
