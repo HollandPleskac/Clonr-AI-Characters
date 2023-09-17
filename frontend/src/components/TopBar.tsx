@@ -222,17 +222,22 @@ export default function TopBar({
                   </Link>
                 )}
 
-                <Link
-                  href='#'
+                <button
+                  onClick={() => {
+                    const modalElement = document.querySelector('#hs-slide-down-animation-modal-creator-program');
+                    if (window.HSOverlay && typeof window.HSOverlay.close === 'function' && modalElement) {
+                      window.HSOverlay.open(modalElement);
+                    }
+                  }}
                   className={`transition duration-200 ${pathname === '/create'
                     ? 'text-white font-semibold'
-                    : 'text-[#e5e5e5]'
+                    : 'text-[#e5e5e5] hover:text-[#979797]'
                     } translate-y-[6px]`}
                 >
                   <span>
                     Create <sup className=''>Coming Soon</sup>
                   </span>
-                </Link>
+                </button>
                 <div className='hidden lg:inline-flex'>
                   <SocialMedia />
                 </div>

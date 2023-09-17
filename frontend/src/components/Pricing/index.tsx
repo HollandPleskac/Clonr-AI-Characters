@@ -5,6 +5,7 @@ import Footer from '../Footer'
 import { useEffect } from 'react'
 import { useClosePrelineModal } from '@/hooks/useClosePrelineModal'
 import AuthModal from '../Modal/AuthModal'
+import CreatorProgramModal from '../Modal/CreatorProgramModal'
 
 export default function PricingScreen() {
 
@@ -17,6 +18,7 @@ export default function PricingScreen() {
   return (
     <>
       <main className='w-full flex flex-col h-full'>
+        <CreatorProgramModal/>
         <TopBarStatic />
         <PricingTable />
 

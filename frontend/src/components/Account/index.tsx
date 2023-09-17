@@ -11,6 +11,7 @@ import router from 'next/router';
 import { Session } from 'next-auth';
 import { useUser } from '@/hooks/useUser';
 import { useClosePrelineModal } from '@/hooks/useClosePrelineModal';
+import CreatorProgramModal from '../Modal/CreatorProgramModal';
 
 
 function SubscriptionPortal() {
@@ -177,7 +178,6 @@ function SubscriptionPortal() {
 
 
 export default function AccountComponent() {
-  const { push } = useRouter()
   const [activeTab, setActiveTab] = React.useState('billing')
 
   useClosePrelineModal()
@@ -185,6 +185,7 @@ export default function AccountComponent() {
   return (
     <>
       <main className='w-full flex flex-col h-full'>
+        <CreatorProgramModal/>
         <TopBarStatic />
         <div className='flex flex-col sm:flex-row overflow-auto'
           style={{ height: "100vh - 76px" }}

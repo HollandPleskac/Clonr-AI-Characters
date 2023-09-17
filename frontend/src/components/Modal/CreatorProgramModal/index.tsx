@@ -55,8 +55,6 @@ export default function CreatorProgramModal() {
                                                 <p className={`text-red-400 text-sm mt-1 ${isError ? 'visible' : 'hidden'}`} >Email needs to be filled out</p>
 
                                             </div>
-                                            <div>
-                                            </div>
                                             <textarea value={moreInfo} onChange={(e) => setMoreInfo(e.target.value)} id="desc" name="desc" rows={3} placeholder='Tell us why you signed up ...' className="text-gray-400 block w-full rounded-md border-0 py-1.5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"></textarea>
                                             <p className='text-gray-400 text-sm' >What kind of bots do you want to create?</p>
                                             <div className='flex items-center'>
