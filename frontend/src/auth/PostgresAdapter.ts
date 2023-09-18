@@ -27,9 +27,10 @@ export default function PostgresAdapter(pool: typeof Pool): Adapter {
                 is_banned,
                 is_active,
                 nsfw_enabled,
-                num_free_messages_sent
+                num_free_messages_sent,
+                is_allowed_beta_tester
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
             RETURNING *;
         `;
         const is_superuser = false;
@@ -38,6 +39,7 @@ export default function PostgresAdapter(pool: typeof Pool): Adapter {
         const is_banned = false;
         const nsfw_enabled = false;
         const num_free_messages_sent = 0;
+        const is_allowed_beta_tester = false;
         const client = await pool.connect()
         try {
             const values = [
@@ -51,6 +53,7 @@ export default function PostgresAdapter(pool: typeof Pool): Adapter {
                 is_active,
                 nsfw_enabled,
                 num_free_messages_sent,
+                is_allowed_beta_tester
             ];
             const result = await client.query(query, values);
             const u = result.rows ? result.rows[0] : null;
@@ -65,7 +68,8 @@ export default function PostgresAdapter(pool: typeof Pool): Adapter {
               emailVerified: u.email_verified,
               privateChatName: u.private_chat_name,
               isActive: u.is_active,
-              numFreeMessagesSent: u.num_free_messages_sent
+              numFreeMessagesSent: u.num_free_messages_sent,
+              isAllowedBetaTester: u.is_allowed_beta_tester
             }
             return userResult
         }
@@ -95,7 +99,8 @@ export default function PostgresAdapter(pool: typeof Pool): Adapter {
               emailVerified: u.email_verified,
               privateChatName: u.private_chat_name,
               isActive: u.is_active,
-              numFreeMessagesSent: u.num_free_messages_sent
+              numFreeMessagesSent: u.num_free_messages_sent,
+              isAllowedBetaTester: u.is_allowed_beta_tester
             }
             return userResult
           } catch (err) {
@@ -122,7 +127,8 @@ export default function PostgresAdapter(pool: typeof Pool): Adapter {
               emailVerified: u.email_verified,
               privateChatName: u.private_chat_name,
               isActive: u.is_active,
-              numFreeMessagesSent: u.num_free_messages_sent
+              numFreeMessagesSent: u.num_free_messages_sent,
+              isAllowedBetaTester: u.is_allowed_beta_tester
             }
             return userResult
           } catch (err) {
@@ -151,7 +157,8 @@ export default function PostgresAdapter(pool: typeof Pool): Adapter {
               emailVerified: u.email_verified,
               privateChatName: u.private_chat_name,
               isActive: u.is_active,
-              numFreeMessagesSent: u.num_free_messages_sent
+              numFreeMessagesSent: u.num_free_messages_sent,
+              isAllowedBetaTester: u.is_allowed_beta_tester
             }
             return userResult
           } catch (err) {
@@ -183,7 +190,8 @@ export default function PostgresAdapter(pool: typeof Pool): Adapter {
                 emailVerified: u.email_verified,
                 privateChatName: u.private_chat_name,
                 isActive: u.is_active,
-                numFreeMessagesSent: u.num_free_messages_sent
+                numFreeMessagesSent: u.num_free_messages_sent,
+                isAllowedBetaTester: u.is_allowed_beta_tester
               }
               return userResult
           } catch (err) {
@@ -217,7 +225,8 @@ export default function PostgresAdapter(pool: typeof Pool): Adapter {
                 emailVerified: u.email_verified,
                 privateChatName: u.private_chat_name,
                 isActive: u.is_active,
-                numFreeMessagesSent: u.num_free_messages_sent
+                numFreeMessagesSent: u.num_free_messages_sent,
+                isAllowedBetaTester: u.is_allowed_beta_tester
               }
               return userResult
           } catch (err) {
@@ -397,7 +406,8 @@ export default function PostgresAdapter(pool: typeof Pool): Adapter {
               emailVerified: u.email_verified,
               privateChatName: u.private_chat_name,
               isActive: u.is_active,
-              numFreeMessagesSent: u.num_free_messages_sent
+              numFreeMessagesSent: u.num_free_messages_sent,
+              isAllowedBetaTester: u.is_allowed_beta_tester
             }
         } catch (err) {
             console.log(err)

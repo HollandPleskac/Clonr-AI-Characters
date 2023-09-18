@@ -3,7 +3,9 @@ import pandas as pd
 from tqdm import tqdm
 tqdm.pandas()
 import re
+import guidance
 from datetime import datetime
+from dotenv import load_dotenv
 from typing import Any
 from pydantic import BaseModel
 from clone_collector import clean_everything
@@ -11,6 +13,104 @@ from clonr.data.parsers import FullURLParser, FandomParser
 from scrapers.clone_gen_utils import find_char_url, find_links_with_same_base_url, get_all_example_dialogues
 
 parser = FullURLParser()
+
+class Fandom(BaseModel):
+    fandom_name: str
+    fandom_root: str
+
+class FandomCharacter(BaseModel):
+    name: str
+    greeting: str
+    short_description: str
+    long_description: str
+    avatar_uri: str
+    fandom_char_name: str
+
+## TODO: edit full list
+def get_all_fandoms():
+    total_fandoms = [
+        Fandom(fandom_name='Harry Potter', fandom_root='harrypotter'),
+        Fandom(fandom_name='Naruto', fandom_root='naruto'),
+        Fandom(fandom_name='Marvel', fandom_root='marvel'),
+        Fandom(fandom_name='DC', fandom_root='dc'),
+        Fandom(fandom_name='Star Wars', fandom_root='starwars'),
+        Fandom(fandom_name='Game of Thrones', fandom_root='gameofthrones'),
+        Fandom(fandom_name='Genshin Impact', fandom_root='genshin-impact'),
+        Fandom(fandom_name='Attack on Titan', fandom_root='attackontitan'),
+    ]
+    return total_fandoms
+
+def get_fandom_top_chars(fandom):
+    fandom_name = fandom.fandom_name 
+    fandom_root = fandom.fandom_root
+
+    load_dotenv()
+
+    top_chars = """
+    {{#system~}}
+    You are a helpful AI assistant is knowledge about various fandoms.
+    {{~/system}}
+    {{#user~}}.
+
+    Can you write down, in a list format with the list of str names only, the top 10 characters from the fandom {{fandom_name}}?
+
+    {{~/user}}
+    {{#assistant~}}
+    {{gen 'result' temperature=0.1 max_tokens=500}}
+    {{~/assistant}}
+    """
+
+    gpt_turbo = guidance.llms.OpenAI('gpt-3.5-turbo', api_key=os.getenv('OPENAI_API_KEY'))
+    top_chars = guidance(top_chars, llm=gpt_turbo)
+
+    result = top_chars(fandom_name=fandom_name)
+    file_path = f'scrapers/top_fandom_chars/{fandom_root}.txt'
+    if not os.path.exists(file_path):
+        with open(file_path, 'x') as f:
+            f.write(result['result'])
+    else:
+        print(f"Fandom top chars: '{file_path}' already exists!")
+    return result
+
+def get_fandom_char(fandom, char_name):
+    fandom_name = fandom.fandom_name
+    fandom_root = fandom.fandom_root 
+
+    load_dotenv()
+
+    char_profile = """
+    {{#system~}}
+    You are a helpful AI assistant is knowledge about various fandoms.
+    {{~/system}}
+    {{#user~}}.
+
+    Can you provide the following in JSON format:
+    -greeting message
+    -short description
+    -long description
+    
+    for the character: {{char_name}} in {{fandom_name}}
+
+    {{~/user}}
+    {{#assistant~}}
+    {{gen 'result' temperature=0.1 max_tokens=500}}
+    {{~/assistant}}
+    """
+
+    gpt_turbo = guidance.llms.OpenAI('gpt-3.5-turbo', api_key=os.getenv('OPENAI_API_KEY'))
+    char_profile = guidance(char_profile, llm=gpt_turbo)
+
+    result = char_profile(char_name=char_name, fandom_name=fandom_name)
+    char_path = "_".join(char_name.split(" ")) + "-" + fandom_root
+    file_path = f'scrapers/fandom_char_profiles/{char_path}.json'
+    if not os.path.exists(file_path):
+        with open(file_path, 'x') as f:
+            f.write(result['result'])
+    else:
+        print(f"Fandom char generation: '{file_path}' already exists!")
+    return result
+
+## TODO: add on char_img from fandom, etc. to complete the profile above
 
 # Check for missing and sparse values in cols
 def checking_missing_and_sparse_values(row, columns_to_check, sparse_threshold=5):
