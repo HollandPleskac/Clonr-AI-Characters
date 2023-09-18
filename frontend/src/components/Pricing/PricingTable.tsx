@@ -16,14 +16,14 @@ const NextStripePricingTable = () => {
   return (
     <>
       <div className="flex" >
-        <div className="w-1/3 grid items-center" >
+        <div className="w-1/2 grid items-center bg-gradient-to-r from-gray-800 via-gray-900 to-[#141414]" >
           <div className="flex flex-col items-center w-full">
-            <p className='text-white text-3xl font-thin text-center'>Join the future of socializing</p>
-            <p className="text-white text-opacity-60 mt-4 text-center">A world of limitless possibility starts here.</p>
+            <p className='text-white text-4xl font-thin text-center'><span className="text-5xl">Join the future</span> of socializing </p>
+            <p className="text-white text-opacity-60 mt-4 text-center">A world of limitless possibility starts here 🌎</p>
           </div>
 
         </div>
-        <div className="min-h-[543px] w-2/3 flex flex-col justify-center" >
+        <div className="min-h-[543px] w-1/2 flex flex-col justify-center" >
           {isLoading && <p>&nbsp;</p>}
 
           {(!isLoading && tokenData && tokenData.token.length > 10) && (
