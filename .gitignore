@@ -172,4 +172,5 @@ frontend/src/client/*
 scraped_chars/
 scrapers/fandom/
 scrapers/*/*.txt
+scrapers/*/*.json
 scrapers/samples/
