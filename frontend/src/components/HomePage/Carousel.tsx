@@ -62,7 +62,7 @@ export default function Carousel({
   return (
     <div className='pt-4 mb-4 text-white'>
       <div className='px-[4%] mb-4'>
-        <h2 className='text-[#E5E5E5] text-2xl font-semibold mb-1'>{name}</h2>
+        <h2 className='text-[#E5E5E5] text-xl font-semibold mb-1'>{name}</h2>
       </div>
       <div className='group/swiper flex w-full h-full'>
         <SwiperBtnLeft setRef={(node) => setPrevEl(node)} hideArrow={leftSwiperIndex === 0 && characters.length < slidesPerView * 2} />

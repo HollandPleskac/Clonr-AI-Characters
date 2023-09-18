@@ -33,6 +33,7 @@ router = APIRouter(
 # reddit uses 60 * 60 * 5.4, but we will roughly double the time,
 # since we expect the bot lifecycle to refresh slower than reddit's post lifecycle
 HOT_TIME: float = 60 * 60 * 12
+MIN_CLONE_EMB_SIMILARITY = 0.8
 
 
 class CloneSortType(str, Enum):
@@ -169,9 +170,14 @@ async def query_clones(
     if similar:
         emb = (await embedding_client.encode_query(similar))[0]
         dist = models.Clone.embedding.max_inner_product(emb).label("distance")
-        query = query.where(models.Clone.embedding.is_not(None)).order_by(
-            dist.asc()
-        )  # it must have an embedding!
+        clause = sa.and_(
+            models.Clone.embedding.is_not(None), dist < -MIN_CLONE_EMB_SIMILARITY
+        )
+        if len(similar) > 1:
+            clause = sa.or_(
+                clause, models.Clone.case_insensitive_name.ilike(f"%{similar}%")
+            )
+        query = query.where(clause).order_by(dist.asc())
     else:
         query = clone_sort_selectable(query=query, sort=sort)
     if tags is not None:
