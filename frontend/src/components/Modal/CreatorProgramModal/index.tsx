@@ -5,8 +5,9 @@ import { useQueryTags } from '@/hooks/useTags';
 import { useState } from 'react';
 import { CreatorPartnerProgramSignupCreate, Tag } from '@/client';
 import { SignupsService } from '@/client';
+import { useSession } from 'next-auth/react';
 
-export default function CreatorProgramModal() {
+export default function CreatorProgramModal() {    
     const [email, setEmail] = useState('')
     const [moreInfo, setMoreInfo] = useState('')
     const [isError, setIsError] = useState(false)
@@ -40,10 +41,38 @@ export default function CreatorProgramModal() {
                                                     />
                                                 </div>
                                                 <h3 className='ml-2 text-[20px] font-semibold leading-5 text-white font-fabada'>
-                                                    Become a creator
+                                                    { true && 'Become a creator'}
+                                                    {/* {true && "You're already on the creator waitlist"} */}
                                                 </h3>
                                             </Link>
                                         </div>
+                                        {/* <div className='mt-5 flex flex-col gap-y-4' >
+                                        <button
+                                                type='button'
+                                                onClick={async () => {
+                                                    if (email === '') {
+                                                        setIsError(true)
+                                                        return
+                                                    }
+
+                                                    const requestBody: CreatorPartnerProgramSignupCreate = {
+                                                        email: email,
+                                                        nsfw: nsfw,
+                                                        personal: personal,
+                                                        quality: quality,
+                                                        story: story,
+                                                        roleplay: roleplay
+                                                    }
+                                                    console.log("request body",requestBody)
+                                                    await SignupsService.creatorSignupSignupCreatorsPost(requestBody)
+                                                }}
+                                                className='relative hover:bg-opacity-80 flex justify-center items-center bg-[#f0f0f0] active:opacity-90 text-black w-full py-3  gap-2 rounded-md border font-medium  shadow-sm align-middle focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#f0f0f0] transition-all text-sm border-[#f0f0f0] focus:ring-offset-gray-800'
+                                            >
+                                                <div className='w-full flex items-center' >
+                                                    <p className='grow' >Back to Clonr</p>
+                                                </div>
+                                            </button>
+                                        </div> */}
                                         <div className='mt-5 flex flex-col gap-y-4 '>
                                             <div  >
                                                 <input value={email} onChange={(e) => {

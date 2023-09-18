@@ -12,6 +12,7 @@ import { ConversationsService, MessageGenerate } from '@/client'
 import { useRevisions } from '@/hooks/useRevisions'
 import FreeMessageLimitModal from '@/components/Modal/FreeMessageLimitModal'
 import { useUser } from '@/hooks/useUser';
+import ReactMarkdown from 'react-markdown'
 
 interface MessageProps {
   conversationId: string
@@ -206,7 +207,7 @@ const Message: React.FC<MessageProps> = ({ conversationId, message, revisions, m
           )}
         </div>
         <span className='text-[14px] font-light leading-[18px] text-white'>
-          {!isFetchingRegenMessage && messageContent}
+          {!isFetchingRegenMessage && <ReactMarkdown>{messageContent}</ReactMarkdown>}
           {isFetchingRegenMessage && (<ThreeDots
             height='18'
             width='22'

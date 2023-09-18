@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import PreviousConversation from './PreviousConversation'
 import { Conversation } from '@/types'
 import InfiniteScroll from 'react-infinite-scroll-component'
@@ -8,6 +8,7 @@ import { ColorRing } from 'react-loader-spinner'
 import ConversationsTopBar from './ConversationsTopbar'
 import { useQueryClonesById } from '@/hooks/useClones'
 import { useClosePrelineModal } from '@/hooks/useClosePrelineModal'
+import ConfirmDeleteModal from '@/components/Modal/ConfirmDeleteModal'
 
 interface ConversationsProps {
   characterId: string
@@ -28,11 +29,18 @@ const Conversations = ({ characterId }: ConversationsProps) => {
     setSize: setConversationsSize,
   } = useConversationsPagination(conversationsQueryParams)
 
+  const [selectedConvIdDelete, setSetectedConvIdDelete] = useState<string | null>(null)
+  useEffect(() => {
+    require('preline')
+  }, [])
+
   useClosePrelineModal()
 
 
   return (
     <div className='w-[100%] border-r-[2px] border-[#252525] bg-[#121212] lg:inline'>
+      <ConfirmDeleteModal conversationId={selectedConvIdDelete} />
+
       {/* Conversations Top bar */}
       <ConversationsTopBar
         characterId={characterId}
@@ -42,10 +50,10 @@ const Conversations = ({ characterId }: ConversationsProps) => {
         {
           isLoadingConversations && (
             <div
-            className="w-full grid place-items-center"
-            style={{
-              height: 'calc(100vh - 122px)',
-            }} >
+              className="w-full grid place-items-center"
+              style={{
+                height: 'calc(100vh - 122px)',
+              }} >
               <ColorRing
                 visible={true}
                 height="80"
@@ -83,7 +91,12 @@ const Conversations = ({ characterId }: ConversationsProps) => {
               className='py-4 gap-y-4'
             >
               {conversations!.map((conversation, index) => (
-                <PreviousConversation conversation={conversation} key={index} />
+                <PreviousConversation
+                  conversation={conversation}
+                  handleSetSelectedConversationIdToDelete={(id: string) => {
+                    setSetectedConvIdDelete(id)
+                  }}
+                  key={index} />
               ))}
             </InfiniteScroll>
           </div>
