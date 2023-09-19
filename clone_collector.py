@@ -103,7 +103,7 @@ class ScrapedClone(BaseModel):
             scenario=data["metadata"].get("scenario"),
             example_dialogues=data["metadata"].get("exampleDialogue"),
             tags=[x["name"] for x in data["tags"]],
-            creator=None,  # TODO check if that's true
+            creator=data["creator"],  # TODO check if that's true
             num_messages=data["total"] // 1000,
             num_conversations=None,
             created_at=None,
@@ -370,6 +370,7 @@ def clean_chub_ai(path: str = "scraped_chars/chub.json") -> pd.DataFrame:
     data = df.progress_apply(
         lambda x: ScrapedClone.from_chub_ai(x).model_dump(), axis=1
     ).to_list()
+    return pd.DataFrame(data)
 
 
 def _scrape_character_ai_by_letter_search(
