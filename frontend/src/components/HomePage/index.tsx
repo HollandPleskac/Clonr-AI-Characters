@@ -22,10 +22,15 @@ import AuthModal from '../Modal/AuthModal'
 import { useClosePrelineModal } from '@/hooks/useClosePrelineModal'
 import RequestCloneModal from '@/components/Modal/RequestCloneModal'
 import CreatorProgramModal from '../Modal/CreatorProgramModal'
+import { ReadonlyURLSearchParams, usePathname, useSearchParams, useRouter } from 'next/navigation'
 
-export default function HomeScreen() {
-  const [searchInput, setSearchInput] = useState('')
-  const [searchParam, setSearchParam] = useState('')
+export default function HomeScreen({initialQ}:{initialQ:string}) {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  const [searchInput, setSearchInput] = useState(initialQ)
+  const [searchParam, setSearchParam] = useState(initialQ)
   const [showSearchGrid, setShowSearchGrid] = useState(false)
   const duration = 500
 
@@ -73,9 +78,18 @@ export default function HomeScreen() {
     }
   }, [searchInput])
 
+  function updateUrlParams(searchParams: ReadonlyURLSearchParams, updateKey: string, updateValue: string): string {
+    const newParams = new URLSearchParams(searchParams.toString());
+    newParams.set(updateKey, updateValue);
+    return `?${newParams.toString()}`;
+  }
+
   // search delay
   useEffect(() => {
     const timer = setTimeout(() => {
+      if (router) {
+        router.push(pathname + updateUrlParams(searchParams,"q",searchInput))
+       }
       setSearchParam(searchInput)
     }, duration)
     return () => clearTimeout(timer)
@@ -96,6 +110,7 @@ export default function HomeScreen() {
     size,
     setSize
   } = useClonesPagination(queryParamsSearch)
+
 
   return (
     <div className='pb-[75px]'>

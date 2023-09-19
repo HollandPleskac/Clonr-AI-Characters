@@ -136,7 +136,7 @@ export default function TopBarStatic() {
             <div className='flex mt-5 lg:items-center lg:justify-between lg:mt-0 lg:pl-5 '>
               <div className='flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-start '>
                 <Link
-                  href='/browse'
+                  href='/browse?sort=Trending'
                   className={`transition duration-200 ${pathname === '/browse'
                     ? 'text-white font-semibold'
                     : 'text-[#e5e5e5] hover:text-[#979797]'

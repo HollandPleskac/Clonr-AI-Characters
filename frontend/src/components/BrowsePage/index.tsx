@@ -14,27 +14,29 @@ import CharacterGrid from '@/components/HomePage/CharacterGrid'
 import TagComponent from './Tag'
 import Dropdown from './Dropdown'
 import { useQueryTags } from '@/hooks/useTags'
-import { useQueryClones } from '@/hooks/useClones'
 import { CloneSortType } from '@/client/models/CloneSortType'
-import { Swiper, SwiperSlide } from 'swiper/react'
-import { Navigation, Pagination, Scrollbar } from 'swiper/modules'
-import { ColorRing } from 'react-loader-spinner'
 import { useClonesPagination } from '@/hooks/useClonesPagination'
 import ScaleFadeIn from '../Transitions/ScaleFadeIn'
 import AuthModal from '../Modal/AuthModal'
 import { useClosePrelineModal } from '@/hooks/useClosePrelineModal'
 import RequestCloneModal from '../Modal/RequestCloneModal'
 import CreatorProgramModal from '../Modal/CreatorProgramModal'
+import { ReadonlyURLSearchParams, usePathname, useSearchParams, useRouter } from 'next/navigation'
 
-export default function BrowsePage() {
+export default function BrowsePage({ initialQ, initialTag, initialSort }: { initialQ: string, initialTag: Tag | null, initialSort: string }) {
 
-    const [searchInput, setSearchInput] = useState('')
-    const [searchParam, setSearchParam] = useState('')
+    const router = useRouter()
+    const pathname = usePathname()
+    const searchParams = useSearchParams()
+
+    const [searchInput, setSearchInput] = useState(initialQ)
+    const [searchParam, setSearchParam] = useState(initialQ)
     const [showSearchGrid, setShowSearchGrid] = useState(false)
     const duration = 500
 
-    const [activeTag, setActiveTag] = useState<Tag | null>(null)
-    const [activeSort, setActiveSort] = useState<string>("Trending")
+    const [activeTag, setActiveTag] = useState<Tag | null>(initialTag)
+
+    const [activeSort, setActiveSort] = useState<string>(initialSort)
 
     // tags state
     const { data: tags, isLoading: isLoadingTags } = useQueryTags();
@@ -54,9 +56,24 @@ export default function BrowsePage() {
         setSize
     } = useClonesPagination(queryParams)
 
+    function updateUrlParams(searchParams: ReadonlyURLSearchParams, updateKey: string, updateValue: string): string {
+        const newParams = new URLSearchParams(searchParams.toString());
+    
+        if (updateValue) {
+            newParams.set(updateKey, updateValue);
+        } else {
+            newParams.delete(updateKey);
+        }
+    
+        return `?${newParams.toString()}`;
+    }
+
     // search delay
     useEffect(() => {
         const timer = setTimeout(() => {
+            if (router) {
+                router.push(pathname + updateUrlParams(searchParams, "q", searchInput))
+            }
             setSearchParam(searchInput)
         }, duration)
         return () => clearTimeout(timer)
@@ -76,6 +93,8 @@ export default function BrowsePage() {
         isLoading: isLoadingSearchedCharacters
     } = useClonesPagination(queryParamsSearch)
 
+
+
     useEffect(() => {
         if (searchInput === '') {
             setShowSearchGrid(false)
@@ -84,6 +103,7 @@ export default function BrowsePage() {
             if (!showSearchGrid) {
                 const timer = setTimeout(() => {
                     setShowSearchGrid(true)
+
                 }, duration)
                 return () => clearTimeout(timer)
             }
@@ -107,7 +127,11 @@ export default function BrowsePage() {
     }
 
     function handleSortClick(sort: string) {
+        if (router) {
+            router.push(pathname + updateUrlParams(searchParams, "sort", sort))
+        }
         setActiveSort(sort)
+
     }
 
     useEffect(() => {
@@ -119,9 +143,11 @@ export default function BrowsePage() {
     return (
         <div className=''>
             <AlertBar />
+
             <AuthModal />
             <RequestCloneModal />
             <CreatorProgramModal />
+
             <TopBar
                 searchInput={searchInput}
                 onSearchInput={(x) => setSearchInput(x)}

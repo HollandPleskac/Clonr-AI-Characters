@@ -7,7 +7,7 @@ import Image from 'next/image'
 
 import SearchIcon from './SearchIcon'
 import XIcon from './XIcon'
-import { usePathname } from 'next/navigation'
+import { ReadonlyURLSearchParams, usePathname } from 'next/navigation'
 import AccountDropdown from './AccountDropdown'
 import { useUser } from '@/hooks/useUser'
 import { signOut, useSession } from 'next-auth/react'
@@ -84,13 +84,15 @@ export default function TopBar({
   const pathname = usePathname()
 
   // search state
-  const [isInputActive, setInputActive] = useState(false)
+  const [isInputActive, setInputActive] = useState(searchInput !== "")
   const handleInputFocus = () => setInputActive(true)
   const handleInputBlur = () => {
     if (searchInput === '') setInputActive(false)
   }
   const inputRefLg = useRef<HTMLInputElement>(null)
   const inputRefSm = useRef<HTMLInputElement>(null)
+
+  
 
   return (
     <>
@@ -191,7 +193,7 @@ export default function TopBar({
             <div className='flex mt-5 lg:items-center lg:justify-between lg:mt-0 lg:pl-5 '>
               <div className='flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-start '>
                 <Link
-                  href='/browse'
+                  href='/browse?sort=Trending'
                   className={`transition duration-200 ${pathname === '/browse'
                     ? 'text-white font-semibold'
                     : 'text-[#e5e5e5] hover:text-[#979797]'
