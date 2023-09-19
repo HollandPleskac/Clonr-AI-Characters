@@ -29,6 +29,7 @@ export default function Browse() {
     return "Trending";
   }
 
+
   return (
     <>
       <main className='w-full flex flex-col h-full'>
@@ -38,7 +39,7 @@ export default function Browse() {
         {(!isLoadingTags && tags) && (
           <BrowsePage
             initialQ={q ?? ""}
-            initialTag={findActiveTag(tags, tagName??"")}
+            activeTag={findActiveTag(tags, tagName??"")}
             initialSort={getSortName(sort)}
             tags={tags}
           />

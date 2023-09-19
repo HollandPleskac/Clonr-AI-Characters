@@ -31,6 +31,7 @@ interface SearchGridProps {
   showPadding2?: boolean
   conversationId?: string
   onCharacterClick: (characterId: string, convoId?: string) => void;
+  handleClearSearchInput?: () => void
 }
 
 export default function CharacterGrid({
@@ -39,6 +40,7 @@ export default function CharacterGrid({
   fetchMoreData,
   hasMoreData,
   showPadding2 = false,
+  handleClearSearchInput
 }: SearchGridProps) {
 
   const router = useRouter()
@@ -157,14 +159,15 @@ export default function CharacterGrid({
           </div>
         </div>
       )}
-      {((!loading && !isLoadingSlidesPerView) && characters.length > 0) ? (<SuggestionBar tags={Array.from(characters.map((e, _) => e.tags[0]?.name))} />): null}
       {((!loading && !isLoadingSlidesPerView) && characters.length > 0) && (
-        <InfiniteScroll
+       <div className={`flex flex-col ${showPadding2 ? 'pt-[50px]' : 'pt-[48px]'}`} >
+        <SuggestionBar handleClearSearchInput={handleClearSearchInput} tags={Array.from(characters.map((e, _) => e.tags[0]?.name))} />
+         <InfiniteScroll
           dataLength={characters?.length ?? 0}
           next={fetchMoreData}
           hasMore={hasMoreData}
           loader={<h4>Loading...</h4>}
-          className={`grid gap-1 gap-y-10 ${showPadding2 ? 'pt-[50px]' : 'pt-[100px]'} pb-[100px] px-[4%]`}
+          className={`grid gap-1 gap-y-10 pb-[100px] px-[4%]`}
           style={{
             gridTemplateColumns: `repeat(${slidesPerView!.normal}, 1fr)`,
           }}
@@ -180,6 +183,7 @@ export default function CharacterGrid({
             )
           })}
           </InfiniteScroll>
+       </div>
       )}
 
     </div>

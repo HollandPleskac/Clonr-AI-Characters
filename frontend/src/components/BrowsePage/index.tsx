@@ -23,7 +23,7 @@ import RequestCloneModal from '../Modal/RequestCloneModal'
 import CreatorProgramModal from '../Modal/CreatorProgramModal'
 import { ReadonlyURLSearchParams, usePathname, useSearchParams, useRouter } from 'next/navigation'
 
-export default function BrowsePage({ initialQ, initialTag, initialSort, tags }: { initialQ: string, initialTag: Tag | null, initialSort: string, tags: Tag[] }) {
+export default function BrowsePage({ initialQ, activeTag, initialSort, tags }: { initialQ: string, activeTag: Tag | null, initialSort: string, tags: Tag[] }) {
 
     const router = useRouter()
     const pathname = usePathname()
@@ -33,8 +33,6 @@ export default function BrowsePage({ initialQ, initialTag, initialSort, tags }: 
     const [searchParam, setSearchParam] = useState(initialQ)
     const [showSearchGrid, setShowSearchGrid] = useState(false)
     const duration = 500
-
-    const [activeTag, setActiveTag] = useState<Tag | null>(initialTag)
 
     const [activeSort, setActiveSort] = useState<string>(initialSort)
 
@@ -135,6 +133,9 @@ export default function BrowsePage({ initialQ, initialTag, initialSort, tags }: 
 
     useClosePrelineModal()
 
+    // top bar state
+    const [isInputActive, setIsInputActive] = useState(searchInput !== "")
+
     return (
         <div className=''>
             <AlertBar />
@@ -145,6 +146,8 @@ export default function BrowsePage({ initialQ, initialTag, initialSort, tags }: 
 
             <TopBar
                 searchInput={searchInput}
+                isInputActive={isInputActive}
+                setIsInputActive={(x: boolean) => { setIsInputActive(x) }}
                 onSearchInput={(x) => setSearchInput(x)}
                 clearSearchInput={() => setSearchInput('')}
             />
@@ -156,6 +159,13 @@ export default function BrowsePage({ initialQ, initialTag, initialSort, tags }: 
                         loading={isLoadingSearchedCharacters}
                         fetchMoreData={() => setSize(size + 1)}
                         hasMoreData={!isLastSearchedCharactersPage}
+                        handleClearSearchInput={() => {
+                            // ?? timeout makes this work
+                            setTimeout(() => {
+                                setSearchInput("")
+                                setIsInputActive(false)
+                            }, 300)
+                        }}
                     />
                 </ScaleFadeIn>
             )}
@@ -178,12 +188,10 @@ export default function BrowsePage({ initialQ, initialTag, initialSort, tags }: 
                                                 if (router) {
                                                     router.push(pathname + updateUrlParams(searchParams, "tag", ""))
                                                 }
-                                                setActiveTag(null);
                                             } else {
                                                 if (router) {
                                                     router.push(pathname + updateUrlParams(searchParams, "tag", tagName))
                                                 }
-                                                setActiveTag(tag);
                                             }
                                         }}
                                         active={tag.id === activeTag?.id}
@@ -221,6 +229,14 @@ export default function BrowsePage({ initialQ, initialTag, initialSort, tags }: 
                             fetchMoreData={() => setSize(size + 1)}
                             hasMoreData={!isLastCharactersPage}
                             showPadding2={true}
+                            handleClearSearchInput={() => {
+                                // ?? timeout makes this work
+                                setTimeout(() => {
+                                    setSearchInput("")
+                                    setIsInputActive(false)
+                                }, 300)
+
+                            }}
 
                         />
                     )}

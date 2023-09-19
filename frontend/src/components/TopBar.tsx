@@ -14,6 +14,8 @@ import { signOut, useSession } from 'next-auth/react'
 
 interface TopBarProps {
   searchInput: string
+  isInputActive: boolean
+  setIsInputActive: (x:boolean) => void
   onSearchInput: (input: string) => void
   clearSearchInput: () => void
 }
@@ -76,6 +78,8 @@ function SocialMedia() {
 
 export default function TopBar({
   searchInput,
+  isInputActive,
+  setIsInputActive,
   onSearchInput,
   clearSearchInput
 }: TopBarProps): React.ReactElement {
@@ -83,11 +87,9 @@ export default function TopBar({
 
   const pathname = usePathname()
 
-  // search state
-  const [isInputActive, setInputActive] = useState(searchInput !== "")
-  const handleInputFocus = () => setInputActive(true)
+  const handleInputFocus = () => setIsInputActive(true)
   const handleInputBlur = () => {
-    if (searchInput === '') setInputActive(false)
+    if (searchInput === '') setIsInputActive(false)
   }
   const inputRefLg = useRef<HTMLInputElement>(null)
   const inputRefSm = useRef<HTMLInputElement>(null)

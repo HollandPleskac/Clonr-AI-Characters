@@ -24,7 +24,7 @@ import RequestCloneModal from '@/components/Modal/RequestCloneModal'
 import CreatorProgramModal from '../Modal/CreatorProgramModal'
 import { ReadonlyURLSearchParams, usePathname, useSearchParams, useRouter } from 'next/navigation'
 
-export default function HomeScreen({initialQ}:{initialQ:string}) {
+export default function HomeScreen({ initialQ }: { initialQ: string }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -81,19 +81,19 @@ export default function HomeScreen({initialQ}:{initialQ:string}) {
   function updateUrlParams(searchParams: ReadonlyURLSearchParams, updateKey: string, updateValue: string): string {
     const newParams = new URLSearchParams(searchParams.toString());
     if (updateValue) {
-        newParams.set(updateKey, updateValue);
+      newParams.set(updateKey, updateValue);
     } else {
-        newParams.delete(updateKey);
+      newParams.delete(updateKey);
     }
     return `?${newParams.toString()}`;
-}
+  }
 
   // search delay
   useEffect(() => {
     const timer = setTimeout(() => {
       if (router) {
-        router.push(pathname + updateUrlParams(searchParams,"q",searchInput))
-       }
+        router.push(pathname + updateUrlParams(searchParams, "q", searchInput))
+      }
       setSearchParam(searchInput)
     }, duration)
     return () => clearTimeout(timer)
@@ -116,12 +116,17 @@ export default function HomeScreen({initialQ}:{initialQ:string}) {
   } = useClonesPagination(queryParamsSearch)
 
 
+  // top bar state
+  const [isInputActive, setIsInputActive] = useState(searchInput !== "")
+
   return (
     <div className='pb-[75px]'>
       <AlertBar />
 
       <TopBar
         searchInput={searchInput}
+        isInputActive={isInputActive}
+        setIsInputActive={(x: boolean) => { setIsInputActive(x) }}
         onSearchInput={(x) => setSearchInput(x)}
         clearSearchInput={() => setSearchInput('')}
       />
@@ -191,7 +196,7 @@ export default function HomeScreen({initialQ}:{initialQ:string}) {
       )}
       <AuthModal />
       <RequestCloneModal />
-      <CreatorProgramModal/>
+      <CreatorProgramModal />
     </div>
   )
 }
