@@ -80,9 +80,13 @@ export default function HomeScreen({initialQ}:{initialQ:string}) {
 
   function updateUrlParams(searchParams: ReadonlyURLSearchParams, updateKey: string, updateValue: string): string {
     const newParams = new URLSearchParams(searchParams.toString());
-    newParams.set(updateKey, updateValue);
+    if (updateValue) {
+        newParams.set(updateKey, updateValue);
+    } else {
+        newParams.delete(updateKey);
+    }
     return `?${newParams.toString()}`;
-  }
+}
 
   // search delay
   useEffect(() => {

@@ -23,7 +23,7 @@ import RequestCloneModal from '../Modal/RequestCloneModal'
 import CreatorProgramModal from '../Modal/CreatorProgramModal'
 import { ReadonlyURLSearchParams, usePathname, useSearchParams, useRouter } from 'next/navigation'
 
-export default function BrowsePage({ initialQ, initialTag, initialSort }: { initialQ: string, initialTag: Tag | null, initialSort: string }) {
+export default function BrowsePage({ initialQ, initialTag, initialSort, tags }: { initialQ: string, initialTag: Tag | null, initialSort: string, tags: Tag[] }) {
 
     const router = useRouter()
     const pathname = usePathname()
@@ -37,9 +37,6 @@ export default function BrowsePage({ initialQ, initialTag, initialSort }: { init
     const [activeTag, setActiveTag] = useState<Tag | null>(initialTag)
 
     const [activeSort, setActiveSort] = useState<string>(initialSort)
-
-    // tags state
-    const { data: tags, isLoading: isLoadingTags } = useQueryTags();
 
     // character grid state
     const queryParams = {
@@ -58,13 +55,11 @@ export default function BrowsePage({ initialQ, initialTag, initialSort }: { init
 
     function updateUrlParams(searchParams: ReadonlyURLSearchParams, updateKey: string, updateValue: string): string {
         const newParams = new URLSearchParams(searchParams.toString());
-    
         if (updateValue) {
             newParams.set(updateKey, updateValue);
         } else {
             newParams.delete(updateKey);
         }
-    
         return `?${newParams.toString()}`;
     }
 
@@ -170,31 +165,34 @@ export default function BrowsePage({ initialQ, initialTag, initialSort }: { init
 
 
                     <div className='flex px-[4%] gap-x-8 mt-[50px]'  >
-                        {isLoadingTags && (
-                            <div className='w-full flex-grow' >&nbsp;</div>
-                        )}
-                        {!isLoadingTags && (
-                            <div className='flex flex-wrap gap-[6px]' >
-                                {tags!.map((tag, idnex) => (
-                                    <div
-                                        key={tag.id}
-                                    >
-                                        <TagComponent
-                                            name={tag.name}
-                                            onClick={(tagName) => {
-                                                if (tagName === activeTag?.name) {
-                                                    setActiveTag(null);
-                                                } else {
-                                                    setActiveTag(tag);
-                                                }
-                                            }}
-                                            active={tag.id === activeTag?.id}
 
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                        <div className='flex flex-wrap gap-[6px]' >
+                            {tags!.map((tag, idnex) => (
+                                <div
+                                    key={tag.id}
+                                >
+                                    <TagComponent
+                                        name={tag.name}
+                                        onClick={(tagName) => {
+                                            if (tagName === activeTag?.name) {
+                                                if (router) {
+                                                    router.push(pathname + updateUrlParams(searchParams, "tag", ""))
+                                                }
+                                                setActiveTag(null);
+                                            } else {
+                                                if (router) {
+                                                    router.push(pathname + updateUrlParams(searchParams, "tag", tagName))
+                                                }
+                                                setActiveTag(tag);
+                                            }
+                                        }}
+                                        active={tag.id === activeTag?.id}
+
+                                    />
+                                </div>
+                            ))}
+                        </div>
+
                         <Dropdown onItemClick={handleSortClick} activeSort={activeSort} />
                     </div>
 
