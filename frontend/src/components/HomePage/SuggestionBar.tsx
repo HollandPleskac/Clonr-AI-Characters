@@ -1,6 +1,6 @@
 import Counter from "@/utils/Counter"
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { ReadonlyURLSearchParams, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 
@@ -13,6 +13,7 @@ type SuggestionBarProps = {
 export default function SuggestionBar({tags, topP = 0.5, handleClearSearchInput}: SuggestionBarProps) {
     const pathname = usePathname()
     const router = useRouter()
+    const searchParams = useSearchParams()
     
     if (!tags || tags.length < 10) {
         return null
@@ -32,6 +33,17 @@ export default function SuggestionBar({tags, topP = 0.5, handleClearSearchInput}
     if (!topTags || topTags.length < 1) {
         return null
     }
+
+    function updateUrlParams(searchParams: ReadonlyURLSearchParams, updateKey: string, updateValue: string): string {
+        const newParams = new URLSearchParams(searchParams.toString());
+        if (updateValue) {
+            newParams.set(updateKey, updateValue);
+        } else {
+            newParams.delete(updateKey);
+        }
+        return `?${newParams.toString()}`;
+    }
+
     return (
         <div className="ml-[4%] mb-[20px] w-full flex flex-initial items-center justify-start">
             <h2 className="text-white opacity-50 text-sm">
@@ -43,7 +55,9 @@ export default function SuggestionBar({tags, topP = 0.5, handleClearSearchInput}
                     (
                         <li key={index} className={`border-white border-opacity-50 px-2 py-1 hover:cursor-pointer ${index > 0 ? "border-l-[1px]" : ""}`}>
                             <button className="text-white text-opacity-90 text-sm hover:text-opacity-75" onClick={() => {
-                                router.push(`/browse?tag=${value}`)
+                                if (router) {
+                                    router.push(pathname + updateUrlParams(searchParams, "tag", value))
+                                }
                                 if (handleClearSearchInput) {
                                     handleClearSearchInput()
                                 }
