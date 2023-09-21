@@ -41,6 +41,9 @@ export default function SuggestionBar({tags, topP = 0.5, handleClearSearchInput}
         } else {
             newParams.delete(updateKey);
         }
+        if (!handleClearSearchInput) {
+            newParams.delete("q")
+        }
         return `?${newParams.toString()}`;
     }
 
@@ -56,7 +59,7 @@ export default function SuggestionBar({tags, topP = 0.5, handleClearSearchInput}
                         <li key={index} className={`border-white border-opacity-50 px-2 py-1 hover:cursor-pointer ${index > 0 ? "border-l-[1px]" : ""}`}>
                             <button className="text-white text-opacity-90 text-sm hover:text-opacity-75" onClick={() => {
                                 if (router) {
-                                    router.push(pathname + updateUrlParams(searchParams, "tag", value))
+                                    router.push("browse" + (updateUrlParams(searchParams, "tag", value)))
                                 }
                                 if (handleClearSearchInput) {
                                     handleClearSearchInput()
