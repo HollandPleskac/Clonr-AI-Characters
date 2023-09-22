@@ -108,7 +108,7 @@ export default function BrowsePage({ initialTagName, initialSort }: { initialTag
             <RequestCloneModal />
             <CreatorProgramModal />
 
-            <ScaleFadeIn loaded={!(isLoadingCharacters || isLoadingTags || isLoadingInitialActiveTag)} duration={duration}>
+            <ScaleFadeIn loaded={!(isLoadingCharacters || isLoadingTags)} duration={duration}>
 
 
                 <div className='flex px-[4%] gap-x-8 mt-[50px]'  >
