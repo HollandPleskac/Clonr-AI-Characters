@@ -128,32 +128,24 @@ export default function CharacterGrid({
 
             <div className='w-[75%] flex items-center h-[150px]' >
               <div className="flex flex-col w-full items-left">
-              <p
-                onClick={
-                  () => {
+              <p className='text-left text-lg align-top cursor-pointer'>
+              Couldn't find what you're looking for?</p>
+              <button onClick={() => {
                     const modalElement = document.querySelector('#hs-slide-down-animation-modal-request');
                     if (window.HSOverlay && typeof window.HSOverlay.close === 'function' && modalElement) {
                       window.HSOverlay.open(modalElement);
                     }
-                  }
-                }
-                className='text-left text-lg align-top cursor-pointer'>
-              Couldn't find what you're looking for?</p>
-              <button className='text-white hover:cursor-pointer px-4 py-2 bg-[#7e34dfca] rounded-lg font-sans hover:bg-[#7e34df] mt-2'>Submit a request</button>
+                  }} className='text-white hover:cursor-pointer px-4 py-2 bg-[#7e34dfca] rounded-lg font-sans hover:bg-[#7e34df] mt-2'>Submit a request</button>
               </div>
               <div className='w-px bg-gray-400 h-full mx-4' >&nbsp;</div>
               <div className="flex flex-col w-full items-left">
-                <p
-                  onClick={
-                    () => {
+                <p className='text-left text-lg align-top cursor-pointer block' >Don't want to wait?</p>
+                <button onClick={() => {
                       const modalElement = document.querySelector('#hs-slide-down-animation-modal-creator-program');
                       if (window.HSOverlay && typeof window.HSOverlay.close === 'function' && modalElement) {
                         window.HSOverlay.open(modalElement);
                       }
-                    }
-                  }
-                  className='text-left text-lg align-top cursor-pointer block' >Don't want to wait?</p>
-                <button className='text-white hover:cursor-pointer px-4 py-2 bg-[#7e34dfca] rounded-lg font-sans hover:bg-[#7e34df] mt-2'>Become a Creator</button>
+                    }} className='text-white hover:cursor-pointer px-4 py-2 bg-[#7e34dfca] rounded-lg font-sans hover:bg-[#7e34df] mt-2'>Become a Creator</button>
               </div>
             </div>
           </div>

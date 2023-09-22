@@ -11,14 +11,7 @@ import { ReadonlyURLSearchParams, usePathname } from 'next/navigation'
 import AccountDropdown from './AccountDropdown'
 import { useUser } from '@/hooks/useUser'
 import { signOut, useSession } from 'next-auth/react'
-
-interface TopBarProps {
-  searchInput: string
-  isInputActive: boolean
-  setIsInputActive: (x:boolean) => void
-  onSearchInput: (input: string) => void
-  clearSearchInput: () => void
-}
+import { useSearchContext } from '@/context/searchContext'
 
 function SocialMedia() {
   return (
@@ -76,25 +69,20 @@ function SocialMedia() {
   )
 }
 
-export default function TopBar({
-  searchInput,
-  isInputActive,
-  setIsInputActive,
-  onSearchInput,
-  clearSearchInput
-}: TopBarProps): React.ReactElement {
+export default function TopBar(): React.ReactElement {
   const { data: session, status } = useSession()
 
   const pathname = usePathname()
+  const ctx = useSearchContext()
 
-  const handleInputFocus = () => setIsInputActive(true)
+  const handleInputFocus = () => ctx.setIsInputActive(true)
   const handleInputBlur = () => {
-    if (searchInput === '') setIsInputActive(false)
+    if (ctx.searchInput === '') ctx.setIsInputActive(false)
   }
   const inputRefLg = useRef<HTMLInputElement>(null)
   const inputRefSm = useRef<HTMLInputElement>(null)
 
-  
+
 
   return (
     <>
@@ -131,17 +119,17 @@ export default function TopBar({
               >
                 <button className='group absolute peer left-[10px] top-[5.5px] peer cursor-default'>
                   <SearchIcon
-                    strokeClasses={` group-focus:stroke-[#5848BC] ${isInputActive ? 'stroke-[#5848BC]' : 'stroke-[#515151]'
+                    strokeClasses={` group-focus:stroke-[#5848BC] ${ctx.isInputActive ? 'stroke-[#5848BC]' : 'stroke-[#515151]'
                       } transition duration-100`}
                   />
                 </button>
                 <input
                   ref={inputRefSm}
-                  value={searchInput}
-                  onChange={(e) => onSearchInput(e.target.value)}
+                  value={ctx.searchInput}
+                  onChange={(e) => ctx.setSearchInput(e.target.value)}
                   onFocus={handleInputFocus}
                   onBlur={handleInputBlur}
-                  className={`${isInputActive
+                  className={`${ctx.isInputActive
                     ? 'w-[200px] cursor-auto bg-[#1E1E1E]'
                     : 'w-[44px] cursor-default bg-black'
                     } focus:cursor-auto peer py-auto h-[35px]  transition-all  duration-500 rounded-full border-none  pr-0 pl-[44px] text-[15px] font-light leading-6 text-[#979797] focus:ring-1 focus:ring-transparent`}
@@ -150,9 +138,12 @@ export default function TopBar({
                   style={{ outline: 'none', resize: 'none' }}
                 />
                 <button
-                  className={`absolute right-[10px] top-[9.5px] ${searchInput === '' ? 'hidden' : 'flex'
+                  className={`absolute right-[10px] top-[9.5px] ${ctx.searchInput === '' ? 'hidden' : 'flex'
                     }`}
-                  onClick={clearSearchInput}
+                  onClick={() => {
+                    ctx.setSearchInput("")
+                    ctx.setIsInputActive(false)
+                  }}
                 >
                   <XIcon />
                 </button>
@@ -280,17 +271,17 @@ export default function TopBar({
                 >
                   <button className='group absolute peer left-[10px] top-2 peer cursor-default hover:cursor-pointer'>
                     <SearchIcon
-                      strokeClasses={` group-focus:stroke-[#5848BC] ${isInputActive ? 'stroke-[#8414fb]' : 'stroke-[#dcdcdc]'
+                      strokeClasses={` group-focus:stroke-[#5848BC] ${ctx.isInputActive ? 'stroke-[#8414fb]' : 'stroke-[#dcdcdc]'
                         } transition duration-100`}
                     />
                   </button>
                   <input
                     ref={inputRefLg}
-                    value={searchInput}
-                    onChange={(e) => onSearchInput(e.target.value)}
+                    value={ctx.searchInput}
+                    onChange={(e) => ctx.setSearchInput(e.target.value)}
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
-                    className={`${isInputActive
+                    className={`${ctx.isInputActive
                       ? 'w-[300px] cursor-auto bg-[#1E1E1E]'
                       : 'w-[44px] cursor-default bg-black'
                       } focus:cursor-auto peer py-auto h-[40px]  transition-all  duration-500 rounded-full border-none  pr-0 pl-[44px] text-[15px] font-light leading-6 text-[#979797] focus:ring-1 focus:ring-transparent`}
@@ -299,9 +290,12 @@ export default function TopBar({
                     style={{ outline: 'none', resize: 'none' }}
                   />
                   <button
-                    className={`absolute right-[10px] top-3 ${searchInput === '' ? 'hidden' : 'flex'
+                    className={`absolute right-[10px] top-3 ${ctx.searchInput === '' ? 'hidden' : 'flex'
                       }`}
-                    onClick={clearSearchInput}
+                    onClick={() => {
+                      ctx.setSearchInput("")
+                      ctx.setIsInputActive(false)
+                    }}
                   >
                     <XIcon />
                   </button>

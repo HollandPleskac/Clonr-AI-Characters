@@ -41,9 +41,7 @@ export default function SuggestionBar({tags, topP = 0.5, handleClearSearchInput}
         } else {
             newParams.delete(updateKey);
         }
-        if (!handleClearSearchInput) {
-            newParams.delete("q")
-        }
+        newParams.delete("q")
         return `?${newParams.toString()}`;
     }
 
