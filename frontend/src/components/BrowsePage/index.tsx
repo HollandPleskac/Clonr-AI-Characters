@@ -42,9 +42,13 @@ export default function BrowsePage({ initialTagName, initialSort }: { initialTag
     }
 
     useEffect(() => {
-        if (tags && initialTagName)
+        if (tags && initialTagName) {
             setActiveTag(getActiveTag(tags, initialTagName))
-            setIsLoadingInitialActiveTag(false)
+        } else if (tags && initialTagName==="") {
+            setActiveTag(null)
+        }
+            
+        setIsLoadingInitialActiveTag(false)
     }, [initialTagName, tags])
 
     // character grid state
