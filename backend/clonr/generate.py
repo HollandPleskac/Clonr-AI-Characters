@@ -746,7 +746,7 @@ async def generate_zero_memory_message(
         example_dialogues=example_dialogues,
         sys_prompt_header=sys_prompt_header,
         facts=facts,
-        #use_timestamps=use_timestamps,
+        # use_timestamps=use_timestamps,
     )
     kwargs["template"] = templates.ZeroMemoryMessageV2.__name__
     kwargs["subroutine"] = generate_long_term_memory_message.__name__

@@ -40,3 +40,21 @@ def lightly_clean_dialogues(s: str) -> str:
     s = "<START>\n".join(lines)
 
     return s
+
+
+def clean_jinja_roles(s: str) -> str:
+    # remove case sensitivity
+    s = re.sub(r"\{\{(user)\}\}", r"{{user}}", s, flags=re.IGNORECASE)
+    s = re.sub(r"\{\{(char)\}\}", r"{{char}}", s, flags=re.IGNORECASE)
+
+    # replace missing braces user and char tags with
+    s = re.sub(r"(?:^|\n)\{user\}\}?\s+", "\n{{user}} ", s, flags=re.IGNORECASE)
+    s = re.sub(r"(?:^|\n)\{char\}\}?\s+", "\n{{char}} ", s, flags=re.IGNORECASE)
+
+    # replace some weird non-brace role tokens
+    pattern = r"(<user>)|(<<user>>)|(<you>)|(<<you>>)|\{you\}|(\{\{you\}\})|(\[user\])"
+    s = re.sub(pattern, r"{{user}}", s, flags=re.IGNORECASE)
+    pattern = r"(\{\{chara?c?t?e?r?\}\})|(\{chara?c?t?e?r?\}:?)|(<char>)|(<<char>>)|(<bot>)|(<<bot>>)|(\[chara?c?t?e?r?\])"
+    s = re.sub(pattern, r"{{char}}", s, flags=re.IGNORECASE)
+
+    return s

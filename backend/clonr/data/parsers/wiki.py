@@ -1,5 +1,6 @@
 import re
 from dataclasses import dataclass
+from urllib.parse import unquote
 
 from loguru import logger
 
@@ -25,7 +26,7 @@ class ParsedURL:
 # (Jonny): this library sucks frfr. not sure what to do with it.
 class WikipediaParser(Parser):
     def _parse_url(self, url: str) -> ParsedURL:
-        if r := re.findall(r"https://(\w{2,})\.wikipedia\.org/wiki/(\w+)", url):
+        if r := re.findall(r"https://(\w{2,})\.wikipedia\.org/wiki/(.+)", url):
             lang, title = r[0]
             return ParsedURL(title=title, lang=lang, pageid=None)
         elif r := re.findall(
@@ -52,6 +53,8 @@ class WikipediaParser(Parser):
             raise ImportError("wikipedia package not found. `pip install wikipedia`.")
         wikipedia.set_lang(lang)
         try:
+            if title:
+                title = unquote(title)
             page = wikipedia.page(title=title, pageid=pageid, auto_suggest=False)
             bad_headers = r"== (Bibliography|See also|References|Futher reading)"
             content = page.content

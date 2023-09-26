@@ -1,18 +1,16 @@
-import os
-
 import pandas as pd
 from tqdm import tqdm
 
 tqdm.pandas()
+import os
+
 os.chdir("backend")
-import re
-from datetime import datetime
-from typing import Any
-
 from pydantic import BaseModel
-
 from clonr.text_splitters import aggregate_with_overlaps
 from clonr.tokenizer import Tokenizer
+from typing import Any
+from datetime import datetime
+import re
 
 os.chdir("../")
 
@@ -87,7 +85,7 @@ class ScrapedClone(BaseModel):
             **{
                 k: v
                 for k, v in data["metadata"].items()
-                if k in ["persona", "personality"]
+                if k not in ["scenario", "exampleDialogue"]
             },
         )
         used_cols = set(
@@ -103,7 +101,7 @@ class ScrapedClone(BaseModel):
             scenario=data["metadata"].get("scenario"),
             example_dialogues=data["metadata"].get("exampleDialogue"),
             tags=[x["name"] for x in data["tags"]],
-            creator=data["creator"],  # TODO check if that's true
+            creator=None,  # TODO check if that's true
             num_messages=data["total"] // 1000,
             num_conversations=None,
             created_at=None,
@@ -217,6 +215,9 @@ class ScrapedClone(BaseModel):
                 long_description = tmp
 
         example_dialogues = data.get("example_dialogue", "") or ""
+        example_dialogues = example_dialogues.replace("<START>", "\n\n")
+        example_dialogues = re.sub(r"\nYou:", "\n{{user}}", example_dialogues)
+        example_dialogues = re.sub(r"\n\w+:", "\n{{char}}", example_dialogues)
 
         short_description = data["char_name"]
         if universe := data["universe"]:
@@ -247,43 +248,40 @@ class ScrapedClone(BaseModel):
 
     @classmethod
     def from_chub_ai(cls, data: dict[str, Any]):
-        definition = data["definition"]
+        scenario = data.get("scenario", "")
 
-        scenario = definition.get("scenario", "")
         if sys_prompt := data.get("system_prompt"):
             scenario += "\n" + sys_prompt
+
         if post_hist := data.get("post_history_instructions"):
             scenario += "\n" + post_hist
+
         if not scenario:
             scenario = None
 
-        example_dialogues = definition["example_dialogs"]
-        if example_dialogues.strip() == "<START>":
-            example_dialogues = ""
+        example_dialogues = data["example_dialogs"]
+        example_dialogues = example_dialogues.replace("<START>", "")
 
         created_at = data["createdAt"].replace("Z", "")
 
         return cls(
             name=data["name"],
             short_description=data["tagline"],
-            long_description=definition["personality"],
-            greeting=definition["first_message"],
-            avatar_uri=definition["avatar"],
+            long_description=data["personality"],
+            greeting=data["first_message"],
+            avatar_uri=data["avatar"],
             scenario=scenario,
             example_dialogues=example_dialogues,
             tags=[x.lower() for x in data["topics"]],
             creator=data["maybe_creator"],
-            num_messages=data["nMessages"],
-            num_conversations=data["nChats"],
+            num_messages=data["nChats"],
+            num_conversations=data["nMessages"],
             created_at=int(datetime.fromisoformat(created_at).timestamp()),
             scrape_source="chub",
             metadata={
                 "wilson_score": data["wilson_score"],
-                "related_lorebooks": data["related_lorebooks"],
-                "lorebook": definition["embedded_lorebook"],
+                "lorebooks": data["related_lorebooks"],
                 "starCount": data["starCount"],
-                "rating": data["rating"],
-                "ratingCount": data["ratingCount"],
                 "homepage_id": data["homepage_id"],
             },
         )
@@ -317,7 +315,7 @@ def clean_charstar() -> pd.DataFrame:
         df = pd.read_json(path)
         path = f"scraped_chars/charstar_chars/charstarai_chars_{s}sfw_info.json"
         df_info = pd.read_json(path)
-        df = df.merge(df_info, left_on="id", right_on="id", suffixes=("", "_info"))
+        df = df_info.merge(df, left_on="id", right_on="id", suffixes=("_left", ""))
         cur = df.progress_apply(
             lambda x: ScrapedClone.from_charstar_ai(x).model_dump(), axis=1
         ).to_list()
@@ -346,60 +344,16 @@ def clean_spicychat(path: str = "scraped_chars/spicychat_chars.json") -> pd.Data
 
 
 def clean_chub_ai(path: str = "scraped_chars/chub.json") -> pd.DataFrame:
-    """Note, this contains a Wilson Score that was already computed, offline. We should add
-    it to the scrape script, but I don't wanna mess it up. Basically, it performs this calc
-    (also found in app/utils.py)
-
-    def likes_score_vectorized(pos, n, confidence=0.95):
-        n = n + 1e-2
-        z = calc_likes_z(confidence)
-        phat = 1.0 * pos / n
-        lower_bound = (phat + z**2 / (2 * n) - z * np.sqrt((phat * (1 - phat) + z**2 / (4 * n)) / n)) / (1 + z**2 / n)
-        return lower_bound
-
-    to make sure that things with high rating but a small amount of ratings aren't at the top.
-    Mathematically, it ranks by the lower bound of a 95% confidence interval that, given some variance of ratings,
-    the true rating is above some value.
-    """
-    # tmp = pd.read_json(path)
-    # cols = [k for k in tmp if k != "definition"]
-    # df = pd.DataFrame(tmp.definition.to_list())
-    # for k in cols:
-    #     if k not in df.columns:
-    #         df[k] = tmp[k]
-    df = pd.read_json(path)
+    tmp = pd.read_json(path)
+    cols = [k for k in tmp if k != "definition"]
+    df = pd.DataFrame(tmp.definition.to_list())
+    for k in cols:
+        if k not in df.columns:
+            df[k] = tmp[k]
     data = df.progress_apply(
         lambda x: ScrapedClone.from_chub_ai(x).model_dump(), axis=1
     ).to_list()
     return pd.DataFrame(data)
-
-
-def _scrape_character_ai_by_letter_search(
-    token: str, cookie: str, agent: str
-) -> pd.DataFrame:
-    """To get your token, cookie, and user agent, go to characte ai in a browser and find the /characters
-    request, then it should be in the headers. token is in front of the Authorization header. You also need all
-    of the cookies unfortunately, haven't investigated why. Also, the cookies appear to be linked to your user agent
-    as a fake user agent will 403
-
-    this gets all of the characters on C.ai that I could find. Note, none of these have character profiles, they are just
-    the names available.
-    """
-    import requests
-
-    all_chars = []
-    for x in tqdm("abcdefghijklmnopqrstuvwxyz"):
-        for y in tqdm("abcdefghijklmnopqrstuvwxyz"):
-            url = f"https://beta.character.ai/chat/characters/search/?query={x}{y}"
-            r = requests.get(
-                url,
-                headers={"User-Agent": agent, "Cookie": cookie, "Authorization": token},
-            )
-            r.raise_for_status()
-            data = r.json()["characters"]
-            # print("Character:", x, "Results:", len(data))
-            all_chars.extend(data)
-    return pd.DataFrame(all_chars)
 
 
 def clean_everything() -> pd.DataFrame:

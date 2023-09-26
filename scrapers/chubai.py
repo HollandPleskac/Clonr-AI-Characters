@@ -10,6 +10,7 @@ import pandas as pd
 import aiohttp
 from fire import Fire
 from tqdm import tqdm
+from functools import lru_cache
 import logging
 from tenacity import retry, wait_exponential, before_sleep_log
 
@@ -18,10 +19,31 @@ logger: Final = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
+@lru_cache(maxsize=None)
+def calc_likes_z(confidence):
+    import scipy.stats as st
+
+    return st.norm.ppf(1 - (1 - confidence) / 2)
+
+
+def likes_score(pos, n, confidence=0.95):
+    """Used for ranking items that have likes and dislikes"""
+    import math
+
+    if n <= 0:
+        return 0
+    z = calc_likes_z(confidence)
+    p = pos / n
+    lower_bound = (
+        p + z**2 / (2 * n) - z * math.sqrt((p * (1 - p) + z**2 / (4 * n)) / n)
+    ) / (1 + z**2 / n)
+    return lower_bound
+
+
 def scrape_homepage() -> pd.DataFrame:
     # scrape all front page characters, and link back with foreign key homepage_id
     url = "https://api.chub.ai/search"
-    params = dict(sort="default", venus="false", min_tokens=50, first=100000, page=1)
+    params = dict(sort="default", venus="false", min_tokens=50, first=1_000_000, page=1)
     all_characters_response = requests.get(url, params=params)
     all_characters = all_characters_response.json()["data"]["nodes"]
     df_chars = pd.DataFrame(all_characters)
@@ -80,7 +102,6 @@ async def scrape_character_cards(df_chars: pd.DataFrame, bsz: int = 16) -> pd.Da
 )
 def scrape_lorebooks(df_chars):
     lorebooks = []
-    row_errors = []
 
     lorebook_ids = list(
         filter(
@@ -91,12 +112,12 @@ def scrape_lorebooks(df_chars):
     for lorebook_id in tqdm(lorebook_ids):
         if lorebook_id < 0:
             continue
-        url = "https://api.chub.ai/api/v4/projects/200945/repository/files/raw%252Fsillytavern_raw.json/raw"
+        url = f"https://api.chub.ai/api/v4/projects/{lorebook_id}/repository/files/raw%252Fsillytavern_raw.json/raw"
         params = dict(ref="main", response_type="blob")
         r = requests.get(url, params=params)
         if r.status_code != 200:
             print("Error Scraping Lorebooks. Lorebook ID:", lorebook_id)
-            raise ValueError(r.status)
+            # raise ValueError(r.status_code)
         lorebooks.append(r.json())
 
     df_lorebooks = pd.DataFrame(lorebooks)
@@ -113,6 +134,13 @@ async def main(output_dir: str):
 
     print("\033[0mScraping Character Cards\033[1m")
     characters = await scrape_character_cards(homepage)
+    # star ratings are 1-5, we only have the average, so consider a positive like to be a 5 and a negative to be a 1
+    characters["wilson_score"] = characters.apply(
+        lambda x: likes_score(
+            (float(x.rating) - 1) * float(x.ratingCount) / 4.0, float(x.ratingCount)
+        ),
+        axis=1,
+    )
     characters.to_json(Path(output_dir) / "chubai_characters.json", indent=2)
 
     print("\033[0mScraping Lorebooks\033[1m")
