@@ -1,13 +1,9 @@
 import './globals.css'
 import 'regenerator-runtime/runtime'
 import type { Metadata } from 'next'
-// import { Inter } from 'next/font/google'
-// const inter = Inter({ subsets: ['latin'] })
 import NextAuthProvider from '@/auth/Providers'
 
 import { Open_Sans } from 'next/font/google'
-import { useEffect } from 'react'
-import RootLayoutWrapper from './RootLayoutWrapper'
 
 //👇 Configure our font object
 const openSans = Open_Sans({
@@ -28,7 +24,6 @@ export default function RootLayout({
   return (
     <html lang='en' className={openSans.className}>
       <body
-        // className={inter.className}
         className='w-full bg-[#141414] lg:inline'
       >
         <NextAuthProvider>

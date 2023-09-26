@@ -32,7 +32,9 @@ router = APIRouter(
 # reddit uses 60 * 60 * 5.4, but we will roughly double the time,
 # since we expect the bot lifecycle to refresh slower than reddit's post lifecycle
 HOT_TIME: float = 60 * 60 * 12
-MIN_CLONE_EMB_SIMILARITY = 0.8
+MIN_CLONE_EMB_SIMILARITY = (
+    0.95  # TODO (everyone): play around with this in prod to see what's good
+)
 
 
 class CloneSortType(str, Enum):

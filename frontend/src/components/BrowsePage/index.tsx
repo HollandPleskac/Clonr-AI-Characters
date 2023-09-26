@@ -7,37 +7,49 @@ import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import 'swiper/css/scrollbar'
 
-import TopBar from '@/components/TopBar'
-import AlertBar from '@/components/AlertBar'
-import { Character, Tag } from '@/types'
+import { Tag } from '@/types'
 import CharacterGrid from '@/components/HomePage/CharacterGrid'
 import TagComponent from './Tag'
 import Dropdown from './Dropdown'
 import { useQueryTags } from '@/hooks/useTags'
-import { useQueryClones } from '@/hooks/useClones'
 import { CloneSortType } from '@/client/models/CloneSortType'
-import { Swiper, SwiperSlide } from 'swiper/react'
-import { Navigation, Pagination, Scrollbar } from 'swiper/modules'
-import { ColorRing } from 'react-loader-spinner'
 import { useClonesPagination } from '@/hooks/useClonesPagination'
 import ScaleFadeIn from '../Transitions/ScaleFadeIn'
 import AuthModal from '../Modal/AuthModal'
 import { useClosePrelineModal } from '@/hooks/useClosePrelineModal'
 import RequestCloneModal from '../Modal/RequestCloneModal'
 import CreatorProgramModal from '../Modal/CreatorProgramModal'
+import { ReadonlyURLSearchParams, usePathname, useSearchParams, useRouter } from 'next/navigation'
 
-export default function BrowsePage() {
+export default function BrowsePage({ initialTagName, initialSort }: { initialTagName: string, initialSort: string}) {
 
-    const [searchInput, setSearchInput] = useState('')
-    const [searchParam, setSearchParam] = useState('')
-    const [showSearchGrid, setShowSearchGrid] = useState(false)
+    const router = useRouter()
+    const pathname = usePathname()
+    const searchParams = useSearchParams()
+
     const duration = 500
 
-    const [activeTag, setActiveTag] = useState<Tag | null>(null)
-    const [activeSort, setActiveSort] = useState<string>("Trending")
+    const [activeSort, setActiveSort] = useState<string>(initialSort)
+    const [activeTag, setActiveTag] = useState<Tag|null>(null)
+    const [isLoadingInitialActiveTag, setIsLoadingInitialActiveTag] = useState(!activeTag)
 
     // tags state
     const { data: tags, isLoading: isLoadingTags } = useQueryTags();
+    
+    function getActiveTag(tags:Tag[], tagName:string) {
+        const activeTag = tags.find(tag => tag.name === tagName);
+        return activeTag || null;
+    }
+
+    useEffect(() => {
+        if (tags && initialTagName) {
+            setActiveTag(getActiveTag(tags, initialTagName))
+        } else if (tags && initialTagName==="") {
+            setActiveTag(null)
+        }
+            
+        setIsLoadingInitialActiveTag(false)
+    }, [initialTagName, tags])
 
     // character grid state
     const queryParams = {
@@ -54,41 +66,15 @@ export default function BrowsePage() {
         setSize
     } = useClonesPagination(queryParams)
 
-    // search delay
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setSearchParam(searchInput)
-        }, duration)
-        return () => clearTimeout(timer)
-    }, [searchInput])
-
-    // search grid state
-    const queryParamsSearch = {
-        // name: searchParam,
-        sort: CloneSortType["TOP"],
-        similar: searchParam,
-        limit: 30
-    }
-
-    const {
-        paginatedData: searchedCharacters,
-        isLastPage: isLastSearchedCharactersPage,
-        isLoading: isLoadingSearchedCharacters
-    } = useClonesPagination(queryParamsSearch)
-
-    useEffect(() => {
-        if (searchInput === '') {
-            setShowSearchGrid(false)
-            console.log(searchInput)
+    function updateUrlParams(searchParams: ReadonlyURLSearchParams, updateKey: string, updateValue: string): string {
+        const newParams = new URLSearchParams(searchParams.toString());
+        if (updateValue) {
+            newParams.set(updateKey, updateValue);
         } else {
-            if (!showSearchGrid) {
-                const timer = setTimeout(() => {
-                    setShowSearchGrid(true)
-                }, duration)
-                return () => clearTimeout(timer)
-            }
+            newParams.delete(updateKey);
         }
-    }, [searchInput])
+        return `?${newParams.toString()}`;
+    }
 
 
     function mapSortClickToSortType(sort: string) {
@@ -107,7 +93,11 @@ export default function BrowsePage() {
     }
 
     function handleSortClick(sort: string) {
+        if (router) {
+            router.push(pathname + updateUrlParams(searchParams, "sort", sort))
+        }
         setActiveSort(sort)
+
     }
 
     useEffect(() => {
@@ -118,67 +108,53 @@ export default function BrowsePage() {
 
     return (
         <div className=''>
-            <AlertBar />
             <AuthModal />
             <RequestCloneModal />
             <CreatorProgramModal />
-            <TopBar
-                searchInput={searchInput}
-                onSearchInput={(x) => setSearchInput(x)}
-                clearSearchInput={() => setSearchInput('')}
-            />
 
-            {showSearchGrid && (
-                <ScaleFadeIn loaded={showSearchGrid} duration={duration}>
-                    <CharacterGrid
-                        characters={searchedCharacters}
-                        loading={isLoadingSearchedCharacters}
-                        fetchMoreData={() => setSize(size + 1)}
-                        hasMoreData={!isLastSearchedCharactersPage}
-                    />
-                </ScaleFadeIn>
-            )}
-
-            {!showSearchGrid && (
-                <ScaleFadeIn loaded={!searchInput} duration={duration}>
+            <ScaleFadeIn loaded={!(isLoadingCharacters || isLoadingTags)} duration={duration}>
 
 
-                    <div className='flex px-[4%] gap-x-8 mt-[50px]'  >
-                        {isLoadingTags && (
-                            <div className='w-full flex-grow' >&nbsp;</div>
+                <div className='flex px-[4%] gap-x-8 mt-[50px]'  >
+
+                    <div className='flex flex-wrap gap-[6px]' >
+                        {(!tags || isLoadingInitialActiveTag) && (
+                            <div className='text-white h-[300px] bg-purple-400 w-[300px]' >asdf&nbsp;</div>
                         )}
-                        {!isLoadingTags && (
-                            <div className='flex flex-wrap gap-[6px]' >
-                                {tags!.map((tag, idnex) => (
-                                    <div
-                                        key={tag.id}
-                                    >
-                                        <TagComponent
-                                            name={tag.name}
-                                            onClick={(tagName) => {
-                                                if (tagName === activeTag?.name) {
-                                                    setActiveTag(null);
-                                                } else {
-                                                    setActiveTag(tag);
-                                                }
-                                            }}
-                                            active={tag.id === activeTag?.id}
+                        {tags && tags.map((tag) => (
+                            <div
+                                key={tag.id}
+                            >
+                                <TagComponent
+                                    name={tag.name}
+                                    onClick={(tagName) => {
+                                        if (tagName === activeTag?.name) {
+                                            if (router) {
+                                                router.push(pathname + updateUrlParams(searchParams, "tag", ""))
+                                            }
+                                        } else {
+                                            if (router) {
+                                                router.push(pathname + updateUrlParams(searchParams, "tag", tagName))
+                                            }
+                                        }
+                                    }}
+                                    active={tag.id === activeTag?.id}
 
-                                        />
-                                    </div>
-                                ))}
+                                />
                             </div>
-                        )}
-                        <Dropdown onItemClick={handleSortClick} activeSort={activeSort} />
+                        ))}
                     </div>
 
-                    {isLoadingCharacters && (
-                        <div className="grid place-items-center"
-                            style={{
-                                height: "calc(100vh - 50px - 75px - 80px)"
-                            }}>
-                            &nbsp;
-                            {/* <ColorRing
+                    <Dropdown onItemClick={handleSortClick} activeSort={activeSort} />
+                </div>
+
+                {isLoadingCharacters && (
+                    <div className="grid place-items-center"
+                        style={{
+                            height: "calc(100vh - 50px - 75px - 80px)"
+                        }}>
+                        &nbsp;
+                        {/* <ColorRing
                                 visible={true}
                                 height="80"
                                 width="80"
@@ -187,21 +163,21 @@ export default function BrowsePage() {
                                 wrapperClass="blocks-wrapper"
                                 colors={['#9333ea', '#9333ea', '#9333ea', '#9333ea', '#9333ea']}
                             /> */}
-                        </div>
-                    )}
+                    </div>
+                )}
 
-                    {!isLoadingCharacters && (
-                        <CharacterGrid
-                            characters={characters}
-                            loading={isLoadingCharacters}
-                            fetchMoreData={() => setSize(size + 1)}
-                            hasMoreData={!isLastCharactersPage}
-                            showPadding2={true}
+                {!isLoadingCharacters && (
+                    <CharacterGrid
+                        characters={characters}
+                        loading={isLoadingCharacters}
+                        fetchMoreData={() => setSize(size + 1)}
+                        hasMoreData={!isLastCharactersPage}
+                        showPadding2={true}
 
-                        />
-                    )}
-                </ScaleFadeIn>
-            )}
+                    />
+                )}
+            </ScaleFadeIn>
+
         </div>
     )
 }
