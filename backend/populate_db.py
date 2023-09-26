@@ -164,8 +164,8 @@ async def main(n: int):
     r = requests.get("http://localhost:8000/users/me", headers=headers)
 
     print("Loading scraped c.ai data")
-    # with open("../scrapers/results.json", "r") as f:
-    with open("../tmp3.json", "r") as f:
+    with open("../scrapers/results.json", "r") as f:
+        # with open("../tmp3.json", "r") as f:
         data = json.load(f)
 
     print("Creating default Tags")

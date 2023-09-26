@@ -727,10 +727,9 @@ async def generate_zero_memory_message(
     long_description: str,
     messages: list[Message],
     scenario: str | None = None,
-    example_dialogues: list[str] | None = None,
+    example_dialogues: str | None = None,
     sys_prompt_header: str | None = None,
     facts: list[str] | None = None,
-    use_timestamps: bool = False,
     **kwargs,
 ) -> str:
     if not llm.is_chat_model:
@@ -746,7 +745,6 @@ async def generate_zero_memory_message(
         example_dialogues=example_dialogues,
         sys_prompt_header=sys_prompt_header,
         facts=facts,
-        # use_timestamps=use_timestamps,
     )
     kwargs["template"] = templates.ZeroMemoryMessageV2.__name__
     kwargs["subroutine"] = generate_long_term_memory_message.__name__
@@ -756,6 +754,8 @@ async def generate_zero_memory_message(
     return r.content.strip()
 
 
+# TODO (Jonny): Long term memory is currently broken, we aren't using it yet. Get
+# the Zero mem stuff working first!
 @tracer.start_as_current_span("generate_long_term_memory_message")
 async def generate_long_term_memory_message(
     llm: LLM,
