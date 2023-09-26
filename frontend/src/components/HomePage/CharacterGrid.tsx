@@ -162,6 +162,7 @@ export default function CharacterGrid({
           className={`grid gap-1 gap-y-10 pb-[100px] px-[4%]`}
           style={{
             gridTemplateColumns: `repeat(${slidesPerView!.normal}, 1fr)`,
+            overflow: 'visible'
           }}
         >
           {characters.map((item, index) => {
