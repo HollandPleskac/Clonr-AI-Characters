@@ -45,8 +45,12 @@ export default function SuggestionBar({tags, topP = 0.5, handleClearSearchInput}
         return `?${newParams.toString()}`;
     }
 
+    if (pathname.startsWith('/browse')) {
+        return <div></div>
+    }
+
     return (
-        <div className="ml-[4%] mb-[20px] w-full flex flex-initial items-center justify-start">
+        <div className="px-[4%] mb-[20px] w-full flex flex-initial items-center justify-start">
             <h2 className="text-white opacity-50 text-sm">
                 Explore clones related to:
             </h2>
