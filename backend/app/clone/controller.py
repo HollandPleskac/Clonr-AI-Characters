@@ -780,6 +780,7 @@ class Controller:
         recent_msgs = await self.clonedb.get_messages(num_tokens=tokens_remaining)
         if msg_to_unset:
             parent_id = msg_to_unset.parent_id
+            recent_msgs = recent_msgs[1:]
         else:
             parent_id = recent_msgs[0].id if recent_msgs else None
 

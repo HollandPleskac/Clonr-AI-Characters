@@ -2,10 +2,10 @@
 
 import Link from 'next/link'
 import React, { useState } from 'react'
-import { getURL } from 'next/dist/shared/lib/utils'
+import { usePathname } from 'next/navigation'
 
 export default function AlertBar() {
-  const url = getURL();
+  const url = usePathname();
   const [hidden, setHidden] = useState(url !== '/');
 
   if (url !== '/' || hidden) {

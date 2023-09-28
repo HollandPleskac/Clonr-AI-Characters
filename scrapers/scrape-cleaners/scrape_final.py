@@ -415,6 +415,49 @@ def link_documents():
             db.commit()
 
 
+# I fucked up in the linking process and missed the original doc_links
+# from tqdm import tqdm
+# import itertools
+
+# missing = []
+# test = []
+# n2 = 0
+# with SessionLocal() as db:
+#     clones = db.query(Clone).all()
+#     for clone in tqdm(clones):
+#         doc_links = json.loads(clone.doc_links)
+#         final_links = json.loads(clone.final_links)
+#         all_links = [
+#             x
+#             for x in doc_links
+#             if "#" not in x
+#             and ".jp" not in x
+#             and ".gg" not in x
+#             and "tvtropes" not in x
+#             and "allthetropes" not in x
+#             and "static.wikia" not in x
+#             and ":~" not in x
+#             and ('fandom' in x or 'wiki' in x)
+#             and '?' not in x.split('/')[-1]
+#         ] + final_links
+#         docs: list[Document] = []
+#         for url in all_links:
+#             new_doc = (
+#                 db.query(Document)
+#                 .where(Document.url == url)
+#                 .first()
+#             )
+#             if new_doc is None:
+#                 missing.append(url)
+#             else:
+#                 docs.append(new_doc)
+#         if docs:
+#             n2 += 1
+#             clone.documents = docs
+#             db.add(clone)
+#             db.commit()
+
+
 def link_images():
     misses = []
     ok = []

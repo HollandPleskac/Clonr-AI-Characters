@@ -40,8 +40,10 @@ def text_sanitation_validator(v: str | None, info: ValidationInfo) -> str | None
 
 
 def generate_hex_code():
-    s = "1234567890ABCDEF"
-    return "".join(random.choice(s) for _ in range(6))
+    # s = "1234567890ABCDEF"
+    arr = [random.randint(100, 200) for _ in range(3)]
+    return "{:02x}{:02x}{:02x}".format(*arr)
+    # return "".join(random.choice(s) for _ in range(6))
 
 
 def validate_hex_code(s: str | None):
@@ -251,14 +253,14 @@ class CloneContinue(CloneSearchResult):
 class DocumentCreate(BaseModel):
     content: Annotated[str, AfterValidator(text_sanitation_validator)]
     name: str | None = Field(
-        max_length=36,
+        max_length=128,
         description="A human readable name for the document. If none is given, one will be automatically assigned.",
     )
     description: str | None = Field(
-        max_length=128, description="A short description of the document"
+        max_length=256, description="A short description of the document"
     )
     type: Annotated[str, AfterValidator(special_char_validator)] = Field(
-        max_length=32,
+        max_length=64,
         pattern=r"[a-zA-Z0-9_\-]+",
         description="One word tag describing the source. Letters, numbers, underscores, and hyphens allowed.",
     )

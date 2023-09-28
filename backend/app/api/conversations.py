@@ -289,6 +289,14 @@ async def create_conversation(
             detail=detail,
         )
 
+    # FIXME TEMPORARY UNTIL WE ALLOW CHANGING DOCS
+    if obj.information_strategy != InformationStrategy.zero:
+        tmp = await db.scalars(
+            sa.select(models.Document.id).where(models.Document.clone_id == clone.id)
+        )
+        if not tmp.first():
+            obj.information_strategy = InformationStrategy.zero
+
     print("CREATING CONVERSATION ON BACKEND, this is obj: ", obj)
     convo = await Controller.create_conversation(
         obj=obj,
